@@ -12,91 +12,44 @@ Singleton {
     readonly property bool enabled: adapter?.enabled ?? false
     readonly property bool discovering: adapter?.discovering ?? false
 
-    readonly property var devices: {
-        var deviceList = []
-        if (!adapter) return deviceList
-        
-        for (var i = 0; i < adapter.devices.count; i++) {
-            var dev = adapter.devices.get(i)
-            if (dev && dev.ready && _isValidDevice(dev)) {
-                deviceList.push({
-                    address: dev.address,
-                    name: dev.name || dev.deviceName,
-                    paired: dev.paired,
-                    connected: dev.connected,
-                    iconName: _getDeviceIcon(dev),
-                    type: _getDeviceType(dev),
-                    batteryLevel: dev.batteryAvailable ? Math.round(dev.battery * 100) : -1,
-                    batteryAvailable: dev.batteryAvailable,
-                    native: dev
-                })
-            }
-        }
-        return deviceList
+    readonly property var devices: adapter ? adapter.devices : null
+    
+    function sortByRssi(devices) {
+        return devices.sort((a, b) => {
+            var aRssi = (a.rssi !== undefined && a.rssi !== 0) ? a.rssi : -100
+            var bRssi = (b.rssi !== undefined && b.rssi !== 0) ? b.rssi : -100
+            return bRssi - aRssi
+        })
     }
     
     readonly property var pairedDevices: {
-        return devices.filter(dev => dev.paired)
+        if (!adapter || !adapter.devices) return []
+        return adapter.devices.values.filter(dev => dev && dev.paired && isValidDevice(dev))
     }
     
     readonly property var availableDevices: {
-        if (!discovering) return []
-        var availableList = []
-        
-        if (Bluetooth.devices && Bluetooth.devices.values) {
-            for (var device of Bluetooth.devices.values) {
-                if (device && device.ready && !device.paired && _isValidDevice(device)) {
-                    availableList.push({
-                        address: device.address,
-                        name: device.name || device.deviceName,
-                        paired: false,
-                        connected: false,
-                        iconName: _getDeviceIcon(device),
-                        type: _getDeviceType(device),
-                        batteryLevel: -1,
-                        batteryAvailable: false,
-                        native: device
-                    })
-                }
-            }
-        }
-        return availableList
+        if (!adapter || !adapter.discovering || !Bluetooth.devices) return []
+        var filtered = Bluetooth.devices.values
+            .filter(dev => dev && !dev.paired && !dev.pairing && !dev.blocked && isValidDevice(dev) && (dev.rssi === undefined || dev.rssi !== 0))
+        return sortByRssi(filtered)
     }
     
     readonly property var allDevicesWithBattery: {
-        return devices.filter(dev => dev.batteryAvailable && dev.batteryLevel >= 0)
+        if (!adapter || !adapter.devices) return []
+        return adapter.devices.values.filter(dev => dev && dev.batteryAvailable && dev.battery > 0)
     }
     
-    Component.onCompleted: {
-        if (adapter && adapter.devices) {
-            adapter.devices.itemAdded.connect(devicesChanged)
-            adapter.devices.itemRemoved.connect(devicesChanged)
-        }
-        
-        if (Bluetooth.devices) {
-            Bluetooth.devices.itemAdded.connect(devicesChanged)
-            Bluetooth.devices.itemRemoved.connect(devicesChanged)
-        }
-    }
-
-    Connections {
-        target: Bluetooth
-        function onDefaultAdapterChanged() {
-            if (adapter && adapter.devices) {
-                adapter.devices.itemAdded.connect(devicesChanged)
-                adapter.devices.itemRemoved.connect(devicesChanged)
-            }
-        }
-    }
     
-    function _isValidDevice(device) {
+    function isValidDevice(device) {
+        if (!device) return false
         var displayName = device.name || device.deviceName
         if (!displayName || displayName.length < 2) return false
         if (displayName.startsWith('/org/bluez') || displayName.includes('hci0')) return false
         return displayName.length >= 3
     }
     
-    function _getDeviceIcon(device) {
+    function getDeviceIcon(device) {
+        if (!device) return "bluetooth"
         var name = (device.name || device.deviceName || "").toLowerCase()
         var icon = (device.icon || "").toLowerCase()
         
@@ -112,7 +65,8 @@ Singleton {
         return "bluetooth"
     }
     
-    function _getDeviceType(device) {
+    function getDeviceType(device) {
+        if (!device) return "bluetooth"
         var name = (device.name || device.deviceName || "").toLowerCase()
         var icon = (device.icon || "").toLowerCase()
         
@@ -126,6 +80,43 @@ Singleton {
         if (icon.includes("speaker") || name.includes("speaker")) return "speaker"
         if (icon.includes("display") || name.includes("tv")) return "tv"
         return "bluetooth"
+    }
+    
+    function canPair(device) {
+        if (!device) return false
+        return !device.paired && !device.pairing && !device.blocked
+    }
+    
+    function debugDevice(device) {
+        console.log("Device:", device.name, "paired:", device.paired, "connected:", device.connected, "rssi:", device.rssi)
+    }
+    
+    function getPairingStatus(device) {
+        if (!device) return "unknown"
+        if (device.pairing) return "pairing"
+        if (device.paired) return "paired"
+        if (device.blocked) return "blocked"
+        return "available"
+    }
+    
+    function getSignalStrength(device) {
+        if (!device || device.rssi === undefined || device.rssi === 0) return "Unknown"
+        var rssi = device.rssi
+        if (rssi >= -50) return "Excellent"
+        if (rssi >= -60) return "Good"
+        if (rssi >= -70) return "Fair"
+        if (rssi >= -80) return "Poor"
+        return "Very Poor"
+    }
+    
+    function getSignalIcon(device) {
+        if (!device || device.rssi === undefined || device.rssi === 0) return "signal_cellular_null"
+        var rssi = device.rssi
+        if (rssi >= -50) return "signal_cellular_4_bar"
+        if (rssi >= -60) return "signal_cellular_3_bar"
+        if (rssi >= -70) return "signal_cellular_2_bar"
+        if (rssi >= -80) return "signal_cellular_1_bar"
+        return "signal_cellular_0_bar"
     }
     
     function toggleAdapter() {
@@ -152,7 +143,7 @@ Singleton {
     
     function pair(address) {
         var device = _findDevice(address)
-        if (device) device.pair()
+        if (device && canPair(device)) device.pair()
     }
     
     function forget(address) {
@@ -170,7 +161,7 @@ Singleton {
     
     function _findDevice(address) {
         if (!adapter) return null
-        return adapter.devices.values.find(d => d.address === address) || 
-               (Bluetooth.devices ? Bluetooth.devices.values.find(d => d.address === address) : null)
+        return adapter.devices.values.find(d => d && d.address === address) || 
+               (Bluetooth.devices ? Bluetooth.devices.values.find(d => d && d.address === address) : null)
     }
 }
