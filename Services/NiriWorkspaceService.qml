@@ -9,14 +9,14 @@ Singleton {
     id: root
     
     // Workspace management
-    property list<var> allWorkspaces: []
+    property var allWorkspaces: []
     property int focusedWorkspaceIndex: 0
     property string focusedWorkspaceId: ""
     property var currentOutputWorkspaces: []
     property string currentOutput: ""
     
     // Window management
-    property list<var> windows: []
+    property var windows: []
     property int focusedWindowIndex: -1
     property string focusedWindowTitle: "(No active window)"
     property string focusedWindowId: ""
