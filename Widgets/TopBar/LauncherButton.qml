@@ -4,12 +4,12 @@ import qs.Services
 
 Rectangle {
     id: root
-    
+
     width: 40
     height: 30
     radius: Theme.cornerRadius
     color: launcherArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
-    
+
     Text {
         anchors.centerIn: parent
         text: OSDetectorService.osLogo || "apps"
@@ -18,22 +18,24 @@ Rectangle {
         font.weight: Theme.iconFontWeight
         color: Theme.surfaceText
     }
-    
+
     MouseArea {
         id: launcherArea
+
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        
         onClicked: {
-            LauncherService.toggleAppLauncher()
+            LauncherService.toggleAppLauncher();
         }
     }
-    
+
     Behavior on color {
         ColorAnimation {
             duration: Theme.shortDuration
             easing.type: Theme.standardEasing
         }
+
     }
+
 }

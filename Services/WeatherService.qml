@@ -1,9 +1,10 @@
+pragma Singleton
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.Common
-pragma Singleton
-pragma ComponentBehavior: Bound
 
 Singleton {
     id: root

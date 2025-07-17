@@ -1,39 +1,20 @@
+pragma Singleton
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Widgets
-pragma Singleton
-pragma ComponentBehavior: Bound
 
 Singleton {
     id: root
 
     readonly property list<MprisPlayer> availablePlayers: Mpris.players.values
     
-    property MprisPlayer activePlayer: null
-    property MprisPlayer _candidatePlayer: availablePlayers.find(p => p.isPlaying) 
+    property MprisPlayer activePlayer: availablePlayers.find(p => p.isPlaying) 
         ?? availablePlayers.find(p => p.canControl && p.canPlay)
         ?? null
-    
-    Timer {
-        id: playerSwitchTimer
-        interval: 300
-        onTriggered: {
-            if (_candidatePlayer !== activePlayer) {
-                activePlayer = _candidatePlayer
-            }
-        }
-    }
-    
-    on_CandidatePlayerChanged: {
-        if (_candidatePlayer === null && activePlayer !== null) {
-            playerSwitchTimer.restart()
-        } else if (_candidatePlayer !== null) {
-            playerSwitchTimer.stop()
-            activePlayer = _candidatePlayer
-        }
-    }
 
     IpcHandler {
         target: "mpris"

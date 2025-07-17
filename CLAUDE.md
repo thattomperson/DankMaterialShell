@@ -25,6 +25,10 @@ quickshell -p shell.qml
 
 # Or use the shorthand
 qs -p .
+
+# Code formatting and linting
+qmlformat -i **/*.qml    # Format all QML files in place
+qmllint **/*.qml         # Lint all QML files for syntax errors
 ```
 
 ## Architecture Overview
@@ -119,13 +123,19 @@ shell.qml           # Main entry point (minimal orchestration)
    - `id` should be the first property
    - Properties before signal handlers before child components
    - Prefer property bindings over imperative code
+   - **IMPORTANT**: Be very conservative with comments - add comments only when absolutely necessary for understanding complex logic
 
 2. **Naming Conventions**:
    - **Services**: Use `Singleton` type with `id: root`
    - **Components**: Use descriptive names (e.g., `CustomSlider`, `TopBar`)
    - **Properties**: camelCase for properties, PascalCase for types
 
-3. **Component Structure**:
+3. **Null-Safe Operations**:
+   - **Do NOT use** `?.` operator (not supported by qmlformat)
+   - **Use** `object && object.property` instead of `object?.property`
+   - **Example**: `activePlayer && activePlayer.trackTitle` instead of `activePlayer?.trackTitle`
+
+4. **Component Structure**:
    ```qml
    // For regular components
    Item {
@@ -230,11 +240,12 @@ The shell uses Quickshell's `Variants` pattern for multi-monitor support:
 
 When modifying the shell:
 1. **Test changes**: `qs -p .` (automatic reload on file changes)
-2. **Performance**: Ensure animations remain smooth (60 FPS target)
-3. **Theming**: Use `Theme.propertyName` for Material Design 3 consistency
-4. **Wayland compatibility**: Test on Wayland session
-5. **Multi-monitor**: Verify behavior with multiple displays
-6. **Feature detection**: Test on systems with/without required tools
+2. **Code quality**: Run `qmlformat -i **/*.qml` and `qmllint **/*.qml` to ensure proper formatting and syntax
+3. **Performance**: Ensure animations remain smooth (60 FPS target)
+4. **Theming**: Use `Theme.propertyName` for Material Design 3 consistency
+5. **Wayland compatibility**: Test on Wayland session
+6. **Multi-monitor**: Verify behavior with multiple displays
+7. **Feature detection**: Test on systems with/without required tools
 
 ### Adding New Widgets
 

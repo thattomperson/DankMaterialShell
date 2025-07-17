@@ -13,7 +13,7 @@ Singleton {
     property var wifiNetworks: []
     property var savedWifiNetworks: []
     property bool isScanning: false
-    property string connectionStatus: "" // "connecting", "connected", "failed", ""
+    property string connectionStatus: "" // "cosnnecting", "connected", "failed", ""
     property string connectingSSID: ""
     
     Process {

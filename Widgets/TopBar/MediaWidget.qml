@@ -39,6 +39,37 @@ Rectangle {
 
         }
     ]
+    transitions: [
+        Transition {
+            from: "shown"
+            to: "hidden"
+
+            SequentialAnimation {
+                PauseAnimation {
+                    duration: 500
+                }
+
+                NumberAnimation {
+                    properties: "opacity,width"
+                    duration: Theme.shortDuration
+                    easing.type: Theme.standardEasing
+                }
+
+            }
+
+        },
+        Transition {
+            from: "hidden"
+            to: "shown"
+
+            NumberAnimation {
+                properties: "opacity,width"
+                duration: Theme.shortDuration
+                easing.type: Theme.standardEasing
+            }
+
+        }
+    ]
 
     Row {
         id: mediaRow
@@ -64,9 +95,8 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 140
                 text: {
-                    if (!activePlayer || !activePlayer.trackTitle) {
+                    if (!activePlayer || !activePlayer.trackTitle)
                         return "";
-                    }
 
                     let identity = activePlayer.identity || "";
                     let isWebMedia = identity.toLowerCase().includes("firefox") || identity.toLowerCase().includes("chrome") || identity.toLowerCase().includes("chromium") || identity.toLowerCase().includes("edge") || identity.toLowerCase().includes("safari");
@@ -208,38 +238,6 @@ Rectangle {
         }
 
     }
-
-    transitions: [
-        Transition {
-            from: "shown"
-            to: "hidden"
-
-            SequentialAnimation {
-                PauseAnimation {
-                    duration: 500
-                }
-
-                NumberAnimation {
-                    properties: "opacity,width"
-                    duration: Theme.shortDuration
-                    easing.type: Theme.standardEasing
-                }
-
-            }
-
-        },
-        Transition {
-            from: "hidden"
-            to: "shown"
-
-            NumberAnimation {
-                properties: "opacity,width"
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
-            }
-
-        }
-    ]
 
     Behavior on color {
         ColorAnimation {

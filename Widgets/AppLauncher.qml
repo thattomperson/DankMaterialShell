@@ -2,34 +2,18 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
 import Quickshell
-import Quickshell.Widgets
-import Quickshell.Wayland
 import Quickshell.Io
+import Quickshell.Wayland
+import Quickshell.Widgets
 import qs.Common
 import qs.Services
 
 PanelWindow {
+    // For recents, use the recent apps from Prefs and filter out non-existent ones
+
     id: launcher
-    
+
     property bool isVisible: false
-    
-    // Full screen overlay setup for proper focus
-    anchors {
-        top: true
-        left: true
-        right: true
-        bottom: true
-    }
-    
-    // Proper layer shell configuration
-    WlrLayershell.layer: WlrLayershell.Overlay
-    WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: isVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    WlrLayershell.namespace: "quickshell-launcher"
-    
-    visible: isVisible
-    color: "transparent"
-    
     // App management
     property var categories: AppSearchService.getAllCategories()
     property string selectedCategory: "All"
@@ -38,215 +22,292 @@ PanelWindow {
     property bool showCategories: false
     property string viewMode: Prefs.appLauncherViewMode // "list" or "grid"
     property int selectedIndex: 0
-    
+
+    function updateFilteredModel() {
+        if (!AppSearchService.ready) {
+            filteredModel.clear();
+            selectedIndex = 0;
+            return ;
+        }
+        filteredModel.clear();
+        selectedIndex = 0;
+        var apps = [];
+        var searchQuery = searchField ? searchField.text : "";
+        // Get apps based on category and search
+        if (searchQuery.length > 0) {
+            // Search across all apps or category
+            var baseApps = selectedCategory === "All" ? AppSearchService.applications : selectedCategory === "Recents" ? recentApps.map((recentApp) => {
+                return AppSearchService.getAppByExec(recentApp.exec);
+            }).filter((app) => {
+                return app !== null && !app.noDisplay;
+            }) : AppSearchService.getAppsInCategory(selectedCategory);
+            if (baseApps && baseApps.length > 0) {
+                var searchResults = AppSearchService.searchApplications(searchQuery);
+                apps = searchResults.filter((app) => {
+                    return baseApps.includes(app);
+                });
+            }
+        } else {
+            // Just category filter
+            if (selectedCategory === "Recents")
+                apps = recentApps.map((recentApp) => {
+                return AppSearchService.getAppByExec(recentApp.exec);
+            }).filter((app) => {
+                return app !== null && !app.noDisplay;
+            });
+            else
+                apps = AppSearchService.getAppsInCategory(selectedCategory) || [];
+        }
+        // Add to model with null checks
+        if (apps && apps.length > 0)
+            apps.forEach((app) => {
+            if (app)
+                filteredModel.append({
+                "name": app.name || "",
+                "exec": app.execString || "",
+                "icon": app.icon || "application-x-executable",
+                "comment": app.comment || "",
+                "categories": app.categories || [],
+                "desktopEntry": app
+            });
+
+        });
+
+    }
+
+    function selectNext() {
+        if (filteredModel.count > 0) {
+            if (viewMode === "grid") {
+                // Grid navigation: move by columns
+                var columnsCount = appGrid.columnsCount || 8;
+                selectedIndex = Math.min(selectedIndex + columnsCount, filteredModel.count - 1);
+            } else {
+                // List navigation: next item
+                selectedIndex = (selectedIndex + 1) % filteredModel.count;
+            }
+        }
+    }
+
+    function selectPrevious() {
+        if (filteredModel.count > 0) {
+            if (viewMode === "grid") {
+                // Grid navigation: move by columns
+                var columnsCount = appGrid.columnsCount || 8;
+                selectedIndex = Math.max(selectedIndex - columnsCount, 0);
+            } else {
+                // List navigation: previous item
+                selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : filteredModel.count - 1;
+            }
+        }
+    }
+
+    function selectNextInRow() {
+        if (filteredModel.count > 0 && viewMode === "grid")
+            selectedIndex = Math.min(selectedIndex + 1, filteredModel.count - 1);
+
+    }
+
+    function selectPreviousInRow() {
+        if (filteredModel.count > 0 && viewMode === "grid")
+            selectedIndex = Math.max(selectedIndex - 1, 0);
+
+    }
+
+    function launchSelected() {
+        if (filteredModel.count > 0 && selectedIndex >= 0 && selectedIndex < filteredModel.count) {
+            var selectedApp = filteredModel.get(selectedIndex);
+            if (selectedApp.desktopEntry) {
+                Prefs.addRecentApp(selectedApp.desktopEntry);
+                AppSearchService.launchApp(selectedApp.desktopEntry);
+            } else {
+                launcher.launchApp(selectedApp.exec);
+            }
+            launcher.hide();
+        }
+    }
+
+    function launchApp(exec) {
+        // Try to find the desktop entry
+        var app = AppSearchService.getAppByExec(exec);
+        if (app) {
+            AppSearchService.launchApp(app);
+        } else {
+            // Fallback to direct execution
+            var cleanExec = exec.replace(/%[fFuU]/g, "").trim();
+            console.log("Launching app directly:", cleanExec);
+            Quickshell.execDetached(["sh", "-c", cleanExec]);
+        }
+    }
+
+    function show() {
+        launcher.isVisible = true;
+        recentApps = Prefs.getRecentApps(); // Refresh recent apps
+        searchDebounceTimer.stop(); // Stop any pending search
+        updateFilteredModel();
+        Qt.callLater(function() {
+            searchField.forceActiveFocus();
+        });
+    }
+
+    function hide() {
+        launcher.isVisible = false;
+        searchDebounceTimer.stop(); // Stop any pending search
+        searchField.text = "";
+        showCategories = false;
+    }
+
+    function toggle() {
+        if (launcher.isVisible)
+            hide();
+        else
+            show();
+    }
+
+    // Proper layer shell configuration
+    WlrLayershell.layer: WlrLayershell.Overlay
+    WlrLayershell.exclusiveZone: -1
+    WlrLayershell.keyboardFocus: isVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.namespace: "quickshell-launcher"
+    visible: isVisible
+    color: "transparent"
+    Component.onCompleted: {
+        if (AppSearchService.ready) {
+            var allCategories = AppSearchService.getAllCategories();
+            // Insert "Recents" after "All"
+            categories = ["All", "Recents"].concat(allCategories.filter((cat) => {
+                return cat !== "All";
+            }));
+            updateFilteredModel();
+        }
+        recentApps = Prefs.getRecentApps(); // Load recent apps on startup
+    }
+
+    // Full screen overlay setup for proper focus
+    anchors {
+        top: true
+        left: true
+        right: true
+        bottom: true
+    }
+
     // Search debouncing
     Timer {
         id: searchDebounceTimer
+
         interval: 100
         repeat: false
         onTriggered: updateFilteredModel()
     }
-    
-    ListModel { id: filteredModel }
-    
+
+    ListModel {
+        id: filteredModel
+    }
+
     // Background dim with click to close
     Rectangle {
         anchors.fill: parent
         color: Qt.rgba(0, 0, 0, 0.3)
-        opacity: launcher.isVisible ? 1.0 : 0.0
+        opacity: launcher.isVisible ? 1 : 0
         visible: launcher.isVisible
-        
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
-            }
-        }
-        
+
         MouseArea {
             anchors.fill: parent
             enabled: launcher.isVisible
             onClicked: launcher.hide()
         }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.shortDuration
+                easing.type: Theme.standardEasing
+            }
+
+        }
+
     }
-    
+
     Connections {
-        target: AppSearchService
         function onReadyChanged() {
             if (AppSearchService.ready) {
-                var allCategories = AppSearchService.getAllCategories()
+                var allCategories = AppSearchService.getAllCategories();
                 // Insert "Recents" after "All"
-                categories = ["All", "Recents"].concat(allCategories.filter(cat => cat !== "All"))
-                updateFilteredModel()
+                categories = ["All", "Recents"].concat(allCategories.filter((cat) => {
+                    return cat !== "All";
+                }));
+                updateFilteredModel();
             }
         }
+
+        target: AppSearchService
     }
-    
+
     Connections {
-        target: DesktopEntries
         function onApplicationsChanged() {
-            console.log("AppLauncher: DesktopEntries.applicationsChanged signal received")
+            console.log("AppLauncher: DesktopEntries.applicationsChanged signal received");
             // Update categories when applications change
             if (AppSearchService.ready) {
-                console.log("AppLauncher: Updating categories and model due to applicationsChanged")
-                var allCategories = AppSearchService.getAllCategories()
-                categories = ["All", "Recents"].concat(allCategories.filter(cat => cat !== "All"))
-                updateFilteredModel()
+                console.log("AppLauncher: Updating categories and model due to applicationsChanged");
+                var allCategories = AppSearchService.getAllCategories();
+                categories = ["All", "Recents"].concat(allCategories.filter((cat) => {
+                    return cat !== "All";
+                }));
+                updateFilteredModel();
             } else {
-                console.log("AppLauncher: AppSearchService not ready, skipping update")
+                console.log("AppLauncher: AppSearchService not ready, skipping update");
             }
         }
+
+        target: DesktopEntries
     }
-    
+
     Connections {
-        target: LauncherService
         function onShowAppLauncher() {
-            launcher.show()
+            launcher.show();
         }
+
         function onHideAppLauncher() {
-            launcher.hide()
+            launcher.hide();
         }
+
         function onToggleAppLauncher() {
-            launcher.toggle()
+            launcher.toggle();
         }
+
+        target: LauncherService
     }
-    
+
     Connections {
-        target: Prefs
         function onRecentlyUsedAppsChanged() {
-            recentApps = Prefs.getRecentApps()
+            recentApps = Prefs.getRecentApps();
         }
-    }
-    
-    function updateFilteredModel() {
-        if (!AppSearchService.ready) {
-            filteredModel.clear()
-            selectedIndex = 0
-            return
-        }
-        
-        filteredModel.clear()
-        selectedIndex = 0
-        
-        var apps = []
-        var searchQuery = searchField ? searchField.text : ""
-        
-        // Get apps based on category and search
-        if (searchQuery.length > 0) {
-            // Search across all apps or category
-            var baseApps = selectedCategory === "All" ? 
-                AppSearchService.applications : 
-                selectedCategory === "Recents" ? 
-                    recentApps
-                        .map(recentApp => AppSearchService.getAppByExec(recentApp.exec))
-                        .filter(app => app !== null && !app.noDisplay) :
-                    AppSearchService.getAppsInCategory(selectedCategory)
-            
-            if (baseApps && baseApps.length > 0) {
-                var searchResults = AppSearchService.searchApplications(searchQuery)
-                apps = searchResults.filter(app => baseApps.includes(app))
-            }
-        } else {
-            // Just category filter
-            if (selectedCategory === "Recents") {
-                // For recents, use the recent apps from Prefs and filter out non-existent ones
-                apps = recentApps
-                    .map(recentApp => AppSearchService.getAppByExec(recentApp.exec))
-                    .filter(app => app !== null && !app.noDisplay)
-            } else {
-                apps = AppSearchService.getAppsInCategory(selectedCategory) || []
-            }
-        }
-        
-        // Add to model with null checks
-        if (apps && apps.length > 0) {
-            apps.forEach(app => {
-                if (app) {
-                    filteredModel.append({
-                        name: app.name || "",
-                        exec: app.execString || "",
-                        icon: app.icon || "application-x-executable",
-                        comment: app.comment || "",
-                        categories: app.categories || [],
-                        desktopEntry: app
-                    })
-                }
-            })
-        }
-    }
-    
-    function selectNext() {
-        if (filteredModel.count > 0) {
-            if (viewMode === "grid") {
-                // Grid navigation: move by columns
-                var columnsCount = appGrid.columnsCount || 8
-                selectedIndex = Math.min(selectedIndex + columnsCount, filteredModel.count - 1)
-            } else {
-                // List navigation: next item
-                selectedIndex = (selectedIndex + 1) % filteredModel.count
-            }
-        }
-    }
-    
-    function selectPrevious() {
-        if (filteredModel.count > 0) {
-            if (viewMode === "grid") {
-                // Grid navigation: move by columns
-                var columnsCount = appGrid.columnsCount || 8
-                selectedIndex = Math.max(selectedIndex - columnsCount, 0)
-            } else {
-                // List navigation: previous item
-                selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : filteredModel.count - 1
-            }
-        }
-    }
-    
-    function selectNextInRow() {
-        if (filteredModel.count > 0 && viewMode === "grid") {
-            selectedIndex = Math.min(selectedIndex + 1, filteredModel.count - 1)
-        }
-    }
-    
-    function selectPreviousInRow() {
-        if (filteredModel.count > 0 && viewMode === "grid") {
-            selectedIndex = Math.max(selectedIndex - 1, 0)
-        }
-    }
-    
-    function launchSelected() {
-        if (filteredModel.count > 0 && selectedIndex >= 0 && selectedIndex < filteredModel.count) {
-            var selectedApp = filteredModel.get(selectedIndex)
-            if (selectedApp.desktopEntry) {
-                Prefs.addRecentApp(selectedApp.desktopEntry)
-                AppSearchService.launchApp(selectedApp.desktopEntry)
-            } else {
-                launcher.launchApp(selectedApp.exec)
-            }
-            launcher.hide()
-        }
+
+        target: Prefs
     }
 
     Component {
         id: iconComponent
+
         Item {
-            property var appData: parent.modelData || {}
-            
+            property var appData: parent.modelData || {
+            }
+
             IconImage {
                 id: iconImg
+
                 anchors.fill: parent
                 source: (appData && appData.icon) ? Quickshell.iconPath(appData.icon, "") : ""
                 smooth: true
                 asynchronous: true
                 visible: status === Image.Ready
             }
-            
+
             Rectangle {
                 anchors.fill: parent
                 visible: !iconImg.visible
-                color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.10)
+                color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1)
                 radius: Theme.cornerRadiusLarge
                 border.width: 1
-                border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.20)
+                border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
 
                 Text {
                     anchors.centerIn: parent
@@ -255,27 +316,83 @@ PanelWindow {
                     color: Theme.primary
                     font.weight: Font.Bold
                 }
+
             }
+
         }
+
     }
 
     // Main launcher panel with enhanced design
     Rectangle {
         id: launcherPanel
-        
+
         width: 520
         height: 600
-        
+        color: Theme.popupBackground()
+        radius: Theme.cornerRadiusXLarge
+        opacity: launcher.isVisible ? 1 : 0
+        // Animated entrance with spring effect
+        transform: [
+            Scale {
+                id: scaleTransform
+
+                origin.x: 0
+                origin.y: 0
+                xScale: launcher.isVisible ? 1 : 0.92
+                yScale: launcher.isVisible ? 1 : 0.92
+
+                Behavior on xScale {
+                    NumberAnimation {
+                        duration: Theme.mediumDuration
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 1.2
+                    }
+
+                }
+
+                Behavior on yScale {
+                    NumberAnimation {
+                        duration: Theme.mediumDuration
+                        easing.type: Easing.OutBack
+                        easing.overshoot: 1.2
+                    }
+
+                }
+
+            },
+            Translate {
+                id: translateTransform
+
+                x: launcher.isVisible ? 0 : -30
+                y: launcher.isVisible ? 0 : -15
+
+                Behavior on x {
+                    NumberAnimation {
+                        duration: Theme.mediumDuration
+                        easing.type: Theme.emphasizedEasing
+                    }
+
+                }
+
+                Behavior on y {
+                    NumberAnimation {
+                        duration: Theme.mediumDuration
+                        easing.type: Theme.emphasizedEasing
+                    }
+
+                }
+
+            }
+        ]
+
         anchors {
             top: parent.top
             left: parent.left
             topMargin: Theme.barHeight + Theme.spacingXS
             leftMargin: Theme.spacingL
         }
-        
-        color: Theme.popupBackground()
-        radius: Theme.cornerRadiusXLarge
-        
+
         // Material 3 elevation with multiple layers
         Rectangle {
             anchors.fill: parent
@@ -286,7 +403,7 @@ PanelWindow {
             border.width: 1
             z: -3
         }
-        
+
         Rectangle {
             anchors.fill: parent
             anchors.margins: -2
@@ -296,7 +413,7 @@ PanelWindow {
             border.width: 1
             z: -2
         }
-        
+
         Rectangle {
             anchors.fill: parent
             color: "transparent"
@@ -305,100 +422,44 @@ PanelWindow {
             radius: parent.radius
             z: -1
         }
-        
-        // Animated entrance with spring effect
-        transform: [
-            Scale {
-                id: scaleTransform
-                origin.x: 0
-                origin.y: 0
-                xScale: launcher.isVisible ? 1.0 : 0.92
-                yScale: launcher.isVisible ? 1.0 : 0.92
-                
-                Behavior on xScale {
-                    NumberAnimation {
-                        duration: Theme.mediumDuration
-                        easing.type: Easing.OutBack
-                        easing.overshoot: 1.2
-                    }
-                }
-                
-                Behavior on yScale {
-                    NumberAnimation {
-                        duration: Theme.mediumDuration
-                        easing.type: Easing.OutBack
-                        easing.overshoot: 1.2
-                    }
-                }
-            },
-            Translate {
-                id: translateTransform
-                x: launcher.isVisible ? 0 : -30
-                y: launcher.isVisible ? 0 : -15
-                
-                Behavior on x {
-                    NumberAnimation {
-                        duration: Theme.mediumDuration
-                        easing.type: Theme.emphasizedEasing
-                    }
-                }
-                
-                Behavior on y {
-                    NumberAnimation {
-                        duration: Theme.mediumDuration
-                        easing.type: Theme.emphasizedEasing
-                    }
-                }
-            }
-        ]
-        
-        opacity: launcher.isVisible ? 1.0 : 0.0
-        
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-        }
-        
+
         // Content with focus management
         Item {
             anchors.fill: parent
             focus: true
-            
             // Handle keyboard shortcuts
             Keys.onPressed: function(event) {
                 if (event.key === Qt.Key_Escape) {
-                    launcher.hide()
-                    event.accepted = true
+                    launcher.hide();
+                    event.accepted = true;
                 } else if (event.key === Qt.Key_Down) {
-                    selectNext()
-                    event.accepted = true
+                    selectNext();
+                    event.accepted = true;
                 } else if (event.key === Qt.Key_Up) {
-                    selectPrevious()
-                    event.accepted = true
+                    selectPrevious();
+                    event.accepted = true;
                 } else if (event.key === Qt.Key_Right && viewMode === "grid") {
-                    selectNextInRow()
-                    event.accepted = true
+                    selectNextInRow();
+                    event.accepted = true;
                 } else if (event.key === Qt.Key_Left && viewMode === "grid") {
-                    selectPreviousInRow()
-                    event.accepted = true
+                    selectPreviousInRow();
+                    event.accepted = true;
                 } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                    launchSelected()
-                    event.accepted = true
+                    launchSelected();
+                    event.accepted = true;
                 }
             }
-            
+
             Column {
                 anchors.fill: parent
                 anchors.margins: Theme.spacingXL
                 spacing: Theme.spacingL
-                
+
                 // Header section
                 Row {
                     width: parent.width
                     height: 40
-                    
+
                     // App launcher title
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
@@ -407,9 +468,12 @@ PanelWindow {
                         font.weight: Font.Bold
                         color: Theme.surfaceText
                     }
-                    
-                    Item { width: parent.width - 200; height: 1 }
-                    
+
+                    Item {
+                        width: parent.width - 200
+                        height: 1
+                    }
+
                     // Quick stats
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
@@ -417,32 +481,26 @@ PanelWindow {
                         font.pixelSize: Theme.fontSizeMedium
                         color: Theme.surfaceVariantText
                     }
+
                 }
-                
+
                 // Enhanced search field
                 Rectangle {
                     id: searchContainer
+
                     width: parent.width
                     height: 52
                     radius: Theme.cornerRadiusLarge
                     color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.7)
                     border.width: searchField.activeFocus ? 2 : 1
-                    border.color: searchField.activeFocus ? Theme.primary : 
-                                  Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
-                    
-                    Behavior on border.color {
-                        ColorAnimation {
-                            duration: Theme.shortDuration
-                            easing.type: Theme.standardEasing
-                        }
-                    }
-                    
+                    border.color: searchField.activeFocus ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
+
                     Row {
                         anchors.fill: parent
                         anchors.leftMargin: Theme.spacingL
                         anchors.rightMargin: Theme.spacingL
                         spacing: Theme.spacingM
-                        
+
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "search"
@@ -451,28 +509,46 @@ PanelWindow {
                             color: searchField.activeFocus ? Theme.primary : Theme.surfaceVariantText
                             font.weight: Theme.iconFontWeight
                         }
-                        
+
                         TextInput {
                             id: searchField
+
                             anchors.verticalCenter: parent.verticalCenter
                             width: parent.width - parent.spacing - Theme.iconSize - 32
                             height: parent.height - Theme.spacingS
-                            
                             color: Theme.surfaceText
                             font.pixelSize: Theme.fontSizeLarge
                             verticalAlignment: TextInput.AlignVCenter
-                            
                             focus: launcher.isVisible
                             selectByMouse: true
                             activeFocusOnTab: true
-                            
+                            onTextChanged: {
+                                searchDebounceTimer.restart();
+                            }
+                            Keys.onPressed: function(event) {
+                                if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && filteredModel.count) {
+                                    var firstApp = filteredModel.get(0);
+                                    if (firstApp.desktopEntry) {
+                                        Prefs.addRecentApp(firstApp.desktopEntry);
+                                        AppSearchService.launchApp(firstApp.desktopEntry);
+                                    } else {
+                                        launcher.launchApp(firstApp.exec);
+                                    }
+                                    launcher.hide();
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Escape) {
+                                    launcher.hide();
+                                    event.accepted = true;
+                                }
+                            }
+
                             MouseArea {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.IBeamCursor
                                 acceptedButtons: Qt.NoButton
                             }
-                            
+
                             // Placeholder text
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
@@ -481,7 +557,7 @@ PanelWindow {
                                 font.pixelSize: Theme.fontSizeLarge
                                 visible: searchField.text.length === 0 && !searchField.activeFocus
                             }
-                            
+
                             // Clear button
                             Rectangle {
                                 width: 24
@@ -491,7 +567,7 @@ PanelWindow {
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: searchField.text.length > 0
-                                
+
                                 Text {
                                     anchors.centerIn: parent
                                     text: "close"
@@ -499,47 +575,39 @@ PanelWindow {
                                     font.pixelSize: 16
                                     color: clearSearchArea.containsMouse ? Theme.outline : Theme.surfaceVariantText
                                 }
-                                
+
                                 MouseArea {
                                     id: clearSearchArea
+
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: searchField.text = ""
                                 }
-                            }
-                            
-                            onTextChanged: {
-                                searchDebounceTimer.restart()
+
                             }
 
-                            Keys.onPressed: function (event) {
-                                if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && filteredModel.count) {
-                                    var firstApp = filteredModel.get(0)
-                                    if (firstApp.desktopEntry) {
-                                        Prefs.addRecentApp(firstApp.desktopEntry)
-                                        AppSearchService.launchApp(firstApp.desktopEntry)
-                                    } else {
-                                        launcher.launchApp(firstApp.exec)
-                                    }
-                                    launcher.hide()
-                                    event.accepted = true
-                                } else if (event.key === Qt.Key_Escape) {
-                                    launcher.hide()
-                                    event.accepted = true
-                                }
-                            }
                         }
+
                     }
+
+                    Behavior on border.color {
+                        ColorAnimation {
+                            duration: Theme.shortDuration
+                            easing.type: Theme.standardEasing
+                        }
+
+                    }
+
                 }
-                
+
                 // Category filter and view mode controls
                 Row {
                     width: parent.width
                     height: 40
                     spacing: Theme.spacingM
                     visible: searchField.text.length === 0
-                    
+
                     // Category filter
                     Rectangle {
                         width: 200
@@ -548,13 +616,13 @@ PanelWindow {
                         color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.4)
                         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
                         border.width: 1
-                        
+
                         Row {
                             anchors.left: parent.left
                             anchors.leftMargin: Theme.spacingM
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: Theme.spacingS
-                            
+
                             Text {
                                 text: "category"
                                 font.family: Theme.iconFont
@@ -562,7 +630,7 @@ PanelWindow {
                                 color: Theme.surfaceVariantText
                                 anchors.verticalCenter: parent.verticalCenter
                             }
-                            
+
                             Text {
                                 text: selectedCategory
                                 font.pixelSize: Theme.fontSizeMedium
@@ -570,8 +638,9 @@ PanelWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 font.weight: Font.Medium
                             }
+
                         }
-                        
+
                         Text {
                             anchors.right: parent.right
                             anchors.rightMargin: Theme.spacingM
@@ -581,30 +650,33 @@ PanelWindow {
                             font.pixelSize: 18
                             color: Theme.surfaceVariantText
                         }
-                        
+
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: showCategories = !showCategories
                         }
+
                     }
-                    
-                    Item { width: parent.width - 300; height: 1 }
-                    
+
+                    Item {
+                        width: parent.width - 300
+                        height: 1
+                    }
+
                     // View mode toggle
                     Row {
                         spacing: 4
                         anchors.verticalCenter: parent.verticalCenter
-                        
+
                         // List view button
                         Rectangle {
                             width: 36
                             height: 36
                             radius: Theme.cornerRadius
-                            color: viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : 
-                                  listViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
-                            
+                            color: viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : listViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
+
                             Text {
                                 anchors.centerIn: parent
                                 text: "view_list"
@@ -612,27 +684,28 @@ PanelWindow {
                                 font.pixelSize: 20
                                 color: viewMode === "list" ? Theme.primary : Theme.surfaceText
                             }
-                            
+
                             MouseArea {
                                 id: listViewArea
+
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                viewMode = "list"
-                                Prefs.setAppLauncherViewMode("list")
+                                    viewMode = "list";
+                                    Prefs.setAppLauncherViewMode("list");
+                                }
                             }
-                            }
+
                         }
-                        
+
                         // Grid view button
                         Rectangle {
                             width: 36
                             height: 36
                             radius: Theme.cornerRadius
-                            color: viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : 
-                                  gridViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
-                            
+                            color: viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : gridViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
+
                             Text {
                                 anchors.centerIn: parent
                                 text: "grid_view"
@@ -640,33 +713,40 @@ PanelWindow {
                                 font.pixelSize: 20
                                 color: viewMode === "grid" ? Theme.primary : Theme.surfaceText
                             }
-                            
+
                             MouseArea {
                                 id: gridViewArea
+
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                viewMode = "grid"
-                                Prefs.setAppLauncherViewMode("grid")
+                                    viewMode = "grid";
+                                    Prefs.setAppLauncherViewMode("grid");
+                                }
                             }
-                            }
+
                         }
+
                     }
+
                 }
-                
+
                 // App grid/list container
                 Rectangle {
                     width: parent.width
                     height: {
                         // Calculate more precise remaining height
-                        let usedHeight = 40 + Theme.spacingL // Header
-                        usedHeight += 52 + Theme.spacingL // Search container
-                        usedHeight += (searchField.text.length === 0 ? 40 + Theme.spacingL : 0) // Category/controls when visible
-                        return parent.height - usedHeight
+                        let usedHeight = 40 + Theme.spacingL;
+                        // Header
+                        usedHeight += 52 + Theme.spacingL;
+                        // Search container
+                        usedHeight += (searchField.text.length === 0 ? 40 + Theme.spacingL : 0);
+                        // Category/controls when visible
+                        return parent.height - usedHeight;
                     }
                     color: "transparent"
-                    
+
                     // List view scroll container
                     ScrollView {
                         anchors.fill: parent
@@ -674,100 +754,97 @@ PanelWindow {
                         visible: viewMode === "list"
                         ScrollBar.vertical.policy: ScrollBar.AlwaysOn
                         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                        
+
                         ListView {
                             id: appList
+
+                            // Make mouse wheel scrolling more responsive
+                            property real wheelStepSize: 60
+
                             width: parent.width
                             anchors.margins: Theme.spacingS
                             spacing: Theme.spacingS
-                            
                             model: filteredModel
                             delegate: listDelegate
                             currentIndex: selectedIndex
-                            
-                            // Make mouse wheel scrolling more responsive
-                            property real wheelStepSize: 60
-                            
+
                             MouseArea {
                                 anchors.fill: parent
                                 acceptedButtons: Qt.NoButton
                                 propagateComposedEvents: true
                                 z: -1
-                                
                                 onWheel: (wheel) => {
-                                    var delta = wheel.angleDelta.y
-                                    var steps = delta / 120  // Standard wheel step
-                                    appList.contentY -= steps * appList.wheelStepSize
-                                    
+                                    var delta = wheel.angleDelta.y;
+                                    var steps = delta / 120; // Standard wheel step
+                                    appList.contentY -= steps * appList.wheelStepSize;
                                     // Ensure we stay within bounds
-                                    if (appList.contentY < 0) {
-                                        appList.contentY = 0
-                                    } else if (appList.contentY > appList.contentHeight - appList.height) {
-                                        appList.contentY = Math.max(0, appList.contentHeight - appList.height)
-                                    }
+                                    if (appList.contentY < 0)
+                                        appList.contentY = 0;
+                                    else if (appList.contentY > appList.contentHeight - appList.height)
+                                        appList.contentY = Math.max(0, appList.contentHeight - appList.height);
                                 }
                             }
+
                         }
+
                     }
-                
-                    // Grid view scroll container  
+
+                    // Grid view scroll container
                     ScrollView {
                         anchors.fill: parent
                         clip: true
                         visible: viewMode === "grid"
                         ScrollBar.vertical.policy: ScrollBar.AsNeeded
                         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                        
+
                         GridView {
                             id: appGrid
-                            anchors.fill: parent
-                            anchors.margins: Theme.spacingS
-                            
+
                             // Responsive cell sizes based on screen width - 4 columns
                             property int columnsCount: 4
                             property int baseCellWidth: (width - Theme.spacingS * 2) / columnsCount
                             property int baseCellHeight: baseCellWidth + 20
-                            
-                            cellWidth: baseCellWidth
-                            cellHeight: baseCellHeight
-                            
                             // Center the grid content
                             property int remainingSpace: width - (columnsCount * cellWidth)
-                            leftMargin: Math.max(Theme.spacingS, remainingSpace / 2)
-                            rightMargin: leftMargin
-                            
-                            model: filteredModel
-                            delegate: gridDelegate
-                            
                             // Make mouse wheel scrolling more responsive
                             property real wheelStepSize: 60
-                            
+
+                            anchors.fill: parent
+                            anchors.margins: Theme.spacingS
+                            cellWidth: baseCellWidth
+                            cellHeight: baseCellHeight
+                            leftMargin: Math.max(Theme.spacingS, remainingSpace / 2)
+                            rightMargin: leftMargin
+                            model: filteredModel
+                            delegate: gridDelegate
+
                             MouseArea {
                                 anchors.fill: parent
                                 acceptedButtons: Qt.NoButton
                                 propagateComposedEvents: true
                                 z: -1
-                                
                                 onWheel: (wheel) => {
-                                    var delta = wheel.angleDelta.y
-                                    var steps = delta / 120  // Standard wheel step
-                                    appGrid.contentY -= steps * appGrid.wheelStepSize
-                                    
+                                    var delta = wheel.angleDelta.y;
+                                    var steps = delta / 120; // Standard wheel step
+                                    appGrid.contentY -= steps * appGrid.wheelStepSize;
                                     // Ensure we stay within bounds
-                                    if (appGrid.contentY < 0) {
-                                        appGrid.contentY = 0
-                                    } else if (appGrid.contentY > appGrid.contentHeight - appGrid.height) {
-                                        appGrid.contentY = Math.max(0, appGrid.contentHeight - appGrid.height)
-                                    }
+                                    if (appGrid.contentY < 0)
+                                        appGrid.contentY = 0;
+                                    else if (appGrid.contentY > appGrid.contentHeight - appGrid.height)
+                                        appGrid.contentY = Math.max(0, appGrid.contentHeight - appGrid.height);
                                 }
                             }
+
                         }
+
                     }
+
                 }
-                
+
                 // Category dropdown overlay - now positioned absolutely
                 Rectangle {
                     id: categoryDropdown
+
                     width: 200
                     height: Math.min(250, categories.length * 40 + Theme.spacingM * 2)
                     radius: Theme.cornerRadiusLarge
@@ -776,12 +853,11 @@ PanelWindow {
                     border.width: 1
                     visible: showCategories
                     z: 1000
-                    
                     // Position it below the category button
                     anchors.top: parent.top
                     anchors.topMargin: 140 + (searchField.text.length === 0 ? 0 : -40)
                     anchors.left: parent.left
-                    
+
                     // Drop shadow
                     Rectangle {
                         anchors.fill: parent
@@ -789,58 +865,56 @@ PanelWindow {
                         color: "transparent"
                         radius: parent.radius + 4
                         z: -1
-                        
                         layer.enabled: true
+
                         layer.effect: MultiEffect {
                             shadowEnabled: true
                             shadowHorizontalOffset: 0
                             shadowVerticalOffset: 0
-                            shadowBlur: 0.25  // radius/32
+                            shadowBlur: 0.25 // radius/32
                             shadowColor: Qt.rgba(0, 0, 0, 0.2)
                             shadowOpacity: 0.2
                         }
+
                     }
-                    
+
                     ScrollView {
                         anchors.fill: parent
                         anchors.margins: Theme.spacingS
                         clip: true
                         ScrollBar.vertical.policy: ScrollBar.AsNeeded
                         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                        
+
                         ListView {
-                            model: categories
-                            spacing: 4
-                            
                             // Make mouse wheel scrolling more responsive
                             property real wheelStepSize: 60
-                            
+
+                            model: categories
+                            spacing: 4
+
                             MouseArea {
                                 anchors.fill: parent
                                 acceptedButtons: Qt.NoButton
                                 propagateComposedEvents: true
                                 z: -1
-                                
                                 onWheel: (wheel) => {
-                                    var delta = wheel.angleDelta.y
-                                    var steps = delta / 120  // Standard wheel step
-                                    parent.contentY -= steps * parent.wheelStepSize
-                                    
+                                    var delta = wheel.angleDelta.y;
+                                    var steps = delta / 120; // Standard wheel step
+                                    parent.contentY -= steps * parent.wheelStepSize;
                                     // Ensure we stay within bounds
-                                    if (parent.contentY < 0) {
-                                        parent.contentY = 0
-                                    } else if (parent.contentY > parent.contentHeight - parent.height) {
-                                        parent.contentY = Math.max(0, parent.contentHeight - parent.height)
-                                    }
+                                    if (parent.contentY < 0)
+                                        parent.contentY = 0;
+                                    else if (parent.contentY > parent.contentHeight - parent.height)
+                                        parent.contentY = Math.max(0, parent.contentHeight - parent.height);
                                 }
                             }
-                            
+
                             delegate: Rectangle {
                                 width: ListView.view.width
                                 height: 36
                                 radius: Theme.cornerRadiusSmall
                                 color: catArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
-                                
+
                                 Text {
                                     anchors.left: parent.left
                                     anchors.leftMargin: Theme.spacingM
@@ -850,38 +924,52 @@ PanelWindow {
                                     color: selectedCategory === modelData ? Theme.primary : Theme.surfaceText
                                     font.weight: selectedCategory === modelData ? Font.Medium : Font.Normal
                                 }
-                                
+
                                 MouseArea {
                                     id: catArea
+
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        selectedCategory = modelData
-                                        showCategories = false
-                                        updateFilteredModel()
+                                        selectedCategory = modelData;
+                                        showCategories = false;
+                                        updateFilteredModel();
                                     }
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
         }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.mediumDuration
+                easing.type: Theme.emphasizedEasing
+            }
+
+        }
+
     }
 
     // List delegate with new loader
     Component {
         id: listDelegate
+
         Rectangle {
             width: appList.width
             height: 72
             radius: Theme.cornerRadiusLarge
-            color: ListView.isCurrentItem ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) :
-                   appMouseArea.hovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) :
-                   Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
-            border.color: ListView.isCurrentItem ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) :
-                          Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            color: ListView.isCurrentItem ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : appMouseArea.hovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
+            border.color: ListView.isCurrentItem ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
             border.width: ListView.isCurrentItem ? 2 : 1
 
             Row {
@@ -893,13 +981,16 @@ PanelWindow {
                     width: 56
                     height: 56
                     anchors.verticalCenter: parent.verticalCenter
-                    
+
                     Loader {
                         id: listIconLoader
-                        anchors.fill: parent
+
                         property var modelData: model
+
+                        anchors.fill: parent
                         sourceComponent: iconComponent
                     }
+
                 }
 
                 Column {
@@ -924,42 +1015,46 @@ PanelWindow {
                         elide: Text.ElideRight
                         visible: model.comment && model.comment.length > 0
                     }
+
                 }
+
             }
 
             MouseArea {
                 id: appMouseArea
+
+                property bool hovered: containsMouse
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 z: 10
-                property bool hovered: containsMouse
                 onEntered: selectedIndex = index
                 onClicked: {
                     if (model.desktopEntry) {
-                        Prefs.addRecentApp(model.desktopEntry)
-                        AppSearchService.launchApp(model.desktopEntry)
+                        Prefs.addRecentApp(model.desktopEntry);
+                        AppSearchService.launchApp(model.desktopEntry);
                     } else {
-                        launcher.launchApp(model.exec)
+                        launcher.launchApp(model.exec);
                     }
-                    launcher.hide()
+                    launcher.hide();
                 }
             }
+
         }
+
     }
 
     // Grid delegate with new loader (uses dynamic icon size)
     Component {
         id: gridDelegate
+
         Rectangle {
             width: appGrid.cellWidth - 8
             height: appGrid.cellHeight - 8
             radius: Theme.cornerRadiusLarge
-            color: selectedIndex === index ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) :
-                   gridAppArea.hovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) :
-                   Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
-            border.color: selectedIndex === index ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) :
-                          Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            color: selectedIndex === index ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : gridAppArea.hovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
+            border.color: selectedIndex === index ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
             border.width: selectedIndex === index ? 2 : 1
 
             Column {
@@ -968,16 +1063,20 @@ PanelWindow {
 
                 Item {
                     property int iconSize: Math.min(56, Math.max(32, appGrid.cellWidth * 0.6))
+
                     width: iconSize
                     height: iconSize
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     Loader {
                         id: gridIconLoader
-                        anchors.fill: parent
+
                         property var modelData: model
+
+                        anchors.fill: parent
                         sourceComponent: iconComponent
                     }
+
                 }
 
                 Text {
@@ -992,74 +1091,32 @@ PanelWindow {
                     maximumLineCount: 2
                     wrapMode: Text.WordWrap
                 }
+
             }
 
             MouseArea {
                 id: gridAppArea
+
+                property bool hovered: containsMouse
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 z: 10
-                property bool hovered: containsMouse
                 onEntered: selectedIndex = index
                 onClicked: {
                     if (model.desktopEntry) {
-                        Prefs.addRecentApp(model.desktopEntry)
-                        AppSearchService.launchApp(model.desktopEntry)
+                        Prefs.addRecentApp(model.desktopEntry);
+                        AppSearchService.launchApp(model.desktopEntry);
                     } else {
-                        launcher.launchApp(model.exec)
+                        launcher.launchApp(model.exec);
                     }
-                    launcher.hide()
+                    launcher.hide();
                 }
             }
+
         }
+
     }
-    
-    function launchApp(exec) {
-        // Try to find the desktop entry
-        var app = AppSearchService.getAppByExec(exec)
-        if (app) {
-            AppSearchService.launchApp(app)
-        } else {
-            // Fallback to direct execution
-            var cleanExec = exec.replace(/%[fFuU]/g, "").trim()
-            console.log("Launching app directly:", cleanExec)
-            Quickshell.execDetached(["sh", "-c", cleanExec])
-        }
-    }
-    
-    function show() {
-        launcher.isVisible = true
-        recentApps = Prefs.getRecentApps() // Refresh recent apps
-        searchDebounceTimer.stop() // Stop any pending search
-        updateFilteredModel()
-        Qt.callLater(function() {
-            searchField.forceActiveFocus()
-        })
-    }
-    
-    function hide() {
-        launcher.isVisible = false
-        searchDebounceTimer.stop() // Stop any pending search
-        searchField.text = ""
-        showCategories = false
-    }
-    
-    function toggle() {
-        if (launcher.isVisible) {
-            hide()
-        } else {
-            show()
-        }
-    }
-    
-    Component.onCompleted: {
-        if (AppSearchService.ready) {
-            var allCategories = AppSearchService.getAllCategories()
-            // Insert "Recents" after "All"
-            categories = ["All", "Recents"].concat(allCategories.filter(cat => cat !== "All"))
-            updateFilteredModel()
-        }
-        recentApps = Prefs.getRecentApps() // Load recent apps on startup
-    }
+
 }
