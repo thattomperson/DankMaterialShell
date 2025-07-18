@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Rectangle {
     id: root
@@ -18,11 +19,20 @@ Rectangle {
     color: launcherArea.containsMouse || isActive ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
 
     Text {
+        visible: nerdFontAvailable && OSDetectorService.osLogo
         anchors.centerIn: parent
-        text: nerdFontAvailable && OSDetectorService.osLogo || "apps"
-        font.family: nerdFontAvailable && OSDetectorService.osLogo ? "Symbols Nerd Font" : Theme.iconFont
+        text: OSDetectorService.osLogo
+        font.family: "Symbols Nerd Font"
         font.pixelSize: Theme.iconSize - 6
         font.weight: Theme.iconFontWeight
+        color: Theme.surfaceText
+    }
+
+    DankIcon {
+        visible: !nerdFontAvailable || !OSDetectorService.osLogo
+        anchors.centerIn: parent
+        name: "apps"
+        size: Theme.iconSize - 6
         color: Theme.surfaceText
     }
 
