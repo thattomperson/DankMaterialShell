@@ -32,6 +32,10 @@ ShellRoot {
         id: notificationCenter
     }
 
+    NotificationPopup {
+        id: notificationPopup
+    }
+
     ControlCenterPopup {
         id: controlCenterPopup
     }
