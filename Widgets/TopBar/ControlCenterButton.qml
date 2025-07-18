@@ -90,13 +90,16 @@ Rectangle {
                 acceptedButtons: Qt.NoButton
                 onWheel: function(wheelEvent) {
                     let delta = wheelEvent.angleDelta.y;
-                    let currentVolume = AudioService.volumeLevel;
+                    let currentVolume = (AudioService.sink && AudioService.sink.audio && AudioService.sink.audio.volume * 100) || 0;
                     let newVolume;
                     if (delta > 0)
                         newVolume = Math.min(100, currentVolume + 5);
                     else
                         newVolume = Math.max(0, currentVolume - 5);
-                    AudioService.setVolume(newVolume);
+                    if (AudioService.sink && AudioService.sink.audio) {
+                        AudioService.sink.audio.muted = false;
+                        AudioService.sink.audio.volume = newVolume / 100;
+                    }
                     wheelEvent.accepted = true;
                 }
             }

@@ -92,7 +92,7 @@ Item {
 
                 Repeater {
                     model: BluetoothService.adapter && BluetoothService.adapter.devices ? BluetoothService.adapter.devices.values.filter((dev) => {
-                        return dev && dev.paired && BluetoothService.isValidDevice(dev);
+                        return dev && dev.paired;
                     }) : []
 
                     Rectangle {
@@ -301,7 +301,7 @@ Item {
                             return [];
                         
                         var filtered = Bluetooth.devices.values.filter((dev) => {
-                            return dev && !dev.paired && !dev.pairing && !dev.blocked && BluetoothService.isValidDevice(dev) && (dev.signalStrength === undefined || dev.signalStrength > 0);
+                            return dev && !dev.paired && !dev.pairing && !dev.blocked && (dev.signalStrength === undefined || dev.signalStrength > 0);
                         });
                         return BluetoothService.sortDevices(filtered);
                     }
@@ -500,7 +500,7 @@ Item {
                             return false;
                         
                         var availableCount = Bluetooth.devices.values.filter((dev) => {
-                            return dev && !dev.paired && !dev.pairing && !dev.blocked && BluetoothService.isValidDevice(dev) && (dev.signalStrength === undefined || dev.signalStrength > 0);
+                            return dev && !dev.paired && !dev.pairing && !dev.blocked && (dev.signalStrength === undefined || dev.signalStrength > 0);
                         }).length;
                         
                         return availableCount === 0;
@@ -555,7 +555,7 @@ Item {
                             return true;
                         
                         var availableCount = Bluetooth.devices.values.filter((dev) => {
-                            return dev && !dev.paired && !dev.pairing && !dev.blocked && BluetoothService.isValidDevice(dev) && (dev.signalStrength === undefined || dev.signalStrength > 0);
+                            return dev && !dev.paired && !dev.pairing && !dev.blocked && (dev.signalStrength === undefined || dev.signalStrength > 0);
                         }).length;
                         
                         return availableCount === 0 && !BluetoothService.adapter.discovering;

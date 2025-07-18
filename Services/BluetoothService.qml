@@ -18,7 +18,7 @@ Singleton {
             return [];
 
         return adapter.devices.values.filter((dev) => {
-            return dev && dev.paired && isValidDevice(dev);
+            return dev && dev.paired;
         });
     }
     readonly property var allDevicesWithBattery: {
@@ -45,20 +45,6 @@ Singleton {
             var bSignal = (b.signalStrength !== undefined && b.signalStrength > 0) ? b.signalStrength : 0;
             return bSignal - aSignal;
         });
-    }
-
-    function isValidDevice(device) {
-        if (!device)
-            return false;
-
-        var displayName = device.name || device.deviceName;
-        if (!displayName || displayName.length < 2)
-            return false;
-
-        if (displayName.startsWith('/org/bluez') || displayName.includes('hci0'))
-            return false;
-
-        return displayName.length >= 3;
     }
 
     function getDeviceIcon(device) {
