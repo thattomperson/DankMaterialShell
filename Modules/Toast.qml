@@ -77,8 +77,8 @@ PanelWindow {
                 color: Theme.background
                 font.weight: Font.Medium
                 anchors.verticalCenter: parent.verticalCenter
-                width: Math.min(implicitWidth, 300)
-                elide: Text.ElideRight
+                width: 300
+                wrapMode: Text.WordWrap
             }
 
         }

@@ -5,6 +5,7 @@ import qs.Modules
 import qs.Modules.CenterCommandCenter
 import qs.Modules.ControlCenter
 import qs.Modules.TopBar
+import qs.Services
 
 ShellRoot {
     id: root
@@ -88,5 +89,4 @@ ShellRoot {
     Toast {
         id: toastWidget
     }
-
 }

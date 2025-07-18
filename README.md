@@ -13,8 +13,12 @@ Specifically created for [Niri](https://github.com/YaLTeR/niri).
 This shell kinda depends on [Niri](https://github.com/YaLTeR/niri), but only for workspaces and the active window widget in TopBar. So it could be used on any other wayland compositor with minimal changes.
 
 ```bash
-# Arch
-paru -S quickshell-git ttf-material-symbols-variable-git
+# 1 --- Material Symbols Font (if not present)
+mkdir -p ~/.local/share/fonts && curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf && fc-cache -f
+# Can also be installed from AUR on arch linux, paru -S ttf-material-symbols-variable-git 
+
+# 2 --- QuickShell (recommended to use a git build)
+paru -S quickshell-git
 ```
 
 2. Install optional dependencies to unlock certain features

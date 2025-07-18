@@ -30,6 +30,13 @@ PanelWindow {
     implicitHeight: Theme.barHeight - 4
     color: "transparent"
 
+    Component.onCompleted: {
+        let fonts = Qt.fontFamilies();
+        if (fonts.indexOf("Material Symbols Rounded") === -1) {
+            ToastService.showError("Please install Material Symbols Rounded and Restart your Shell. See README.md for instructions");
+        }
+    }
+
     Connections {
         function onTopBarTransparencyChanged() {
             root.backgroundTransparency = Prefs.topBarTransparency;
