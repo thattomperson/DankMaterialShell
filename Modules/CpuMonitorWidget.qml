@@ -3,9 +3,10 @@ import QtQuick
 import QtQuick.Controls
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Rectangle {
-    id: ramWidget
+    id: cpuWidget
 
     property bool showPercentage: true
     property bool showIcon: true
@@ -13,16 +14,16 @@ Rectangle {
     width: 55
     height: 30
     radius: Theme.cornerRadius
-    color: ramArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.08)
+    color: cpuArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.08)
 
     MouseArea {
-        id: ramArea
+        id: cpuArea
 
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            ProcessMonitorService.setSortBy("memory");
+            ProcessMonitorService.setSortBy("cpu");
             processListDropdown.toggle();
         }
     }
@@ -31,17 +32,15 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 3
 
-        // RAM icon
-        Text {
-            text: "developer_board" // Material Design CPU/processor icon (swapped from CPU widget)
-            font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSize - 8
-            font.weight: Theme.iconFontWeight
+        // CPU icon
+        DankIcon {
+            name: "memory" // Material Design memory icon (swapped from RAM widget)
+            size: Theme.iconSize - 8
             color: {
-                if (SystemMonitorService.memoryUsage > 90)
+                if (SystemMonitorService.cpuUsage > 80)
                     return Theme.error;
 
-                if (SystemMonitorService.memoryUsage > 75)
+                if (SystemMonitorService.cpuUsage > 60)
                     return Theme.warning;
 
                 return Theme.surfaceText;
@@ -51,7 +50,7 @@ Rectangle {
 
         // Percentage text
         Text {
-            text: (SystemMonitorService.memoryUsage || 0).toFixed(0) + "%"
+            text: (SystemMonitorService.cpuUsage || 0).toFixed(0) + "%"
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
             color: Theme.surfaceText

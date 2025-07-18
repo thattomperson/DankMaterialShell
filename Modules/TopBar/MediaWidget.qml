@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell.Services.Mpris
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Rectangle {
     id: root
@@ -148,11 +149,10 @@ Rectangle {
                 visible: root.playerAvailable
                 opacity: (activePlayer && activePlayer.canGoPrevious) ? 1 : 0.3
 
-                Text {
+                DankIcon {
                     anchors.centerIn: parent
-                    text: "skip_previous"
-                    font.family: Theme.iconFont
-                    font.pixelSize: 12
+                    name: "skip_previous"
+                    size: 12
                     color: Theme.surfaceText
                 }
 
@@ -181,11 +181,10 @@ Rectangle {
                 visible: root.playerAvailable
                 opacity: activePlayer ? 1 : 0.3
 
-                Text {
+                DankIcon {
                     anchors.centerIn: parent
-                    text: activePlayer && activePlayer.playbackState === 1 ? "pause" : "play_arrow"
-                    font.family: Theme.iconFont
-                    font.pixelSize: 14
+                    name: activePlayer && activePlayer.playbackState === 1 ? "pause" : "play_arrow"
+                    size: 14
                     color: activePlayer && activePlayer.playbackState === 1 ? Theme.background : Theme.primary
                 }
 
@@ -212,11 +211,10 @@ Rectangle {
                 visible: playerAvailable
                 opacity: (activePlayer && activePlayer.canGoNext) ? 1 : 0.3
 
-                Text {
+                DankIcon {
                     anchors.centerIn: parent
-                    text: "skip_next"
-                    font.family: Theme.iconFont
-                    font.pixelSize: 12
+                    name: "skip_next"
+                    size: 12
                     color: Theme.surfaceText
                 }
 

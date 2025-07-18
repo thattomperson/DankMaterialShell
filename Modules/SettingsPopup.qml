@@ -6,6 +6,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
+import qs.Widgets
 
 PanelWindow {
     id: settingsPopup
@@ -74,10 +75,9 @@ PanelWindow {
                 width: parent.width
                 spacing: Theme.spacingM
 
-                Text {
-                    text: "settings"
-                    font.family: Theme.iconFont
-                    font.pixelSize: Theme.iconSize
+                DankIcon {
+                    name: "settings"
+                    size: Theme.iconSize
                     color: Theme.primary
                     anchors.verticalCenter: parent.verticalCenter
                 }
@@ -102,10 +102,9 @@ PanelWindow {
                     radius: Theme.cornerRadius
                     color: closeButton.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
 
-                    Text {
-                        text: "close"
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSize - 4
+                    DankIcon {
+                        name: "close"
+                        size: Theme.iconSize - 4
                         color: Theme.surfaceText
                         anchors.centerIn: parent
                     }
@@ -234,22 +233,20 @@ PanelWindow {
                                             color: Theme.primary
                                             visible: !parent.hasImage
 
-                                            Text {
+                                            DankIcon {
                                                 anchors.centerIn: parent
-                                                text: "person"
-                                                font.family: Theme.iconFont
-                                                font.pixelSize: Theme.iconSize + 8
+                                                name: "person"
+                                                size: Theme.iconSize + 8
                                                 color: Theme.primaryText
                                             }
 
                                         }
 
                                         // Error icon for when the image fails to load.
-                                        Text {
+                                        DankIcon {
                                             anchors.centerIn: parent
-                                            text: "warning"
-                                            font.family: Theme.iconFont
-                                            font.pixelSize: Theme.iconSize + 8
+                                            name: "warning"
+                                            size: Theme.iconSize + 8
                                             color: Theme.primaryText
                                             visible: profileImageInput.text !== "" && avatarImageSource.status === Image.Error
                                         }
@@ -540,7 +537,7 @@ PanelWindow {
                                     font.weight: Font.Medium
                                 }
 
-                                CustomSlider {
+                                DankSlider {
                                     width: parent.width
                                     value: Math.round(Prefs.topBarTransparency * 100)
                                     minimum: 0
@@ -577,7 +574,7 @@ PanelWindow {
                                     font.weight: Font.Medium
                                 }
 
-                                CustomSlider {
+                                DankSlider {
                                     width: parent.width
                                     value: Math.round(Prefs.popupTransparency * 100)
                                     minimum: 0

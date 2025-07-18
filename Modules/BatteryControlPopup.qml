@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 PanelWindow {
     id: root
@@ -105,11 +106,10 @@ PanelWindow {
                         radius: 16
                         color: closeBatteryArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
 
-                        Text {
+                        DankIcon {
                             anchors.centerIn: parent
-                            text: "close"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize - 4
+                            name: "close"
+                            size: Theme.iconSize - 4
                             color: closeBatteryArea.containsMouse ? Theme.error : Theme.surfaceText
                         }
 
@@ -143,10 +143,9 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: Theme.spacingL
 
-                        Text {
-                            text: Theme.getBatteryIcon(BatteryService.batteryLevel, BatteryService.isCharging, BatteryService.batteryAvailable)
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSizeLarge
+                        DankIcon {
+                            name: Theme.getBatteryIcon(BatteryService.batteryLevel, BatteryService.isCharging, BatteryService.batteryAvailable)
+                            size: Theme.iconSizeLarge
                             color: {
                                 if (BatteryService.isLowBattery && !BatteryService.isCharging)
                                     return Theme.error;
@@ -232,10 +231,9 @@ PanelWindow {
                         anchors.centerIn: parent
                         spacing: Theme.spacingL
 
-                        Text {
-                            text: Theme.getBatteryIcon(0, false, false)
-                            font.family: Theme.iconFont
-                            font.pixelSize: 36
+                        DankIcon {
+                            name: Theme.getBatteryIcon(0, false, false)
+                            size: 36
                             color: Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -364,10 +362,9 @@ PanelWindow {
                                     anchors.verticalCenter: parent.verticalCenter
                                     spacing: Theme.spacingM
 
-                                    Text {
-                                        text: Theme.getPowerProfileIcon(modelData)
-                                        font.family: Theme.iconFont
-                                        font.pixelSize: Theme.iconSize
+                                    DankIcon {
+                                        name: Theme.getPowerProfileIcon(modelData)
+                                        size: Theme.iconSize
                                         color: batteryControlPopup.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
@@ -428,10 +425,9 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: Theme.spacingM
 
-                        Text {
-                            text: "warning"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
+                        DankIcon {
+                            name: "warning"
+                            size: Theme.iconSize
                             color: Theme.error
                             anchors.verticalCenter: parent.verticalCenter
                         }

@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 PanelWindow {
     id: root
@@ -160,10 +161,9 @@ PanelWindow {
                         anchors.centerIn: parent
                         spacing: Theme.spacingXS
 
-                        Text {
-                            text: "delete_sweep"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSizeSmall
+                        DankIcon {
+                            name: "delete_sweep"
+                            size: Theme.iconSizeSmall
                             color: clearArea.containsMouse ? Theme.primary : Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -496,11 +496,10 @@ PanelWindow {
                                         color: expandArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
                                         visible: modelData.count > 1
 
-                                        Text {
+                                        DankIcon {
                                             anchors.centerIn: parent
-                                            text: "expand_more"
-                                            font.family: Theme.iconFont
-                                            font.pixelSize: 18
+                                            name: "expand_more"
+                                            size: 18
                                             color: Theme.surfaceText
                                             rotation: expanded ? 180 : 0
 
@@ -532,11 +531,10 @@ PanelWindow {
                                         anchors.right: parent.right
                                         color: dismissArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
 
-                                        Text {
+                                        DankIcon {
                                             anchors.centerIn: parent
-                                            text: "close"
-                                            font.family: Theme.iconFont
-                                            font.pixelSize: 16
+                                            name: "close"
+                                            size: 16
                                             color: Theme.surfaceText
                                         }
 
@@ -599,11 +597,10 @@ PanelWindow {
                                     border.color: quickReplyField.text.length > 0 ? "transparent" : Theme.outline
                                     border.width: quickReplyField.text.length > 0 ? 0 : 1
 
-                                    Text {
+                                    DankIcon {
                                         anchors.centerIn: parent
-                                        text: "send"
-                                        font.family: Theme.iconFont
-                                        font.pixelSize: 16
+                                        name: "send"
+                                        size: 16
                                         color: quickReplyField.text.length > 0 ? Theme.primaryText : Theme.surfaceVariantText
                                     }
 
@@ -702,11 +699,10 @@ PanelWindow {
                                         anchors.left: parent.left
                                         color: collapseArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
 
-                                        Text {
+                                        DankIcon {
                                             anchors.centerIn: parent
-                                            text: "expand_less"
-                                            font.family: Theme.iconFont
-                                            font.pixelSize: 18
+                                            name: "expand_less"
+                                            size: 18
                                             color: Theme.surfaceText
                                         }
 
@@ -728,11 +724,10 @@ PanelWindow {
                                         anchors.right: parent.right
                                         color: dismissAllArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
 
-                                        Text {
+                                        DankIcon {
                                             anchors.centerIn: parent
-                                            text: "close"
-                                            font.family: Theme.iconFont
-                                            font.pixelSize: 16
+                                            name: "close"
+                                            size: 16
                                             color: Theme.surfaceText
                                         }
 
@@ -810,11 +805,10 @@ PanelWindow {
                                                 anchors.top: parent.top
                                                 color: individualDismissArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
 
-                                                Text {
+                                                DankIcon {
                                                     anchors.centerIn: parent
-                                                    text: "close"
-                                                    font.family: Theme.iconFont
-                                                    font.pixelSize: 12
+                                                    name: "close"
+                                                    size: 12
                                                     color: Theme.surfaceVariantText
                                                 }
 
@@ -901,11 +895,10 @@ PanelWindow {
                                                         radius: 14
                                                         color: replyField.text.length > 0 ? Theme.primary : Theme.surfaceContainer
 
-                                                        Text {
+                                                        DankIcon {
                                                             anchors.centerIn: parent
-                                                            text: "send"
-                                                            font.family: Theme.iconFont
-                                                            font.pixelSize: 12
+                                                            name: "send"
+                                                            size: 12
                                                             color: replyField.text.length > 0 ? Theme.primaryText : Theme.surfaceVariantText
                                                         }
 
@@ -974,11 +967,10 @@ PanelWindow {
                         spacing: Theme.spacingM
                         width: parent.width * 0.8
 
-                        Text {
+                        DankIcon {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: "notifications_none"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSizeLarge + 16
+                            name: "notifications_none"
+                            size: Theme.iconSizeLarge + 16
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3)
                         }
 

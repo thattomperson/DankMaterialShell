@@ -5,6 +5,7 @@ import Quickshell.Io
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Modules
 import qs.Widgets
 
 ScrollView {
@@ -39,7 +40,7 @@ ScrollView {
                 font.weight: Font.Medium
             }
 
-            CustomSlider {
+            DankSlider {
                 width: parent.width
                 value: BrightnessService.brightnessLevel
                 leftIcon: "brightness_low"
@@ -97,10 +98,9 @@ ScrollView {
                         anchors.centerIn: parent
                         spacing: Theme.spacingS
 
-                        Text {
-                            text: Prefs.nightModeEnabled ? "nightlight" : "dark_mode"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSizeLarge
+                        DankIcon {
+                            name: Prefs.nightModeEnabled ? "nightlight" : "dark_mode"
+                            size: Theme.iconSizeLarge
                             color: Prefs.nightModeEnabled ? Theme.primary : Theme.surfaceText
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
@@ -149,10 +149,9 @@ ScrollView {
                         anchors.centerIn: parent
                         spacing: Theme.spacingS
 
-                        Text {
-                            text: Theme.isLightMode ? "light_mode" : "palette"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSizeLarge
+                        DankIcon {
+                            name: Theme.isLightMode ? "light_mode" : "palette"
+                            size: Theme.iconSizeLarge
                             color: Theme.isLightMode ? Theme.primary : Theme.surfaceText
                             anchors.horizontalCenter: parent.horizontalCenter
                         }

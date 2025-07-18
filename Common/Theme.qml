@@ -388,12 +388,6 @@ Singleton {
     // Transparency system - can be overridden by Prefs
     property real panelTransparency: 0.85
     property real popupTransparency: 0.92
-    property string iconFont: { Qt.fontFamilies()
-                                  .indexOf("Material Symbols Rounded") !== -1 ? "Material Symbols Rounded" : "Material Icons Round" }
-    property string iconFontFilled: { Qt.fontFamilies()
-                                  .indexOf("Material Symbols Rounded") !== -1 ? "Material Symbols Rounded" : "Material Icons Rounded" }
-    property int iconFontWeight: Font.Normal
-    property int iconFontFilledWeight: Font.Medium
 
     // Handle successful color extraction
     function onColorsUpdated() {

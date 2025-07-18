@@ -6,6 +6,7 @@ import Quickshell.Io
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Item {
     id: bluetoothTab
@@ -34,10 +35,9 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: Theme.spacingM
 
-                    Text {
-                        text: "bluetooth"
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSizeLarge
+                    DankIcon {
+                        name: "bluetooth"
+                        size: Theme.iconSizeLarge
                         color: BluetoothService.adapter && BluetoothService.adapter.enabled ? Theme.primary : Theme.surfaceText
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -109,10 +109,9 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: Theme.spacingM
 
-                            Text {
-                                text: BluetoothService.getDeviceIcon(modelData)
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.iconSize
+                            DankIcon {
+                                name: BluetoothService.getDeviceIcon(modelData)
+                                size: Theme.iconSize
                                 color: modelData.connected ? Theme.primary : Theme.surfaceText
                                 anchors.verticalCenter: parent.verticalCenter
                             }
@@ -169,11 +168,9 @@ Item {
                             anchors.rightMargin: Theme.spacingM
                             anchors.verticalCenter: parent.verticalCenter
 
-                            Text {
-                                text: "more_vert"
-                                font.family: Theme.iconFont
-                                font.weight: Theme.iconFontWeight
-                                font.pixelSize: Theme.iconSize
+                            DankIcon {
+                                name: "more_vert"
+                                size: Theme.iconSize
                                 color: Theme.surfaceText
                                 opacity: 0.6
                                 anchors.centerIn: parent
@@ -258,10 +255,9 @@ Item {
                             anchors.centerIn: parent
                             spacing: Theme.spacingXS
 
-                            Text {
-                                text: BluetoothService.adapter && BluetoothService.adapter.discovering ? "stop" : "bluetooth_searching"
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.iconSize - 4
+                            DankIcon {
+                                name: BluetoothService.adapter && BluetoothService.adapter.discovering ? "stop" : "bluetooth_searching"
+                                size: Theme.iconSize - 4
                                 color: Theme.primary
                                 anchors.verticalCenter: parent.verticalCenter
                             }
@@ -341,10 +337,9 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: Theme.spacingM
 
-                            Text {
-                                text: BluetoothService.getDeviceIcon(modelData)
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.iconSize
+                            DankIcon {
+                                name: BluetoothService.getDeviceIcon(modelData)
+                                size: Theme.iconSize
                                 color: {
                                     if (modelData.pairing)
                                         return Theme.warning;
@@ -402,10 +397,9 @@ Item {
                                             }
                                         }
 
-                                        Text {
-                                            text: BluetoothService.getSignalIcon(modelData)
-                                            font.family: Theme.iconFont
-                                            font.pixelSize: Theme.fontSizeSmall
+                                        DankIcon {
+                                            name: BluetoothService.getSignalIcon(modelData)
+                                            size: Theme.fontSizeSmall
                                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                                             visible: modelData.signalStrength !== undefined && modelData.signalStrength > 0 && !modelData.pairing && !modelData.blocked
                                         }
@@ -510,10 +504,9 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         spacing: Theme.spacingM
 
-                        Text {
-                            text: "sync"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSizeLarge
+                        DankIcon {
+                            name: "sync"
+                            size: Theme.iconSizeLarge
                             color: Theme.primary
                             anchors.verticalCenter: parent.verticalCenter
 
@@ -638,10 +631,9 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: Theme.spacingS
 
-                    Text {
-                        text: bluetoothContextMenuWindow.deviceData && bluetoothContextMenuWindow.deviceData.connected ? "link_off" : "link"
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSize - 2
+                    DankIcon {
+                        name: bluetoothContextMenuWindow.deviceData && bluetoothContextMenuWindow.deviceData.connected ? "link_off" : "link"
+                        size: Theme.iconSize - 2
                         color: Theme.surfaceText
                         opacity: 0.7
                         anchors.verticalCenter: parent.verticalCenter
@@ -712,10 +704,9 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: Theme.spacingS
 
-                    Text {
-                        text: "delete"
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSize - 2
+                    DankIcon {
+                        name: "delete"
+                        size: Theme.iconSize - 2
                         color: forgetArea.containsMouse ? Theme.error : Theme.surfaceText
                         opacity: 0.7
                         anchors.verticalCenter: parent.verticalCenter

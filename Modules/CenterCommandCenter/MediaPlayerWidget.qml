@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Services.Mpris
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Rectangle {
     id: mediaPlayerWidget
@@ -90,10 +91,9 @@ Rectangle {
             spacing: Theme.spacingS
             visible: (!activePlayer && !lastValidTitle) || (activePlayer && activePlayer.trackTitle === "" && lastValidTitle === "")
 
-            Text {
-                text: "music_note"
-                font.family: Theme.iconFont
-                font.pixelSize: Theme.iconSize + 8
+            DankIcon {
+                name: "music_note"
+                size: Theme.iconSize + 8
                 color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
                 anchors.horizontalCenter: parent.horizontalCenter
             }
@@ -149,11 +149,10 @@ Rectangle {
                             visible: albumArt.status !== Image.Ready
                             color: "transparent"
 
-                            Text {
+                            DankIcon {
                                 anchors.centerIn: parent
-                                text: "album"
-                                font.family: Theme.iconFont
-                                font.pixelSize: 28
+                                name: "album"
+                                size: 28
                                 color: Theme.surfaceVariantText
                             }
 
@@ -356,11 +355,10 @@ Rectangle {
                         radius: 14
                         color: prevBtnArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.12) : "transparent"
 
-                        Text {
+                        DankIcon {
                             anchors.centerIn: parent
-                            text: "skip_previous"
-                            font.family: Theme.iconFont
-                            font.pixelSize: 16
+                            name: "skip_previous"
+                            size: 16
                             color: Theme.surfaceText
                         }
 
@@ -393,11 +391,10 @@ Rectangle {
                         radius: 16
                         color: Theme.primary
 
-                        Text {
+                        DankIcon {
                             anchors.centerIn: parent
-                            text: activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing ? "pause" : "play_arrow"
-                            font.family: Theme.iconFont
-                            font.pixelSize: 20
+                            name: activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing ? "pause" : "play_arrow"
+                            size: 20
                             color: Theme.background
                         }
 
@@ -417,11 +414,10 @@ Rectangle {
                         radius: 14
                         color: nextBtnArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.12) : "transparent"
 
-                        Text {
+                        DankIcon {
                             anchors.centerIn: parent
-                            text: "skip_next"
-                            font.family: Theme.iconFont
-                            font.pixelSize: 16
+                            name: "skip_next"
+                            size: 16
                             color: Theme.surfaceText
                         }
 

@@ -5,6 +5,8 @@ import Quickshell.Io
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Widgets
+import "../../Widgets"
 
 Item {
     // Default to WiFi when nothing is connected
@@ -26,97 +28,29 @@ Item {
         spacing: Theme.spacingM
 
         // Network sub-tabs
-        Row {
+        DankTabBar {
             width: parent.width
-            spacing: Theme.spacingXS
-
-            Rectangle {
-                width: (parent.width - Theme.spacingXS) / 2
-                height: 36
-                radius: Theme.cornerRadiusSmall
-                color: networkTab.networkSubTab === 0 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : ethernetTabArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
-
-                Row {
-                    anchors.centerIn: parent
-                    spacing: Theme.spacingXS
-
-                    Text {
-                        text: "lan"
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSize - 4
-                        color: networkTab.networkSubTab === 0 ? Theme.primary : Theme.surfaceText
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Text {
-                        text: "Ethernet"
-                        font.pixelSize: Theme.fontSizeMedium
-                        color: networkTab.networkSubTab === 0 ? Theme.primary : Theme.surfaceText
-                        font.weight: networkTab.networkSubTab === 0 ? Font.Medium : Font.Normal
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
+            currentIndex: networkTab.networkSubTab
+            model: [
+                {
+                    "icon": "lan",
+                    "text": "Ethernet"
+                },
+                {
+                    "icon": NetworkService.wifiEnabled ? "wifi" : "wifi_off",
+                    "text": "Wi-Fi"
                 }
-
-                MouseArea {
-                    id: ethernetTabArea
-
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        networkTab.networkSubTab = 0;
-                        WifiService.autoRefreshEnabled = false;
-                    }
+            ]
+            onTabClicked: function(index) {
+                networkTab.networkSubTab = index;
+                if (index === 0) {
+                    WifiService.autoRefreshEnabled = false;
+                } else {
+                    WifiService.autoRefreshEnabled = true;
+                    if (NetworkService.wifiEnabled)
+                        WifiService.scanWifi();
                 }
-
             }
-
-            Rectangle {
-                width: (parent.width - Theme.spacingXS) / 2
-                height: 36
-                radius: Theme.cornerRadiusSmall
-                color: networkTab.networkSubTab === 1 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : wifiTabArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
-
-                Row {
-                    anchors.centerIn: parent
-                    spacing: Theme.spacingXS
-
-                    Text {
-                        text: NetworkService.wifiEnabled ? "wifi" : "wifi_off"
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSize - 4
-                        color: networkTab.networkSubTab === 1 ? Theme.primary : Theme.surfaceText
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Text {
-                        text: "Wi-Fi"
-                        font.pixelSize: Theme.fontSizeMedium
-                        color: networkTab.networkSubTab === 1 ? Theme.primary : Theme.surfaceText
-                        font.weight: networkTab.networkSubTab === 1 ? Font.Medium : Font.Normal
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                }
-
-                MouseArea {
-                    id: wifiTabArea
-
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        networkTab.networkSubTab = 1;
-                        WifiService.autoRefreshEnabled = true;
-                        if (NetworkService.wifiEnabled)
-                            WifiService.scanWifi();
-
-                    }
-                }
-
-            }
-
         }
 
         // Ethernet Tab Content
@@ -153,10 +87,9 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: Theme.spacingM
 
-                        Text {
-                            text: "lan"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSizeLarge - 4
+                        DankIcon {
+                            name: "lan"
+                            size: Theme.iconSizeLarge - 4
                             color: networkTab.networkStatus === "ethernet" ? Theme.primary : Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -197,12 +130,11 @@ Item {
                                 anchors.centerIn: parent
                                 spacing: Theme.spacingXS
 
-                                Text {
+                                DankIcon {
                                     id: ethernetPreferenceIcon
 
-                                    text: networkTab.changingNetworkPreference ? "sync" : ""
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.fontSizeSmall
+                                    name: networkTab.changingNetworkPreference ? "sync" : ""
+                                    size: Theme.fontSizeSmall
                                     color: networkTab.networkStatus === "ethernet" ? Theme.background : Theme.primary
                                     visible: networkTab.changingNetworkPreference
                                     anchors.verticalCenter: parent.verticalCenter
@@ -275,10 +207,9 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: Theme.spacingM
 
-                        Text {
-                            text: networkTab.ethernetConnected ? "link_off" : "link"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
+                        DankIcon {
+                            name: networkTab.ethernetConnected ? "link_off" : "link"
+                            size: Theme.iconSize
                             color: networkTab.ethernetConnected ? Theme.error : Theme.primary
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -344,11 +275,11 @@ Item {
                     visible: NetworkService.wifiAvailable
 
                     // WiFi icon
-                    Text {
+                    DankIcon {
                         anchors.left: parent.left
                         anchors.leftMargin: Theme.spacingL
                         anchors.verticalCenter: parent.verticalCenter
-                        text: {
+                        name: {
                             if (!NetworkService.wifiEnabled) {
                                 return "wifi_off";
                             } else if (NetworkService.networkStatus === "wifi") {
@@ -357,8 +288,7 @@ Item {
                                 return "wifi";
                             }
                         }
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSize
+                        size: Theme.iconSize
                         color: NetworkService.networkStatus === "wifi" ? Theme.primary : Theme.surfaceText
                     }
 
@@ -402,70 +332,16 @@ Item {
                     }
 
                     // WiFi toggle switch
-                    Rectangle {
-                        width: 48
-                        height: 24
-                        radius: 12
-                        color: NetworkService.wifiEnabled ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+                    DankToggle {
+                        checked: NetworkService.wifiEnabled
+                        enabled: true
+                        toggling: NetworkService.wifiToggling
                         anchors.right: parent.right
                         anchors.rightMargin: Theme.spacingL
                         anchors.verticalCenter: parent.verticalCenter
-                        opacity: NetworkService.wifiToggling ? 0.6 : 1
-
-                        Rectangle {
-                            id: toggleHandle
-                            width: 20
-                            height: 20
-                            radius: 10
-                            color: Theme.surface
-                            anchors.verticalCenter: parent.verticalCenter
-                            x: NetworkService.wifiEnabled ? parent.width - width - 2 : 2
-
-                            Behavior on x {
-                                NumberAnimation {
-                                    duration: Theme.shortDuration
-                                    easing.type: Theme.emphasizedEasing
-                                }
-                            }
-
-                            // Subtle shadow/glow effect
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: parent.width + 2
-                                height: parent.height + 2
-                                radius: (parent.width + 2) / 2
-                                color: "transparent"
-                                border.color: Qt.rgba(0, 0, 0, 0.1)
-                                border.width: 1
-                                z: -1
-                            }
-                        }
-
-                        MouseArea {
-                            id: wifiToggleArea
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                NetworkService.toggleWifiRadio();
-                                // Refresh network status and WiFi info after toggle with delay
-                                refreshTimer.triggered = true;
-                            }
-                        }
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: Theme.shortDuration
-                                easing.type: Theme.standardEasing
-                            }
-                        }
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: Theme.shortDuration
-                                easing.type: Theme.standardEasing
-                            }
+                        onClicked: {
+                            NetworkService.toggleWifiRadio();
+                            refreshTimer.triggered = true;
                         }
                     }
 
@@ -487,12 +363,11 @@ Item {
                             anchors.centerIn: parent
                             spacing: Theme.spacingXS
 
-                            Text {
+                            DankIcon {
                                 id: wifiPreferenceIcon
 
-                                text: networkTab.changingNetworkPreference ? "sync" : ""
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.fontSizeSmall
+                                name: networkTab.changingNetworkPreference ? "sync" : ""
+                                size: Theme.fontSizeSmall
                                 color: networkTab.networkStatus === "wifi" ? Theme.background : Theme.primary
                                 visible: networkTab.changingNetworkPreference
                                 anchors.verticalCenter: parent.verticalCenter
@@ -574,13 +449,12 @@ Item {
                             radius: 16
                             color: refreshArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : WifiService.isScanning ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.06) : "transparent"
 
-                            Text {
+                            DankIcon {
                                 id: refreshIcon
 
                                 anchors.centerIn: parent
-                                text: WifiService.isScanning ? "sync" : "refresh"
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.iconSize - 4
+                                name: WifiService.isScanning ? "sync" : "refresh"
+                                size: Theme.iconSize - 4
                                 color: Theme.surfaceText
                                 rotation: WifiService.isScanning ? refreshIcon.rotation : 0
 
@@ -652,10 +526,10 @@ Item {
                             anchors.centerIn: parent
                             spacing: Theme.spacingS
 
-                            Text {
+                            DankIcon {
                                 id: connectionIcon
 
-                                text: {
+                                name: {
                                     if (WifiService.connectionStatus === "connecting")
                                         return "sync";
 
@@ -667,8 +541,7 @@ Item {
 
                                     return "";
                                 }
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.iconSize - 6
+                                size: Theme.iconSize - 6
                                 color: {
                                     if (WifiService.connectionStatus === "connecting")
                                         return Theme.warning;
@@ -762,14 +635,13 @@ Item {
                                 anchors.margins: Theme.spacingS
 
                                 // Signal strength icon
-                                Text {
+                                DankIcon {
                                     id: signalIcon
 
                                     anchors.left: parent.left
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: modelData.signalStrength === "excellent" ? "wifi" : modelData.signalStrength === "good" ? "wifi_2_bar" : modelData.signalStrength === "fair" ? "wifi_1_bar" : modelData.signalStrength === "poor" ? "wifi_calling_3" : "wifi"
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.iconSize
+                                    name: modelData.signalStrength === "excellent" ? "wifi" : modelData.signalStrength === "good" ? "wifi_2_bar" : modelData.signalStrength === "fair" ? "wifi_1_bar" : modelData.signalStrength === "poor" ? "wifi_calling_3" : "wifi"
+                                    size: Theme.iconSize
                                     color: modelData.connected ? Theme.primary : Theme.surfaceText
                                 }
 
@@ -818,10 +690,9 @@ Item {
                                     spacing: Theme.spacingXS
 
                                     // Lock icon (if secured)
-                                    Text {
-                                        text: "lock"
-                                        font.family: Theme.iconFont
-                                        font.pixelSize: Theme.iconSize - 6
+                                    DankIcon {
+                                        name: "lock"
+                                        size: Theme.iconSize - 6
                                         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.6)
                                         visible: modelData.secured
                                         anchors.verticalCenter: parent.verticalCenter
@@ -835,11 +706,10 @@ Item {
                                         color: forgetArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
                                         visible: modelData.saved || modelData.connected
 
-                                        Text {
+                                        DankIcon {
                                             anchors.centerIn: parent
-                                            text: "delete"
-                                            font.family: Theme.iconFont
-                                            font.pixelSize: Theme.iconSize - 6
+                                            name: "delete"
+                                            size: Theme.iconSize - 6
                                             color: forgetArea.containsMouse ? Theme.error : Theme.surfaceText
                                         }
 
@@ -900,11 +770,10 @@ Item {
                     visible: !NetworkService.wifiEnabled
                     anchors.horizontalCenter: parent.horizontalCenter
 
-                    Text {
+                    DankIcon {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: "wifi_off"
-                        font.family: Theme.iconFont
-                        font.pixelSize: 48
+                        name: "wifi_off"
+                        size: 48
                         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3)
                     }
 

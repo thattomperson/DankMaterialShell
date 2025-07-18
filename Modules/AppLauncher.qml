@@ -7,6 +7,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 PanelWindow {
     // For recents, use the recent apps from Prefs and filter out non-existent ones
@@ -74,7 +75,7 @@ PanelWindow {
         if (filteredModel.count > 0) {
             if (viewMode === "grid") {
                 // Grid navigation: move by columns
-                var columnsCount = appGrid.columnsCount || 8;
+                var columnsCount = appGrid.columns || 4;
                 selectedIndex = Math.min(selectedIndex + columnsCount, filteredModel.count - 1);
             } else {
                 // List navigation: next item
@@ -87,7 +88,7 @@ PanelWindow {
         if (filteredModel.count > 0) {
             if (viewMode === "grid") {
                 // Grid navigation: move by columns
-                var columnsCount = appGrid.columnsCount || 8;
+                var columnsCount = appGrid.columns || 4;
                 selectedIndex = Math.max(selectedIndex - columnsCount, 0);
             } else {
                 // List navigation: previous item
@@ -459,13 +460,11 @@ PanelWindow {
                         anchors.rightMargin: Theme.spacingL
                         spacing: Theme.spacingM
 
-                        Text {
+                        DankIcon {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "search"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
+                            name: "search"
+                            size: Theme.iconSize
                             color: searchField.activeFocus ? Theme.primary : Theme.surfaceVariantText
-                            font.weight: Theme.iconFontWeight
                         }
 
                         TextInput {
@@ -526,11 +525,10 @@ PanelWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: searchField.text.length > 0
 
-                                Text {
+                                DankIcon {
                                     anchors.centerIn: parent
-                                    text: "close"
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: 16
+                                    name: "close"
+                                    size: 16
                                     color: clearSearchArea.containsMouse ? Theme.outline : Theme.surfaceVariantText
                                 }
 
@@ -581,10 +579,9 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: Theme.spacingS
 
-                            Text {
-                                text: "category"
-                                font.family: Theme.iconFont
-                                font.pixelSize: 18
+                            DankIcon {
+                                name: "category"
+                                size: 18
                                 color: Theme.surfaceVariantText
                                 anchors.verticalCenter: parent.verticalCenter
                             }
@@ -599,13 +596,12 @@ PanelWindow {
 
                         }
 
-                        Text {
+                        DankIcon {
                             anchors.right: parent.right
                             anchors.rightMargin: Theme.spacingM
                             anchors.verticalCenter: parent.verticalCenter
-                            text: showCategories ? "expand_less" : "expand_more"
-                            font.family: Theme.iconFont
-                            font.pixelSize: 18
+                            name: showCategories ? "expand_less" : "expand_more"
+                            size: 18
                             color: Theme.surfaceVariantText
                         }
 
@@ -635,11 +631,10 @@ PanelWindow {
                             radius: Theme.cornerRadius
                             color: viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : listViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
 
-                            Text {
+                            DankIcon {
                                 anchors.centerIn: parent
-                                text: "view_list"
-                                font.family: Theme.iconFont
-                                font.pixelSize: 20
+                                name: "view_list"
+                                size: 20
                                 color: viewMode === "list" ? Theme.primary : Theme.surfaceText
                             }
 
@@ -664,11 +659,10 @@ PanelWindow {
                             radius: Theme.cornerRadius
                             color: viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : gridViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
 
-                            Text {
+                            DankIcon {
                                 anchors.centerIn: parent
-                                text: "grid_view"
-                                font.family: Theme.iconFont
-                                font.pixelSize: 20
+                                name: "grid_view"
+                                size: 20
                                 color: viewMode === "grid" ? Theme.primary : Theme.surfaceText
                             }
 
@@ -705,96 +699,51 @@ PanelWindow {
                     }
                     color: "transparent"
 
-                    // List view scroll container
-                    ScrollView {
+                    // List view
+                    DankListView {
+                        id: appList
                         anchors.fill: parent
-                        clip: true
                         visible: viewMode === "list"
-                        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
-                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-
-                        ListView {
-                            id: appList
-
-                            // Make mouse wheel scrolling more responsive
-                            property real wheelStepSize: 60
-
-                            width: parent.width
-                            anchors.margins: Theme.spacingS
-                            spacing: Theme.spacingS
-                            model: filteredModel
-                            delegate: listDelegate
-                            currentIndex: selectedIndex
-
-                            MouseArea {
-                                anchors.fill: parent
-                                acceptedButtons: Qt.NoButton
-                                propagateComposedEvents: true
-                                z: -1
-                                onWheel: (wheel) => {
-                                    var delta = wheel.angleDelta.y;
-                                    var steps = delta / 120; // Standard wheel step
-                                    appList.contentY -= steps * appList.wheelStepSize;
-                                    // Ensure we stay within bounds
-                                    if (appList.contentY < 0)
-                                        appList.contentY = 0;
-                                    else if (appList.contentY > appList.contentHeight - appList.height)
-                                        appList.contentY = Math.max(0, appList.contentHeight - appList.height);
-                                }
+                        model: filteredModel
+                        currentIndex: selectedIndex
+                        itemHeight: 72
+                        iconSize: 56
+                        showDescription: true
+                        onItemClicked: function(index, modelData) {
+                            if (modelData.desktopEntry) {
+                                Prefs.addRecentApp(modelData.desktopEntry);
+                                modelData.desktopEntry.execute();
+                            } else {
+                                launcher.launchApp(modelData.exec);
                             }
-
+                            launcher.hide();
                         }
-
+                        onItemHovered: function(index) {
+                            selectedIndex = index;
+                        }
                     }
 
-                    // Grid view scroll container
-                    ScrollView {
+                    // Grid view
+                    DankGridView {
+                        id: appGrid
                         anchors.fill: parent
-                        clip: true
                         visible: viewMode === "grid"
-                        ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-
-                        GridView {
-                            id: appGrid
-
-                            // Responsive cell sizes based on screen width - 4 columns
-                            property int columnsCount: 4
-                            property int baseCellWidth: (width - Theme.spacingS * 2) / columnsCount
-                            property int baseCellHeight: baseCellWidth + 20
-                            // Center the grid content
-                            property int remainingSpace: width - (columnsCount * cellWidth)
-                            // Make mouse wheel scrolling more responsive
-                            property real wheelStepSize: 60
-
-                            anchors.fill: parent
-                            anchors.margins: Theme.spacingS
-                            cellWidth: baseCellWidth
-                            cellHeight: baseCellHeight
-                            leftMargin: Math.max(Theme.spacingS, remainingSpace / 2)
-                            rightMargin: leftMargin
-                            model: filteredModel
-                            delegate: gridDelegate
-
-                            MouseArea {
-                                anchors.fill: parent
-                                acceptedButtons: Qt.NoButton
-                                propagateComposedEvents: true
-                                z: -1
-                                onWheel: (wheel) => {
-                                    var delta = wheel.angleDelta.y;
-                                    var steps = delta / 120; // Standard wheel step
-                                    appGrid.contentY -= steps * appGrid.wheelStepSize;
-                                    // Ensure we stay within bounds
-                                    if (appGrid.contentY < 0)
-                                        appGrid.contentY = 0;
-                                    else if (appGrid.contentY > appGrid.contentHeight - appGrid.height)
-                                        appGrid.contentY = Math.max(0, appGrid.contentHeight - appGrid.height);
-                                }
+                        model: filteredModel
+                        columns: 4
+                        adaptiveColumns: false
+                        currentIndex: selectedIndex
+                        onItemClicked: function(index, modelData) {
+                            if (modelData.desktopEntry) {
+                                Prefs.addRecentApp(modelData.desktopEntry);
+                                modelData.desktopEntry.execute();
+                            } else {
+                                launcher.launchApp(modelData.exec);
                             }
-
+                            launcher.hide();
                         }
-
+                        onItemHovered: function(index) {
+                            selectedIndex = index;
+                        }
                     }
 
                 }
@@ -918,163 +867,6 @@ PanelWindow {
 
     }
 
-    // List delegate with new loader
-    Component {
-        id: listDelegate
 
-        Rectangle {
-            width: appList.width
-            height: 72
-            radius: Theme.cornerRadiusLarge
-            color: ListView.isCurrentItem ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : appMouseArea.hovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
-            border.color: ListView.isCurrentItem ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
-            border.width: ListView.isCurrentItem ? 2 : 1
-
-            Row {
-                anchors.fill: parent
-                anchors.margins: Theme.spacingM
-                spacing: Theme.spacingL
-
-                Item {
-                    width: 56
-                    height: 56
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    Loader {
-                        id: listIconLoader
-
-                        property var modelData: model
-
-                        anchors.fill: parent
-                        sourceComponent: iconComponent
-                    }
-
-                }
-
-                Column {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width - 56 - Theme.spacingL
-                    spacing: Theme.spacingXS
-
-                    Text {
-                        width: parent.width
-                        text: model.name
-                        font.pixelSize: Theme.fontSizeLarge
-                        color: Theme.surfaceText
-                        font.weight: Font.Medium
-                        elide: Text.ElideRight
-                    }
-
-                    Text {
-                        width: parent.width
-                        text: model.comment || "Application"
-                        font.pixelSize: Theme.fontSizeMedium
-                        color: Theme.surfaceVariantText
-                        elide: Text.ElideRight
-                        visible: model.comment && model.comment.length > 0
-                    }
-
-                }
-
-            }
-
-            MouseArea {
-                id: appMouseArea
-
-                property bool hovered: containsMouse
-
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                z: 10
-                onEntered: selectedIndex = index
-                onClicked: {
-                    if (model.desktopEntry) {
-                        Prefs.addRecentApp(model.desktopEntry);
-                        model.desktopEntry.execute();
-                    } else {
-                        launcher.launchApp(model.exec);
-                    }
-                    launcher.hide();
-                }
-            }
-
-        }
-
-    }
-
-    // Grid delegate with new loader (uses dynamic icon size)
-    Component {
-        id: gridDelegate
-
-        Rectangle {
-            width: appGrid.cellWidth - 8
-            height: appGrid.cellHeight - 8
-            radius: Theme.cornerRadiusLarge
-            color: selectedIndex === index ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : gridAppArea.hovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
-            border.color: selectedIndex === index ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
-            border.width: selectedIndex === index ? 2 : 1
-
-            Column {
-                anchors.centerIn: parent
-                spacing: Theme.spacingS
-
-                Item {
-                    property int iconSize: Math.min(56, Math.max(32, appGrid.cellWidth * 0.6))
-
-                    width: iconSize
-                    height: iconSize
-                    anchors.horizontalCenter: parent.horizontalCenter
-
-                    Loader {
-                        id: gridIconLoader
-
-                        property var modelData: model
-
-                        anchors.fill: parent
-                        sourceComponent: iconComponent
-                    }
-
-                }
-
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    width: appGrid.cellWidth - 12
-                    text: model.name
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.surfaceText
-                    font.weight: Font.Medium
-                    elide: Text.ElideRight
-                    horizontalAlignment: Text.AlignHCenter
-                    maximumLineCount: 2
-                    wrapMode: Text.WordWrap
-                }
-
-            }
-
-            MouseArea {
-                id: gridAppArea
-
-                property bool hovered: containsMouse
-
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                z: 10
-                onEntered: selectedIndex = index
-                onClicked: {
-                    if (model.desktopEntry) {
-                        Prefs.addRecentApp(model.desktopEntry);
-                        model.desktopEntry.execute();
-                    } else {
-                        launcher.launchApp(model.exec);
-                    }
-                    launcher.hide();
-                }
-            }
-
-        }
-
-    }
 
 }

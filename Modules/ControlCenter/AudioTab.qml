@@ -6,6 +6,8 @@ import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Widgets
+import "../../Widgets"
 
 Item {
     id: audioTab
@@ -23,57 +25,22 @@ Item {
         spacing: Theme.spacingM
 
         // Audio Sub-tabs
-        Row {
+        DankTabBar {
             width: parent.width
-            height: 40
-            spacing: 2
-
-            Rectangle {
-                width: parent.width / 2 - 1
-                height: parent.height
-                radius: Theme.cornerRadius
-                color: audioTab.audioSubTab === 0 ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "Output"
-                    font.pixelSize: Theme.fontSizeMedium
-                    color: audioTab.audioSubTab === 0 ? Theme.primaryText : Theme.surfaceText
-                    font.weight: Font.Medium
+            tabHeight: 40
+            currentIndex: audioTab.audioSubTab
+            showIcons: false
+            model: [
+                {
+                    "text": "Output"
+                },
+                {
+                    "text": "Input"
                 }
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: audioTab.audioSubTab = 0
-                }
-
+            ]
+            onTabClicked: function(index) {
+                audioTab.audioSubTab = index;
             }
-
-            Rectangle {
-                width: parent.width / 2 - 1
-                height: parent.height
-                radius: Theme.cornerRadius
-                color: audioTab.audioSubTab === 1 ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "Input"
-                    font.pixelSize: Theme.fontSizeMedium
-                    color: audioTab.audioSubTab === 1 ? Theme.primaryText : Theme.surfaceText
-                    font.weight: Font.Medium
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: audioTab.audioSubTab = 1
-                }
-
-            }
-
         }
 
         // Output Tab Content
@@ -103,10 +70,9 @@ Item {
                         width: parent.width
                         spacing: Theme.spacingM
 
-                        Text {
-                            text: audioTab.volumeMuted ? "volume_off" : "volume_down"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
+                        DankIcon {
+                            name: audioTab.volumeMuted ? "volume_off" : "volume_down"
+                            size: Theme.iconSize
                             color: audioTab.volumeMuted ? Theme.error : Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
 
@@ -248,10 +214,9 @@ Item {
 
                         }
 
-                        Text {
-                            text: "volume_up"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
+                        DankIcon {
+                            name: "volume_up"
+                            size: Theme.iconSize
                             color: Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -288,10 +253,9 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: Theme.spacingS
 
-                            Text {
-                                text: "check_circle"
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.iconSize - 4
+                            DankIcon {
+                                name: "check_circle"
+                                size: Theme.iconSize - 4
                                 color: Theme.primary
                             }
 
@@ -335,8 +299,8 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: Theme.spacingM
 
-                                Text {
-                                    text: {
+                                DankIcon {
+                                    name: {
                                         if (modelData.name.includes("bluez"))
                                             return "headset";
                                         else if (modelData.name.includes("hdmi"))
@@ -346,8 +310,7 @@ Item {
                                         else
                                             return "speaker";
                                     }
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.iconSize
+                                    size: Theme.iconSize
                                     color: modelData === AudioService.sink ? Theme.primary : Theme.surfaceText
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -429,10 +392,9 @@ Item {
                         width: parent.width
                         spacing: Theme.spacingM
 
-                        Text {
-                            text: audioTab.micMuted ? "mic_off" : "mic"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
+                        DankIcon {
+                            name: audioTab.micMuted ? "mic_off" : "mic"
+                            size: Theme.iconSize
                             color: audioTab.micMuted ? Theme.error : Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
 
@@ -574,10 +536,9 @@ Item {
 
                         }
 
-                        Text {
-                            text: "mic"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
+                        DankIcon {
+                            name: "mic"
+                            size: Theme.iconSize
                             color: Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -614,10 +575,9 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: Theme.spacingS
 
-                            Text {
-                                text: "check_circle"
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.iconSize - 4
+                            DankIcon {
+                                name: "check_circle"
+                                size: Theme.iconSize - 4
                                 color: Theme.primary
                             }
 
@@ -661,8 +621,8 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: Theme.spacingM
 
-                                Text {
-                                    text: {
+                                DankIcon {
+                                    name: {
                                         if (modelData.name.includes("bluez"))
                                             return "headset_mic";
                                         else if (modelData.name.includes("usb"))
@@ -670,8 +630,7 @@ Item {
                                         else
                                             return "mic";
                                     }
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.iconSize
+                                    size: Theme.iconSize
                                     color: modelData === AudioService.source ? Theme.primary : Theme.surfaceText
                                     anchors.verticalCenter: parent.verticalCenter
                                 }

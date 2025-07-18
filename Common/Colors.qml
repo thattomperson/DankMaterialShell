@@ -8,8 +8,6 @@ import Quickshell.Io
 import qs.Services
 
 Singleton {
-    // This dependency forces re-evaluation when colorUpdateTrigger changes
-    // Just check if matugen is available
 
     id: root
 
@@ -22,47 +20,38 @@ Singleton {
     property var matugenColors: ({
     })
     property bool extractionRequested: false
-    property int colorUpdateTrigger: 0 // Force property re-evaluation
-    // ────────────────  wallpaper change monitor ────────────────
+    property int colorUpdateTrigger: 0
     property string lastWallpaperTimestamp: ""
-    // ────────────────  color properties (MD3) ────────────────
     property color primary: getMatugenColor("primary", "#42a5f5")
     property color secondary: getMatugenColor("secondary", "#8ab4f8")
     property color tertiary: getMatugenColor("tertiary", "#bb86fc")
     property color tertiaryContainer: getMatugenColor("tertiary_container", "#3700b3")
     property color error: getMatugenColor("error", "#cf6679")
     property color inversePrimary: getMatugenColor("inverse_primary", "#6200ea")
-    // backgrounds
     property color bg: getMatugenColor("background", "#1a1c1e")
     property color surface: getMatugenColor("surface", "#1a1c1e")
     property color surfaceContainer: getMatugenColor("surface_container", "#1e2023")
     property color surfaceContainerHigh: getMatugenColor("surface_container_high", "#292b2f")
     property color surfaceVariant: getMatugenColor("surface_variant", "#44464f")
-    // text
     property color surfaceText: getMatugenColor("on_background", "#e3e8ef")
     property color primaryText: getMatugenColor("on_primary", "#ffffff")
     property color surfaceVariantText: getMatugenColor("on_surface_variant", "#c4c7c5")
-    // containers & misc
     property color primaryContainer: getMatugenColor("primary_container", "#1976d2")
     property color surfaceTint: getMatugenColor("surface_tint", "#8ab4f8")
     property color outline: getMatugenColor("outline", "#8e918f")
-    // legacy aliases
     property color accentHi: primary
     property color accentLo: secondary
 
-    // ────────────────  basic state ────────────────
     signal colorsUpdated()
 
     function onLightModeChanged() {
-        // Force color properties to update when light mode changes
         if (matugenColors && Object.keys(matugenColors).length > 0) {
             console.log("Light mode changed - updating dynamic colors");
-            colorUpdateTrigger++; // This will trigger re-evaluation of all color properties
+            colorUpdateTrigger++;
             colorsUpdated();
         }
     }
 
-    // ────────────────  public helper ────────────────
     function extractColors() {
         console.log("Colors.extractColors() called, matugenAvailable:", matugenAvailable);
         extractionRequested = true;
@@ -73,9 +62,7 @@ Singleton {
     }
 
     function getMatugenColor(path, fallback) {
-        // Include colorUpdateTrigger in the function to make properties reactive to changes
         colorUpdateTrigger;
-        // Use light or dark colors based on Theme.isLightMode
         const colorMode = (typeof Theme !== "undefined" && Theme.isLightMode) ? "light" : "dark";
         let cur = matugenColors && matugenColors.colors && matugenColors.colors[colorMode];
         for (const part of path.split(".")) {
@@ -93,15 +80,11 @@ Singleton {
 
     Component.onCompleted: {
         console.log("Colors.qml → home =", homeDir);
-        // Don't automatically run color extraction - only when requested
         matugenCheck.running = true;
-        // Connect to Theme light mode changes to update colors
         if (typeof Theme !== "undefined")
             Theme.isLightModeChanged.connect(root.onLightModeChanged);
-
     }
 
-    // ────────────────  availability checks ────────────────
     Process {
         id: matugenCheck
 
@@ -115,7 +98,6 @@ Singleton {
                 ToastService.showWarning("matugen not found - dynamic theming disabled");
                 return ;
             }
-            // If extraction was requested, continue the process
             if (extractionRequested) {
                 console.log("Continuing with color extraction");
                 fileChecker.running = true;
@@ -124,7 +106,7 @@ Singleton {
     }
 
     Process {
-        id: fileChecker // exists & readable?
+        id: fileChecker
 
         command: ["test", "-r", wallpaperPath]
         onExited: (code) => {
@@ -139,13 +121,11 @@ Singleton {
         }
     }
 
-    // ────────────────  matugen invocation ────────────────
     Process {
         id: matugenProcess
 
         command: ["matugen", "-v", "image", wallpaperPath, "--json", "hex"]
 
-        // ── grab stdout as a stream ──
         stdout: StdioCollector {
             id: matugenCollector
 
@@ -162,7 +142,6 @@ Singleton {
                     root.matugenColors = JSON.parse(out);
                     root.colorsUpdated();
                     ToastService.clearWallpaperError();
-                    ToastService.showInfo("Loaded Dynamic Theme Colors");
                 } catch (e) {
                     console.error("JSON parse failed:", e);
                     ToastService.wallpaperErrorStatus = "error";
@@ -171,7 +150,6 @@ Singleton {
             }
         }
 
-        // grab stderr too, so we can print it above
         stderr: StdioCollector {
             id: matugenErr
         }

@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Rectangle {
     id: root
@@ -21,8 +22,8 @@ Rectangle {
         spacing: Theme.spacingXS
 
         // Network Status Icon
-        Text {
-            text: {
+        DankIcon {
+            name: {
                 if (NetworkService.networkStatus === "ethernet") {
                     return "lan";
                 } else if (NetworkService.networkStatus === "wifi") {
@@ -42,20 +43,16 @@ Rectangle {
                     return "wifi_off";
                 }
             }
-            font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSize - 8
-            font.weight: Theme.iconFontWeight
+            size: Theme.iconSize - 8
             color: NetworkService.networkStatus !== "disconnected" ? Theme.primary : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
             anchors.verticalCenter: parent.verticalCenter
             visible: true
         }
 
         // Bluetooth Icon (when available and enabled) - moved next to network
-        Text {
-            text: "bluetooth"
-            font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSize - 8
-            font.weight: Theme.iconFontWeight
+        DankIcon {
+            name: "bluetooth"
+            size: Theme.iconSize - 8
             color: BluetoothService.enabled ? Theme.primary : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
             anchors.verticalCenter: parent.verticalCenter
             visible: BluetoothService.available && BluetoothService.enabled
@@ -68,13 +65,11 @@ Rectangle {
             color: "transparent"
             anchors.verticalCenter: parent.verticalCenter
 
-            Text {
+            DankIcon {
                 id: audioIcon
 
-                text: AudioService.sinkMuted ? "volume_off" : AudioService.volumeLevel < 33 ? "volume_down" : "volume_up"
-                font.family: Theme.iconFont
-                font.pixelSize: Theme.iconSize - 8
-                font.weight: Theme.iconFontWeight
+                name: AudioService.sinkMuted ? "volume_off" : AudioService.volumeLevel < 33 ? "volume_down" : "volume_up"
+                size: Theme.iconSize - 8
                 color: audioWheelArea.containsMouse || controlCenterArea.containsMouse || root.isActive ? Theme.primary : Theme.surfaceText
                 anchors.centerIn: parent
             }
@@ -107,11 +102,9 @@ Rectangle {
         }
 
         // Microphone Icon (when active)
-        Text {
-            text: "mic"
-            font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSize - 8
-            font.weight: Theme.iconFontWeight
+        DankIcon {
+            name: "mic"
+            size: Theme.iconSize - 8
             color: Theme.primary
             anchors.verticalCenter: parent.verticalCenter
             visible: false // TODO: Add mic detection

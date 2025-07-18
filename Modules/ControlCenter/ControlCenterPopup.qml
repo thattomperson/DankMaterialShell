@@ -8,6 +8,8 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Widgets
+import "../../Widgets"
 
 PanelWindow {
     id: root
@@ -225,22 +227,20 @@ PanelWindow {
                                 color: Theme.primary
                                 visible: !parent.hasImage
 
-                                Text {
+                                DankIcon {
                                     anchors.centerIn: parent
-                                    text: "person"
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.iconSize + 8
+                                    name: "person"
+                                    size: Theme.iconSize + 8
                                     color: Theme.primaryText
                                 }
 
                             }
 
                             // Error icon for when the image fails to load.
-                            Text {
+                            DankIcon {
                                 anchors.centerIn: parent
-                                text: "warning"
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.iconSize + 8
+                                name: "warning"
+                                size: Theme.iconSize + 8
                                 color: Theme.primaryText
                                 visible: Prefs.profileImage !== "" && profileImageLoader.status === Image.Error
                             }
@@ -292,14 +292,13 @@ PanelWindow {
                                 color: "transparent"
                                 clip: true
 
-                                Text {
+                                DankIcon {
                                     anchors.centerIn: parent
-                                    text: root.powerOptionsExpanded ? "expand_less" : "power_settings_new"
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.iconSize - 2
+                                    name: root.powerOptionsExpanded ? "expand_less" : "power_settings_new"
+                                    size: Theme.iconSize - 2
                                     color: powerButton.containsMouse || root.powerOptionsExpanded ? Theme.error : Theme.surfaceText
 
-                                    Behavior on text {
+                                    Behavior on name {
                                         // Smooth icon transition
                                         SequentialAnimation {
                                             NumberAnimation {
@@ -312,7 +311,7 @@ PanelWindow {
 
                                             PropertyAction {
                                                 target: parent
-                                                property: "text"
+                                                property: "name"
                                             }
 
                                             NumberAnimation {
@@ -359,11 +358,10 @@ PanelWindow {
                             radius: 20
                             color: settingsButton.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
 
-                            Text {
+                            DankIcon {
                                 anchors.centerIn: parent
-                                text: "settings"
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.iconSize - 2
+                                name: "settings"
+                                size: Theme.iconSize - 2
                                 color: Theme.surfaceText
                             }
 
@@ -420,10 +418,9 @@ PanelWindow {
                                 anchors.centerIn: parent
                                 spacing: Theme.spacingXS
 
-                                Text {
-                                    text: "logout"
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.fontSizeSmall
+                                DankIcon {
+                                    name: "logout"
+                                    size: Theme.fontSizeSmall
                                     color: logoutButton.containsMouse ? Theme.warning : Theme.surfaceText
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -476,10 +473,9 @@ PanelWindow {
                                 anchors.centerIn: parent
                                 spacing: Theme.spacingXS
 
-                                Text {
-                                    text: "restart_alt"
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.fontSizeSmall
+                                DankIcon {
+                                    name: "restart_alt"
+                                    size: Theme.fontSizeSmall
                                     color: rebootButton.containsMouse ? Theme.warning : Theme.surfaceText
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -532,10 +528,9 @@ PanelWindow {
                                 anchors.centerIn: parent
                                 spacing: Theme.spacingXS
 
-                                Text {
-                                    text: "power_settings_new"
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.fontSizeSmall
+                                DankIcon {
+                                    name: "power_settings_new"
+                                    size: Theme.fontSizeSmall
                                     color: shutdownButton.containsMouse ? Theme.error : Theme.surfaceText
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -599,104 +594,53 @@ PanelWindow {
                 }
 
                 // Tab buttons
-                Row {
+                DankTabBar {
                     width: parent.width
-                    spacing: Theme.spacingXS
-
-                    Repeater {
-                        model: {
+                    tabHeight: 40
+                    currentIndex: {
+                        let tabs = ["network", "audio"];
+                        if (BluetoothService.available)
+                            tabs.push("bluetooth");
+                        tabs.push("display");
+                        return tabs.indexOf(root.currentTab);
+                    }
+                    model: {
                             let tabs = [{
-                                "name": "Network",
+                                "text": "Network",
                                 "icon": "wifi",
-                                "id": "network",
-                                "available": true
+                                "id": "network"
                             }];
                             // Always show audio
                             tabs.push({
-                                "name": "Audio",
+                                "text": "Audio",
                                 "icon": "volume_up",
-                                "id": "audio",
-                                "available": true
+                                "id": "audio"
                             });
                             // Show Bluetooth only if available
                             if (BluetoothService.available)
                                 tabs.push({
-                                "name": "Bluetooth",
+                                "text": "Bluetooth",
                                 "icon": "bluetooth",
-                                "id": "bluetooth",
-                                "available": true
+                                "id": "bluetooth"
                             });
 
                             // Always show display
                             tabs.push({
-                                "name": "Display",
+                                "text": "Display",
                                 "icon": "brightness_6",
-                                "id": "display",
-                                "available": true
+                                "id": "display"
                             });
                             return tabs;
-                        }
-
-                        Rectangle {
-                            property int tabCount: {
-                                let count = 3; // Network + Audio + Display (always visible)
-                                if (BluetoothService.available)
-                                    count++;
-
-                                return count;
-                            }
-
-                            width: (parent.width - Theme.spacingXS * (tabCount - 1)) / tabCount
-                            height: 40
-                            radius: Theme.cornerRadius
-                            color: root.currentTab === modelData.id ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : tabArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
-
-                            Row {
-                                anchors.centerIn: parent
-                                spacing: Theme.spacingXS
-
-                                Text {
-                                    text: modelData.icon
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.iconSize - 4
-                                    color: root.currentTab === modelData.id ? Theme.primary : Theme.surfaceText
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-
-                                Text {
-                                    text: modelData.name
-                                    font.pixelSize: Theme.fontSizeSmall
-                                    color: root.currentTab === modelData.id ? Theme.primary : Theme.surfaceText
-                                    font.weight: root.currentTab === modelData.id ? Font.Medium : Font.Normal
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-
-                            }
-
-                            MouseArea {
-                                id: tabArea
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    root.currentTab = modelData.id;
-                                }
-                            }
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.shortDuration
-                                    easing.type: Theme.standardEasing
-                                }
-
-                            }
-
-                        }
-
                     }
-
+                    onTabClicked: function(index) {
+                        let tabs = ["network", "audio"];
+                        if (BluetoothService.available)
+                            tabs.push("bluetooth");
+                        tabs.push("display");
+                        root.currentTab = tabs[index];
+                    }
                 }
+
 
             }
 

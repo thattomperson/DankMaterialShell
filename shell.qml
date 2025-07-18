@@ -1,10 +1,10 @@
 //@ pragma UseQApplication
 
 import Quickshell
-import qs.Widgets
-import qs.Widgets.CenterCommandCenter
-import qs.Widgets.ControlCenter
-import qs.Widgets.TopBar
+import qs.Modules
+import qs.Modules.CenterCommandCenter
+import qs.Modules.ControlCenter
+import qs.Modules.TopBar
 
 ShellRoot {
     id: root
@@ -85,7 +85,7 @@ ShellRoot {
         id: clipboardHistoryPopup
     }
 
-    ToastWidget {
+    Toast {
         id: toastWidget
     }
 

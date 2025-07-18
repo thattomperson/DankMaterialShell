@@ -11,6 +11,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Modules
 import qs.Widgets
 
 PanelWindow {
@@ -204,12 +205,10 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: Prefs.showClipboard
 
-                    Text {
+                    DankIcon {
                         anchors.centerIn: parent
-                        text: "content_paste"
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSize - 6
-                        font.weight: Theme.iconFontWeight
+                        name: "content_paste"
+                        size: Theme.iconSize - 6
                         color: Theme.surfaceText
                     }
 

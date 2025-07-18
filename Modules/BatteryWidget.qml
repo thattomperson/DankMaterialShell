@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell.Services.UPower
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Rectangle {
     id: batteryWidget
@@ -20,10 +21,9 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 4
 
-        Text {
-            text: Theme.getBatteryIcon(BatteryService.batteryLevel, BatteryService.isCharging, BatteryService.batteryAvailable)
-            font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSize - 6
+        DankIcon {
+            name: Theme.getBatteryIcon(BatteryService.batteryLevel, BatteryService.isCharging, BatteryService.batteryAvailable)
+            size: Theme.iconSize - 6
             color: {
                 if (!BatteryService.batteryAvailable)
                     return Theme.surfaceText;

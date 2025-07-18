@@ -1,5 +1,6 @@
 import QtQuick
 import qs.Common
+import qs.Widgets
 
 Item {
     id: slider
@@ -40,10 +41,9 @@ Item {
             spacing: Theme.spacingM
 
             // Left icon
-            Text {
-                text: slider.leftIcon
-                font.family: Theme.iconFont
-                font.pixelSize: Theme.iconSize
+            DankIcon {
+                name: slider.leftIcon
+                size: Theme.iconSize
                 color: slider.enabled ? Theme.surfaceText : Theme.surfaceVariantText
                 anchors.verticalCenter: parent.verticalCenter
                 visible: slider.leftIcon.length > 0
@@ -205,10 +205,9 @@ Item {
             }
 
             // Right icon
-            Text {
-                text: slider.rightIcon
-                font.family: Theme.iconFont
-                font.pixelSize: Theme.iconSize
+            DankIcon {
+                name: slider.rightIcon
+                size: Theme.iconSize
                 color: slider.enabled ? Theme.surfaceText : Theme.surfaceVariantText
                 anchors.verticalCenter: parent.verticalCenter
                 visible: slider.rightIcon.length > 0

@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Effects
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Column {
     id: calendarWidget
@@ -57,13 +58,11 @@ Column {
             radius: Theme.cornerRadius
             color: prevMonthArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
 
-            Text {
+            DankIcon {
                 anchors.centerIn: parent
-                text: "chevron_left"
-                font.family: Theme.iconFont
-                font.pixelSize: Theme.iconSize
+                name: "chevron_left"
+                size: Theme.iconSize
                 color: Theme.primary
-                font.weight: Theme.iconFontWeight
             }
 
             MouseArea {
@@ -98,13 +97,11 @@ Column {
             radius: Theme.cornerRadius
             color: nextMonthArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
 
-            Text {
+            DankIcon {
                 anchors.centerIn: parent
-                text: "chevron_right"
-                font.family: Theme.iconFont
-                font.pixelSize: Theme.iconSize
+                name: "chevron_right"
+                size: Theme.iconSize
                 color: Theme.primary
-                font.weight: Theme.iconFontWeight
             }
 
             MouseArea {

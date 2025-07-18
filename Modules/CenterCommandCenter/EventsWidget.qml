@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Effects
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 // Events widget for selected date - Material Design 3 style
 Rectangle {
@@ -67,10 +68,9 @@ Rectangle {
         anchors.margins: Theme.spacingL
         spacing: Theme.spacingS
 
-        Text {
-            text: "event"
-            font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSize - 2
+        DankIcon {
+            name: "event"
+            size: Theme.iconSize - 2
             color: Theme.primary
             anchors.verticalCenter: parent.verticalCenter
         }
@@ -91,10 +91,9 @@ Rectangle {
         spacing: Theme.spacingXS
         visible: !hasEvents
 
-        Text {
-            text: "event_busy"
-            font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSize + 8
+        DankIcon {
+            name: "event_busy"
+            size: Theme.iconSize + 8
             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3)
             anchors.horizontalCenter: parent.horizontalCenter
         }
@@ -202,10 +201,9 @@ Rectangle {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
 
-                        Text {
-                            text: "schedule"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.fontSizeSmall
+                        DankIcon {
+                            name: "schedule"
+                            size: Theme.fontSizeSmall
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -239,10 +237,9 @@ Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: modelData.location !== ""
 
-                        Text {
-                            text: "location_on"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.fontSizeSmall
+                        DankIcon {
+                            name: "location_on"
+                            size: Theme.fontSizeSmall
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                             anchors.verticalCenter: parent.verticalCenter
                         }

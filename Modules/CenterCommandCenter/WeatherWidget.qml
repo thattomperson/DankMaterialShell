@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Effects
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Rectangle {
     id: weatherWidget
@@ -21,10 +22,9 @@ Rectangle {
         spacing: Theme.spacingS
         visible: !WeatherService.weather.available || WeatherService.weather.temp === 0
 
-        Text {
-            text: "cloud_off"
-            font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSize + 8
+        DankIcon {
+            name: "cloud_off"
+            size: Theme.iconSize + 8
             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
             anchors.horizontalCenter: parent.horizontalCenter
         }
@@ -55,10 +55,9 @@ Rectangle {
                 spacing: Theme.spacingL
 
                 // Weather icon
-                Text {
-                    text: WeatherService.getWeatherIcon(WeatherService.weather.wCode)
-                    font.family: Theme.iconFont
-                    font.pixelSize: Theme.iconSize + 8
+                DankIcon {
+                    name: WeatherService.getWeatherIcon(WeatherService.weather.wCode)
+                    size: Theme.iconSize + 8
                     color: Theme.primary
                     anchors.verticalCenter: parent.verticalCenter
                 }
@@ -109,10 +108,9 @@ Rectangle {
             Row {
                 spacing: Theme.spacingXS
 
-                Text {
-                    text: "humidity_low"
-                    font.family: Theme.iconFont
-                    font.pixelSize: Theme.fontSizeSmall
+                DankIcon {
+                    name: "humidity_low"
+                    size: Theme.fontSizeSmall
                     color: Theme.surfaceText
                     anchors.verticalCenter: parent.verticalCenter
                 }
@@ -129,10 +127,9 @@ Rectangle {
             Row {
                 spacing: Theme.spacingXS
 
-                Text {
-                    text: "air"
-                    font.family: Theme.iconFont
-                    font.pixelSize: Theme.fontSizeSmall
+                DankIcon {
+                    name: "air"
+                    size: Theme.fontSizeSmall
                     color: Theme.surfaceText
                     anchors.verticalCenter: parent.verticalCenter
                 }
@@ -149,10 +146,9 @@ Rectangle {
             Row {
                 spacing: Theme.spacingXS
 
-                Text {
-                    text: "wb_twilight"
-                    font.family: Theme.iconFont
-                    font.pixelSize: Theme.fontSizeSmall
+                DankIcon {
+                    name: "wb_twilight"
+                    size: Theme.fontSizeSmall
                     color: Theme.surfaceText
                     anchors.verticalCenter: parent.verticalCenter
                 }
@@ -169,10 +165,9 @@ Rectangle {
             Row {
                 spacing: Theme.spacingXS
 
-                Text {
-                    text: "bedtime"
-                    font.family: Theme.iconFont
-                    font.pixelSize: Theme.fontSizeSmall
+                DankIcon {
+                    name: "bedtime"
+                    size: Theme.fontSizeSmall
                     color: Theme.surfaceText
                     anchors.verticalCenter: parent.verticalCenter
                 }

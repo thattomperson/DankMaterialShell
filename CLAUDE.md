@@ -40,7 +40,7 @@ When asked to backup Memory Bank System files, you will copy the core context fi
 
 This is a Quickshell-based desktop shell implementation with Material Design 3 dark theme. The shell provides a complete desktop environment experience with panels, widgets, and system integration services.
 
-**Architecture**: Modular design with clean separation between UI components (Widgets), system services (Services), and shared utilities (Common).
+**Architecture**: Modular design with clean separation between UI components (Modules), system services (Services), and shared utilities (Common).
 
 ## Technology Stack
 
@@ -81,11 +81,19 @@ shell.qml           # Main entry point (minimal orchestration)
 │   ├── NetworkService.qml
 │   ├── BrightnessService.qml
 │   └── [9 total services]
-└── Widgets/        # UI components
-    ├── TopBar.qml
-    ├── AppLauncher.qml
-    ├── ControlCenterPopup.qml
-    └── [18 total widgets]
+├── Modules/        # UI components
+│   ├── TopBar.qml
+│   ├── AppLauncher.qml
+│   ├── ControlCenterPopup.qml
+│   └── [18 total modules]
+└── Widgets/        # Reusable UI controls
+    ├── DankIcon.qml
+    ├── DankSlider.qml
+    ├── DankToggle.qml
+    ├── DankTabBar.qml
+    ├── DankGridView.qml
+    ├── DankListView.qml
+    └── [6 total widgets]
 ```
 
 ### Component Organization
@@ -106,10 +114,18 @@ shell.qml           # Main entry point (minimal orchestration)
    - **Examples**: AudioService, NetworkService, BrightnessService, WeatherService
    - Services handle system commands, state management, and hardware integration
 
-4. **Widgets/** - Reusable UI components
+4. **Modules/** - UI components
    - **Full-screen components**: AppLauncher, ClipboardHistory, ControlCenterPopup
    - **Panel components**: TopBar, SystemTrayWidget, NotificationPopup
-   - **Reusable controls**: CustomSlider, WorkspaceSwitcher
+   - **Layout components**: WorkspaceSwitcher
+
+5. **Widgets/** - Reusable UI controls
+   - **DankIcon**: Centralized icon component with Material Design font integration
+   - **DankSlider**: Enhanced slider with animations and smart detection
+   - **DankToggle**: Consistent toggle switch component
+   - **DankTabBar**: Unified tab bar implementation
+   - **DankGridView**: Reusable grid view with adaptive columns
+   - **DankListView**: Reusable list view with configurable styling
 
 ### Key Architectural Patterns
 
@@ -146,7 +162,15 @@ shell.qml           # Main entry point (minimal orchestration)
 - **AppLauncher**: Full-featured app grid/list with 93+ applications, search, categories
 - **ClipboardHistory**: Complete clipboard management with cliphist integration
 - **TopBar**: Per-monitor panels with workspace switching, clock, system tray
-- **CustomSlider**: Reusable enhanced slider with animations and smart detection
+
+#### Key Widgets
+
+- **DankIcon**: Centralized icon component with automatic Material Design font detection
+- **DankSlider**: Enhanced slider with animations and smart detection
+- **DankToggle**: Consistent toggle switch component
+- **DankTabBar**: Unified tab bar implementation
+- **DankGridView**: Reusable grid view with adaptive columns
+- **DankListView**: Reusable list view with configurable styling
 
 ## Code Conventions
 
@@ -161,7 +185,7 @@ shell.qml           # Main entry point (minimal orchestration)
 
 2. **Naming Conventions**:
    - **Services**: Use `Singleton` type with `id: root`
-   - **Components**: Use descriptive names (e.g., `CustomSlider`, `TopBar`)
+   - **Components**: Use descriptive names (e.g., `DankSlider`, `TopBar`)
    - **Properties**: camelCase for properties, PascalCase for types
 
 3. **Null-Safe Operations**:
@@ -204,14 +228,16 @@ shell.qml           # Main entry point (minimal orchestration)
    import Quickshell
    import Quickshell.Widgets
    import Quickshell.Io     // For Process, FileView
-   import "../Common"       // For Theme, utilities
-   import "../Services"     // For service access
+   import qs.Common         // For Theme, utilities
+   import qs.Services       // For service access
+   import qs.Widgets        // For reusable widgets (DankIcon, etc.)
    ```
 
 2. **Service Dependencies**:
    - Services should NOT import other services
-   - Widgets can import and use services via property bindings
+   - Modules and Widgets can import and use services via property bindings
    - Use `Theme.propertyName` for consistent styling
+   - Use `DankIcon { name: "icon_name" }` for all icons instead of manual Text components
 
 ### Component Development Patterns
 
@@ -220,8 +246,8 @@ shell.qml           # Main entry point (minimal orchestration)
    // In services - detect capabilities
    property bool brightnessAvailable: false
    
-   // In widgets - adapt UI accordingly
-   CustomSlider {
+   // In modules - adapt UI accordingly
+   DankSlider {
        visible: BrightnessService.brightnessAvailable
        enabled: BrightnessService.brightnessAvailable
        value: BrightnessService.brightnessLevel
@@ -229,13 +255,13 @@ shell.qml           # Main entry point (minimal orchestration)
    ```
 
 2. **Reusable Components**:
-   - Create reusable widgets for common patterns (like CustomSlider)
+   - Create reusable widgets for common patterns (like DankSlider)
    - Use configurable properties for different use cases
    - Include proper signal handling with unique names (avoid `valueChanged`)
 
 3. **Service Integration**:
    - Services expose properties and functions
-   - Widgets bind to service properties for reactive updates
+   - Modules and Widgets bind to service properties for reactive updates
    - Use service functions for actions: `ServiceName.performAction(value)`
    - **CRITICAL**: DO NOT create wrapper functions for everything - bind directly to underlying APIs when possible
    - Example: Use `BluetoothService.adapter.discovering = true` instead of `BluetoothService.startScan()`
@@ -284,6 +310,30 @@ When modifying the shell:
 6. **Multi-monitor**: Verify behavior with multiple displays
 7. **Feature detection**: Test on systems with/without required tools
 
+### Adding New Modules
+
+1. **Create component**:
+   ```bash
+   # Create new module file
+   touch Modules/NewModule.qml
+   ```
+
+2. **Follow module patterns**:
+   - Use `Theme.propertyName` for styling
+   - Import `qs.Common` and `qs.Services` as needed
+   - Import `qs.Widgets` for reusable components
+   - Bind to service properties for reactive updates
+   - Consider per-screen vs global behavior
+   - Use `DankIcon` for icons instead of manual Text components
+
+3. **Integration in shell.qml**:
+   ```qml
+   NewModule {
+       id: newModule
+       // Configure properties
+   }
+   ```
+
 ### Adding New Widgets
 
 1. **Create component**:
@@ -294,17 +344,10 @@ When modifying the shell:
 
 2. **Follow widget patterns**:
    - Use `Theme.propertyName` for styling
-   - Import `"../Common"` and `"../Services"` as needed
-   - Bind to service properties for reactive updates
-   - Consider per-screen vs global behavior
-
-3. **Integration in shell.qml**:
-   ```qml
-   NewWidget {
-       id: newWidget
-       // Configure properties
-   }
-   ```
+   - Import `qs.Common` for theming
+   - Focus on reusability and composition
+   - Keep widgets simple and focused
+   - Use `DankIcon` for icons instead of manual Text components
 
 ### Adding New Services
 
@@ -329,9 +372,9 @@ When modifying the shell:
    }
    ```
 
-2. **Use in widgets**:
+2. **Use in modules**:
    ```qml
-   // In widget files
+   // In module files
    property alias serviceValue: NewService.currentValue
    
    SomeControl {
@@ -352,9 +395,20 @@ When modifying the shell:
 ### Best Practices Summary
 
 - **Modularity**: Keep components focused and independent
-- **Reusability**: Create reusable components for common patterns
+- **Reusability**: Create reusable components for common patterns using Widgets/
 - **Responsiveness**: Use property bindings for reactive UI
 - **Robustness**: Implement feature detection and graceful degradation
 - **Consistency**: Follow Material Design 3 principles via Theme singleton
 - **Performance**: Minimize expensive operations and use appropriate data structures
+- **Icon Management**: Use `DankIcon` for all icons instead of manual Text components
+- **Widget System**: Leverage existing widgets (DankSlider, DankToggle, etc.) for consistency
 - **NO WRAPPER HELL**: Avoid creating unnecessary wrapper functions - bind directly to underlying APIs for better reactivity and performance
+
+### Common Widget Patterns
+
+1. **Icons**: Always use `DankIcon { name: "icon_name" }` instead of `Text { font.family: Theme.iconFont }`
+2. **Sliders**: Use `DankSlider` for consistent styling and behavior
+3. **Toggles**: Use `DankToggle` for switches and checkboxes
+4. **Tab Bars**: Use `DankTabBar` for tabbed interfaces
+5. **Lists**: Use `DankListView` for scrollable lists
+6. **Grids**: Use `DankGridView` for grid layouts

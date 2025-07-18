@@ -8,6 +8,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 PanelWindow {
     id: processListWidget
@@ -213,8 +214,8 @@ PanelWindow {
                                     spacing: Theme.spacingS
 
                                     // Tab icons for visual hierarchy
-                                    Text {
-                                        text: {
+                                    DankIcon {
+                                        name: {
                                             switch (index) {
                                             case 0:
                                                 return "list_alt";
@@ -226,8 +227,7 @@ PanelWindow {
                                                 return "tab";
                                             }
                                         }
-                                        font.family: Theme.iconFont
-                                        font.pixelSize: Theme.iconSize - 2
+                                        size: Theme.iconSize - 2
                                         color: currentTab === index ? Theme.primary : Theme.surfaceText
                                         opacity: currentTab === index ? 1 : 0.7
 
@@ -706,10 +706,9 @@ PanelWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: 8
 
-                                Text {
-                                    text: ProcessMonitorService.getProcessIcon(modelData ? modelData.command : "")
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.iconSize - 4
+                                DankIcon {
+                                    name: ProcessMonitorService.getProcessIcon(modelData ? modelData.command : "")
+                                    size: Theme.iconSize - 4
                                     color: {
                                         if (modelData && modelData.cpu > 80)
                                             return Theme.error;
@@ -822,11 +821,9 @@ PanelWindow {
                                 color: menuButtonArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
                                 anchors.verticalCenter: parent.verticalCenter
 
-                                Text {
-                                    text: "more_vert"
-                                    font.family: Theme.iconFont
-                                    font.weight: Theme.iconFontWeight
-                                    font.pixelSize: Theme.iconSize - 2
+                                DankIcon {
+                                    name: "more_vert"
+                                    size: Theme.iconSize - 2
                                     color: Theme.surfaceText
                                     opacity: 0.6
                                     anchors.centerIn: parent
@@ -1310,10 +1307,9 @@ PanelWindow {
                                 width: parent.width
                                 spacing: Theme.spacingS
 
-                                Text {
-                                    text: "computer"
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.iconSize
+                                DankIcon {
+                                    name: "computer"
+                                    size: Theme.iconSize
                                     color: Theme.primary
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -1382,10 +1378,9 @@ PanelWindow {
                                 width: parent.width
                                 spacing: Theme.spacingS
 
-                                Text {
-                                    text: "developer_board"
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.iconSize
+                                DankIcon {
+                                    name: "developer_board"
+                                    size: Theme.iconSize
                                     color: Theme.secondary
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -1461,10 +1456,9 @@ PanelWindow {
                                 width: parent.width
                                 spacing: Theme.spacingS
 
-                                Text {
-                                    text: "timer"
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.iconSize
+                                DankIcon {
+                                    name: "timer"
+                                    size: Theme.iconSize
                                     color: Theme.warning
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -1526,10 +1520,9 @@ PanelWindow {
                                 width: parent.width
                                 spacing: Theme.spacingS
 
-                                Text {
-                                    text: "list_alt"
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.iconSize
+                                DankIcon {
+                                    name: "list_alt"
+                                    size: Theme.iconSize
                                     color: Theme.info
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -1583,10 +1576,9 @@ PanelWindow {
                             width: parent.width
                             spacing: Theme.spacingS
 
-                            Text {
-                                text: "storage"
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.iconSize
+                            DankIcon {
+                                name: "storage"
+                                size: Theme.iconSize
                                 color: Theme.success
                                 anchors.verticalCenter: parent.verticalCenter
                             }

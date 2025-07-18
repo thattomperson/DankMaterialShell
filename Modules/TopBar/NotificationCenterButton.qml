@@ -1,5 +1,6 @@
 import QtQuick
 import qs.Common
+import qs.Widgets
 
 Rectangle {
     id: root
@@ -14,12 +15,10 @@ Rectangle {
     radius: Theme.cornerRadius
     color: notificationArea.containsMouse || root.isActive ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.08)
 
-    Text {
+    DankIcon {
         anchors.centerIn: parent
-        text: "notifications"
-        font.family: Theme.iconFont
-        font.pixelSize: Theme.iconSize - 6
-        font.weight: Theme.iconFontWeight
+        name: "notifications"
+        size: Theme.iconSize - 6
         color: notificationArea.containsMouse || root.isActive ? Theme.primary : Theme.surfaceText
     }
 

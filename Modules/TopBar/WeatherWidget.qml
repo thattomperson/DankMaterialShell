@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Rectangle {
     id: root
@@ -19,10 +20,9 @@ Rectangle {
         anchors.centerIn: parent
         spacing: Theme.spacingXS
 
-        Text {
-            text: WeatherService.getWeatherIcon(WeatherService.weather.wCode)
-            font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSize - 4
+        DankIcon {
+            name: WeatherService.getWeatherIcon(WeatherService.weather.wCode)
+            size: Theme.iconSize - 4
             color: Theme.primary
             anchors.verticalCenter: parent.verticalCenter
         }
