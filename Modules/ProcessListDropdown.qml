@@ -8,6 +8,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 PanelWindow {
     id: processListDropdown
@@ -509,12 +510,11 @@ PanelWindow {
                             anchors.margins: 8
 
                             // Process icon
-                            Text {
+                            DankIcon {
                                 id: processIcon
 
-                                text: ProcessMonitorService.getProcessIcon(modelData ? modelData.command : "")
-                                font.family: Theme.iconFont
-                                font.pixelSize: Theme.iconSize - 4
+                                name: ProcessMonitorService.getProcessIcon(modelData ? modelData.command : "")
+                                size: Theme.iconSize - 4
                                 color: {
                                     if (modelData && modelData.cpu > 80)
                                         return Theme.error;
@@ -646,11 +646,9 @@ PanelWindow {
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
 
-                                Text {
-                                    text: "more_vert"
-                                    font.family: Theme.iconFont
-                                    font.weight: Theme.iconFontWeight
-                                    font.pixelSize: Theme.iconSize - 2
+                                DankIcon {
+                                    name: "more_vert"
+                                    size: Theme.iconSize - 2
                                     color: Theme.surfaceText
                                     opacity: 0.6
                                     anchors.centerIn: parent
