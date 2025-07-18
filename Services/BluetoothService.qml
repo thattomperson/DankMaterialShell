@@ -26,9 +26,9 @@ Singleton {
             return [];
 
         var filtered = Bluetooth.devices.values.filter((dev) => {
-            return dev && !dev.paired && !dev.pairing && !dev.blocked && isValidDevice(dev) && (dev.rssi === undefined || dev.rssi !== 0);
+            return dev && !dev.paired && !dev.pairing && !dev.blocked && isValidDevice(dev) && (dev.signalStrength === undefined || dev.signalStrength > 0);
         });
-        return sortByRssi(filtered);
+        return sortBySignalStrength(filtered);
     }
     readonly property var allDevicesWithBattery: {
         if (!adapter || !adapter.devices)
@@ -39,11 +39,11 @@ Singleton {
         });
     }
 
-    function sortByRssi(devices) {
+    function sortBySignalStrength(devices) {
         return devices.sort((a, b) => {
-            var aRssi = (a.rssi !== undefined && a.rssi !== 0) ? a.rssi : -100;
-            var bRssi = (b.rssi !== undefined && b.rssi !== 0) ? b.rssi : -100;
-            return bRssi - aRssi;
+            var aSignal = (a.signalStrength !== undefined && a.signalStrength > 0) ? a.signalStrength : 0;
+            var bSignal = (b.signalStrength !== undefined && b.signalStrength > 0) ? b.signalStrength : 0;
+            return bSignal - aSignal;
         });
     }
 
@@ -129,7 +129,7 @@ Singleton {
     }
 
     function debugDevice(device) {
-        console.log("Device:", device.name, "paired:", device.paired, "connected:", device.connected, "rssi:", device.rssi);
+        console.log("Device:", device.name, "paired:", device.paired, "connected:", device.connected, "signalStrength:", device.signalStrength);
     }
 
     function getPairingStatus(device) {
@@ -149,40 +149,40 @@ Singleton {
     }
 
     function getSignalStrength(device) {
-        if (!device || device.rssi === undefined || device.rssi === 0)
+        if (!device || device.signalStrength === undefined || device.signalStrength <= 0)
             return "Unknown";
 
-        var rssi = device.rssi;
-        if (rssi >= -50)
+        var signal = device.signalStrength;
+        if (signal >= 80)
             return "Excellent";
 
-        if (rssi >= -60)
+        if (signal >= 60)
             return "Good";
 
-        if (rssi >= -70)
+        if (signal >= 40)
             return "Fair";
 
-        if (rssi >= -80)
+        if (signal >= 20)
             return "Poor";
 
         return "Very Poor";
     }
 
     function getSignalIcon(device) {
-        if (!device || device.rssi === undefined || device.rssi === 0)
+        if (!device || device.signalStrength === undefined || device.signalStrength <= 0)
             return "signal_cellular_null";
 
-        var rssi = device.rssi;
-        if (rssi >= -50)
+        var signal = device.signalStrength;
+        if (signal >= 80)
             return "signal_cellular_4_bar";
 
-        if (rssi >= -60)
+        if (signal >= 60)
             return "signal_cellular_3_bar";
 
-        if (rssi >= -70)
+        if (signal >= 40)
             return "signal_cellular_2_bar";
 
-        if (rssi >= -80)
+        if (signal >= 20)
             return "signal_cellular_1_bar";
 
         return "signal_cellular_0_bar";

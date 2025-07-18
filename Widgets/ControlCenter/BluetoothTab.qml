@@ -398,14 +398,14 @@ Item {
                                             font.family: Theme.iconFont
                                             font.pixelSize: Theme.fontSizeSmall
                                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
-                                            visible: modelData.rssi !== undefined && modelData.rssi !== 0 && pairingStatus === "available"
+                                            visible: modelData.signalStrength !== undefined && modelData.signalStrength > 0 && pairingStatus === "available"
                                         }
 
                                         Text {
-                                            text: (modelData.rssi !== undefined && modelData.rssi !== 0) ? modelData.rssi + "dBm" : ""
+                                            text: (modelData.signalStrength !== undefined && modelData.signalStrength > 0) ? modelData.signalStrength + "%" : ""
                                             font.pixelSize: Theme.fontSizeSmall
                                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
-                                            visible: modelData.rssi !== undefined && modelData.rssi !== 0 && pairingStatus === "available"
+                                            visible: modelData.signalStrength !== undefined && modelData.signalStrength > 0 && pairingStatus === "available"
                                         }
 
                                     }
