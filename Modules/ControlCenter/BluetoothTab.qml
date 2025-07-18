@@ -92,7 +92,7 @@ Item {
 
                 Repeater {
                     model: BluetoothService.adapter && BluetoothService.adapter.devices ? BluetoothService.adapter.devices.values.filter((dev) => {
-                        return dev && dev.paired;
+                        return dev && (dev.paired || dev.trusted);
                     }) : []
 
                     Rectangle {
@@ -131,7 +131,7 @@ Item {
                                     spacing: Theme.spacingXS
 
                                     Text {
-                                        text: modelData.connected ? "Connected" : "Disconnected"
+                                        text: BluetoothDeviceState.toString(modelData.state)
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                                     }
@@ -204,13 +204,13 @@ Item {
                             anchors.fill: parent
                             anchors.rightMargin: 40
                             hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
+                            enabled: !BluetoothService.isDeviceBusy(modelData)
+                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.BusyCursor
                             onClicked: {
-                                BluetoothService.debugDevice(modelData);
                                 if (modelData.connected) {
                                     modelData.disconnect();
                                 } else {
-                                    modelData.connect();
+                                    BluetoothService.connectDeviceWithTrust(modelData);
                                 }
                             }
                         }
@@ -304,15 +304,16 @@ Item {
 
                     Rectangle {
                         property bool canConnect: BluetoothService.canConnect(modelData)
+                        property bool isBusy: BluetoothService.isDeviceBusy(modelData)
 
                         width: parent.width
                         height: 70
                         radius: Theme.cornerRadius
                         color: {
-                            if (availableDeviceArea.containsMouse)
+                            if (availableDeviceArea.containsMouse && !isBusy)
                                 return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08);
 
-                            if (modelData.pairing)
+                            if (modelData.pairing || modelData.state === BluetoothDeviceState.Connecting)
                                 return Qt.rgba(Theme.warning.r, Theme.warning.g, Theme.warning.b, 0.12);
 
                             if (modelData.blocked)
@@ -426,18 +427,19 @@ Item {
                             anchors.right: parent.right
                             anchors.rightMargin: Theme.spacingM
                             anchors.verticalCenter: parent.verticalCenter
+                            visible: modelData.state !== BluetoothDeviceState.Connecting
                             color: {
-                                if (!canConnect && !modelData.pairing)
+                                if (!canConnect && !isBusy)
                                     return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3);
 
-                                if (actionButtonArea.containsMouse)
+                                if (actionButtonArea.containsMouse && !isBusy)
                                     return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12);
 
                                 return "transparent";
                             }
-                            border.color: canConnect || modelData.pairing ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                            border.color: canConnect || isBusy ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                             border.width: 1
-                            opacity: canConnect || modelData.pairing ? 1 : 0.5
+                            opacity: canConnect || isBusy ? 1 : 0.5
 
                             Text {
                                 anchors.centerIn: parent
@@ -451,7 +453,7 @@ Item {
                                     return "Connect";
                                 }
                                 font.pixelSize: Theme.fontSizeSmall
-                                color: canConnect || modelData.pairing ? Theme.primary : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
+                                color: canConnect || isBusy ? Theme.primary : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
                                 font.weight: Font.Medium
                             }
 
@@ -460,10 +462,12 @@ Item {
 
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                cursorShape: canConnect ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                enabled: canConnect
+                                cursorShape: canConnect && !isBusy ? Qt.PointingHandCursor : (isBusy ? Qt.BusyCursor : Qt.ArrowCursor)
+                                enabled: canConnect && !isBusy
                                 onClicked: {
-                                    modelData && modelData.connect();
+                                    if (modelData) {
+                                        BluetoothService.connectDeviceWithTrust(modelData);
+                                    }
                                 }
                             }
 
@@ -475,10 +479,12 @@ Item {
                             anchors.fill: parent
                             anchors.rightMargin: 90 // Don't overlap with action button
                             hoverEnabled: true
-                            cursorShape: canConnect ? Qt.PointingHandCursor : Qt.ArrowCursor
-                            enabled: canConnect
+                            cursorShape: canConnect && !isBusy ? Qt.PointingHandCursor : (isBusy ? Qt.BusyCursor : Qt.ArrowCursor)
+                            enabled: canConnect && !isBusy
                             onClicked: {
-                                modelData && modelData.connect();
+                                if (modelData) {
+                                    BluetoothService.connectDeviceWithTrust(modelData);
+                                }
                             }
                         }
 
@@ -660,7 +666,7 @@ Item {
                             if (bluetoothContextMenuWindow.deviceData.connected) {
                                 bluetoothContextMenuWindow.deviceData.disconnect();
                             } else {
-                                bluetoothContextMenuWindow.deviceData.connect();
+                                BluetoothService.connectDeviceWithTrust(bluetoothContextMenuWindow.deviceData);
                             }
                         }
                         bluetoothContextMenuWindow.hide();

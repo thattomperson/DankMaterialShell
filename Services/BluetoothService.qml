@@ -18,7 +18,7 @@ Singleton {
             return [];
 
         return adapter.devices.values.filter((dev) => {
-            return dev && dev.paired;
+            return dev && (dev.paired || dev.trusted);
         });
     }
     readonly property var allDevicesWithBattery: {
@@ -157,6 +157,18 @@ Singleton {
             return "signal_cellular_1_bar";
 
         return "signal_cellular_0_bar";
+    }
+    
+    function isDeviceBusy(device) {
+        if (!device) return false;
+        return device.pairing || device.state === BluetoothDeviceState.Disconnecting || device.state === BluetoothDeviceState.Connecting;
+    }
+    
+    function connectDeviceWithTrust(device) {
+        if (!device) return;
+        
+        device.trusted = true;
+        device.connect();
     }
 
 
