@@ -99,22 +99,12 @@ Singleton {
         
         onExited: (exitCode) => {
             if (exitCode !== 0 && root.niriAvailable) {
-                console.warn("NiriWorkspaceService: Event stream exited with code", exitCode, "restarting in 2 seconds")
-                restartTimer.start()
-            }
-        }
-    }
-    
-    // Restart timer for event stream
-    Timer {
-        id: restartTimer
-        interval: 2000
-        onTriggered: {
-            if (root.niriAvailable) {
+                console.warn("NiriWorkspaceService: Event stream exited with code", exitCode, "restarting immediately")
                 eventStreamProcess.running = true
             }
         }
     }
+    
     
     function handleNiriEvent(event) {
         if (event.WorkspacesChanged) {
@@ -173,6 +163,9 @@ Singleton {
             currentOutput = activatedWs.output || ""
             
             updateCurrentOutputWorkspaces()
+            
+            // Force property change notifications
+            allWorkspacesChanged()
         } else {
             focusedWorkspaceIndex = 0
         }

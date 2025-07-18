@@ -139,7 +139,6 @@ Singleton {
                         if (preferenceComplete) {
                             root.changingPreference = false
                             root.targetPreference = ""
-                            preferenceTimeoutTimer.stop()
                             console.log("Network preference change completed successfully")
                         }
                     }
@@ -379,26 +378,8 @@ Singleton {
     }
     
     function delayedRefreshNetworkStatus() {
-        console.log("Delayed network status refresh...")
-        refreshTimer.start()
-    }
-    
-    Timer {
-        id: refreshTimer
-        interval: 1000
-        onTriggered: {
-            refreshNetworkStatus()
-        }
-    }
-    
-    Timer {
-        id: preferenceTimeoutTimer
-        interval: 15000 // 15 seconds timeout
-        onTriggered: {
-            console.log("Network preference change timeout - resetting changingPreference state")
-            root.changingPreference = false
-            root.targetPreference = ""
-        }
+        console.log("Refreshing network status immediately...")
+        refreshNetworkStatus()
     }
     
     function setNetworkPreference(preference) {
@@ -406,7 +387,6 @@ Singleton {
         root.userPreference = preference
         root.changingPreference = true
         root.targetPreference = preference
-        preferenceTimeoutTimer.start()
         Prefs.setNetworkPreference(preference)
         
         if (preference === "wifi") {

@@ -95,7 +95,7 @@ Rectangle {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", sequentialNumber.toString()]);
+                        Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", modelData.toString()]);
                     }
                 }
 

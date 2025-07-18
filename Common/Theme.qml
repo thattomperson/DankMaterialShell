@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.UPower
 
 Singleton {
     id: root
@@ -545,11 +546,11 @@ Singleton {
 
     function getPowerProfileIcon(profile) {
         switch (profile) {
-        case "power-saver":
+        case PowerProfile.PowerSaver:
             return "battery_saver";
-        case "balanced":
+        case PowerProfile.Balanced:
             return "battery_std";
-        case "performance":
+        case PowerProfile.Performance:
             return "flash_on";
         default:
             return "settings";
@@ -557,12 +558,13 @@ Singleton {
     }
 
     function getPowerProfileLabel(profile) {
+        console.log("Theme.getPowerProfileLabel called with profile:", profile);
         switch (profile) {
-        case "power-saver":
+        case PowerProfile.PowerSaver:
             return "Power Saver";
-        case "balanced":
+        case PowerProfile.Balanced:
             return "Balanced";
-        case "performance":
+        case PowerProfile.Performance:
             return "Performance";
         default:
             return profile.charAt(0).toUpperCase() + profile.slice(1);
@@ -571,11 +573,11 @@ Singleton {
 
     function getPowerProfileDescription(profile) {
         switch (profile) {
-        case "power-saver":
+        case PowerProfile.PowerSaver:
             return "Extend battery life";
-        case "balanced":
+        case PowerProfile.Balanced:
             return "Balance power and performance";
-        case "performance":
+        case PowerProfile.Performance:
             return "Prioritize performance";
         default:
             return "Custom power profile";

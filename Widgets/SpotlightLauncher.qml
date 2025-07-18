@@ -58,12 +58,6 @@ PanelWindow {
     }
 
     function updateFilteredApps() {
-        if (!AppSearchService.ready) {
-            filteredApps = [];
-            selectedIndex = 0;
-            filteredModel.clear();
-            return ;
-        }
         filteredApps = [];
         selectedIndex = 0;
         var apps = [];
@@ -149,7 +143,7 @@ PanelWindow {
     function launchApp(app) {
         Prefs.addRecentApp(app);
         if (app.desktopEntry) {
-            AppSearchService.launchApp(app.desktopEntry);
+            app.desktopEntry.execute();
         } else {
             var cleanExec = app.exec.replace(/%[fFuU]/g, "").trim();
             console.log("Spotlight: Launching app directly:", cleanExec);
@@ -213,23 +207,21 @@ PanelWindow {
     color: "transparent"
     Component.onCompleted: {
         console.log("SpotlightLauncher: Component.onCompleted called - component loaded successfully!");
-        if (AppSearchService.ready) {
-            var allCategories = AppSearchService.getAllCategories().filter((cat) => {
-                return cat !== "Education" && cat !== "Science";
-            });
-            // Insert "Recents" after "All"
-            var result = ["All", "Recents"];
-            categories = result.concat(allCategories.filter((cat) => {
-                return cat !== "All";
-            }));
-        }
+        var allCategories = AppSearchService.getAllCategories().filter((cat) => {
+            return cat !== "Education" && cat !== "Science";
+        });
+        // Insert "Recents" after "All"
+        var result = ["All", "Recents"];
+        categories = result.concat(allCategories.filter((cat) => {
+            return cat !== "All";
+        }));
     }
 
     // Search debouncing
     Timer {
         id: searchDebounceTimer
 
-        interval: 100
+        interval: 50
         repeat: false
         onTriggered: updateFilteredApps()
     }
@@ -262,7 +254,7 @@ PanelWindow {
             }
         }
 
-        target: AppSearchService
+        target: DesktopEntries
     }
 
     Connections {

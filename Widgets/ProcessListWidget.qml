@@ -22,6 +22,7 @@ PanelWindow {
         ProcessMonitorService.updateProcessList();
         SystemMonitorService.enableDetailedMonitoring(true);
         SystemMonitorService.updateSystemInfo();
+        UserInfoService.getUptime();
     }
 
     function hide() {
@@ -1479,7 +1480,7 @@ PanelWindow {
                             }
 
                             Text {
-                                text: SystemMonitorService.uptime
+                                text: UserInfoService.uptime
                                 font.pixelSize: Theme.fontSizeMedium
                                 font.weight: Font.Bold
                                 color: Theme.surfaceText

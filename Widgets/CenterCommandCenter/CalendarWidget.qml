@@ -31,10 +31,6 @@ Column {
         loadEventsForMonth();
     }
     Component.onCompleted: {
-        console.log("CalendarWidget: Component completed, CalendarService available:", !!CalendarService);
-        if (CalendarService)
-            console.log("CalendarWidget: khal available:", CalendarService.khalAvailable);
-
         loadEventsForMonth();
     }
 

@@ -21,14 +21,12 @@ PanelWindow {
 
     function setProfile(profile) {
         if (typeof PowerProfiles === "undefined") {
-            errorToast.show();
+            ToastService.showError("power-profiles-daemon not available");
             return ;
         }
         PowerProfiles.profile = profile;
         if (PowerProfiles.profile !== profile)
-            errorToast.show();
-        else
-            console.log("Set power profile to: " + PowerProfile.toString(profile));
+            ToastService.showError("Failed to set power profile");
     }
 
     visible: batteryPopupVisible
@@ -367,7 +365,7 @@ PanelWindow {
                                     spacing: Theme.spacingM
 
                                     Text {
-                                        text: Theme.getPowerProfileIcon(PowerProfile.toString(modelData))
+                                        text: Theme.getPowerProfileIcon(modelData)
                                         font.family: Theme.iconFont
                                         font.pixelSize: Theme.iconSize
                                         color: batteryControlPopup.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
@@ -379,14 +377,14 @@ PanelWindow {
                                         anchors.verticalCenter: parent.verticalCenter
 
                                         Text {
-                                            text: Theme.getPowerProfileLabel(PowerProfile.toString(modelData))
+                                            text: Theme.getPowerProfileLabel(modelData)
                                             font.pixelSize: Theme.fontSizeMedium
                                             color: batteryControlPopup.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
                                             font.weight: batteryControlPopup.isActiveProfile(modelData) ? Font.Medium : Font.Normal
                                         }
 
                                         Text {
-                                            text: Theme.getPowerProfileDescription(PowerProfile.toString(modelData))
+                                            text: Theme.getPowerProfileDescription(modelData)
                                             font.pixelSize: Theme.fontSizeSmall
                                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                                         }
@@ -483,40 +481,5 @@ PanelWindow {
 
     }
 
-    // Error toast
-    Rectangle {
-        id: errorToast
-
-        function show() {
-            visible = true;
-            hideTimer.restart();
-        }
-
-        width: Math.min(300, parent.width - Theme.spacingL * 2)
-        height: 50
-        radius: Theme.cornerRadius
-        color: Theme.error
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: Theme.spacingL
-        visible: false
-        z: 1000
-
-        Text {
-            anchors.centerIn: parent
-            text: "power-profiles-daemon not available"
-            color: "white"
-            font.pixelSize: Theme.fontSizeMedium
-            font.weight: Font.Medium
-        }
-
-        Timer {
-            id: hideTimer
-
-            interval: 3000
-            onTriggered: errorToast.visible = false
-        }
-
-    }
 
 }

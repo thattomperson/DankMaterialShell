@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
+import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -22,6 +23,10 @@ PanelWindow {
         // Stop bluetooth scanning when control center is closed
         if (!visible && BluetoothService.adapter && BluetoothService.adapter.discovering) {
             BluetoothService.adapter.discovering = false;
+        }
+        // Refresh uptime when opened
+        if (visible && UserInfoService) {
+            UserInfoService.getUptime();
         }
     }
     implicitWidth: 600
@@ -120,7 +125,7 @@ PanelWindow {
             }
         ]
 
-        Column {
+        ColumnLayout {
             anchors.fill: parent
             anchors.margins: Theme.spacingL
             spacing: Theme.spacingM
@@ -698,7 +703,7 @@ PanelWindow {
             // Tab content area
             Rectangle {
                 width: parent.width
-                height: root.powerOptionsExpanded ? 240 : 300
+                Layout.fillHeight: true
                 radius: Theme.cornerRadius
                 color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.1)
 

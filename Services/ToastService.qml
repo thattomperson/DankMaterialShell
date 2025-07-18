@@ -44,7 +44,7 @@ Singleton {
         currentLevel = levelInfo;
         toastTimer.stop();
         if (toastQueue.length > 0)
-            queueTimer.start();
+            processQueue();
 
     }
 
@@ -56,7 +56,7 @@ Singleton {
         currentMessage = toast.message;
         currentLevel = toast.level;
         toastVisible = true;
-        toastTimer.interval = toast.level === levelError ? 8000 : toast.level === levelWarn ? 6000 : 5000;
+        toastTimer.interval = toast.level === levelError ? 5000 : toast.level === levelWarn ? 4000 : 3000;
         toastTimer.start();
     }
 
@@ -73,13 +73,5 @@ Singleton {
         onTriggered: hideToast()
     }
 
-    Timer {
-        id: queueTimer
-
-        interval: 500
-        running: false
-        repeat: false
-        onTriggered: processQueue()
-    }
 
 }

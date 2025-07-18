@@ -191,7 +191,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             z: 10
                             opacity: networkTab.changingNetworkPreference ? 0.6 : 1
-                            visible: networkTab.networkStatus !== "ethernet"
+                            visible: NetworkService.networkStatus !== "ethernet" && NetworkService.wifiAvailable && NetworkService.wifiEnabled
 
                             Row {
                                 anchors.centerIn: parent
@@ -330,197 +330,215 @@ Item {
                 id: wifiContent
 
                 width: parent.width
-                spacing: Theme.spacingL
+                spacing: Theme.spacingM
 
-                // WiFi toggle control (only show if WiFi hardware is available)
-                Rectangle {
-                    width: parent.width
-                    height: 50
-                    radius: Theme.cornerRadius
-                    color: wifiToggleArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
-                    visible: NetworkService.wifiAvailable
-                    opacity: NetworkService.wifiToggling ? 0.6 : 1
-
-                    Row {
-                        anchors.left: parent.left
-                        anchors.leftMargin: Theme.spacingM
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: Theme.spacingM
-
-                        Text {
-                            id: wifiToggleIcon
-
-                            text: NetworkService.wifiToggling ? "sync" : "power_settings_new"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
-                            color: NetworkService.wifiEnabled ? Theme.primary : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
-                            anchors.verticalCenter: parent.verticalCenter
-                            rotation: NetworkService.wifiToggling ? wifiToggleIcon.rotation : 0
-
-                            RotationAnimation {
-                                target: wifiToggleIcon
-                                property: "rotation"
-                                running: NetworkService.wifiToggling
-                                from: 0
-                                to: 360
-                                duration: 1000
-                                loops: Animation.Infinite
-                            }
-
-                            Behavior on rotation {
-                                RotationAnimation {
-                                    duration: 200
-                                    easing.type: Easing.OutQuad
-                                }
-
-                            }
-
-                        }
-
-                        Text {
-                            text: NetworkService.wifiToggling ? "Switching WiFi..." : (NetworkService.wifiEnabled ? "Turn WiFi Off" : "Turn WiFi On")
-                            font.pixelSize: Theme.fontSizeMedium
-                            color: Theme.surfaceText
-                            font.weight: Font.Medium
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                    }
-
-                    MouseArea {
-                        id: wifiToggleArea
-
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            NetworkService.toggleWifiRadio();
-                        }
-                    }
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: Theme.shortDuration
-                            easing.type: Theme.standardEasing
-                        }
-
-                    }
-
-                }
 
                 // Current WiFi connection (if connected)
                 Rectangle {
                     width: parent.width
-                    height: 80
+                    height: 60
                     radius: Theme.cornerRadius
                     color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
-                    border.color: networkTab.networkStatus === "wifi" ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
-                    border.width: networkTab.networkStatus === "wifi" ? 2 : 1
-                    visible: NetworkService.wifiAvailable && NetworkService.wifiEnabled
+                    border.color: NetworkService.networkStatus === "wifi" ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
+                    border.width: NetworkService.networkStatus === "wifi" ? 2 : 1
+                    visible: NetworkService.wifiAvailable
 
-                    Row {
+                    // WiFi icon
+                    Text {
                         anchors.left: parent.left
                         anchors.leftMargin: Theme.spacingL
                         anchors.verticalCenter: parent.verticalCenter
-                        spacing: Theme.spacingM
+                        text: {
+                            if (!NetworkService.wifiEnabled) {
+                                return "wifi_off";
+                            } else if (NetworkService.networkStatus === "wifi") {
+                                return WifiService.wifiSignalStrength === "excellent" ? "wifi" : WifiService.wifiSignalStrength === "good" ? "wifi_2_bar" : WifiService.wifiSignalStrength === "fair" ? "wifi_1_bar" : WifiService.wifiSignalStrength === "poor" ? "wifi_calling_3" : "wifi";
+                            } else {
+                                return "wifi";
+                            }
+                        }
+                        font.family: Theme.iconFont
+                        font.pixelSize: Theme.iconSize
+                        color: NetworkService.networkStatus === "wifi" ? Theme.primary : Theme.surfaceText
+                    }
+
+                    // WiFi info text
+                    Column {
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.spacingL + Theme.iconSize + Theme.spacingM
+                        anchors.right: parent.right
+                        anchors.rightMargin: Theme.spacingL + 48 + Theme.spacingM
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 4
 
                         Text {
-                            text: networkTab.networkStatus === "wifi" ? (WifiService.wifiSignalStrength === "excellent" ? "wifi" : WifiService.wifiSignalStrength === "good" ? "wifi_2_bar" : WifiService.wifiSignalStrength === "fair" ? "wifi_1_bar" : WifiService.wifiSignalStrength === "poor" ? "wifi_calling_3" : "wifi") : "wifi"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSizeLarge
-                            color: networkTab.networkStatus === "wifi" ? Theme.primary : Theme.surfaceText
-                            anchors.verticalCenter: parent.verticalCenter
+                            text: {
+                                if (!NetworkService.wifiEnabled) {
+                                    return "WiFi is off";
+                                } else if (NetworkService.wifiEnabled && WifiService.currentWifiSSID) {
+                                    return WifiService.currentWifiSSID || "Connected";
+                                } else {
+                                    return "Not Connected";
+                                }
+                            }
+                            font.pixelSize: Theme.fontSizeMedium
+                            color: NetworkService.networkStatus === "wifi" ? Theme.primary : Theme.surfaceText
+                            font.weight: Font.Medium
                         }
 
-                        Column {
-                            spacing: 4
+                        Text {
+                            text: {
+                                if (!NetworkService.wifiEnabled) {
+                                    return "Turn on WiFi to see available networks";
+                                } else if (NetworkService.wifiEnabled && WifiService.currentWifiSSID) {
+                                    return NetworkService.wifiIP || "Connected";
+                                } else {
+                                    return "Select a network below";
+                                }
+                            }
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                        }
+                    }
+
+                    // WiFi toggle switch
+                    Rectangle {
+                        width: 48
+                        height: 24
+                        radius: 12
+                        color: NetworkService.wifiEnabled ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+                        anchors.right: parent.right
+                        anchors.rightMargin: Theme.spacingL
+                        anchors.verticalCenter: parent.verticalCenter
+                        opacity: NetworkService.wifiToggling ? 0.6 : 1
+
+                        Rectangle {
+                            id: toggleHandle
+                            width: 20
+                            height: 20
+                            radius: 10
+                            color: Theme.surface
                             anchors.verticalCenter: parent.verticalCenter
+                            x: NetworkService.wifiEnabled ? parent.width - width - 2 : 2
+
+                            Behavior on x {
+                                NumberAnimation {
+                                    duration: Theme.shortDuration
+                                    easing.type: Theme.emphasizedEasing
+                                }
+                            }
+
+                            // Subtle shadow/glow effect
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: parent.width + 2
+                                height: parent.height + 2
+                                radius: (parent.width + 2) / 2
+                                color: "transparent"
+                                border.color: Qt.rgba(0, 0, 0, 0.1)
+                                border.width: 1
+                                z: -1
+                            }
+                        }
+
+                        MouseArea {
+                            id: wifiToggleArea
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                NetworkService.toggleWifiRadio();
+                                // Refresh network status and WiFi info after toggle with delay
+                                refreshTimer.triggered = true;
+                            }
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: Theme.shortDuration
+                                easing.type: Theme.standardEasing
+                            }
+                        }
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: Theme.shortDuration
+                                easing.type: Theme.standardEasing
+                            }
+                        }
+                    }
+
+                    // Force WiFi preference button
+                    Rectangle {
+                        width: 150
+                        height: 30
+                        color: networkTab.networkStatus === "wifi" ? Theme.primary : Theme.surface
+                        border.color: Theme.primary
+                        border.width: 1
+                        radius: 6
+                        anchors.right: parent.right
+                        anchors.rightMargin: Theme.spacingL + 48 + Theme.spacingM
+                        anchors.verticalCenter: parent.verticalCenter
+                        opacity: networkTab.changingNetworkPreference ? 0.6 : 1
+                        visible: NetworkService.networkStatus !== "wifi" && NetworkService.ethernetConnected && NetworkService.wifiEnabled
+
+                        Row {
+                            anchors.centerIn: parent
+                            spacing: Theme.spacingXS
 
                             Text {
-                                text: NetworkService.networkStatus === "wifi" ? (WifiService.currentWifiSSID || "Connected") : "Not Connected"
-                                font.pixelSize: Theme.fontSizeLarge
-                                color: networkTab.networkStatus === "wifi" ? Theme.primary : Theme.surfaceText
+                                id: wifiPreferenceIcon
+
+                                text: networkTab.changingNetworkPreference ? "sync" : ""
+                                font.family: Theme.iconFont
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: networkTab.networkStatus === "wifi" ? Theme.background : Theme.primary
+                                visible: networkTab.changingNetworkPreference
+                                anchors.verticalCenter: parent.verticalCenter
+                                rotation: networkTab.changingNetworkPreference ? wifiPreferenceIcon.rotation : 0
+
+                                RotationAnimation {
+                                    target: wifiPreferenceIcon
+                                    property: "rotation"
+                                    running: networkTab.changingNetworkPreference
+                                    from: 0
+                                    to: 360
+                                    duration: 1000
+                                    loops: Animation.Infinite
+                                }
+
+                            }
+
+                            Text {
+                                text: NetworkService.changingNetworkPreference ? "Switching..." : "Prefer over Ethernet"
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: NetworkService.networkStatus === "wifi" ? Theme.background : Theme.primary
+                                anchors.verticalCenter: parent.verticalCenter
                                 font.weight: Font.Medium
                             }
 
-                            Text {
-                                text: NetworkService.networkStatus === "wifi" ? (NetworkService.wifiIP || "Connected") : "Select a network below"
-                                font.pixelSize: Theme.fontSizeSmall
-                                color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
-                            }
-
                         }
 
-                        // Force WiFi preference button
-                        Rectangle {
-                            width: 150
-                            height: 30
-                            color: networkTab.networkStatus === "wifi" ? Theme.primary : Theme.surface
-                            border.color: Theme.primary
-                            border.width: 1
-                            radius: 6
-                            anchors.verticalCenter: parent.verticalCenter
-                            opacity: networkTab.changingNetworkPreference ? 0.6 : 1
-                            visible: networkTab.networkStatus !== "wifi"
-
-                            Row {
-                                anchors.centerIn: parent
-                                spacing: Theme.spacingXS
-
-                                Text {
-                                    id: wifiPreferenceIcon
-
-                                    text: networkTab.changingNetworkPreference ? "sync" : ""
-                                    font.family: Theme.iconFont
-                                    font.pixelSize: Theme.fontSizeSmall
-                                    color: networkTab.networkStatus === "wifi" ? Theme.background : Theme.primary
-                                    visible: networkTab.changingNetworkPreference
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    rotation: networkTab.changingNetworkPreference ? wifiPreferenceIcon.rotation : 0
-
-                                    RotationAnimation {
-                                        target: wifiPreferenceIcon
-                                        property: "rotation"
-                                        running: networkTab.changingNetworkPreference
-                                        from: 0
-                                        to: 360
-                                        duration: 1000
-                                        loops: Animation.Infinite
-                                    }
-
-                                }
-
-                                Text {
-                                    text: NetworkService.changingNetworkPreference ? "Switching..." : (NetworkService.networkStatus === "wifi" ? "" : "Prefer over Ethernet")
-                                    font.pixelSize: Theme.fontSizeSmall
-                                    color: NetworkService.networkStatus === "wifi" ? Theme.background : Theme.primary
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    font.weight: Font.Medium
-                                }
-
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            propagateComposedEvents: false
+                            enabled: !networkTab.changingNetworkPreference
+                            onClicked: {
+                                console.log("Force WiFi preference clicked");
+                                if (NetworkService.networkStatus !== "wifi")
+                                    NetworkService.setNetworkPreference("wifi");
+                                else
+                                    NetworkService.setNetworkPreference("auto");
                             }
+                        }
 
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                propagateComposedEvents: false
-                                enabled: !networkTab.changingNetworkPreference
-                                onClicked: {
-                                    console.log("Force WiFi preference clicked");
-                                    if (NetworkService.networkStatus !== "wifi")
-                                        NetworkService.setNetworkPreference("wifi");
-                                    else
-                                        NetworkService.setNetworkPreference("auto");
-                                }
-                            }
-
-                            Behavior on opacity {
-                                NumberAnimation {
-                                    duration: Theme.shortDuration
-                                    easing.type: Theme.standardEasing
-                                }
-
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: Theme.shortDuration
+                                easing.type: Theme.standardEasing
                             }
 
                         }
@@ -532,7 +550,7 @@ Item {
                 // Available WiFi Networks
                 Column {
                     width: parent.width
-                    spacing: Theme.spacingM
+                    spacing: Theme.spacingS
                     visible: NetworkService.wifiEnabled
 
                     Row {
@@ -607,7 +625,7 @@ Item {
                     // Connection status indicator
                     Rectangle {
                         width: parent.width
-                        height: 40
+                        height: 32
                         radius: Theme.cornerRadius
                         color: {
                             if (WifiService.connectionStatus === "connecting")
@@ -733,7 +751,7 @@ Item {
 
                         Rectangle {
                             width: parent.width
-                            height: 50
+                            height: 42
                             radius: Theme.cornerRadiusSmall
                             color: networkArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : modelData.connected ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
                             border.color: modelData.connected ? Theme.primary : "transparent"
@@ -741,7 +759,7 @@ Item {
 
                             Item {
                                 anchors.fill: parent
-                                anchors.margins: Theme.spacingM
+                                anchors.margins: Theme.spacingS
 
                                 // Signal strength icon
                                 Text {
@@ -758,9 +776,9 @@ Item {
                                 // Network info
                                 Column {
                                     anchors.left: signalIcon.right
-                                    anchors.leftMargin: Theme.spacingM
+                                    anchors.leftMargin: Theme.spacingS
                                     anchors.right: rightIcons.left
-                                    anchors.rightMargin: Theme.spacingM
+                                    anchors.rightMargin: Theme.spacingS
                                     anchors.verticalCenter: parent.verticalCenter
                                     spacing: 2
 
@@ -914,6 +932,32 @@ Item {
 
         }
 
+    }
+
+    // Timer for refreshing network status after WiFi toggle
+    Timer {
+        id: refreshTimer
+        interval: 2000
+        running: networkTab.visible && refreshTimer.triggered
+        property bool triggered: false
+        onTriggered: {
+            NetworkService.refreshNetworkStatus();
+            if (NetworkService.wifiEnabled) {
+                WifiService.scanWifi();
+            }
+            triggered = false;
+        }
+    }
+
+    // Auto-refresh when WiFi state changes
+    Connections {
+        target: NetworkService
+        function onWifiEnabledChanged() {
+            if (NetworkService.wifiEnabled && networkTab.visible) {
+                // When WiFi is enabled, scan and update info (only if tab is visible)
+                WifiService.scanWifi();
+            }
+        }
     }
 
 }

@@ -54,3 +54,6 @@ compile_commands.json
 *_qmlcache.qrc
 UNUSED
 .qmlls.ini
+
+CLAUDE-activeContext.md
+CLAUDE-temp.md

@@ -126,6 +126,10 @@ PanelWindow {
 
                 LauncherButton {
                     anchors.verticalCenter: parent.verticalCenter
+                    isActive: launcher.isVisible
+                    onClicked: {
+                        appLauncher.toggle();
+                    }
                 }
 
                 WorkspaceSwitcher {

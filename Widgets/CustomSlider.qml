@@ -17,6 +17,8 @@ Item {
     signal sliderDragFinished(int finalValue)
 
     height: 80
+    
+    property bool isDragging: false
 
     Column {
         anchors.fill: parent
@@ -139,7 +141,8 @@ Item {
                         preventStealing: true
                         onPressed: (mouse) => {
                             if (slider.enabled) {
-                                isDragging = true;
+                                slider.isDragging = true;
+                                sliderMouseArea.isDragging = true;
                                 let ratio = Math.max(0, Math.min(1, mouse.x / width));
                                 let newValue = Math.round(slider.minimum + ratio * (slider.maximum - slider.minimum));
                                 slider.value = newValue;
@@ -148,12 +151,13 @@ Item {
                         }
                         onReleased: {
                             if (slider.enabled) {
-                                isDragging = false;
+                                slider.isDragging = false;
+                                sliderMouseArea.isDragging = false;
                                 slider.sliderDragFinished(slider.value);
                             }
                         }
                         onPositionChanged: (mouse) => {
-                            if (pressed && isDragging && slider.enabled) {
+                            if (pressed && slider.isDragging && slider.enabled) {
                                 let ratio = Math.max(0, Math.min(1, mouse.x / width));
                                 let newValue = Math.round(slider.minimum + ratio * (slider.maximum - slider.minimum));
                                 slider.value = newValue;
@@ -161,7 +165,7 @@ Item {
                             }
                         }
                         onClicked: (mouse) => {
-                            if (slider.enabled) {
+                            if (slider.enabled && !slider.isDragging) {
                                 let ratio = Math.max(0, Math.min(1, mouse.x / width));
                                 let newValue = Math.round(slider.minimum + ratio * (slider.maximum - slider.minimum));
                                 slider.value = newValue;
@@ -175,11 +179,11 @@ Item {
                         id: sliderGlobalMouseArea
 
                         anchors.fill: sliderContainer
-                        enabled: sliderMouseArea.isDragging
+                        enabled: slider.isDragging
                         visible: false
                         preventStealing: true
                         onPositionChanged: (mouse) => {
-                            if (sliderMouseArea.isDragging && slider.enabled) {
+                            if (slider.isDragging && slider.enabled) {
                                 let globalPos = mapToItem(sliderTrack, mouse.x, mouse.y);
                                 let ratio = Math.max(0, Math.min(1, globalPos.x / sliderTrack.width));
                                 let newValue = Math.round(slider.minimum + ratio * (slider.maximum - slider.minimum));
@@ -188,7 +192,8 @@ Item {
                             }
                         }
                         onReleased: {
-                            if (sliderMouseArea.isDragging && slider.enabled) {
+                            if (slider.isDragging && slider.enabled) {
+                                slider.isDragging = false;
                                 sliderMouseArea.isDragging = false;
                                 slider.sliderDragFinished(slider.value);
                             }

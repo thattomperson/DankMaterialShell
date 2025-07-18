@@ -333,31 +333,6 @@ Singleton {
         console.log("ProcessMonitorService: Initialization complete");
     }
 
-    Timer {
-        id: testTimer
-
-        interval: 3000
-        running: false
-        repeat: false
-        onTriggered: {
-            console.log("ProcessMonitorService: Starting test monitoring...");
-            enableMonitoring(true);
-            stopTestTimer.start();
-        }
-    }
-
-    Timer {
-        id: stopTestTimer
-
-        interval: 8000
-        running: false
-        repeat: false
-        onTriggered: {
-            console.log("ProcessMonitorService: Stopping test monitoring...");
-            enableMonitoring(false);
-        }
-    }
-
     Process {
         id: systemInfoProcess
 

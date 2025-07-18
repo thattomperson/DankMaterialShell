@@ -10,73 +10,44 @@ import "../Common/fuzzysort.js" as Fuzzy
 Singleton {
     id: root
     
-    property list<DesktopEntry> applications: []
-    property var applicationsByName: ({})
-    property var applicationsByExec: ({})
-    property bool ready: false
+    property list<DesktopEntry> applications: Array.from(DesktopEntries.applications.values)
+        .filter(app => !app.noDisplay)
+        .sort((a, b) => a.name.localeCompare(b.name))
     
-    property var preppedApps: []
-    
-    
-    Component.onCompleted: {
-        loadApplications()
-    }
-    
-    Connections {
-        target: DesktopEntries
-        function onApplicationsChanged() {
-            console.log("AppSearchService: DesktopEntries applicationsChanged signal received")
-            console.log("AppSearchService: Current applications count before reload:", applications.length)
-            loadApplications()
+    property var applicationsByName: {
+        var byName = {}
+        for (var i = 0; i < applications.length; i++) {
+            var app = applications[i]
+            byName[app.name.toLowerCase()] = app
         }
+        return byName
     }
     
-    
-    function loadApplications() {
-        Qt.callLater(function() {
-            var allApps = Array.from(DesktopEntries.applications.values)
-            
-            applications = allApps
-                .filter(app => !app.noDisplay)
-                .sort((a, b) => a.name.localeCompare(b.name))
-            
-            var byName = {}
-            var byExec = {}
-            
-            for (var i = 0; i < applications.length; i++) {
-                var app = applications[i]
-                byName[app.name.toLowerCase()] = app
-                
-                var execProp = app.execString || ""
-                var cleanExec = execProp ? execProp.replace(/%[fFuU]/g, "").trim() : ""
-                if (cleanExec) {
-                    byExec[cleanExec] = app
-                }
+    property var applicationsByExec: {
+        var byExec = {}
+        for (var i = 0; i < applications.length; i++) {
+            var app = applications[i]
+            var execProp = app.execString || ""
+            var cleanExec = execProp ? execProp.replace(/%[fFuU]/g, "").trim() : ""
+            if (cleanExec) {
+                byExec[cleanExec] = app
             }
-            
-            applicationsByName = byName
-            applicationsByExec = byExec
-            
-            preppedApps = applications.map(app => ({
-                name: Fuzzy.prepare(app.name || ""),
-                comment: Fuzzy.prepare(app.comment || ""),
-                entry: app
-            }))
-            
-            ready = true
-            
-            console.log("AppSearchService: Loaded", applications.length, "applications")
-            console.log("AppSearchService: Prepared", preppedApps.length, "apps for fuzzy search")
-            console.log("AppSearchService: Ready status:", ready)
-        })
+        }
+        return byExec
     }
+    
+    property var preppedApps: applications.map(app => ({
+        name: Fuzzy.prepare(app.name || ""),
+        comment: Fuzzy.prepare(app.comment || ""),
+        entry: app
+    }))
     
     function searchApplications(query) {
         if (!query || query.length === 0) {
             return applications
         }
         
-        if (!ready || preppedApps.length === 0) {
+        if (preppedApps.length === 0) {
             return []
         }
         
@@ -167,18 +138,4 @@ Singleton {
         })
     }
     
-    function launchApp(app) {
-        if (!app) {
-            console.warn("AppSearchService: Cannot launch app, app is null")
-            return false
-        }
-        
-        if (typeof app.execute === "function") {
-            app.execute()
-            return true
-        }
-        
-        console.warn("AppSearchService: Cannot launch app, no execute method")
-        return false
-    }
 }

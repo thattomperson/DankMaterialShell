@@ -23,11 +23,9 @@ Singleton {
             return ;
 
         root.isScanning = true;
-        console.log("Starting WiFi scan...");
         wifiScanner.running = true;
         savedWifiScanner.running = true;
         currentWifiInfo.running = true;
-        // Fallback timer in case no networks are found
         fallbackTimer.start();
     }
 
@@ -133,7 +131,6 @@ Singleton {
     }
 
     function updateCurrentWifiInfo() {
-        console.log("Updating current WiFi info...");
         currentWifiInfo.running = true;
     }
 
@@ -254,7 +251,6 @@ Singleton {
         interval: 5000
         onTriggered: {
             root.isScanning = false;
-            console.log("WiFi scan timeout - no networks found");
         }
     }
 
@@ -274,11 +270,7 @@ Singleton {
         interval: 20000
         running: root.autoRefreshEnabled
         repeat: true
-        onTriggered: {
-            if (root.autoRefreshEnabled)
-                root.scanWifi();
-
-        }
+        onTriggered: root.scanWifi()
     }
 
 }

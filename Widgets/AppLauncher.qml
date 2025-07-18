@@ -24,11 +24,6 @@ PanelWindow {
     property int selectedIndex: 0
 
     function updateFilteredModel() {
-        if (!AppSearchService.ready) {
-            filteredModel.clear();
-            selectedIndex = 0;
-            return ;
-        }
         filteredModel.clear();
         selectedIndex = 0;
         var apps = [];
@@ -118,7 +113,7 @@ PanelWindow {
             var selectedApp = filteredModel.get(selectedIndex);
             if (selectedApp.desktopEntry) {
                 Prefs.addRecentApp(selectedApp.desktopEntry);
-                AppSearchService.launchApp(selectedApp.desktopEntry);
+                selectedApp.desktopEntry.execute();
             } else {
                 launcher.launchApp(selectedApp.exec);
             }
@@ -130,7 +125,7 @@ PanelWindow {
         // Try to find the desktop entry
         var app = AppSearchService.getAppByExec(exec);
         if (app) {
-            AppSearchService.launchApp(app);
+            app.execute();
         } else {
             // Fallback to direct execution
             var cleanExec = exec.replace(/%[fFuU]/g, "").trim();
@@ -171,14 +166,12 @@ PanelWindow {
     visible: isVisible
     color: "transparent"
     Component.onCompleted: {
-        if (AppSearchService.ready) {
-            var allCategories = AppSearchService.getAllCategories();
-            // Insert "Recents" after "All"
-            categories = ["All", "Recents"].concat(allCategories.filter((cat) => {
-                return cat !== "All";
-            }));
-            updateFilteredModel();
-        }
+        var allCategories = AppSearchService.getAllCategories();
+        // Insert "Recents" after "All"
+        categories = ["All", "Recents"].concat(allCategories.filter((cat) => {
+            return cat !== "All";
+        }));
+        updateFilteredModel();
         recentApps = Prefs.getRecentApps(); // Load recent apps on startup
     }
 
@@ -194,7 +187,7 @@ PanelWindow {
     Timer {
         id: searchDebounceTimer
 
-        interval: 100
+        interval: 50
         repeat: false
         onTriggered: updateFilteredModel()
     }
@@ -227,53 +220,18 @@ PanelWindow {
     }
 
     Connections {
-        function onReadyChanged() {
-            if (AppSearchService.ready) {
-                var allCategories = AppSearchService.getAllCategories();
-                // Insert "Recents" after "All"
-                categories = ["All", "Recents"].concat(allCategories.filter((cat) => {
-                    return cat !== "All";
-                }));
-                updateFilteredModel();
-            }
-        }
-
-        target: AppSearchService
-    }
-
-    Connections {
         function onApplicationsChanged() {
             console.log("AppLauncher: DesktopEntries.applicationsChanged signal received");
             // Update categories when applications change
-            if (AppSearchService.ready) {
-                console.log("AppLauncher: Updating categories and model due to applicationsChanged");
-                var allCategories = AppSearchService.getAllCategories();
-                categories = ["All", "Recents"].concat(allCategories.filter((cat) => {
-                    return cat !== "All";
-                }));
-                updateFilteredModel();
-            } else {
-                console.log("AppLauncher: AppSearchService not ready, skipping update");
-            }
+            console.log("AppLauncher: Updating categories and model due to applicationsChanged");
+            var allCategories = AppSearchService.getAllCategories();
+            categories = ["All", "Recents"].concat(allCategories.filter((cat) => {
+                return cat !== "All";
+            }));
+            updateFilteredModel();
         }
 
         target: DesktopEntries
-    }
-
-    Connections {
-        function onShowAppLauncher() {
-            launcher.show();
-        }
-
-        function onHideAppLauncher() {
-            launcher.hide();
-        }
-
-        function onToggleAppLauncher() {
-            launcher.toggle();
-        }
-
-        target: LauncherService
     }
 
     Connections {
@@ -530,7 +488,7 @@ PanelWindow {
                                     var firstApp = filteredModel.get(0);
                                     if (firstApp.desktopEntry) {
                                         Prefs.addRecentApp(firstApp.desktopEntry);
-                                        AppSearchService.launchApp(firstApp.desktopEntry);
+                                        firstApp.desktopEntry.execute();
                                     } else {
                                         launcher.launchApp(firstApp.exec);
                                     }
@@ -1033,7 +991,7 @@ PanelWindow {
                 onClicked: {
                     if (model.desktopEntry) {
                         Prefs.addRecentApp(model.desktopEntry);
-                        AppSearchService.launchApp(model.desktopEntry);
+                        model.desktopEntry.execute();
                     } else {
                         launcher.launchApp(model.exec);
                     }
@@ -1107,7 +1065,7 @@ PanelWindow {
                 onClicked: {
                     if (model.desktopEntry) {
                         Prefs.addRecentApp(model.desktopEntry);
-                        AppSearchService.launchApp(model.desktopEntry);
+                        model.desktopEntry.execute();
                     } else {
                         launcher.launchApp(model.exec);
                     }

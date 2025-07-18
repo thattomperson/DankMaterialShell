@@ -11,6 +11,16 @@ ScrollView {
     id: displayTab
 
     clip: true
+    
+    property var brightnessDebounceTimer: Timer {
+        interval: BrightnessService.ddcAvailable ? 500 : 50  // 500ms for slow DDC (i2c), 50ms for fast laptop backlight
+        repeat: false
+        property int pendingValue: 0
+        onTriggered: {
+            console.log("Debounce timer fired, setting brightness to:", pendingValue);
+            BrightnessService.setBrightness(pendingValue);
+        }
+    }
 
     Column {
         width: parent.width
@@ -36,8 +46,23 @@ ScrollView {
                 rightIcon: "brightness_high"
                 enabled: BrightnessService.brightnessAvailable
                 onSliderValueChanged: function(newValue) {
-                    BrightnessService.setBrightness(newValue);
+                    console.log("Slider changed to:", newValue);
+                    brightnessDebounceTimer.pendingValue = newValue;
+                    brightnessDebounceTimer.restart();
                 }
+                onSliderDragFinished: function(finalValue) {
+                    console.log("Drag finished, immediate set:", finalValue);
+                    brightnessDebounceTimer.stop();
+                    BrightnessService.setBrightness(finalValue);
+                }
+            }
+
+            Text {
+                text: "using ddc - changes may take a moment to apply"
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.surfaceVariantText
+                visible: BrightnessService.ddcAvailable && !BrightnessService.laptopBacklightAvailable
+                anchors.horizontalCenter: parent.horizontalCenter
             }
 
         }

@@ -5,13 +5,17 @@ import qs.Services
 Rectangle {
     id: root
 
+    signal clicked()
+
+    property bool isActive: false
+
     readonly property bool nerdFontAvailable: Qt.fontFamilies()
                                   .indexOf("Symbols Nerd Font") !== -1
 
     width: 40
     height: 30
     radius: Theme.cornerRadius
-    color: launcherArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
+    color: launcherArea.containsMouse || isActive ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
 
     Text {
         anchors.centerIn: parent
@@ -28,9 +32,7 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            LauncherService.toggleAppLauncher();
-        }
+        onClicked: root.clicked()
     }
 
     Behavior on color {

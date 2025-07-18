@@ -15,6 +15,11 @@ PanelWindow {
     property bool calendarVisible: false
 
     visible: calendarVisible
+    onVisibleChanged: {
+        if (visible && CalendarService) {
+            CalendarService.loadCurrentMonth();
+        }
+    }
     implicitWidth: 480
     implicitHeight: 600
     WlrLayershell.layer: WlrLayershell.Overlay

@@ -39,11 +39,9 @@ Singleton {
 
     function loadEvents(startDate, endDate) {
         if (!root.khalAvailable) {
-            console.warn("CalendarService: khal not available, skipping event loading");
             return ;
         }
         if (eventsProcess.running) {
-            console.log("CalendarService: Event loading already in progress, skipping...");
             return ;
         }
         // Store last requested date range for refresh timer
@@ -71,22 +69,7 @@ Singleton {
 
     // Initialize on component completion
     Component.onCompleted: {
-        console.log("CalendarService: Component completed, initializing...");
         checkKhalAvailability();
-    }
-
-    // Periodic refresh timer
-    Timer {
-        id: refreshTimer
-
-        interval: 60000
-        running: root.khalAvailable
-        repeat: true
-        onTriggered: {
-            if (lastStartDate && lastEndDate)
-                loadEvents(lastStartDate, lastEndDate);
-
-        }
     }
 
     // Process for checking khal configuration
@@ -97,16 +80,9 @@ Singleton {
         running: false
         onExited: (exitCode) => {
             root.khalAvailable = (exitCode === 0);
-            if (exitCode !== 0) {
-                console.warn("CalendarService: khal not configured (exit code:", exitCode, ")");
-            } else {
-                console.log("CalendarService: khal configured and available");
-                // Load current month events when khal becomes available
+            if (exitCode === 0) {
                 loadCurrentMonth();
             }
-        }
-        onStarted: {
-            console.log("CalendarService: Checking khal configuration...");
         }
     }
 
@@ -123,7 +99,6 @@ Singleton {
             root.isLoading = false;
             if (exitCode !== 0) {
                 root.lastError = "Failed to load events (exit code: " + exitCode + ")";
-                console.warn("CalendarService:", root.lastError);
                 return ;
             }
             try {
@@ -249,18 +224,13 @@ Singleton {
                 }
                 root.eventsByDate = newEventsByDate;
                 root.lastError = "";
-                console.log("CalendarService: Loaded events for", Object.keys(newEventsByDate).length, "days");
             } catch (error) {
                 root.lastError = "Failed to parse events JSON: " + error.toString();
-                console.error("CalendarService:", root.lastError);
                 root.eventsByDate = {
                 };
             }
             // Reset for next run
             eventsProcess.rawOutput = "";
-        }
-        onStarted: {
-            console.log("CalendarService: Loading events from", Qt.formatDate(requestStartDate, "yyyy-MM-dd"), "to", Qt.formatDate(requestEndDate, "yyyy-MM-dd"));
         }
 
         stdout: SplitParser {

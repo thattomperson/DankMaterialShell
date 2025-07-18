@@ -24,7 +24,6 @@ Singleton {
     property string kernelVersion: ""
     property string distribution: ""
     property string hostname: ""
-    property string uptime: ""
     property string scheduler: ""
     property string architecture: ""
     property string loadAverage: ""
@@ -61,7 +60,6 @@ Singleton {
         kernelInfoProcess.running = true;
         distributionProcess.running = true;
         hostnameProcess.running = true;
-        uptimeProcess.running = true;
         schedulerProcess.running = true;
         architectureProcess.running = true;
         loadAverageProcess.running = true;
@@ -319,26 +317,6 @@ Singleton {
 
     }
 
-    Process {
-        id: uptimeProcess
-
-        command: ["bash", "-c", "uptime -p | sed 's/up //'"]
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode !== 0)
-                console.warn("Uptime check failed with exit code:", exitCode);
-
-        }
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (text.trim())
-                    root.uptime = text.trim();
-
-            }
-        }
-
-    }
 
     Process {
         id: schedulerProcess
@@ -546,55 +524,27 @@ Singleton {
     }
 
     Timer {
-        id: cpuTimer
+        id: basicStatsTimer
 
-        interval: root.cpuUpdateInterval
+        interval: 5000
         running: root.enabledForTopBar || root.enabledForDetailedView
         repeat: true
         onTriggered: {
-            if (root.enabledForTopBar || root.enabledForDetailedView) {
-                cpuUsageProcess.running = true;
-                cpuFrequencyProcess.running = true;
-            }
+            cpuUsageProcess.running = true;
+            cpuFrequencyProcess.running = true;
+            memoryUsageProcess.running = true;
         }
     }
 
     Timer {
-        id: memoryTimer
+        id: detailedStatsTimer
 
-        interval: root.memoryUpdateInterval
-        running: root.enabledForTopBar || root.enabledForDetailedView
-        repeat: true
-        onTriggered: {
-            if (root.enabledForTopBar || root.enabledForDetailedView)
-                memoryUsageProcess.running = true;
-
-        }
-    }
-
-    Timer {
-        id: temperatureTimer
-
-        interval: root.temperatureUpdateInterval
+        interval: 15000
         running: root.enabledForDetailedView
         repeat: true
         onTriggered: {
-            if (root.enabledForDetailedView)
-                temperatureProcess.running = true;
-
-        }
-    }
-
-    Timer {
-        id: systemInfoTimer
-
-        interval: root.systemInfoUpdateInterval
-        running: root.enabledForDetailedView
-        repeat: true
-        onTriggered: {
-            if (root.enabledForDetailedView)
-                updateSystemInfo();
-
+            temperatureProcess.running = true;
+            updateSystemInfo();
         }
     }
 

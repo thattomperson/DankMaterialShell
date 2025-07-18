@@ -67,7 +67,7 @@ Rectangle {
                                 trayItem.activate();
 
                         } else if (mouse.button === Qt.RightButton) {
-                            if (trayItem.hasMenu)
+                            if (trayItem && trayItem.hasMenu)
                                 customTrayMenu.showMenu(mouse.x, mouse.y);
 
                         }

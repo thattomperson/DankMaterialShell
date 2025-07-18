@@ -36,17 +36,6 @@ Singleton {
     Component.onCompleted: {
         getUserInfo();
         getUptime();
-        // Update uptime every minute
-        uptimeTimer.start();
-    }
-
-    Timer {
-        id: uptimeTimer
-
-        interval: 60000 // 1 minute
-        running: false
-        repeat: true
-        onTriggered: getUptime()
     }
 
     // Get username and full name
@@ -96,7 +85,6 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 root.uptime = text.trim() || "Unknown";
-                console.log("UserInfoService: Uptime updated -", root.uptime);
             }
         }
 

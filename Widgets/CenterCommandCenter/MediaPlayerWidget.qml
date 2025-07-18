@@ -23,9 +23,9 @@ Rectangle {
 
     onActivePlayerChanged: {
         if (!activePlayer)
-            clearCacheTimer.restart();
+            updateTimer.start();
         else
-            clearCacheTimer.stop();
+            updateTimer.stop();
     }
     width: parent.width
     height: parent.height
@@ -36,30 +36,28 @@ Rectangle {
     layer.enabled: true
 
     Timer {
-        id: clearCacheTimer
+        id: updateTimer
 
         interval: 2000
+        running: {
+            // Run when no active player (for cache clearing) OR when playing (for position updates)
+            return (!activePlayer) || 
+                   (activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing && 
+                    activePlayer.length > 0 && !progressMouseArea.isSeeking);
+        }
+        repeat: true
         onTriggered: {
             if (!activePlayer) {
+                // Clear cache when no player
                 lastValidTitle = "";
                 lastValidArtist = "";
                 lastValidAlbum = "";
                 lastValidArtUrl = "";
-            }
-        }
-    }
-
-    // Updates progress bar every 2 seconds when playing
-    Timer {
-        id: positionTimer
-
-        interval: 2000
-        running: activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing && activePlayer.length > 0 && !progressMouseArea.isSeeking
-        repeat: true
-        onTriggered: {
-            if (activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing && !progressMouseArea.isSeeking)
+                stop(); // Stop after clearing cache
+            } else if (activePlayer.playbackState === MprisPlaybackState.Playing && !progressMouseArea.isSeeking) {
+                // Update position when playing
                 currentPosition = activePlayer.position;
-
+            }
         }
     }
 

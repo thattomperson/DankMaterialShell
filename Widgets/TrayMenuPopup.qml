@@ -61,7 +61,7 @@ PanelWindow {
             QsMenuOpener {
                 id: menuOpener
 
-                menu: currentTrayItem ? currentTrayItem.menu : null
+                menu: currentTrayItem && currentTrayItem.hasMenu ? currentTrayItem.menu : null
             }
 
             // Custom menu styling using ListView
@@ -93,12 +93,7 @@ PanelWindow {
                     text: "M"
                 }
 
-                model: ScriptModel {
-                    values: menuOpener.children ? [pe_unknown].filter((item) => {
-                        // Filter out empty items and separators
-                        return item && item.text && item.text.trim().length > 0 && !item.isSeparator;
-                    }) : []
-                }
+                model: menuOpener.children
 
                 delegate: Rectangle {
                     width: ListView.view.width
