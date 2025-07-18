@@ -70,7 +70,9 @@ Item {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        BluetoothService.toggleAdapter();
+                        if (BluetoothService.adapter) {
+                            BluetoothService.adapter.enabled = !BluetoothService.adapter.enabled;
+                        }
                     }
                 }
 
@@ -208,7 +210,11 @@ Item {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 BluetoothService.debugDevice(modelData);
-                                BluetoothService.toggle(modelData.address);
+                                if (modelData.connected) {
+                                    modelData.disconnect();
+                                } else {
+                                    modelData.connect();
+                                }
                             }
                         }
 
@@ -279,10 +285,9 @@ Item {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                if (BluetoothService.adapter && BluetoothService.adapter.discovering)
-                                    BluetoothService.stopScan();
-                                else
-                                    BluetoothService.startScan();
+                                if (BluetoothService.adapter) {
+                                    BluetoothService.adapter.discovering = !BluetoothService.adapter.discovering;
+                                }
                             }
                         }
 
@@ -291,11 +296,18 @@ Item {
                 }
 
                 Repeater {
-                    model: BluetoothService.availableDevices
+                    model: {
+                        if (!BluetoothService.adapter || !BluetoothService.adapter.discovering || !Bluetooth.devices)
+                            return [];
+                        
+                        var filtered = Bluetooth.devices.values.filter((dev) => {
+                            return dev && !dev.paired && !dev.pairing && !dev.blocked && BluetoothService.isValidDevice(dev) && (dev.signalStrength === undefined || dev.signalStrength > 0);
+                        });
+                        return BluetoothService.sortDevices(filtered);
+                    }
 
                     Rectangle {
-                        property bool canPair: BluetoothService.canPair(modelData)
-                        property string pairingStatus: BluetoothService.getPairingStatus(modelData)
+                        property bool canConnect: BluetoothService.canConnect(modelData)
 
                         width: parent.width
                         height: 70
@@ -372,14 +384,11 @@ Item {
 
                                         Text {
                                             text: {
-                                                switch (pairingStatus) {
-                                                case "pairing":
+                                                if (modelData.pairing)
                                                     return "Pairing...";
-                                                case "blocked":
+                                                if (modelData.blocked)
                                                     return "Blocked";
-                                                default:
-                                                    return BluetoothService.getSignalStrength(modelData);
-                                                }
+                                                return BluetoothService.getSignalStrength(modelData);
                                             }
                                             font.pixelSize: Theme.fontSizeSmall
                                             color: {
@@ -398,14 +407,14 @@ Item {
                                             font.family: Theme.iconFont
                                             font.pixelSize: Theme.fontSizeSmall
                                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
-                                            visible: modelData.signalStrength !== undefined && modelData.signalStrength > 0 && pairingStatus === "available"
+                                            visible: modelData.signalStrength !== undefined && modelData.signalStrength > 0 && !modelData.pairing && !modelData.blocked
                                         }
 
                                         Text {
                                             text: (modelData.signalStrength !== undefined && modelData.signalStrength > 0) ? modelData.signalStrength + "%" : ""
                                             font.pixelSize: Theme.fontSizeSmall
                                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
-                                            visible: modelData.signalStrength !== undefined && modelData.signalStrength > 0 && pairingStatus === "available"
+                                            visible: modelData.signalStrength !== undefined && modelData.signalStrength > 0 && !modelData.pairing && !modelData.blocked
                                         }
 
                                     }
@@ -424,7 +433,7 @@ Item {
                             anchors.rightMargin: Theme.spacingM
                             anchors.verticalCenter: parent.verticalCenter
                             color: {
-                                if (!canPair && !modelData.pairing)
+                                if (!canConnect && !modelData.pairing)
                                     return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3);
 
                                 if (actionButtonArea.containsMouse)
@@ -432,9 +441,9 @@ Item {
 
                                 return "transparent";
                             }
-                            border.color: canPair || modelData.pairing ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                            border.color: canConnect || modelData.pairing ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                             border.width: 1
-                            opacity: canPair || modelData.pairing ? 1 : 0.5
+                            opacity: canConnect || modelData.pairing ? 1 : 0.5
 
                             Text {
                                 anchors.centerIn: parent
@@ -445,10 +454,10 @@ Item {
                                     if (modelData.blocked)
                                         return "Blocked";
 
-                                    return "Pair";
+                                    return "Connect";
                                 }
                                 font.pixelSize: Theme.fontSizeSmall
-                                color: canPair || modelData.pairing ? Theme.primary : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
+                                color: canConnect || modelData.pairing ? Theme.primary : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
                                 font.weight: Font.Medium
                             }
 
@@ -457,12 +466,15 @@ Item {
 
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                cursorShape: canPair ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                enabled: canPair
+                                cursorShape: canConnect ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                enabled: canConnect
                                 onClicked: {
-                                    if (canPair)
-                                        BluetoothService.pair(modelData.address);
-
+                                    if (canConnect) {
+                                        if (BluetoothService.adapter && BluetoothService.adapter.discovering) {
+                                            BluetoothService.adapter.discovering = false;
+                                        }
+                                        modelData.connect();
+                                    }
                                 }
                             }
 
@@ -474,12 +486,15 @@ Item {
                             anchors.fill: parent
                             anchors.rightMargin: 90 // Don't overlap with action button
                             hoverEnabled: true
-                            cursorShape: canPair ? Qt.PointingHandCursor : Qt.ArrowCursor
-                            enabled: canPair
+                            cursorShape: canConnect ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            enabled: canConnect
                             onClicked: {
-                                if (canPair)
-                                    BluetoothService.pair(modelData.address);
-
+                                if (canConnect) {
+                                    if (BluetoothService.adapter && BluetoothService.adapter.discovering) {
+                                        BluetoothService.adapter.discovering = false;
+                                    }
+                                    modelData.connect();
+                                }
                             }
                         }
 
@@ -490,7 +505,16 @@ Item {
                 Column {
                     width: parent.width
                     spacing: Theme.spacingM
-                    visible: BluetoothService.adapter && BluetoothService.adapter.discovering && BluetoothService.availableDevices.length === 0
+                    visible: {
+                        if (!BluetoothService.adapter || !BluetoothService.adapter.discovering || !Bluetooth.devices)
+                            return false;
+                        
+                        var availableCount = Bluetooth.devices.values.filter((dev) => {
+                            return dev && !dev.paired && !dev.pairing && !dev.blocked && BluetoothService.isValidDevice(dev) && (dev.signalStrength === undefined || dev.signalStrength > 0);
+                        }).length;
+                        
+                        return availableCount === 0;
+                    }
 
                     Row {
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -536,7 +560,16 @@ Item {
                     text: "No devices found. Put your device in pairing mode and click Start Scanning."
                     font.pixelSize: Theme.fontSizeMedium
                     color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
-                    visible: BluetoothService.availableDevices.length === 0 && (!BluetoothService.adapter || !BluetoothService.adapter.discovering)
+                    visible: {
+                        if (!BluetoothService.adapter || !Bluetooth.devices)
+                            return true;
+                        
+                        var availableCount = Bluetooth.devices.values.filter((dev) => {
+                            return dev && !dev.paired && !dev.pairing && !dev.blocked && BluetoothService.isValidDevice(dev) && (dev.signalStrength === undefined || dev.signalStrength > 0);
+                        }).length;
+                        
+                        return availableCount === 0 && !BluetoothService.adapter.discovering;
+                    }
                     wrapMode: Text.WordWrap
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
@@ -641,9 +674,13 @@ Item {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        if (bluetoothContextMenuWindow.deviceData)
-                            BluetoothService.toggle(bluetoothContextMenuWindow.deviceData.address);
-
+                        if (bluetoothContextMenuWindow.deviceData) {
+                            if (bluetoothContextMenuWindow.deviceData.connected) {
+                                bluetoothContextMenuWindow.deviceData.disconnect();
+                            } else {
+                                bluetoothContextMenuWindow.deviceData.connect();
+                            }
+                        }
                         bluetoothContextMenuWindow.hide();
                     }
                 }
@@ -711,9 +748,9 @@ Item {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        if (bluetoothContextMenuWindow.deviceData)
-                            BluetoothService.forget(bluetoothContextMenuWindow.deviceData.address);
-
+                        if (bluetoothContextMenuWindow.deviceData) {
+                            bluetoothContextMenuWindow.deviceData.forget();
+                        }
                         bluetoothContextMenuWindow.hide();
                     }
                 }

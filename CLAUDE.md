@@ -203,6 +203,9 @@ shell.qml           # Main entry point (minimal orchestration)
    - Services expose properties and functions
    - Widgets bind to service properties for reactive updates
    - Use service functions for actions: `ServiceName.performAction(value)`
+   - **CRITICAL**: DO NOT create wrapper functions for everything - bind directly to underlying APIs when possible
+   - Example: Use `BluetoothService.adapter.discovering = true` instead of `BluetoothService.startScan()`
+   - Example: Use `device.connect()` directly instead of `BluetoothService.connect(device.address)`
 
 ### Error Handling and Debugging
 
@@ -320,3 +323,4 @@ When modifying the shell:
 - **Robustness**: Implement feature detection and graceful degradation
 - **Consistency**: Follow Material Design 3 principles via Theme singleton
 - **Performance**: Minimize expensive operations and use appropriate data structures
+- **NO WRAPPER HELL**: Avoid creating unnecessary wrapper functions - bind directly to underlying APIs for better reactivity and performance

@@ -21,15 +21,6 @@ Singleton {
             return dev && dev.paired && isValidDevice(dev);
         });
     }
-    readonly property var availableDevices: {
-        if (!adapter || !adapter.discovering || !Bluetooth.devices)
-            return [];
-
-        var filtered = Bluetooth.devices.values.filter((dev) => {
-            return dev && !dev.paired && !dev.pairing && !dev.blocked && isValidDevice(dev) && (dev.signalStrength === undefined || dev.signalStrength > 0);
-        });
-        return sortBySignalStrength(filtered);
-    }
     readonly property var allDevicesWithBattery: {
         if (!adapter || !adapter.devices)
             return [];
@@ -39,8 +30,17 @@ Singleton {
         });
     }
 
-    function sortBySignalStrength(devices) {
+    function sortDevices(devices) {
         return devices.sort((a, b) => {
+            var aName = a.name || a.deviceName || "";
+            var bName = b.name || b.deviceName || "";
+            
+            var aHasRealName = aName.includes(" ") && aName.length > 3;
+            var bHasRealName = bName.includes(" ") && bName.length > 3;
+            
+            if (aHasRealName && !bHasRealName) return -1;
+            if (!aHasRealName && bHasRealName) return 1;
+            
             var aSignal = (a.signalStrength !== undefined && a.signalStrength > 0) ? a.signalStrength : 0;
             var bSignal = (b.signalStrength !== undefined && b.signalStrength > 0) ? b.signalStrength : 0;
             return bSignal - aSignal;
@@ -121,7 +121,7 @@ Singleton {
         return "bluetooth";
     }
 
-    function canPair(device) {
+    function canConnect(device) {
         if (!device)
             return false;
 
@@ -132,21 +132,6 @@ Singleton {
         console.log("Device:", device.name, "paired:", device.paired, "connected:", device.connected, "signalStrength:", device.signalStrength);
     }
 
-    function getPairingStatus(device) {
-        if (!device)
-            return "unknown";
-
-        if (device.pairing)
-            return "pairing";
-
-        if (device.paired)
-            return "paired";
-
-        if (device.blocked)
-            return "blocked";
-
-        return "available";
-    }
 
     function getSignalStrength(device) {
         if (!device || device.signalStrength === undefined || device.signalStrength <= 0)
@@ -188,71 +173,5 @@ Singleton {
         return "signal_cellular_0_bar";
     }
 
-    function toggleAdapter() {
-        if (adapter)
-            adapter.enabled = !adapter.enabled;
-
-    }
-
-    function startScan() {
-        if (adapter)
-            adapter.discovering = true;
-
-    }
-
-    function stopScan() {
-        if (adapter)
-            adapter.discovering = false;
-
-    }
-
-    function connect(address) {
-        var device = _findDevice(address);
-        if (device)
-            device.connect();
-
-    }
-
-    function disconnect(address) {
-        var device = _findDevice(address);
-        if (device)
-            device.disconnect();
-
-    }
-
-    function pair(address) {
-        var device = _findDevice(address);
-        if (device && canPair(device))
-            device.pair();
-
-    }
-
-    function forget(address) {
-        var device = _findDevice(address);
-        if (device)
-            device.forget();
-
-    }
-
-    function toggle(address) {
-        var device = _findDevice(address);
-        if (device) {
-            if (device.connected)
-                device.disconnect();
-            else
-                device.connect();
-        }
-    }
-
-    function _findDevice(address) {
-        if (!adapter)
-            return null;
-
-        return adapter.devices.values.find((d) => {
-            return d && d.address === address;
-        }) || (Bluetooth.devices ? Bluetooth.devices.values.find((d) => {
-            return d && d.address === address;
-        }) : null);
-    }
 
 }
