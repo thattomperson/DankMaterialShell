@@ -469,12 +469,7 @@ Item {
                                 cursorShape: canConnect ? Qt.PointingHandCursor : Qt.ArrowCursor
                                 enabled: canConnect
                                 onClicked: {
-                                    if (canConnect) {
-                                        if (BluetoothService.adapter && BluetoothService.adapter.discovering) {
-                                            BluetoothService.adapter.discovering = false;
-                                        }
-                                        modelData.connect();
-                                    }
+                                    modelData && modelData.connect();
                                 }
                             }
 
@@ -489,12 +484,7 @@ Item {
                             cursorShape: canConnect ? Qt.PointingHandCursor : Qt.ArrowCursor
                             enabled: canConnect
                             onClicked: {
-                                if (canConnect) {
-                                    if (BluetoothService.adapter && BluetoothService.adapter.discovering) {
-                                        BluetoothService.adapter.discovering = false;
-                                    }
-                                    modelData.connect();
-                                }
+                                modelData && modelData.connect();
                             }
                         }
 
