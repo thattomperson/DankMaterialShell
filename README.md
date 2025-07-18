@@ -8,20 +8,31 @@ Specifically created for [Niri](https://github.com/YaLTeR/niri).
 
 ## Installation
 
-1. Install dependencies, this will vary based on your distribution.
+1. Install required dependencies
+
+This shell kinda depends on [Niri](https://github.com/YaLTeR/niri), but only for workspaces and the active window widget in TopBar. So it could be used on any other wayland compositor with minimal changes.
 
 ```bash
 # Arch
-paru -S quickshell-git nerd-fonts ttf-material-symbols-variable-git matugen cliphist cava wl-clipboard ddcutil
-
-# Some dependencies are optional
-# - cava for audio visualizer, without it music will just randomly visualize
-# - cliphist for clipboard history
-# - matugen for dynamic themes based on wallpaper
-# - ddcutil for brightness changing
+paru -S quickshell-git ttf-material-symbols-variable-git
 ```
 
-2. Configure SwayBG (Optional)
+2. Install optional dependencies to unlock certain features
+
+| Dependency | Purpose | If Missing |
+|------------|---------|------------|
+| cava | Equalizer in TopBar uses Audio Data | Equalizer shifts at random |
+| cliphist | Allows clipboard history view | No clipboard history view available |
+| matugen | Allows dynamic themes based on wallpaper | Just can choose from preconfigured themes instead of dynamic colors |
+| ddcutil (or brightnessctl) | Allows controlling brightness of monitors | No Brightness |
+| wl-clipboard | Unlocks copy functionality of certain elements, such as process PIDs | No copy |
+| swaybg | Wallpaper | Just one wallpaper solution, others will work just not with `set-wallpaper.sh` below |
+
+```bash
+# Arch
+paru -S nerd-fonts ttf-material-symbols-variable-git matugen cliphist cava wl-clipboard ddcutil swaybg
+
+3. Configure SwayBG (If Desired)
 
 ```
 # Install wallpaper script
@@ -51,14 +62,14 @@ set-wallpaper.sh /path/to/image.jpg
 systemctl --user enable --now swaybg.service
 ```
 
-3. Install DankMaterialShell
+4. Install DankMaterialShell
 
 ```
 mkdir -p ~/.config/quickshell
 git clone https://github.com/bbedward/DankMaterialShell.git ~/.config/quickshell/DankMaterialShell
 ```
 
-4. Enable
+5. Enable
 
 ```
 qs -c DankMaterialShell

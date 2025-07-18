@@ -5,6 +5,13 @@ import qs.Services
 Rectangle {
     id: root
 
+    readonly property bool nerdFontAvailable: Qt.fontFamilies()
+                                  .indexOf("Symbols Nerd Font") !== -1
+
+    Component.onCompleted: {
+        console.log(Qt.fontFamilies());
+    }
+
     width: 40
     height: 30
     radius: Theme.cornerRadius
@@ -12,8 +19,8 @@ Rectangle {
 
     Text {
         anchors.centerIn: parent
-        text: OSDetectorService.osLogo || "apps"
-        font.family: OSDetectorService.osLogo ? "NerdFont" : Theme.iconFont
+        text: nerdFontAvailable && OSDetectorService.osLogo || "apps"
+        font.family: nerdFontAvailable && OSDetectorService.osLogo ? "Symbols Nerd Font" : Theme.iconFont
         font.pixelSize: Theme.iconSize - 6
         font.weight: Theme.iconFontWeight
         color: Theme.surfaceText
