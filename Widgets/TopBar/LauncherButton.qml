@@ -8,10 +8,6 @@ Rectangle {
     readonly property bool nerdFontAvailable: Qt.fontFamilies()
                                   .indexOf("Symbols Nerd Font") !== -1
 
-    Component.onCompleted: {
-        console.log(Qt.fontFamilies());
-    }
-
     width: 40
     height: 30
     radius: Theme.cornerRadius
