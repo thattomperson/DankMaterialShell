@@ -24,7 +24,6 @@ Rectangle {
         text: OSDetectorService.osLogo
         font.family: "Symbols Nerd Font"
         font.pixelSize: Theme.iconSize - 6
-        font.weight: Theme.iconFontWeight
         color: Theme.surfaceText
     }
 

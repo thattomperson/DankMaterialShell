@@ -5,6 +5,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
+import qs.Widgets
 
 PanelWindow {
     id: root
@@ -83,11 +84,10 @@ PanelWindow {
                     radius: 16
                     color: closePowerArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
 
-                    Text {
+                    DankIcon {
                         anchors.centerIn: parent
-                        text: "close"
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSize - 4
+                        name: "close"
+                        size: Theme.iconSize - 4
                         color: closePowerArea.containsMouse ? Theme.error : Theme.surfaceText
                     }
 
@@ -124,10 +124,9 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: Theme.spacingM
 
-                        Text {
-                            text: "logout"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
+                        DankIcon {
+                            name: "logout"
+                            size: Theme.iconSize
                             color: Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -172,10 +171,9 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: Theme.spacingM
 
-                        Text {
-                            text: "bedtime"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
+                        DankIcon {
+                            name: "bedtime"
+                            size: Theme.iconSize
                             color: Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -220,10 +218,9 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: Theme.spacingM
 
-                        Text {
-                            text: "restart_alt"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
+                        DankIcon {
+                            name: "restart_alt"
+                            size: Theme.iconSize
                             color: rebootArea.containsMouse ? Theme.warning : Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -268,10 +265,9 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: Theme.spacingM
 
-                        Text {
-                            text: "power_settings_new"
-                            font.family: Theme.iconFont
-                            font.pixelSize: Theme.iconSize
+                        DankIcon {
+                            name: "power_settings_new"
+                            size: Theme.iconSize
                             color: powerOffArea.containsMouse ? Theme.error : Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }

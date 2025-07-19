@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 PanelWindow {
     id: root
@@ -52,8 +53,8 @@ PanelWindow {
             anchors.centerIn: parent
             spacing: Theme.spacingM
 
-            Text {
-                text: {
+            DankIcon {
+                name: {
                     switch (ToastService.currentLevel) {
                     case ToastService.levelError:
                         return "error";
@@ -65,8 +66,7 @@ PanelWindow {
                         return "info";
                     }
                 }
-                font.family: Theme.iconFont
-                font.pixelSize: Theme.iconSize
+                size: Theme.iconSize
                 color: Theme.background
                 anchors.verticalCenter: parent.verticalCenter
             }

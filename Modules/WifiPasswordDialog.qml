@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 PanelWindow {
     id: root
@@ -101,11 +102,10 @@ PanelWindow {
                     radius: 16
                     color: closeDialogArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
 
-                    Text {
+                    DankIcon {
                         anchors.centerIn: parent
-                        text: "close"
-                        font.family: Theme.iconFont
-                        font.pixelSize: Theme.iconSize - 4
+                        name: "close"
+                        size: Theme.iconSize - 4
                         color: closeDialogArea.containsMouse ? Theme.error : Theme.surfaceText
                     }
 
@@ -194,11 +194,10 @@ PanelWindow {
                     border.color: checked ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.5)
                     border.width: 2
 
-                    Text {
+                    DankIcon {
                         anchors.centerIn: parent
-                        text: "check"
-                        font.family: Theme.iconFont
-                        font.pixelSize: 12
+                        name: "check"
+                        size: 12
                         color: Theme.background
                         visible: parent.checked
                     }

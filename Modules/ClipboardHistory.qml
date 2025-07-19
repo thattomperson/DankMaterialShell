@@ -5,6 +5,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
+import qs.Widgets
 
 PanelWindow {
     id: clipboardHistory
@@ -225,11 +226,10 @@ PanelWindow {
                         color: clearArea.containsMouse ? Qt.rgba(activeTheme.primary.r, activeTheme.primary.g, activeTheme.primary.b, 0.12) : "transparent"
                         visible: clipboardHistory.totalCount > 0
 
-                        Text {
+                        DankIcon {
                             anchors.centerIn: parent
-                            text: "delete_sweep"
-                            font.family: activeTheme.iconFont
-                            font.pixelSize: activeTheme.iconSize
+                            name: "delete_sweep"
+                            size: activeTheme.iconSize
                             color: clearArea.containsMouse ? activeTheme.primary : activeTheme.surfaceText
                         }
 
@@ -258,11 +258,10 @@ PanelWindow {
                         radius: activeTheme.cornerRadius
                         color: closeArea.containsMouse ? Qt.rgba(activeTheme.primary.r, activeTheme.primary.g, activeTheme.primary.b, 0.12) : "transparent"
 
-                        Text {
+                        DankIcon {
                             anchors.centerIn: parent
-                            text: "close"
-                            font.family: activeTheme.iconFont
-                            font.pixelSize: activeTheme.iconSize
+                            name: "close"
+                            size: activeTheme.iconSize
                             color: closeArea.containsMouse ? activeTheme.primary : activeTheme.surfaceText
                         }
 
@@ -303,10 +302,9 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: activeTheme.spacingM
 
-                    Text {
-                        text: "search"
-                        font.family: activeTheme.iconFont
-                        font.pixelSize: activeTheme.iconSize
+                    DankIcon {
+                        name: "search"
+                        size: activeTheme.iconSize
                         color: searchField.focus ? activeTheme.primary : Qt.rgba(activeTheme.surfaceText.r, activeTheme.surfaceText.g, activeTheme.surfaceText.b, 0.6)
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -487,11 +485,10 @@ PanelWindow {
                                         }
 
                                         // Fallback icon when image fails to load or is loading
-                                        Text {
+                                        DankIcon {
                                             anchors.centerIn: parent
-                                            text: imagePreview.status === Image.Loading ? "hourglass_empty" : imagePreview.status === Image.Error ? "broken_image" : "photo"
-                                            font.family: activeTheme.iconFont
-                                            font.pixelSize: imagePreview.status === Image.Loading ? 14 : 18
+                                            name: imagePreview.status === Image.Loading ? "hourglass_empty" : imagePreview.status === Image.Error ? "broken_image" : "photo"
+                                            size: imagePreview.status === Image.Loading ? 14 : 18
                                             color: imagePreview.status === Image.Error ? activeTheme.error : activeTheme.primary
                                             visible: imagePreview.status !== Image.Ready
 
@@ -566,11 +563,10 @@ PanelWindow {
                                 color: deleteArea.containsMouse ? Qt.rgba(activeTheme.primary.r, activeTheme.primary.g, activeTheme.primary.b, 0.12) : "transparent"
                                 z: 100 // Ensure it's above other elements
 
-                                Text {
+                                DankIcon {
                                     anchors.centerIn: parent
-                                    text: "delete"
-                                    font.family: activeTheme.iconFont
-                                    font.pixelSize: activeTheme.iconSize - 4
+                                    name: "delete"
+                                    size: activeTheme.iconSize - 4
                                     color: deleteArea.containsMouse ? activeTheme.primary : activeTheme.surfaceText
                                 }
 
@@ -627,11 +623,10 @@ PanelWindow {
                     spacing: activeTheme.spacingL
                     visible: clipboardHistory.totalCount === 0
 
-                    Text {
+                    DankIcon {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: "content_paste_off"
-                        font.family: activeTheme.iconFont
-                        font.pixelSize: activeTheme.iconSizeLarge + 16
+                        name: "content_paste_off"
+                        size: activeTheme.iconSizeLarge + 16
                         color: Qt.rgba(activeTheme.surfaceText.r, activeTheme.surfaceText.g, activeTheme.surfaceText.b, 0.3)
                     }
 
@@ -691,11 +686,10 @@ PanelWindow {
                     height: activeTheme.spacingM
                 }
 
-                Text {
+                DankIcon {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: "warning"
-                    font.family: activeTheme.iconFont
-                    font.pixelSize: activeTheme.iconSizeLarge
+                    name: "warning"
+                    size: activeTheme.iconSizeLarge
                     color: activeTheme.error
                 }
 

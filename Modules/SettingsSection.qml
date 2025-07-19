@@ -1,5 +1,6 @@
 import QtQuick
 import qs.Common
+import qs.Widgets
 
 Column {
     id: root
@@ -16,10 +17,9 @@ Column {
         width: parent.width
         spacing: Theme.spacingS
 
-        Text {
-            text: iconName
-            font.family: Theme.iconFont
-            font.pixelSize: Theme.iconSize - 2
+        DankIcon {
+            name: iconName
+            size: Theme.iconSize - 2
             color: Theme.primary
             anchors.verticalCenter: parent.verticalCenter
         }

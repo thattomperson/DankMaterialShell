@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Column {
     id: themePicker
@@ -223,22 +224,20 @@ Column {
                 anchors.centerIn: parent
                 spacing: Theme.spacingS
 
-                Text {
-                    text: {
+                DankIcon {
+                    name: {
                         if (ToastService.wallpaperErrorStatus === "error" || ToastService.wallpaperErrorStatus === "matugen_missing")
                             return "error";
                         else
                             return "palette";
                     }
-                    font.family: Theme.iconFont
-                    font.pixelSize: 16
+                    size: 16
                     color: {
                         if (ToastService.wallpaperErrorStatus === "error" || ToastService.wallpaperErrorStatus === "matugen_missing")
                             return Theme.error;
                         else
                             return Theme.surfaceText;
                     }
-                    font.weight: Theme.iconFontWeight
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
