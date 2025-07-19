@@ -16,6 +16,7 @@ Singleton {
     readonly property var groupedPopups: getGroupedPopups()
     
     property var expandedGroups: ({}) // Track which groups are expanded
+    property var expandedMessages: ({}) // Track which individual messages are expanded
 
     NotificationServer {
         id: server
@@ -401,6 +402,15 @@ Singleton {
                 notif.notification.dismiss();
             }
         }
+    }
+
+    function toggleMessageExpansion(messageId) {
+        let newExpandedMessages = {};
+        for (const key in expandedMessages) {
+            newExpandedMessages[key] = expandedMessages[key];
+        }
+        newExpandedMessages[messageId] = !newExpandedMessages[messageId];
+        expandedMessages = newExpandedMessages;
     }
 
     function getGroupTitle(group) {

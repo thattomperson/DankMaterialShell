@@ -402,26 +402,38 @@ PanelWindow {
                                             width: parent.width
                                             height: parent.height
 
-                                            readonly property bool isScreenshot: {
-                                                // Check if this is a screenshot notification using NotificationService detection
-                                                return modelData.latestNotification.isScreenshot;
+                                            readonly property bool isScreenshot: modelData.latestNotification.isScreenshot
+                                            readonly property bool hasNotificationImage: modelData.latestNotification.image && modelData.latestNotification.image !== ""
+
+                                            // Priority 1: Notification image using Quickshell IconImage
+                                            Rectangle {
+                                                anchors.fill: parent
+                                                anchors.margins: 2
+                                                radius: 20
+                                                clip: true
+                                                visible: parent.hasNotificationImage && centerNotificationImage.status === Image.Ready
+                                                color: "transparent"
+                                                
+                                                IconImage {
+                                                    id: centerNotificationImage
+                                                    anchors.fill: parent
+                                                    source: modelData.latestNotification.image || ""
+                                                }
                                             }
 
-
-
-                                            // Use Material Symbols icon for screenshots with fallback
+                                            // Priority 2: Material Symbols icon for screenshots without notification images
                                             DankIcon {
                                                 anchors.centerIn: parent
                                                 name: "screenshot_monitor"
                                                 size: 20
                                                 color: Theme.primaryText
-                                                visible: parent.isScreenshot
+                                                visible: parent.isScreenshot && !parent.hasNotificationImage
                                             }
 
-                                            // Fallback to first letter for non-screenshot notifications
+                                            // Priority 3: Fallback to first letter for other notifications
                                             Text {
                                                 anchors.centerIn: parent
-                                                visible: !parent.isScreenshot
+                                                visible: !parent.hasNotificationImage && !parent.isScreenshot
                                                 text: {
                                                     const appName = modelData.appName || "?";
                                                     return appName.charAt(0).toUpperCase();
@@ -670,6 +682,71 @@ PanelWindow {
                             spacing: Theme.spacingM
                             visible: expanded
 
+                            // 1st tier controls - moved above group header as per mockup
+                            Item {
+                                width: parent.width
+                                height: 32
+
+                                // Controls container - fixed position on right
+                                Item {
+                                    width: 72
+                                    height: 32
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+
+                                    Rectangle {
+                                        width: 32
+                                        height: 32
+                                        radius: 16
+                                        anchors.left: parent.left
+                                        color: collapseAreaTop.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
+
+                                        DankIcon {
+                                            anchors.centerIn: parent
+                                            name: "expand_less"
+                                            size: 18
+                                            color: Theme.surfaceText
+                                        }
+
+                                        MouseArea {
+                                            id: collapseAreaTop
+
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: NotificationService.toggleGroupExpansion(modelData.key)
+                                        }
+
+                                    }
+
+                                    Rectangle {
+                                        width: 32
+                                        height: 32
+                                        radius: 16
+                                        anchors.right: parent.right
+                                        color: dismissAllAreaTop.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
+
+                                        DankIcon {
+                                            anchors.centerIn: parent
+                                            name: "close"
+                                            size: 16
+                                            color: Theme.surfaceText
+                                        }
+
+                                        MouseArea {
+                                            id: dismissAllAreaTop
+
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: NotificationService.dismissGroup(modelData.key)
+                                        }
+
+                                    }
+
+                                }
+                            }
+
                             // Group header in expanded view
                             Item {
                                 width: parent.width
@@ -686,34 +763,50 @@ PanelWindow {
                                     border.width: 1
                                     clip: true
 
+                                    readonly property bool hasNotificationImage: modelData.latestNotification.image && modelData.latestNotification.image !== ""
+
+                                    // Priority 1: Notification image using Quickshell IconImage
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        anchors.margins: 2
+                                        radius: 16
+                                        clip: true
+                                        visible: parent.hasNotificationImage && expandedHeaderNotificationImage.status === Image.Ready
+                                        color: "transparent"
+                                        
+                                        IconImage {
+                                            id: expandedHeaderNotificationImage
+                                            anchors.fill: parent
+                                            source: modelData.latestNotification.image || ""
+                                        }
+                                    }
+
+                                    // Priority 2: App icon for non-screenshots without notification images
                                     IconImage {
                                         anchors.fill: parent
                                         anchors.margins: 4
                                         source: {
-                                            // Don't try to load icons for screenshots - let fallback handle them
-                                            const isScreenshot = modelData.latestNotification.isScreenshot;
-                                            
-                                            if (isScreenshot) {
+                                            if (parent.hasNotificationImage || modelData.latestNotification.isScreenshot) {
                                                 return "";
                                             }
-                                            
                                             return modelData.latestNotification.appIcon ? Quickshell.iconPath(modelData.latestNotification.appIcon, "") : "";
                                         }
                                         visible: status === Image.Ready
                                     }
 
-                                    // Material Symbols icon for screenshots in expanded header
+                                    // Priority 3: Material Symbols icon for screenshots without notification images
                                     DankIcon {
                                         anchors.centerIn: parent
                                         name: "screenshot_monitor"
                                         size: 16
                                         color: Theme.primaryText
-                                        visible: modelData.latestNotification.isScreenshot
+                                        visible: modelData.latestNotification.isScreenshot && !parent.hasNotificationImage
                                     }
 
+                                    // Priority 4: Fallback text
                                     Text {
                                         anchors.centerIn: parent
-                                        visible: !modelData.latestNotification.isScreenshot && (!modelData.latestNotification.appIcon || modelData.latestNotification.appIcon === "")
+                                        visible: !parent.hasNotificationImage && !modelData.latestNotification.isScreenshot && (!modelData.latestNotification.appIcon || modelData.latestNotification.appIcon === "")
                                         text: {
                                             const appName = modelData.appName || "?";
                                             return appName.charAt(0).toUpperCase();
@@ -725,73 +818,40 @@ PanelWindow {
 
                                 }
 
-                                Text {
+                                // App name and count badge
+                                Row {
                                     anchors.left: parent.left
                                     anchors.leftMargin: 52
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: modelData.appName
-                                    color: Theme.surfaceText
-                                    font.pixelSize: Theme.fontSizeLarge
-                                    font.weight: Font.Bold
-                                }
+                                    spacing: Theme.spacingS
 
-                                Item {
-                                    width: 72
-                                    height: 32
-                                    anchors.right: parent.right
-                                    anchors.verticalCenter: parent.verticalCenter
-
-                                    Rectangle {
-                                        width: 32
-                                        height: 32
-                                        radius: 16
-                                        anchors.left: parent.left
-                                        color: collapseArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
-
-                                        DankIcon {
-                                            anchors.centerIn: parent
-                                            name: "expand_less"
-                                            size: 18
-                                            color: Theme.surfaceText
-                                        }
-
-                                        MouseArea {
-                                            id: collapseArea
-
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: NotificationService.toggleGroupExpansion(modelData.key)
-                                        }
-
+                                    Text {
+                                        text: modelData.appName
+                                        color: Theme.surfaceText
+                                        font.pixelSize: Theme.fontSizeLarge
+                                        font.weight: Font.Bold
+                                        anchors.verticalCenter: parent.verticalCenter
                                     }
 
+                                    // Message count badge when expanded
                                     Rectangle {
-                                        width: 32
-                                        height: 32
-                                        radius: 16
-                                        anchors.right: parent.right
-                                        color: dismissAllArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
+                                        width: 20
+                                        height: 20
+                                        radius: 10
+                                        color: Theme.primary
+                                        visible: modelData.count > 1
+                                        anchors.verticalCenter: parent.verticalCenter
 
-                                        DankIcon {
+                                        Text {
                                             anchors.centerIn: parent
-                                            name: "close"
-                                            size: 16
-                                            color: Theme.surfaceText
+                                            text: modelData.count.toString()
+                                            color: Theme.primaryText
+                                            font.pixelSize: 10
+                                            font.weight: Font.Bold
                                         }
-
-                                        MouseArea {
-                                            id: dismissAllArea
-
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: NotificationService.dismissGroup(modelData.key)
-                                        }
-
                                     }
-
                                 }
+
 
                             }
 
@@ -833,18 +893,37 @@ PanelWindow {
                                                 border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
                                                 border.width: 1
 
-                                                // Material Symbols icon for individual screenshot notifications
+                                                readonly property bool hasNotificationImage: modelData.image && modelData.image !== ""
+
+                                                // Priority 1: Notification image using Quickshell IconImage
+                                                Rectangle {
+                                                    anchors.fill: parent
+                                                    anchors.margins: 1
+                                                    radius: 14
+                                                    clip: true
+                                                    visible: parent.hasNotificationImage && centerIndividualNotificationImage.status === Image.Ready
+                                                    color: "transparent"
+                                                    
+                                                    IconImage {
+                                                        id: centerIndividualNotificationImage
+                                                        anchors.fill: parent
+                                                        source: modelData.image || ""
+                                                    }
+                                                }
+
+                                                // Priority 2: Material Symbols icon for screenshots without notification images
                                                 DankIcon {
                                                     anchors.centerIn: parent
                                                     name: "screenshot_monitor"
                                                     size: 12
                                                     color: Theme.primaryText
-                                                    visible: modelData.isScreenshot
+                                                    visible: modelData.isScreenshot && !parent.hasNotificationImage
                                                 }
 
+                                                // Priority 3: Fallback text
                                                 Text {
                                                     anchors.centerIn: parent
-                                                    visible: !modelData.isScreenshot
+                                                    visible: !parent.hasNotificationImage && !modelData.isScreenshot
                                                     text: {
                                                         const appName = modelData.appName || "?";
                                                         return appName.charAt(0).toUpperCase();
@@ -856,30 +935,64 @@ PanelWindow {
 
                                             }
 
-                                            Rectangle {
-                                                width: 24
+                                            // Individual controls - expand and dismiss buttons
+                                            Row {
+                                                width: 50
                                                 height: 24
-                                                radius: 12
                                                 anchors.right: parent.right
                                                 anchors.top: parent.top
-                                                color: individualDismissArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
+                                                spacing: 2
 
-                                                DankIcon {
-                                                    anchors.centerIn: parent
-                                                    name: "close"
-                                                    size: 12
-                                                    color: Theme.surfaceVariantText
+                                                // Expand/collapse button for 2nd tier
+                                                Rectangle {
+                                                    width: 24
+                                                    height: 24
+                                                    radius: 12
+                                                    color: individualExpandArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
+                                                    visible: modelData.body && modelData.body.length > 50 // Only show if body text is long enough
+
+                                                    property bool isExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
+
+                                                    DankIcon {
+                                                        anchors.centerIn: parent
+                                                        name: parent.isExpanded ? "expand_less" : "expand_more"
+                                                        size: 12
+                                                        color: Theme.surfaceVariantText
+                                                    }
+
+                                                    MouseArea {
+                                                        id: individualExpandArea
+
+                                                        anchors.fill: parent
+                                                        hoverEnabled: true
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: NotificationService.toggleMessageExpansion(modelData.notification.id)
+                                                    }
                                                 }
 
-                                                MouseArea {
-                                                    id: individualDismissArea
+                                                // Individual dismiss button
+                                                Rectangle {
+                                                    width: 24
+                                                    height: 24
+                                                    radius: 12
+                                                    color: individualDismissArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
 
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: NotificationService.dismissNotification(modelData)
+                                                    DankIcon {
+                                                        anchors.centerIn: parent
+                                                        name: "close"
+                                                        size: 12
+                                                        color: Theme.surfaceVariantText
+                                                    }
+
+                                                    MouseArea {
+                                                        id: individualDismissArea
+
+                                                        anchors.fill: parent
+                                                        hoverEnabled: true
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: NotificationService.dismissNotification(modelData)
+                                                    }
                                                 }
-
                                             }
 
                                             Column {
@@ -888,27 +1001,42 @@ PanelWindow {
                                                 anchors.left: parent.left
                                                 anchors.leftMargin: 44
                                                 anchors.right: parent.right
-                                                anchors.rightMargin: 36
+                                                anchors.rightMargin: 60 // More space for expanded controls
                                                 anchors.top: parent.top
                                                 spacing: Theme.spacingXS
 
+                                                property bool isMessageExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
+
+                                                // Title • timestamp format
                                                 Text {
-                                                    text: modelData.summary
+                                                    text: {
+                                                        const summary = modelData.summary || "";
+                                                        const timeStr = modelData.timeStr || "";
+                                                        if (summary && timeStr) {
+                                                            return summary + " • " + timeStr;
+                                                        } else if (summary) {
+                                                            return summary;
+                                                        } else {
+                                                            return "Message • " + timeStr;
+                                                        }
+                                                    }
                                                     color: Theme.surfaceText
                                                     font.pixelSize: Theme.fontSizeSmall
                                                     font.weight: Font.Medium
                                                     width: parent.width
                                                     elide: Text.ElideRight
+                                                    maximumLineCount: 1
                                                 }
 
+                                                // Body text with expandable behavior
                                                 Text {
                                                     text: modelData.body
                                                     color: Theme.surfaceVariantText
                                                     font.pixelSize: Theme.fontSizeSmall
                                                     width: parent.width
                                                     wrapMode: Text.WordWrap
-                                                    maximumLineCount: 3
-                                                    elide: Text.ElideRight
+                                                    maximumLineCount: parent.isMessageExpanded ? -1 : 3 // Unlimited when expanded, 3 when collapsed (more space in center)
+                                                    elide: parent.isMessageExpanded ? Text.ElideNone : Text.ElideRight
                                                     visible: text.length > 0
                                                 }
 
