@@ -343,7 +343,10 @@ PanelWindow {
                             anchors.top: parent.top
                             anchors.left: parent.left
                             anchors.right: parent.right
-                            anchors.margins: Theme.spacingL
+                            anchors.topMargin: 14 // Reduced from Theme.spacingL (16px) by 10%
+                            anchors.bottomMargin: 14 // Reduced from Theme.spacingL (16px) by 10%
+                            anchors.leftMargin: Theme.spacingL
+                            anchors.rightMargin: Theme.spacingL
                             spacing: Theme.spacingS
                             visible: !expanded
 
@@ -475,10 +478,10 @@ PanelWindow {
                                     anchors.left: iconContainer.right
                                     anchors.leftMargin: Theme.spacingM
                                     anchors.right: controlsContainer.left
-                                    anchors.rightMargin: Theme.spacingM
+                                    anchors.rightMargin: 8 // Reduced to align text with close button
                                     anchors.top: parent.top
                                     anchors.topMargin: Theme.spacingS
-                                    spacing: Theme.spacingS
+                                    spacing: 6 // Reduced from Theme.spacingS (8px) by 2px
 
                                     // App name and timestamp
                                     Text {
@@ -522,14 +525,15 @@ PanelWindow {
 
                                 }
 
-                                // Controls with fixed positioning
+                                // Controls aligned with app name and timestamp row
                                 Item {
                                     id: controlsContainer
 
                                     width: 72
                                     height: 32
                                     anchors.right: parent.right
-                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.top: parent.top
+                                    anchors.topMargin: 8
 
                                     Rectangle {
                                         width: 32
@@ -678,14 +682,50 @@ PanelWindow {
                             anchors.top: parent.top
                             anchors.left: parent.left
                             anchors.right: parent.right
-                            anchors.margins: Theme.spacingL
-                            spacing: Theme.spacingM
+                            anchors.topMargin: 14 // Reduced from Theme.spacingL (16px) by 10%
+                            anchors.bottomMargin: 14 // Reduced from Theme.spacingL (16px) by 10%
+                            anchors.leftMargin: Theme.spacingL
+                            anchors.rightMargin: Theme.spacingL
+                            spacing: 9 // Reduced from Theme.spacingM (12px) by 1/4
                             visible: expanded
 
-                            // 1st tier controls - moved above group header as per mockup
+                            // 1st tier controls with app name - optimized spacing  
                             Item {
                                 width: parent.width
-                                height: 32
+                                height: 40
+
+                                // App name and count badge - left side
+                                Row {
+                                    anchors.left: parent.left
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: Theme.spacingS
+
+                                    Text {
+                                        text: modelData.appName
+                                        color: Theme.surfaceText
+                                        font.pixelSize: Theme.fontSizeLarge
+                                        font.weight: Font.Bold
+                                        anchors.verticalCenter: parent.verticalCenter
+                                    }
+
+                                    // Message count badge when expanded
+                                    Rectangle {
+                                        width: 20
+                                        height: 20
+                                        radius: 10
+                                        color: Theme.primary
+                                        visible: modelData.count > 1
+                                        anchors.verticalCenter: parent.verticalCenter
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: modelData.count.toString()
+                                            color: Theme.primaryText
+                                            font.pixelSize: 10
+                                            font.weight: Font.Bold
+                                        }
+                                    }
+                                }
 
                                 // Controls container - fixed position on right
                                 Item {
@@ -747,118 +787,11 @@ PanelWindow {
                                 }
                             }
 
-                            // Group header in expanded view
-                            Item {
-                                width: parent.width
-                                height: 48
-
-                                Rectangle {
-                                    width: 40
-                                    height: 40
-                                    radius: 20
-                                    anchors.left: parent.left
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1)
-                                    border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3)
-                                    border.width: 1
-                                    clip: true
-
-                                    readonly property bool hasNotificationImage: modelData.latestNotification.image && modelData.latestNotification.image !== ""
-
-                                    // Priority 1: Notification image using Quickshell IconImage
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        anchors.margins: 2
-                                        radius: 16
-                                        clip: true
-                                        visible: parent.hasNotificationImage && expandedHeaderNotificationImage.status === Image.Ready
-                                        color: "transparent"
-                                        
-                                        IconImage {
-                                            id: expandedHeaderNotificationImage
-                                            anchors.fill: parent
-                                            source: modelData.latestNotification.image || ""
-                                        }
-                                    }
-
-                                    // Priority 2: App icon for non-screenshots without notification images
-                                    IconImage {
-                                        anchors.fill: parent
-                                        anchors.margins: 4
-                                        source: {
-                                            if (parent.hasNotificationImage || modelData.latestNotification.isScreenshot) {
-                                                return "";
-                                            }
-                                            return modelData.latestNotification.appIcon ? Quickshell.iconPath(modelData.latestNotification.appIcon, "") : "";
-                                        }
-                                        visible: status === Image.Ready
-                                    }
-
-                                    // Priority 3: Material Symbols icon for screenshots without notification images
-                                    DankIcon {
-                                        anchors.centerIn: parent
-                                        name: "screenshot_monitor"
-                                        size: 16
-                                        color: Theme.primaryText
-                                        visible: modelData.latestNotification.isScreenshot && !parent.hasNotificationImage
-                                    }
-
-                                    // Priority 4: Fallback text
-                                    Text {
-                                        anchors.centerIn: parent
-                                        visible: !parent.hasNotificationImage && !modelData.latestNotification.isScreenshot && (!modelData.latestNotification.appIcon || modelData.latestNotification.appIcon === "")
-                                        text: {
-                                            const appName = modelData.appName || "?";
-                                            return appName.charAt(0).toUpperCase();
-                                        }
-                                        font.pixelSize: 16
-                                        font.weight: Font.Bold
-                                        color: Theme.primaryText
-                                    }
-
-                                }
-
-                                // App name and count badge
-                                Row {
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 52
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    spacing: Theme.spacingS
-
-                                    Text {
-                                        text: modelData.appName
-                                        color: Theme.surfaceText
-                                        font.pixelSize: Theme.fontSizeLarge
-                                        font.weight: Font.Bold
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-
-                                    // Message count badge when expanded
-                                    Rectangle {
-                                        width: 20
-                                        height: 20
-                                        radius: 10
-                                        color: Theme.primary
-                                        visible: modelData.count > 1
-                                        anchors.verticalCenter: parent.verticalCenter
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: modelData.count.toString()
-                                            color: Theme.primaryText
-                                            font.pixelSize: 10
-                                            font.weight: Font.Bold
-                                        }
-                                    }
-                                }
-
-
-                            }
 
                             // Individual notifications
                             Column {
                                 width: parent.width
-                                spacing: Theme.spacingS
+                                spacing: 5 // Reduced from Theme.spacingS (8px) by 1/3
 
                                 Repeater {
                                     model: modelData.notifications.slice(0, 10)
@@ -941,6 +874,7 @@ PanelWindow {
                                                 height: 24
                                                 anchors.right: parent.right
                                                 anchors.top: parent.top
+                                                anchors.topMargin: -4 // Move up into title area
                                                 spacing: 2
 
                                                 // Expand/collapse button for 2nd tier
@@ -1001,9 +935,9 @@ PanelWindow {
                                                 anchors.left: parent.left
                                                 anchors.leftMargin: 44
                                                 anchors.right: parent.right
-                                                anchors.rightMargin: 60 // More space for expanded controls
+                                                anchors.rightMargin: 24 // Align text with close button
                                                 anchors.top: parent.top
-                                                spacing: Theme.spacingXS
+                                                spacing: 2 // Reduced from Theme.spacingXS (4px) by 2px
 
                                                 property bool isMessageExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
 
