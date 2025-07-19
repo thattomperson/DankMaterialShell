@@ -221,6 +221,7 @@ PanelWindow {
     }
 
     Connections {
+        target: AppSearchService
         function onApplicationsChanged() {
             console.log("AppLauncher: DesktopEntries.applicationsChanged signal received");
             // Update categories when applications change
@@ -231,8 +232,6 @@ PanelWindow {
             }));
             updateFilteredModel();
         }
-
-        target: DesktopEntries
     }
 
     Connections {

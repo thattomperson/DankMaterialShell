@@ -79,7 +79,7 @@ PanelWindow {
             Scale {
                 id: scaleTransform
 
-                origin.x: parent.width * 0.85 // Scale from top-right
+                origin.x: dropdownContent.width * 0.85 // Scale from top-right
                 origin.y: 0
                 xScale: processListDropdown.isVisible ? 1 : 0.95
                 yScale: processListDropdown.isVisible ? 1 : 0.8

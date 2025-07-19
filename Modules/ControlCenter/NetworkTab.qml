@@ -123,7 +123,7 @@ Item {
                             radius: 6
                             anchors.verticalCenter: parent.verticalCenter
                             z: 10
-                            opacity: networkTab.changingNetworkPreference ? 0.6 : 1
+                            opacity: NetworkService.changingPreference ? 0.6 : 1
                             visible: NetworkService.networkStatus !== "ethernet" && NetworkService.wifiAvailable && NetworkService.wifiEnabled
 
                             Row {
@@ -133,17 +133,17 @@ Item {
                                 DankIcon {
                                     id: ethernetPreferenceIcon
 
-                                    name: networkTab.changingNetworkPreference ? "sync" : ""
+                                    name: NetworkService.changingPreference ? "sync" : ""
                                     size: Theme.fontSizeSmall
                                     color: networkTab.networkStatus === "ethernet" ? Theme.background : Theme.primary
-                                    visible: networkTab.changingNetworkPreference
+                                    visible: NetworkService.changingPreference
                                     anchors.verticalCenter: parent.verticalCenter
-                                    rotation: networkTab.changingNetworkPreference ? ethernetPreferenceIcon.rotation : 0
+                                    rotation: NetworkService.changingPreference ? ethernetPreferenceIcon.rotation : 0
 
                                     RotationAnimation {
                                         target: ethernetPreferenceIcon
                                         property: "rotation"
-                                        running: networkTab.changingNetworkPreference
+                                        running: NetworkService.changingPreference
                                         from: 0
                                         to: 360
                                         duration: 1000
@@ -153,7 +153,7 @@ Item {
                                 }
 
                                 Text {
-                                    text: networkTab.changingNetworkPreference ? "Switching..." : (networkTab.networkStatus === "ethernet" ? "" : "Prefer over WiFi")
+                                    text: NetworkService.changingPreference ? "Switching..." : (networkTab.networkStatus === "ethernet" ? "" : "Prefer over WiFi")
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: networkTab.networkStatus === "ethernet" ? Theme.background : Theme.primary
                                     anchors.verticalCenter: parent.verticalCenter
@@ -167,7 +167,7 @@ Item {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 propagateComposedEvents: false
-                                enabled: !networkTab.changingNetworkPreference
+                                enabled: !NetworkService.changingPreference
                                 onClicked: {
                                     console.log("*** ETHERNET PREFERENCE BUTTON CLICKED ***");
                                     if (networkTab.networkStatus !== "ethernet") {
@@ -356,7 +356,7 @@ Item {
                         anchors.right: parent.right
                         anchors.rightMargin: Theme.spacingL + 48 + Theme.spacingM
                         anchors.verticalCenter: parent.verticalCenter
-                        opacity: networkTab.changingNetworkPreference ? 0.6 : 1
+                        opacity: NetworkService.changingPreference ? 0.6 : 1
                         visible: NetworkService.networkStatus !== "wifi" && NetworkService.ethernetConnected && NetworkService.wifiEnabled
 
                         Row {
@@ -366,17 +366,17 @@ Item {
                             DankIcon {
                                 id: wifiPreferenceIcon
 
-                                name: networkTab.changingNetworkPreference ? "sync" : ""
+                                name: NetworkService.changingPreference ? "sync" : ""
                                 size: Theme.fontSizeSmall
                                 color: networkTab.networkStatus === "wifi" ? Theme.background : Theme.primary
-                                visible: networkTab.changingNetworkPreference
+                                visible: NetworkService.changingPreference
                                 anchors.verticalCenter: parent.verticalCenter
-                                rotation: networkTab.changingNetworkPreference ? wifiPreferenceIcon.rotation : 0
+                                rotation: NetworkService.changingPreference ? wifiPreferenceIcon.rotation : 0
 
                                 RotationAnimation {
                                     target: wifiPreferenceIcon
                                     property: "rotation"
-                                    running: networkTab.changingNetworkPreference
+                                    running: NetworkService.changingPreference
                                     from: 0
                                     to: 360
                                     duration: 1000
@@ -386,7 +386,7 @@ Item {
                             }
 
                             Text {
-                                text: NetworkService.changingNetworkPreference ? "Switching..." : "Prefer over Ethernet"
+                                text: NetworkService.changingPreference ? "Switching..." : "Prefer over Ethernet"
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: NetworkService.networkStatus === "wifi" ? Theme.background : Theme.primary
                                 anchors.verticalCenter: parent.verticalCenter
@@ -400,7 +400,7 @@ Item {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             propagateComposedEvents: false
-                            enabled: !networkTab.changingNetworkPreference
+                            enabled: !NetworkService.changingPreference
                             onClicked: {
                                 console.log("Force WiFi preference clicked");
                                 if (NetworkService.networkStatus !== "wifi")

@@ -373,78 +373,41 @@ PanelWindow {
                                         border.width: 1
                                         clip: true
 
+                                        readonly property bool hasNotificationImage: modelData.latestNotification.image && modelData.latestNotification.image !== ""
+
                                         IconImage {
                                             anchors.fill: parent
-                                            anchors.margins: 6
+                                            anchors.margins: 2
                                             source: {
-                                                // Don't try to load icons for screenshots - let fallback handle them
-                                                const isScreenshot = modelData.latestNotification.isScreenshot;
-                                                
-                                                if (isScreenshot) {
-                                                    return "";
+                                                // Priority 1: Use notification image if available
+                                                if (parent.hasNotificationImage) {
+                                                    return modelData.latestNotification.cleanImage;
                                                 }
                                                 
-                                                if (modelData.latestNotification.appIcon && modelData.latestNotification.appIcon !== "")
-                                                    return Quickshell.iconPath(modelData.latestNotification.appIcon, "");
-
+                                                // Priority 2: Use appIcon - handle URLs directly, use iconPath for icon names
+                                                if (modelData.latestNotification.appIcon) {
+                                                    const appIcon = modelData.latestNotification.appIcon;
+                                                    if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://")) {
+                                                        return appIcon;
+                                                    }
+                                                    return Quickshell.iconPath(appIcon, "");
+                                                }
+                                                
                                                 return "";
                                             }
                                             visible: status === Image.Ready
-                                            onStatusChanged: {
-                                                if (status === Image.Error || status === Image.Null || source === "")
-                                                    fallbackIcon.visible = true;
-                                                else if (status === Image.Ready)
-                                                    fallbackIcon.visible = false;
-                                            }
                                         }
 
-                                        Item {
-                                            id: fallbackIcon
+                                        Text {
                                             anchors.centerIn: parent
-                                            visible: true
-                                            width: parent.width
-                                            height: parent.height
-
-                                            readonly property bool isScreenshot: modelData.latestNotification.isScreenshot
-                                            readonly property bool hasNotificationImage: modelData.latestNotification.image && modelData.latestNotification.image !== ""
-
-                                            // Priority 1: Notification image using Quickshell IconImage
-                                            Rectangle {
-                                                anchors.fill: parent
-                                                anchors.margins: 2
-                                                radius: 20
-                                                clip: true
-                                                visible: parent.hasNotificationImage && centerNotificationImage.status === Image.Ready
-                                                color: "transparent"
-                                                
-                                                IconImage {
-                                                    id: centerNotificationImage
-                                                    anchors.fill: parent
-                                                    source: modelData.latestNotification.image || ""
-                                                }
+                                            visible: !parent.hasNotificationImage && (!modelData.latestNotification.appIcon || modelData.latestNotification.appIcon === "")
+                                            text: {
+                                                const appName = modelData.appName || "?";
+                                                return appName.charAt(0).toUpperCase();
                                             }
-
-                                            // Priority 2: Material Symbols icon for screenshots without notification images
-                                            DankIcon {
-                                                anchors.centerIn: parent
-                                                name: "screenshot_monitor"
-                                                size: 20
-                                                color: Theme.primaryText
-                                                visible: parent.isScreenshot && !parent.hasNotificationImage
-                                            }
-
-                                            // Priority 3: Fallback to first letter for other notifications
-                                            Text {
-                                                anchors.centerIn: parent
-                                                visible: !parent.hasNotificationImage && !parent.isScreenshot
-                                                text: {
-                                                    const appName = modelData.appName || "?";
-                                                    return appName.charAt(0).toUpperCase();
-                                                }
-                                                font.pixelSize: 20
-                                                font.weight: Font.Bold
-                                                color: Theme.primaryText
-                                            }
+                                            font.pixelSize: 20
+                                            font.weight: Font.Bold
+                                            color: Theme.primaryText
                                         }
 
                                     }
@@ -828,35 +791,32 @@ PanelWindow {
 
                                                 readonly property bool hasNotificationImage: modelData.image && modelData.image !== ""
 
-                                                // Priority 1: Notification image using Quickshell IconImage
-                                                Rectangle {
+                                                IconImage {
                                                     anchors.fill: parent
                                                     anchors.margins: 1
-                                                    radius: 14
-                                                    clip: true
-                                                    visible: parent.hasNotificationImage && centerIndividualNotificationImage.status === Image.Ready
-                                                    color: "transparent"
-                                                    
-                                                    IconImage {
-                                                        id: centerIndividualNotificationImage
-                                                        anchors.fill: parent
-                                                        source: modelData.image || ""
+                                                    source: {
+                                                        // Priority 1: Use notification image if available
+                                                        if (parent.hasNotificationImage) {
+                                                            return modelData.cleanImage;
+                                                        }
+                                                        
+                                                        // Priority 2: Use appIcon - handle URLs directly, use iconPath for icon names
+                                                        if (modelData.appIcon) {
+                                                            const appIcon = modelData.appIcon;
+                                                            if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://")) {
+                                                                return appIcon;
+                                                            }
+                                                            return Quickshell.iconPath(appIcon, "");
+                                                        }
+                                                        
+                                                        return "";
                                                     }
+                                                    visible: status === Image.Ready
                                                 }
 
-                                                // Priority 2: Material Symbols icon for screenshots without notification images
-                                                DankIcon {
-                                                    anchors.centerIn: parent
-                                                    name: "screenshot_monitor"
-                                                    size: 12
-                                                    color: Theme.primaryText
-                                                    visible: modelData.isScreenshot && !parent.hasNotificationImage
-                                                }
-
-                                                // Priority 3: Fallback text
                                                 Text {
                                                     anchors.centerIn: parent
-                                                    visible: !parent.hasNotificationImage && !modelData.isScreenshot
+                                                    visible: !parent.hasNotificationImage && (!modelData.appIcon || modelData.appIcon === "")
                                                     text: {
                                                         const appName = modelData.appName || "?";
                                                         return appName.charAt(0).toUpperCase();

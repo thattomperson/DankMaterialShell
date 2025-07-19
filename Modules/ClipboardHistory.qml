@@ -868,15 +868,6 @@ PanelWindow {
             else
                 console.warn("ClipboardHistory: Failed to load clipboard history");
         }
-        // Handle keyboard shortcuts
-        Keys.onPressed: (event) => {
-            if (event.key === Qt.Key_Escape)
-                clipboardHistory.hide();
-
-        }
-        Component.onCompleted: {
-            focus = true;
-        }
 
         stdout: SplitParser {
             splitMarker: "\n"

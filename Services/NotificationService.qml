@@ -30,7 +30,14 @@ Singleton {
         inlineReplySupported: true
 
         onNotification: notif => {
-            console.log("New notification received:", notif.appName, "-", notif.summary);
+            console.log("=== RAW NOTIFICATION DATA ===");
+            console.log("appName:", notif.appName);
+            console.log("summary:", notif.summary);
+            console.log("body:", notif.body);
+            console.log("appIcon:", notif.appIcon);
+            console.log("image:", notif.image);
+            console.log("urgency:", notif.urgency);
+            console.log("=============================");
             notif.tracked = true;
 
             const wrapper = notifComponent.createObject(root, {
@@ -70,35 +77,32 @@ Singleton {
         readonly property string summary: notification.summary
         readonly property string body: notification.body
         readonly property string appIcon: notification.appIcon
+        readonly property string cleanAppIcon: {
+            if (!appIcon) return "";
+            if (appIcon.startsWith("file://")) {
+                return appIcon.substring(7);
+            }
+            return appIcon;
+        }
         readonly property string appName: notification.appName
         readonly property string image: notification.image
+        readonly property string cleanImage: {
+            if (!image) return "";
+            if (image.startsWith("file://")) {
+                return image.substring(7);
+            }
+            return image;
+        }
         readonly property int urgency: notification.urgency
         readonly property list<NotificationAction> actions: notification.actions
 
         // Enhanced properties for better handling
         readonly property bool hasImage: image && image.length > 0
         readonly property bool hasAppIcon: appIcon && appIcon.length > 0
-        readonly property bool isConversation: detectIsConversation()
+        readonly property bool isConversation: notification.hasInlineReply
         readonly property bool isMedia: detectIsMedia()
         readonly property bool isSystem: detectIsSystem()
-        readonly property bool isScreenshot: detectIsScreenshot()
 
-        function detectIsConversation() {
-            const appNameLower = appName.toLowerCase();
-            const summaryLower = summary.toLowerCase();
-            const bodyLower = body.toLowerCase();
-            
-            return appNameLower.includes("discord") || 
-                   appNameLower.includes("vesktop") ||
-                   appNameLower.includes("vencord") ||
-                   appNameLower.includes("telegram") ||
-                   appNameLower.includes("whatsapp") ||
-                   appNameLower.includes("signal") ||
-                   appNameLower.includes("slack") ||
-                   appNameLower.includes("message") ||
-                   summaryLower.includes("message") ||
-                   bodyLower.includes("message");
-        }
 
         function detectIsMedia() {
             const appNameLower = appName.toLowerCase();
@@ -123,24 +127,6 @@ Singleton {
                    summaryLower.includes("system");
         }
 
-        function detectIsScreenshot() {
-            const appNameLower = appName.toLowerCase();
-            const summaryLower = summary.toLowerCase();
-            const bodyLower = body.toLowerCase();
-            const imageLower = image.toLowerCase();
-            
-            // Detect niri screenshot notifications
-            return appNameLower.includes("niri") && 
-                   (summaryLower.includes("screenshot") || 
-                    bodyLower.includes("screenshot") ||
-                    imageLower.includes("screenshot") ||
-                    imageLower.includes("pictures/screenshots")) ||
-                   summaryLower.includes("screenshot") ||
-                   bodyLower.includes("screenshot taken") ||
-                   // Detect screenshot file paths being used as images/icons
-                   imageLower.includes("/screenshots/") ||
-                   imageLower.includes("screenshot from");
-        }
 
         readonly property Timer timer: Timer {
             running: wrapper.popup
@@ -184,114 +170,32 @@ Singleton {
         wrapper.notification.dismiss();
     }
 
-    function getNotificationIcon(wrapper) {
-        // Priority 1: Use notification image if available (Discord avatars, etc.)
-        // BUT NOT for screenshots - they use file paths which shouldn't be loaded as icons
-        if (wrapper.hasImage && !wrapper.isScreenshot) {
-            return wrapper.image;
-        }
-        
-        // Priority 2: Use app icon if available and not a screenshot
-        if (wrapper.hasAppIcon && !wrapper.isScreenshot) {
-            return Quickshell.iconPath(wrapper.appIcon, "image-missing");
-        }
-        
-        // Priority 3: Generate fallback icon based on type
-        return getFallbackIcon(wrapper);
-    }
-
-    function getFallbackIcon(wrapper) {
-        if (wrapper.isScreenshot) {
-            return Quickshell.iconPath("screenshot_monitor");
-        } else if (wrapper.isConversation) {
-            return Quickshell.iconPath("chat-symbolic");
-        } else if (wrapper.isMedia) {
-            return Quickshell.iconPath("audio-x-generic-symbolic");
-        } else if (wrapper.isSystem) {
-            return Quickshell.iconPath("preferences-system-symbolic");
-        }
-        return Quickshell.iconPath("application-x-executable-symbolic");
-    }
-
-    function getAppIconPath(wrapper) {
-        if (wrapper.hasAppIcon && !wrapper.isScreenshot) {
-            return Quickshell.iconPath(wrapper.appIcon);
-        }
-        return getFallbackIcon(wrapper);
-    }
 
     // Android 16-style notification grouping functions
     function getGroupKey(wrapper) {
         const appName = wrapper.appName.toLowerCase();
         
-        // Enhanced grouping for conversation apps
+        // Conversation apps with inline reply
         if (wrapper.isConversation) {
             const summary = wrapper.summary.toLowerCase();
-            const body = wrapper.body.toLowerCase();
             
-            // Discord: Group by channel or conversation
-            if (appName.includes("discord") || appName.includes("vesktop")) {
-                // Channel notifications: "#general", "#announcements"
-                if (summary.includes("#")) {
-                    const channelMatch = summary.match(/#[\w-]+/);
-                    if (channelMatch) {
-                        return `${appName}:${channelMatch[0]}`;
-                    }
+            // Group by conversation/channel name from summary
+            if (summary.includes("#")) {
+                const channelMatch = summary.match(/#[\w-]+/);
+                if (channelMatch) {
+                    return `${appName}:${channelMatch[0]}`;
                 }
-                // Direct messages: group by sender
-                if (summary && !summary.includes("new message") && !summary.includes("notification")) {
-                    return `${appName}:dm:${summary}`;
-                }
-                // Server messages or general
-                return `${appName}:messages`;
             }
             
-            // Telegram: Group by chat/channel
-            if (appName.includes("telegram")) {
-                if (summary && !summary.includes("new message")) {
-                    return `${appName}:${summary}`;
-                }
-                return `${appName}:messages`;
-            }
-            
-            // Signal: Group by conversation
-            if (appName.includes("signal")) {
-                if (summary && !summary.includes("new message")) {
-                    return `${appName}:${summary}`;
-                }
-                return `${appName}:messages`;
-            }
-            
-            // WhatsApp: Group by contact/group
-            if (appName.includes("whatsapp")) {
-                if (summary && !summary.includes("new message")) {
-                    return `${appName}:${summary}`;
-                }
-                return `${appName}:messages`;
-            }
-            
-            // Slack: Group by channel/DM
-            if (appName.includes("slack")) {
-                if (summary.includes("#")) {
-                    const channelMatch = summary.match(/#[\w-]+/);
-                    if (channelMatch) {
-                        return `${appName}:${channelMatch[0]}`;
-                    }
-                }
-                if (summary && !summary.includes("new message")) {
-                    return `${appName}:dm:${summary}`;
-                }
-                return `${appName}:messages`;
+            // Group by sender/conversation name if meaningful
+            if (summary && !summary.includes("new message") && !summary.includes("notification")) {
+                return `${appName}:${summary}`;
             }
             
             // Default conversation grouping
             return `${appName}:conversation`;
         }
         
-        // Screenshots: Group all screenshots together
-        if (wrapper.isScreenshot) {
-            return "screenshots";
-        }
         
         // Media: Replace previous media notification from same app
         if (wrapper.isMedia) {
@@ -332,8 +236,7 @@ Singleton {
                     hasInlineReply: false,
                     isConversation: notif.isConversation,
                     isMedia: notif.isMedia,
-                    isSystem: notif.isSystem,
-                    isScreenshot: notif.isScreenshot
+                    isSystem: notif.isSystem
                 };
             }
             
@@ -366,8 +269,7 @@ Singleton {
                     hasInlineReply: false,
                     isConversation: notif.isConversation,
                     isMedia: notif.isMedia,
-                    isSystem: notif.isSystem,
-                    isScreenshot: notif.isScreenshot
+                    isSystem: notif.isSystem
                 };
             }
             
@@ -419,17 +321,10 @@ Singleton {
         }
         
         if (group.isConversation) {
-            // Extract conversation/channel name from group key
             const keyParts = group.key.split(":");
             if (keyParts.length > 1) {
                 const conversationKey = keyParts[keyParts.length - 1];
-                if (conversationKey.startsWith("#")) {
-                    return `${conversationKey}: ${group.count} messages`;
-                }
-                if (keyParts.includes("dm")) {
-                    return `${conversationKey}: ${group.count} messages`;
-                }
-                if (conversationKey !== "messages" && conversationKey !== "conversation") {
+                if (conversationKey !== "conversation") {
                     return `${conversationKey}: ${group.count} messages`;
                 }
             }
@@ -440,12 +335,6 @@ Singleton {
             return "Now playing";
         }
         
-        if (group.isScreenshot) {
-            if (group.count === 1) {
-                return "Screenshot saved";
-            }
-            return `${group.count} screenshots saved`;
-        }
         
         if (group.isSystem) {
             const keyParts = group.key.split(":");
@@ -481,9 +370,6 @@ Singleton {
             return group.latestNotification.body || "Media playback";
         }
         
-        if (group.isScreenshot) {
-            return group.latestNotification.body || "Screenshot available in Pictures/Screenshots";
-        }
         
         return `Latest: ${group.latestNotification.summary}`;
     }

@@ -239,6 +239,7 @@ PanelWindow {
     }
 
     Connections {
+        target: AppSearchService
         function onReadyChanged() {
             if (AppSearchService.ready) {
                 var allCategories = AppSearchService.getAllCategories().filter((cat) => {
@@ -254,11 +255,10 @@ PanelWindow {
 
             }
         }
-
-        target: DesktopEntries
     }
 
     Connections {
+        target: AppSearchService
         function onApplicationsChanged() {
             console.log("SpotlightLauncher: DesktopEntries.applicationsChanged signal received");
             // Update categories when applications change
@@ -278,8 +278,6 @@ PanelWindow {
                 console.log("SpotlightLauncher: AppSearchService not ready, skipping update");
             }
         }
-
-        target: DesktopEntries
     }
 
     // Dimmed overlay background

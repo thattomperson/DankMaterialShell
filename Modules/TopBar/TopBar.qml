@@ -134,7 +134,7 @@ PanelWindow {
 
                 LauncherButton {
                     anchors.verticalCenter: parent.verticalCenter
-                    isActive: launcher.isVisible
+                    isActive: appLauncher.isVisible
                     onClicked: {
                         appLauncher.toggle();
                     }
