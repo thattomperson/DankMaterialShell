@@ -37,6 +37,7 @@ Singleton {
             console.log("appIcon:", notif.appIcon);
             console.log("image:", notif.image);
             console.log("urgency:", notif.urgency);
+            console.log("hasInlineReply:", notif.hasInlineReply);
             console.log("=============================");
             notif.tracked = true;
 
@@ -100,32 +101,8 @@ Singleton {
         readonly property bool hasImage: image && image.length > 0
         readonly property bool hasAppIcon: appIcon && appIcon.length > 0
         readonly property bool isConversation: notification.hasInlineReply
-        readonly property bool isMedia: detectIsMedia()
-        readonly property bool isSystem: detectIsSystem()
 
 
-        function detectIsMedia() {
-            const appNameLower = appName.toLowerCase();
-            const summaryLower = summary.toLowerCase();
-            
-            return appNameLower.includes("spotify") ||
-                   appNameLower.includes("vlc") ||
-                   appNameLower.includes("mpv") ||
-                   appNameLower.includes("music") ||
-                   appNameLower.includes("player") ||
-                   summaryLower.includes("now playing") ||
-                   summaryLower.includes("playing");
-        }
-
-        function detectIsSystem() {
-            const appNameLower = appName.toLowerCase();
-            const summaryLower = summary.toLowerCase();
-            
-            return appNameLower.includes("system") ||
-                   appNameLower.includes("update") ||
-                   summaryLower.includes("update") ||
-                   summaryLower.includes("system");
-        }
 
 
         readonly property Timer timer: Timer {
@@ -197,25 +174,6 @@ Singleton {
         }
         
         
-        // Media: Replace previous media notification from same app
-        if (wrapper.isMedia) {
-            return `${appName}:media`;
-        }
-        
-        // System: Group by type
-        if (wrapper.isSystem) {
-            const summary = wrapper.summary.toLowerCase();
-            if (summary.includes("update")) {
-                return "system:updates";
-            }
-            if (summary.includes("battery")) {
-                return "system:battery";
-            }
-            if (summary.includes("network")) {
-                return "system:network";
-            }
-            return "system:general";
-        }
         
         // Default: Group by app
         return appName;
@@ -234,9 +192,7 @@ Singleton {
                     latestNotification: null,
                     count: 0,
                     hasInlineReply: false,
-                    isConversation: notif.isConversation,
-                    isMedia: notif.isMedia,
-                    isSystem: notif.isSystem
+                    isConversation: notif.isConversation
                 };
             }
             
@@ -267,9 +223,7 @@ Singleton {
                     latestNotification: null,
                     count: 0,
                     hasInlineReply: false,
-                    isConversation: notif.isConversation,
-                    isMedia: notif.isMedia,
-                    isSystem: notif.isSystem
+                    isConversation: notif.isConversation
                 };
             }
             
@@ -331,24 +285,6 @@ Singleton {
             return `${group.count} new messages`;
         }
         
-        if (group.isMedia) {
-            return "Now playing";
-        }
-        
-        
-        if (group.isSystem) {
-            const keyParts = group.key.split(":");
-            if (keyParts.length > 1) {
-                const systemType = keyParts[1];
-                switch (systemType) {
-                    case "updates": return `${group.count} system updates`;
-                    case "battery": return `${group.count} battery notifications`;
-                    case "network": return `${group.count} network notifications`;
-                    default: return `${group.count} system notifications`;
-                }
-            }
-            return `${group.count} system notifications`;
-        }
         
         return `${group.count} notifications`;
     }
@@ -366,9 +302,6 @@ Singleton {
             return "Tap to view conversation";
         }
         
-        if (group.isMedia) {
-            return group.latestNotification.body || "Media playback";
-        }
         
         
         return `Latest: ${group.latestNotification.summary}`;
