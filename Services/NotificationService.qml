@@ -80,6 +80,7 @@ Singleton {
         readonly property bool isConversation: detectIsConversation()
         readonly property bool isMedia: detectIsMedia()
         readonly property bool isSystem: detectIsSystem()
+        readonly property bool isScreenshot: detectIsScreenshot()
 
         function detectIsConversation() {
             const appNameLower = appName.toLowerCase();
@@ -119,6 +120,25 @@ Singleton {
                    appNameLower.includes("update") ||
                    summaryLower.includes("update") ||
                    summaryLower.includes("system");
+        }
+
+        function detectIsScreenshot() {
+            const appNameLower = appName.toLowerCase();
+            const summaryLower = summary.toLowerCase();
+            const bodyLower = body.toLowerCase();
+            const imageLower = image.toLowerCase();
+            
+            // Detect niri screenshot notifications
+            return appNameLower.includes("niri") && 
+                   (summaryLower.includes("screenshot") || 
+                    bodyLower.includes("screenshot") ||
+                    imageLower.includes("screenshot") ||
+                    imageLower.includes("pictures/screenshots")) ||
+                   summaryLower.includes("screenshot") ||
+                   bodyLower.includes("screenshot taken") ||
+                   // Detect screenshot file paths being used as images/icons
+                   imageLower.includes("/screenshots/") ||
+                   imageLower.includes("screenshot from");
         }
 
         readonly property Timer timer: Timer {
@@ -165,12 +185,13 @@ Singleton {
 
     function getNotificationIcon(wrapper) {
         // Priority 1: Use notification image if available (Discord avatars, etc.)
-        if (wrapper.hasImage) {
+        // BUT NOT for screenshots - they use file paths which shouldn't be loaded as icons
+        if (wrapper.hasImage && !wrapper.isScreenshot) {
             return wrapper.image;
         }
         
-        // Priority 2: Use app icon if available
-        if (wrapper.hasAppIcon) {
+        // Priority 2: Use app icon if available and not a screenshot
+        if (wrapper.hasAppIcon && !wrapper.isScreenshot) {
             return Quickshell.iconPath(wrapper.appIcon, "image-missing");
         }
         
@@ -179,7 +200,9 @@ Singleton {
     }
 
     function getFallbackIcon(wrapper) {
-        if (wrapper.isConversation) {
+        if (wrapper.isScreenshot) {
+            return Quickshell.iconPath("screenshot_monitor");
+        } else if (wrapper.isConversation) {
             return Quickshell.iconPath("chat-symbolic");
         } else if (wrapper.isMedia) {
             return Quickshell.iconPath("audio-x-generic-symbolic");
@@ -190,7 +213,7 @@ Singleton {
     }
 
     function getAppIconPath(wrapper) {
-        if (wrapper.hasAppIcon) {
+        if (wrapper.hasAppIcon && !wrapper.isScreenshot) {
             return Quickshell.iconPath(wrapper.appIcon);
         }
         return getFallbackIcon(wrapper);
@@ -264,6 +287,11 @@ Singleton {
             return `${appName}:conversation`;
         }
         
+        // Screenshots: Group all screenshots together
+        if (wrapper.isScreenshot) {
+            return "screenshots";
+        }
+        
         // Media: Replace previous media notification from same app
         if (wrapper.isMedia) {
             return `${appName}:media`;
@@ -303,7 +331,8 @@ Singleton {
                     hasInlineReply: false,
                     isConversation: notif.isConversation,
                     isMedia: notif.isMedia,
-                    isSystem: notif.isSystem
+                    isSystem: notif.isSystem,
+                    isScreenshot: notif.isScreenshot
                 };
             }
             
@@ -336,7 +365,8 @@ Singleton {
                     hasInlineReply: false,
                     isConversation: notif.isConversation,
                     isMedia: notif.isMedia,
-                    isSystem: notif.isSystem
+                    isSystem: notif.isSystem,
+                    isScreenshot: notif.isScreenshot
                 };
             }
             
@@ -400,6 +430,13 @@ Singleton {
             return "Now playing";
         }
         
+        if (group.isScreenshot) {
+            if (group.count === 1) {
+                return "Screenshot saved";
+            }
+            return `${group.count} screenshots saved`;
+        }
+        
         if (group.isSystem) {
             const keyParts = group.key.split(":");
             if (keyParts.length > 1) {
@@ -432,6 +469,10 @@ Singleton {
         
         if (group.isMedia) {
             return group.latestNotification.body || "Media playback";
+        }
+        
+        if (group.isScreenshot) {
+            return group.latestNotification.body || "Screenshot available in Pictures/Screenshots";
         }
         
         return `Latest: ${group.latestNotification.summary}`;

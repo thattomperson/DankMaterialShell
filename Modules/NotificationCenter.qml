@@ -1,6 +1,7 @@
 //NotificationCenter.qml
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
@@ -373,6 +374,13 @@ PanelWindow {
                                             anchors.fill: parent
                                             anchors.margins: 6
                                             source: {
+                                                // Don't try to load icons for screenshots - let fallback handle them
+                                                const isScreenshot = modelData.latestNotification.isScreenshot;
+                                                
+                                                if (isScreenshot) {
+                                                    return "";
+                                                }
+                                                
                                                 if (modelData.latestNotification.appIcon && modelData.latestNotification.appIcon !== "")
                                                     return Quickshell.iconPath(modelData.latestNotification.appIcon, "");
 
@@ -387,18 +395,41 @@ PanelWindow {
                                             }
                                         }
 
-                                        Text {
+                                        Item {
                                             id: fallbackIcon
-
                                             anchors.centerIn: parent
                                             visible: true
-                                            text: {
-                                                const appName = modelData.appName || "?";
-                                                return appName.charAt(0).toUpperCase();
+                                            width: parent.width
+                                            height: parent.height
+
+                                            readonly property bool isScreenshot: {
+                                                // Check if this is a screenshot notification using NotificationService detection
+                                                return modelData.latestNotification.isScreenshot;
                                             }
-                                            font.pixelSize: 20
-                                            font.weight: Font.Bold
-                                            color: Theme.primaryText
+
+
+
+                                            // Use Material Symbols icon for screenshots with fallback
+                                            DankIcon {
+                                                anchors.centerIn: parent
+                                                name: "screenshot_monitor"
+                                                size: 20
+                                                color: Theme.primaryText
+                                                visible: parent.isScreenshot
+                                            }
+
+                                            // Fallback to first letter for non-screenshot notifications
+                                            Text {
+                                                anchors.centerIn: parent
+                                                visible: !parent.isScreenshot
+                                                text: {
+                                                    const appName = modelData.appName || "?";
+                                                    return appName.charAt(0).toUpperCase();
+                                                }
+                                                font.pixelSize: 20
+                                                font.weight: Font.Bold
+                                                color: Theme.primaryText
+                                            }
                                         }
 
                                     }
@@ -658,13 +689,31 @@ PanelWindow {
                                     IconImage {
                                         anchors.fill: parent
                                         anchors.margins: 4
-                                        source: modelData.latestNotification.appIcon ? Quickshell.iconPath(modelData.latestNotification.appIcon, "") : ""
+                                        source: {
+                                            // Don't try to load icons for screenshots - let fallback handle them
+                                            const isScreenshot = modelData.latestNotification.isScreenshot;
+                                            
+                                            if (isScreenshot) {
+                                                return "";
+                                            }
+                                            
+                                            return modelData.latestNotification.appIcon ? Quickshell.iconPath(modelData.latestNotification.appIcon, "") : "";
+                                        }
                                         visible: status === Image.Ready
+                                    }
+
+                                    // Material Symbols icon for screenshots in expanded header
+                                    DankIcon {
+                                        anchors.centerIn: parent
+                                        name: "screenshot_monitor"
+                                        size: 16
+                                        color: Theme.primaryText
+                                        visible: modelData.latestNotification.isScreenshot
                                     }
 
                                     Text {
                                         anchors.centerIn: parent
-                                        visible: !modelData.latestNotification.appIcon || modelData.latestNotification.appIcon === ""
+                                        visible: !modelData.latestNotification.isScreenshot && (!modelData.latestNotification.appIcon || modelData.latestNotification.appIcon === "")
                                         text: {
                                             const appName = modelData.appName || "?";
                                             return appName.charAt(0).toUpperCase();
@@ -784,8 +833,18 @@ PanelWindow {
                                                 border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
                                                 border.width: 1
 
+                                                // Material Symbols icon for individual screenshot notifications
+                                                DankIcon {
+                                                    anchors.centerIn: parent
+                                                    name: "screenshot_monitor"
+                                                    size: 12
+                                                    color: Theme.primaryText
+                                                    visible: modelData.isScreenshot
+                                                }
+
                                                 Text {
                                                     anchors.centerIn: parent
+                                                    visible: !modelData.isScreenshot
                                                     text: {
                                                         const appName = modelData.appName || "?";
                                                         return appName.charAt(0).toUpperCase();
