@@ -29,14 +29,6 @@ Item {
             height: parent.height
             spacing: Theme.spacingS
 
-            // WiFi Header
-            Text {
-                text: "Wi-Fi"
-                font.pixelSize: Theme.fontSizeLarge
-                color: Theme.surfaceText
-                font.weight: Font.Medium
-                width: parent.width
-            }
 
             // WiFi Content in Flickable
             Flickable {
@@ -560,14 +552,7 @@ Item {
             height: parent.height
             spacing: Theme.spacingS
 
-            // Ethernet Header
-            Text {
-                text: "Ethernet"
-                font.pixelSize: Theme.fontSizeLarge
-                color: Theme.surfaceText
-                font.weight: Font.Medium
-                width: parent.width
-            }
+            // Ethernet Header removed
 
             // Ethernet Content in Flickable
             Flickable {
@@ -728,7 +713,7 @@ Item {
     // WiFi networks spanning across both columns when Ethernet preference button is hidden
     Column {
         anchors.top: parent.top
-        anchors.topMargin: 120
+        anchors.topMargin: 100
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
