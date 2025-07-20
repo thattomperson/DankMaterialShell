@@ -186,6 +186,57 @@ PanelWindow {
                             visible: text.length > 0
                         }
 
+                        // Action buttons
+                        Row {
+                            width: parent.width
+                            spacing: Theme.spacingS
+                            visible: modelData.latestNotification.actions && modelData.latestNotification.actions.length > 0 && !modelData.latestNotification.notification.hasInlineReply
+
+                            Repeater {
+                                model: modelData.latestNotification.actions ? modelData.latestNotification.actions.slice(0, 3) : []
+                                delegate: Rectangle {
+                                    width: Math.min((parent.width - (parent.spacing * (parent.children.length - 1))) / parent.children.length, 120)
+                                    height: 32
+                                    radius: 16
+                                    color: actionArea.containsMouse ? Theme.primary : Theme.surfaceContainer
+                                    border.color: actionArea.containsMouse ? "transparent" : Theme.outline
+                                    border.width: 1
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: modelData.text || ""
+                                        color: actionArea.containsMouse ? Theme.primaryText : Theme.surfaceText
+                                        font.pixelSize: Theme.fontSizeSmall
+                                        font.weight: Font.Medium
+                                        elide: Text.ElideRight
+                                        maximumLineCount: 1
+                                        width: parent.width - 16
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    MouseArea {
+                                        id: actionArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            if (modelData.invoke) {
+                                                modelData.invoke();
+                                            }
+                                        }
+                                    }
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: Theme.shortDuration
+                                            easing.type: Theme.standardEasing
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Inline reply
                         Row {
                             width: parent.width
                             spacing: Theme.spacingS

@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
+import qs.Services
 
 Singleton {
     id: root
@@ -17,6 +18,11 @@ Singleton {
     
     property var expandedGroups: ({}) // Track which groups are expanded
     property var expandedMessages: ({}) // Track which individual messages are expanded
+    
+    // Notification persistence settings
+    property int maxStoredNotifications: 100
+    property int maxNotificationAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+    property var persistedNotifications: ([]) // Stored notification history
 
     NotificationServer {
         id: server
@@ -39,6 +45,13 @@ Singleton {
             console.log("urgency:", notif.urgency);
             console.log("hasInlineReply:", notif.hasInlineReply);
             console.log("=============================");
+            
+            // Check if notification should be shown based on settings
+            if (!NotificationSettings.shouldShowNotification(notif)) {
+                console.log("Notification blocked by settings for app:", notif.appName);
+                return;
+            }
+            
             notif.tracked = true;
 
             const wrapper = notifComponent.createObject(root, {
@@ -47,7 +60,32 @@ Singleton {
             });
 
             if (wrapper) {
-                root.notifications.push(wrapper);
+                // Handle media notification replacement
+                if (wrapper.isMedia) {
+                    handleMediaNotification(wrapper);
+                } else {
+                    root.notifications.push(wrapper);
+                }
+                
+                // Auto-expand conversation groups with new messages
+                if (wrapper.isConversation && notifications.length > 1) {
+                    const groupKey = getGroupKey(wrapper);
+                    const existingGroup = groupedNotifications.find(group => group.key === groupKey);
+                    if (existingGroup && existingGroup.count > 1) {
+                        let newExpandedGroups = {};
+                        for (const key in expandedGroups) {
+                            newExpandedGroups[key] = expandedGroups[key];
+                        }
+                        newExpandedGroups[groupKey] = true;
+                        expandedGroups = newExpandedGroups;
+                    }
+                }
+                
+                // Add to persistent storage (only for non-transient notifications)
+                if (!notif.transient) {
+                    addToPersistentStorage(wrapper);
+                }
+                
                 console.log("Notification added. Total notifications:", root.notifications.length);
                 console.log("Grouped notifications:", root.groupedNotifications.length);
             } else {
@@ -101,13 +139,91 @@ Singleton {
         readonly property bool hasImage: image && image.length > 0
         readonly property bool hasAppIcon: appIcon && appIcon.length > 0
         readonly property bool isConversation: notification.hasInlineReply
+        readonly property bool isMedia: isMediaNotification()
+        readonly property bool isSystem: isSystemNotification()
+        
+        function isMediaNotification() {
+            const appNameLower = appName.toLowerCase();
+            const summaryLower = summary.toLowerCase();
+            
+            // Check for media apps
+            if (appNameLower.includes("spotify") || 
+                appNameLower.includes("vlc") || 
+                appNameLower.includes("mpv") || 
+                appNameLower.includes("music") || 
+                appNameLower.includes("player") ||
+                appNameLower.includes("youtube") ||
+                appNameLower.includes("media")) {
+                return true;
+            }
+            
+            // Check for media-related summary text
+            if (summaryLower.includes("now playing") ||
+                summaryLower.includes("playing") ||
+                summaryLower.includes("paused") ||
+                summaryLower.includes("track")) {
+                return true;
+            }
+            
+            // Check for media actions
+            for (const action of actions) {
+                const actionId = action.identifier.toLowerCase();
+                if (actionId.includes("play") || 
+                    actionId.includes("pause") || 
+                    actionId.includes("next") || 
+                    actionId.includes("previous") ||
+                    actionId.includes("media")) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        function isSystemNotification() {
+            const appNameLower = appName.toLowerCase();
+            const summaryLower = summary.toLowerCase();
+            
+            // Check for system apps
+            if (appNameLower.includes("system") ||
+                appNameLower.includes("networkmanager") ||
+                appNameLower.includes("upower") ||
+                appNameLower.includes("notification-daemon") ||
+                appNameLower.includes("systemd") ||
+                appNameLower.includes("update") ||
+                appNameLower.includes("battery") ||
+                appNameLower.includes("network") ||
+                appNameLower.includes("wifi") ||
+                appNameLower.includes("bluetooth")) {
+                return true;
+            }
+            
+            // Check for system-related summary text
+            if (summaryLower.includes("battery") ||
+                summaryLower.includes("power") ||
+                summaryLower.includes("update") ||
+                summaryLower.includes("connected") ||
+                summaryLower.includes("disconnected") ||
+                summaryLower.includes("network") ||
+                summaryLower.includes("wifi") ||
+                summaryLower.includes("bluetooth")) {
+                return true;
+            }
+            
+            return false;
+        }
 
 
 
 
         readonly property Timer timer: Timer {
             running: wrapper.popup
-            interval: wrapper.notification.expireTimeout > 0 ? wrapper.notification.expireTimeout : 5000 // 5 second default
+            interval: {
+                if (wrapper.notification.expireTimeout > 0) {
+                    return wrapper.notification.expireTimeout * 1000;
+                }
+                return NotificationSettings.getAppTimeout(wrapper.appName);
+            }
             onTriggered: {
                 wrapper.popup = false;
             }
@@ -147,10 +263,52 @@ Singleton {
         wrapper.notification.dismiss();
     }
 
+    function handleMediaNotification(newMediaWrapper) {
+        const groupKey = getGroupKey(newMediaWrapper);
+        
+        // Find and replace any existing media notification from the same app
+        for (let i = notifications.length - 1; i >= 0; i--) {
+            const existing = notifications[i];
+            if (existing.isMedia && getGroupKey(existing) === groupKey) {
+                // Replace the existing media notification
+                existing.notification.dismiss();
+                break;
+            }
+        }
+        
+        // Add the new media notification
+        root.notifications.push(newMediaWrapper);
+    }
 
     // Android 16-style notification grouping functions
     function getGroupKey(wrapper) {
         const appName = wrapper.appName.toLowerCase();
+        
+        // Media notifications: replace previous media notification from same app
+        if (wrapper.isMedia) {
+            return `${appName}:media`;
+        }
+        
+        // System notifications: group by category
+        if (wrapper.isSystem) {
+            const summary = wrapper.summary.toLowerCase();
+            
+            if (summary.includes("battery") || summary.includes("power")) {
+                return "system:battery";
+            }
+            if (summary.includes("network") || summary.includes("wifi") || summary.includes("connected") || summary.includes("disconnected")) {
+                return "system:network";
+            }
+            if (summary.includes("update") || summary.includes("upgrade")) {
+                return "system:updates";
+            }
+            if (summary.includes("bluetooth")) {
+                return "system:bluetooth";
+            }
+            
+            // Default system grouping
+            return "system:general";
+        }
         
         // Conversation apps with inline reply
         if (wrapper.isConversation) {
@@ -173,8 +331,6 @@ Singleton {
             return `${appName}:conversation`;
         }
         
-        
-        
         // Default: Group by app
         return appName;
     }
@@ -192,7 +348,9 @@ Singleton {
                     latestNotification: null,
                     count: 0,
                     hasInlineReply: false,
-                    isConversation: notif.isConversation
+                    isConversation: notif.isConversation,
+                    isMedia: notif.isMedia,
+                    isSystem: notif.isSystem
                 };
             }
             
@@ -223,7 +381,9 @@ Singleton {
                     latestNotification: null,
                     count: 0,
                     hasInlineReply: false,
-                    isConversation: notif.isConversation
+                    isConversation: notif.isConversation,
+                    isMedia: notif.isMedia,
+                    isSystem: notif.isSystem
                 };
             }
             
@@ -274,6 +434,25 @@ Singleton {
             return group.latestNotification.summary;
         }
         
+        if (group.isMedia) {
+            return "Now Playing";
+        }
+        
+        if (group.isSystem) {
+            const keyParts = group.key.split(":");
+            if (keyParts.length > 1) {
+                const systemCategory = keyParts[1];
+                switch (systemCategory) {
+                    case "battery": return `${group.count} Battery alerts`;
+                    case "network": return `${group.count} Network updates`;
+                    case "updates": return `${group.count} System updates`;
+                    case "bluetooth": return `${group.count} Bluetooth updates`;
+                    default: return `${group.count} System notifications`;
+                }
+            }
+            return `${group.count} System notifications`;
+        }
+        
         if (group.isConversation) {
             const keyParts = group.key.split(":");
             if (keyParts.length > 1) {
@@ -285,13 +464,24 @@ Singleton {
             return `${group.count} new messages`;
         }
         
-        
         return `${group.count} notifications`;
     }
 
     function getGroupBody(group) {
         if (group.count === 1) {
             return group.latestNotification.body;
+        }
+        
+        if (group.isMedia) {
+            const latest = group.latestNotification;
+            if (latest.body && latest.body.length > 0) {
+                return latest.body;
+            }
+            return latest.summary;
+        }
+        
+        if (group.isSystem) {
+            return `Latest: ${group.latestNotification.summary}`;
         }
         
         if (group.isConversation) {
@@ -302,8 +492,70 @@ Singleton {
             return "Tap to view conversation";
         }
         
-        
-        
         return `Latest: ${group.latestNotification.summary}`;
+    }
+
+    // Notification persistence functions
+    function addToPersistentStorage(wrapper) {
+        const persistedNotif = {
+            id: wrapper.notification.id,
+            appName: wrapper.appName,
+            summary: wrapper.summary,
+            body: wrapper.body,
+            appIcon: wrapper.appIcon,
+            image: wrapper.image,
+            urgency: wrapper.urgency,
+            timestamp: wrapper.time.getTime(),
+            isConversation: wrapper.isConversation,
+            isMedia: wrapper.isMedia,
+            isSystem: wrapper.isSystem
+        };
+        
+        // Add to beginning of array
+        persistedNotifications.unshift(persistedNotif);
+        
+        // Clean up old notifications
+        cleanupPersistentStorage();
+    }
+
+    function cleanupPersistentStorage() {
+        const now = new Date().getTime();
+        let newPersisted = [];
+        
+        for (let i = 0; i < persistedNotifications.length && i < maxStoredNotifications; i++) {
+            const notif = persistedNotifications[i];
+            if (now - notif.timestamp < maxNotificationAge) {
+                newPersisted.push(notif);
+            }
+        }
+        
+        persistedNotifications = newPersisted;
+    }
+
+    function getPersistentNotificationsByApp(appName) {
+        return persistedNotifications.filter(notif => notif.appName.toLowerCase() === appName.toLowerCase());
+    }
+
+    function getPersistentNotificationsByType(type) {
+        switch (type) {
+            case "conversation": return persistedNotifications.filter(notif => notif.isConversation);
+            case "media": return persistedNotifications.filter(notif => notif.isMedia);
+            case "system": return persistedNotifications.filter(notif => notif.isSystem);
+            default: return persistedNotifications;
+        }
+    }
+
+    function searchPersistentNotifications(query) {
+        const searchLower = query.toLowerCase();
+        return persistedNotifications.filter(notif => 
+            notif.appName.toLowerCase().includes(searchLower) ||
+            notif.summary.toLowerCase().includes(searchLower) ||
+            notif.body.toLowerCase().includes(searchLower)
+        );
+    }
+
+    // Initialize persistence on component creation
+    Component.onCompleted: {
+        cleanupPersistentStorage();
     }
 }

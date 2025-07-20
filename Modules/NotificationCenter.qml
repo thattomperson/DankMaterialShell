@@ -563,6 +563,56 @@ PanelWindow {
 
                             }
 
+                            // Action buttons for collapsed view
+                            Row {
+                                width: parent.width
+                                spacing: Theme.spacingS
+                                visible: modelData.latestNotification.actions && modelData.latestNotification.actions.length > 0 && !modelData.latestNotification.notification.hasInlineReply && !expanded
+
+                                Repeater {
+                                    model: modelData.latestNotification.actions ? modelData.latestNotification.actions.slice(0, 2) : []
+                                    delegate: Rectangle {
+                                        width: Math.min((parent.width - (parent.spacing * (parent.children.length - 1))) / parent.children.length, 120)
+                                        height: 32
+                                        radius: 16
+                                        color: collapsedActionArea.containsMouse ? Theme.primary : Theme.surfaceContainer
+                                        border.color: collapsedActionArea.containsMouse ? "transparent" : Theme.outline
+                                        border.width: 1
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: modelData.text || ""
+                                            color: collapsedActionArea.containsMouse ? Theme.primaryText : Theme.surfaceText
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            font.weight: Font.Medium
+                                            elide: Text.ElideRight
+                                            maximumLineCount: 1
+                                            width: parent.width - 16
+                                            horizontalAlignment: Text.AlignHCenter
+                                        }
+
+                                        MouseArea {
+                                            id: collapsedActionArea
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                if (modelData.invoke) {
+                                                    modelData.invoke();
+                                                }
+                                            }
+                                        }
+
+                                        Behavior on color {
+                                            ColorAnimation {
+                                                duration: Theme.shortDuration
+                                                easing.type: Theme.standardEasing
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
                             // Enhanced quick reply for conversations
                             Row {
                                 width: parent.width
@@ -932,6 +982,56 @@ PanelWindow {
                                                     maximumLineCount: parent.isMessageExpanded ? -1 : 3 // Unlimited when expanded, 3 when collapsed (more space in center)
                                                     elide: parent.isMessageExpanded ? Text.ElideNone : Text.ElideRight
                                                     visible: text.length > 0
+                                                }
+
+                                                // Individual action buttons
+                                                Row {
+                                                    width: parent.width
+                                                    spacing: Theme.spacingXS
+                                                    visible: modelData.actions && modelData.actions.length > 0 && !modelData.notification.hasInlineReply
+
+                                                    Repeater {
+                                                        model: modelData.actions ? modelData.actions.slice(0, 2) : []
+                                                        delegate: Rectangle {
+                                                            width: Math.min((parent.width - (parent.spacing * (parent.children.length - 1))) / parent.children.length, 80)
+                                                            height: 24
+                                                            radius: 12
+                                                            color: expandedActionArea.containsMouse ? Theme.primary : Theme.surfaceContainer
+                                                            border.color: expandedActionArea.containsMouse ? "transparent" : Theme.outline
+                                                            border.width: 1
+
+                                                            Text {
+                                                                anchors.centerIn: parent
+                                                                text: modelData.text || ""
+                                                                color: expandedActionArea.containsMouse ? Theme.primaryText : Theme.surfaceText
+                                                                font.pixelSize: 10
+                                                                font.weight: Font.Medium
+                                                                elide: Text.ElideRight
+                                                                maximumLineCount: 1
+                                                                width: parent.width - 8
+                                                                horizontalAlignment: Text.AlignHCenter
+                                                            }
+
+                                                            MouseArea {
+                                                                id: expandedActionArea
+                                                                anchors.fill: parent
+                                                                hoverEnabled: true
+                                                                cursorShape: Qt.PointingHandCursor
+                                                                onClicked: {
+                                                                    if (modelData.invoke) {
+                                                                        modelData.invoke();
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            Behavior on color {
+                                                                ColorAnimation {
+                                                                    duration: Theme.shortDuration
+                                                                    easing.type: Theme.standardEasing
+                                                                }
+                                                            }
+                                                        }
+                                                    }
                                                 }
 
                                                 // Individual inline reply
