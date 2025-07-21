@@ -73,6 +73,10 @@ Singleton {
     }
     
     function isAppBlocked(appName) {
+        const appKey = appName.toLowerCase();
+        if (appKey === "notify-send" || appKey === "libnotify") {
+            return false;
+        }
         return getAppSetting(appName, "blocked", false);
     }
     
@@ -117,14 +121,14 @@ Singleton {
             return false;
         }
         
-        // Check Do Not Disturb mode
-        if (isInDoNotDisturbMode()) {
-            // Allow critical notifications if configured
-            if (allowCriticalInDND && notification.urgency === 2) {
-                return true;
-            }
-            return false;
-        }
+        // DND logic temporarily disabled for all notifications
+        // if (isInDoNotDisturbMode()) {
+        //     // Allow critical notifications if configured
+        //     if (allowCriticalInDND && notification.urgency === 2) {
+        //         return true;
+        //     }
+        //     return false;
+        // }
         
         return true;
     }
