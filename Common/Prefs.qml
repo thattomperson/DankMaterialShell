@@ -27,7 +27,7 @@ Singleton {
     property bool showClipboard: true
     property bool showSystemResources: true
     property bool showSystemTray: true
-    property bool showWorkspaceIndex: true
+    property bool showWorkspaceIndex: false
     property string appLauncherViewMode: "list"
     property string spotlightLauncherViewMode: "list"
     property string networkPreference: "auto"
@@ -60,7 +60,7 @@ Singleton {
                 showClipboard = settings.showClipboard !== undefined ? settings.showClipboard : true;
                 showSystemResources = settings.showSystemResources !== undefined ? settings.showSystemResources : true;
                 showSystemTray = settings.showSystemTray !== undefined ? settings.showSystemTray : true;
-                showWorkspaceIndex = settings.showWorkspaceIndex !== undefined ? settings.showWorkspaceIndex : true;
+                showWorkspaceIndex = settings.showWorkspaceIndex !== undefined ? settings.showWorkspaceIndex : false;
                 appLauncherViewMode = settings.appLauncherViewMode !== undefined ? settings.appLauncherViewMode : "list";
                 spotlightLauncherViewMode = settings.spotlightLauncherViewMode !== undefined ? settings.spotlightLauncherViewMode : "list";
                 networkPreference = settings.networkPreference !== undefined ? settings.networkPreference : "auto";
