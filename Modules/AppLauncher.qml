@@ -220,19 +220,6 @@ PanelWindow {
 
     }
 
-    Connections {
-        target: AppSearchService
-        function onApplicationsChanged() {
-            console.log("AppLauncher: DesktopEntries.applicationsChanged signal received");
-            // Update categories when applications change
-            console.log("AppLauncher: Updating categories and model due to applicationsChanged");
-            var allCategories = AppSearchService.getAllCategories();
-            categories = ["All", "Recents"].concat(allCategories.filter((cat) => {
-                return cat !== "All";
-            }));
-            updateFilteredModel();
-        }
-    }
 
     Connections {
         function onRecentlyUsedAppsChanged() {

@@ -257,28 +257,6 @@ PanelWindow {
         }
     }
 
-    Connections {
-        target: AppSearchService
-        function onApplicationsChanged() {
-            console.log("SpotlightLauncher: DesktopEntries.applicationsChanged signal received");
-            // Update categories when applications change
-            if (AppSearchService.ready) {
-                console.log("SpotlightLauncher: Updating categories and apps due to applicationsChanged");
-                var allCategories = AppSearchService.getAllCategories().filter((cat) => {
-                    return cat !== "Education" && cat !== "Science";
-                });
-                var result = ["All", "Recents"];
-                categories = result.concat(allCategories.filter((cat) => {
-                    return cat !== "All";
-                }));
-                if (spotlightOpen)
-                    updateFilteredApps();
-
-            } else {
-                console.log("SpotlightLauncher: AppSearchService not ready, skipping update");
-            }
-        }
-    }
 
     // Dimmed overlay background
     Rectangle {
