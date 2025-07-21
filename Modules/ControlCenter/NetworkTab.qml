@@ -119,7 +119,7 @@ Item {
                                     name: {
                                         if (!NetworkService.wifiEnabled) {
                                             return "wifi_off";
-                                        } else if (NetworkService.networkStatus === "wifi") {
+                                        } else if (WifiService.currentWifiSSID !== "") {
                                             return getWiFiSignalIcon(WifiService.wifiSignalStrength);
                                         } else {
                                             return "wifi";
