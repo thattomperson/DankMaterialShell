@@ -593,10 +593,10 @@ Singleton {
             // Connect to transparency changes
             if (Prefs.popupTransparencyChanged)
                 Prefs.popupTransparencyChanged.connect(function() {
-                if (typeof Prefs !== "undefined" && Prefs.popupTransparency !== undefined)
-                    root.popupTransparency = Prefs.popupTransparency;
+                    if (typeof Prefs !== "undefined" && Prefs.popupTransparency !== undefined)
+                        root.popupTransparency = Prefs.popupTransparency;
 
-            });
+                });
 
         }
         console.log("Theme initialized, waiting for Prefs to load settings and apply theme");

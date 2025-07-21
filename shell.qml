@@ -5,7 +5,6 @@ import qs.Modules
 import qs.Modules.CenterCommandCenter
 import qs.Modules.ControlCenter
 import qs.Modules.TopBar
-import qs.Services
 
 ShellRoot {
     id: root
@@ -17,7 +16,6 @@ ShellRoot {
         delegate: TopBar {
             modelData: item
         }
-
     }
 
     // Global popup windows
@@ -67,6 +65,10 @@ ShellRoot {
 
     SettingsPopup {
         id: settingsPopup
+    }
+
+    GlobalDropdown {
+        id: globalDropdownWindow
     }
 
     // Application and clipboard components

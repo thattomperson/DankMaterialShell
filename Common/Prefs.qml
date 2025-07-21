@@ -7,8 +7,6 @@ import Quickshell
 import Quickshell.Io
 
 Singleton {
-    // "auto", "wifi", "ethernet"
-    // Alphabetical tiebreaker
 
     id: root
 
@@ -18,26 +16,24 @@ Singleton {
     property real topBarTransparency: 0.75
     property real popupTransparency: 0.92
     property var recentlyUsedApps: []
-    // New global preferences
     property bool use24HourClock: true
     property bool useFahrenheit: false
     property bool nightModeEnabled: false
     property string profileImage: ""
     property string weatherLocationOverride: "New York, NY"
-    // Widget visibility preferences for TopBar
     property bool showFocusedWindow: true
     property bool showWeather: true
     property bool showMusic: true
     property bool showClipboard: true
     property bool showSystemResources: true
     property bool showSystemTray: true
-    // WorkspaceSwitcher index toggle
     property bool showWorkspaceIndex: true
-    // View mode preferences for launchers
     property string appLauncherViewMode: "list"
     property string spotlightLauncherViewMode: "list"
-    // Network preference
     property string networkPreference: "auto"
+    property string iconTheme: "System Default"
+    property var availableIconThemes: ["System Default"]
+    property string systemDefaultIconTheme: "Adwaita"
 
     function loadSettings() {
         parseSettings(settingsFile.text());
@@ -68,15 +64,16 @@ Singleton {
                 appLauncherViewMode = settings.appLauncherViewMode !== undefined ? settings.appLauncherViewMode : "list";
                 spotlightLauncherViewMode = settings.spotlightLauncherViewMode !== undefined ? settings.spotlightLauncherViewMode : "list";
                 networkPreference = settings.networkPreference !== undefined ? settings.networkPreference : "auto";
-                console.log("Loaded settings - themeIndex:", themeIndex, "isDynamic:", themeIsDynamic, "lightMode:", isLightMode, "transparency:", topBarTransparency, "recentApps:", recentlyUsedApps.length);
-                applyStoredTheme();
+                iconTheme = settings.iconTheme !== undefined ? settings.iconTheme : "System Default";
+                        applyStoredTheme();
+                        detectAvailableIconThemes();
+                        updateGtkIconTheme(iconTheme);
+                        applyStoredIconTheme();
             } else {
-                console.log("Settings file is empty - applying default theme");
-                applyStoredTheme();
+                        applyStoredTheme();
             }
         } catch (e) {
-            console.log("Could not parse settings, using defaults:", e);
-            applyStoredTheme();
+                applyStoredTheme();
         }
     }
 
@@ -102,19 +99,17 @@ Singleton {
             "showWorkspaceIndex": showWorkspaceIndex,
             "appLauncherViewMode": appLauncherViewMode,
             "spotlightLauncherViewMode": spotlightLauncherViewMode,
-            "networkPreference": networkPreference
+            "networkPreference": networkPreference,
+            "iconTheme": iconTheme
         }, null, 2));
-        console.log("Saving settings - themeIndex:", themeIndex, "isDynamic:", themeIsDynamic, "lightMode:", isLightMode, "transparency:", topBarTransparency, "recentApps:", recentlyUsedApps.length);
     }
 
     function setShowWorkspaceIndex(enabled) {
-        console.log("Prefs setShowWorkspaceIndex called - showWorkspaceIndex:", enabled);
         showWorkspaceIndex = enabled;
         saveSettings();
     }
 
     function applyStoredTheme() {
-        console.log("Applying stored theme:", themeIndex, themeIsDynamic, "lightMode:", isLightMode);
         if (typeof Theme !== "undefined") {
             Theme.isLightMode = isLightMode;
             Theme.switchTheme(themeIndex, themeIsDynamic, false);
@@ -129,26 +124,22 @@ Singleton {
     }
 
     function setTheme(index, isDynamic) {
-        console.log("Prefs setTheme called - themeIndex:", index, "isDynamic:", isDynamic);
         themeIndex = index;
         themeIsDynamic = isDynamic;
         saveSettings();
     }
 
     function setLightMode(lightMode) {
-        console.log("Prefs setLightMode called - isLightMode:", lightMode);
         isLightMode = lightMode;
         saveSettings();
     }
 
     function setTopBarTransparency(transparency) {
-        console.log("Prefs setTopBarTransparency called - topBarTransparency:", transparency);
         topBarTransparency = transparency;
         saveSettings();
     }
 
     function setPopupTransparency(transparency) {
-        console.log("Prefs setPopupTransparency called - popupTransparency:", transparency);
         popupTransparency = transparency;
         saveSettings();
     }
@@ -207,98 +198,180 @@ Singleton {
 
     // New preference setters
     function setClockFormat(use24Hour) {
-        console.log("Prefs setClockFormat called - use24HourClock:", use24Hour);
         use24HourClock = use24Hour;
         saveSettings();
     }
 
     function setTemperatureUnit(fahrenheit) {
-        console.log("Prefs setTemperatureUnit called - useFahrenheit:", fahrenheit);
         useFahrenheit = fahrenheit;
         saveSettings();
     }
 
     function setNightModeEnabled(enabled) {
-        console.log("Prefs setNightModeEnabled called - nightModeEnabled:", enabled);
         nightModeEnabled = enabled;
         saveSettings();
     }
 
     function setProfileImage(imageUrl) {
-        console.log("Prefs setProfileImage called - profileImage:", imageUrl);
         profileImage = imageUrl;
         saveSettings();
     }
 
     // Widget visibility setters
     function setShowFocusedWindow(enabled) {
-        console.log("Prefs setShowFocusedWindow called - showFocusedWindow:", enabled);
         showFocusedWindow = enabled;
         saveSettings();
     }
 
     function setShowWeather(enabled) {
-        console.log("Prefs setShowWeather called - showWeather:", enabled);
         showWeather = enabled;
         saveSettings();
     }
 
     function setShowMusic(enabled) {
-        console.log("Prefs setShowMusic called - showMusic:", enabled);
         showMusic = enabled;
         saveSettings();
     }
 
     function setShowClipboard(enabled) {
-        console.log("Prefs setShowClipboard called - showClipboard:", enabled);
         showClipboard = enabled;
         saveSettings();
     }
 
     function setShowSystemResources(enabled) {
-        console.log("Prefs setShowSystemResources called - showSystemResources:", enabled);
         showSystemResources = enabled;
         saveSettings();
     }
 
     function setShowSystemTray(enabled) {
-        console.log("Prefs setShowSystemTray called - showSystemTray:", enabled);
         showSystemTray = enabled;
         saveSettings();
     }
 
     // View mode setters
     function setAppLauncherViewMode(mode) {
-        console.log("Prefs setAppLauncherViewMode called - appLauncherViewMode:", mode);
         appLauncherViewMode = mode;
         saveSettings();
     }
 
     function setSpotlightLauncherViewMode(mode) {
-        console.log("Prefs setSpotlightLauncherViewMode called - spotlightLauncherViewMode:", mode);
         spotlightLauncherViewMode = mode;
         saveSettings();
     }
 
     // Weather location override setter
     function setWeatherLocationOverride(location) {
-        console.log("Prefs setWeatherLocationOverride called - weatherLocationOverride:", location);
         weatherLocationOverride = location;
         saveSettings();
     }
 
     // Network preference setter
     function setNetworkPreference(preference) {
-        console.log("Prefs setNetworkPreference called - networkPreference:", preference);
         networkPreference = preference;
         saveSettings();
     }
 
+    function detectAvailableIconThemes() {
+        // First detect system default, then available themes
+        systemDefaultDetectionProcess.running = true;
+    }
+
+    function setIconTheme(themeName) {
+        iconTheme = themeName;
+        
+        updateGtkIconTheme(themeName);
+        
+        updateQuickshellIconTheme(themeName);
+        
+        saveSettings();
+    }
+    
+    function updateGtkIconTheme(themeName) {
+        var gtkThemeName;
+        
+        switch(themeName) {
+            case "System Default":
+                gtkThemeName = systemDefaultIconTheme;
+                break;
+            case "Papirus":
+                gtkThemeName = "Papirus";
+                break;
+            case "Papirus-Dark":
+                gtkThemeName = "Papirus-Dark";
+                break;
+            case "Papirus-Light":
+                gtkThemeName = "Papirus-Light";
+                break;
+            case "Adwaita":
+                gtkThemeName = "Adwaita";
+                break;
+            default:
+                gtkThemeName = themeName;
+        }
+        
+        
+        envCheckProcess.command = ["sh", "-c", "echo 'QT_QPA_PLATFORMTHEME=' $QT_QPA_PLATFORMTHEME"];
+        envCheckProcess.running = true;
+        
+        var gtk3Settings = `[Settings]
+gtk-icon-theme-name=${gtkThemeName}
+gtk-theme-name=Adwaita-dark
+gtk-application-prefer-dark-theme=true`;
+        
+        gtk3Process.command = ["sh", "-c", `mkdir -p ~/.config/gtk-3.0 && echo '${gtk3Settings}' > ~/.config/gtk-3.0/settings.ini`];
+        gtk3Process.running = true;
+        
+        gtk4Process.command = ["sh", "-c", `mkdir -p ~/.config/gtk-4.0 && echo '${gtk3Settings}' > ~/.config/gtk-4.0/settings.ini`];
+        gtk4Process.running = true;
+        
+        reloadThemeProcess.command = ["sh", "-c", "gsettings set org.gnome.desktop.interface icon-theme '" + gtkThemeName + "' 2>/dev/null || true"];
+        reloadThemeProcess.running = true;
+        
+        
+    }
+    
+    function updateQuickshellIconTheme(themeName) {
+        var quickshellThemeName;
+        
+        switch(themeName) {
+            case "System Default":
+                quickshellThemeName = "";
+                break;
+            case "Papirus":
+                quickshellThemeName = "Papirus";
+                break;
+            case "Papirus-Dark":
+                quickshellThemeName = "Papirus-Dark";
+                break;
+            case "Papirus-Light":
+                quickshellThemeName = "Papirus-Light";
+                break;
+            case "Adwaita":
+                quickshellThemeName = "Adwaita";
+                break;
+            default:
+                quickshellThemeName = themeName;
+        }
+        
+        
+        
+        if (quickshellThemeName) {
+            envSetProcess.command = ["sh", "-c", `export QS_ICON_THEME="${quickshellThemeName}" && rm -rf ~/.cache/icon-cache ~/.cache/thumbnails 2>/dev/null || true`];
+        } else {
+            envSetProcess.command = ["sh", "-c", `unset QS_ICON_THEME && rm -rf ~/.cache/icon-cache ~/.cache/thumbnails 2>/dev/null || true`];
+        }
+        envSetProcess.running = true;
+        
+    }
+    
+    function applyStoredIconTheme() {
+        if (iconTheme && iconTheme !== "System Default") {
+            updateGtkIconTheme(iconTheme);
+        }
+    }
+
     Component.onCompleted: loadSettings()
-    // Monitor system resources preference changes to control service monitoring
     onShowSystemResourcesChanged: {
-        console.log("Prefs: System resources monitoring", showSystemResources ? "enabled" : "disabled");
-        // Control SystemMonitorService based on whether system monitor widgets are visible
         if (typeof SystemMonitorService !== 'undefined')
             SystemMonitorService.enableTopBarMonitoring(showSystemResources);
 
@@ -312,12 +385,105 @@ Singleton {
         blockWrites: true
         watchChanges: true
         onLoaded: {
-            console.log("Settings file loaded successfully");
             parseSettings(settingsFile.text());
         }
         onLoadFailed: (error) => {
-            console.log("Settings file not found, using defaults. Error:", error);
             applyStoredTheme();
+        }
+    }
+
+    Process {
+        id: gtk3Process
+        running: false
+        onExited: (exitCode) => {
+            if (exitCode === 0) {
+            } else {
+                console.warn("Failed to update GTK 3 settings, exit code:", exitCode);
+            }
+        }
+    }
+    
+    Process {
+        id: gtk4Process
+        running: false
+        onExited: (exitCode) => {
+            if (exitCode === 0) {
+            } else {
+                console.warn("Failed to update GTK 4 settings, exit code:", exitCode);
+            }
+        }
+    }
+    
+    Process {
+        id: reloadThemeProcess
+        running: false
+        onExited: (exitCode) => {
+            if (exitCode === 0) {
+            } else {
+                console.log("GTK theme reload failed (this is normal if gsettings is not available), exit code:", exitCode);
+            }
+        }
+    }
+    
+    Process {
+        id: qtThemeProcess
+        running: false
+        onExited: (exitCode) => {
+            console.log("Qt theme reload signal sent, exit code:", exitCode);
+        }
+    }
+    
+    Process {
+        id: envCheckProcess
+        running: false
+        onExited: (exitCode) => {
+            if (exitCode !== 0) {
+                console.warn("Environment check failed, exit code:", exitCode);
+            }
+        }
+    }
+    
+    
+    Process {
+        id: envSetProcess
+        running: false
+        onExited: (exitCode) => {
+        }
+    }
+    
+    Process {
+        id: systemDefaultDetectionProcess
+        command: ["sh", "-c", "gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null | sed \"s/'//g\" || echo 'Adwaita'"]
+        running: false
+        onExited: (exitCode) => {
+            if (exitCode === 0 && stdout && stdout.length > 0) {
+                systemDefaultIconTheme = stdout.trim();
+            } else {
+                systemDefaultIconTheme = "Adwaita";
+            }
+            iconThemeDetectionProcess.running = true;
+        }
+    }
+
+    Process {
+        id: iconThemeDetectionProcess
+        command: ["sh", "-c", "find /usr/share/icons ~/.local/share/icons ~/.icons -maxdepth 1 -type d 2>/dev/null | sed 's|.*/||' | grep -v '^icons$' | sort -u"]
+        running: false
+        
+        stdout: StdioCollector {
+            onStreamFinished: {
+                var detectedThemes = ["System Default"];
+                if (text && text.trim()) {
+                    var themes = text.trim().split('\n');
+                    for (var i = 0; i < themes.length; i++) {
+                        var theme = themes[i].trim();
+                        if (theme && theme !== "" && theme !== "default" && theme !== "hicolor" && theme !== "locolor") {
+                            detectedThemes.push(theme);
+                        }
+                    }
+                }
+                availableIconThemes = detectedThemes;
+            }
         }
     }
 

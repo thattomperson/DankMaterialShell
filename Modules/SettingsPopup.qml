@@ -16,9 +16,13 @@ PanelWindow {
     signal closingPopup()
 
     onSettingsVisibleChanged: {
-        if (!settingsVisible)
+        if (!settingsVisible) {
             closingPopup();
-
+            // Hide any open dropdown when settings close
+            if (typeof globalDropdownWindow !== 'undefined') {
+                globalDropdownWindow.hide();
+            }
+        }
     }
     visible: settingsVisible
     implicitWidth: 600
@@ -27,6 +31,110 @@ PanelWindow {
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
     color: "transparent"
+
+    // SettingsDropdown component - only used within this popup
+    Component {
+        id: settingsDropdownComponent
+        
+        Rectangle {
+            id: dropdownRoot
+
+            property string text: ""
+            property string description: ""
+            property string currentValue: ""
+            property var options: []
+
+            signal valueChanged(string value)
+
+            width: parent.width
+            height: 60
+            radius: Theme.cornerRadius
+            color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
+
+            Column {
+                anchors.left: parent.left
+                anchors.right: dropdown.left
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.leftMargin: Theme.spacingM
+                anchors.rightMargin: Theme.spacingM
+                spacing: Theme.spacingXS
+
+                Text {
+                    text: dropdownRoot.text
+                    font.pixelSize: Theme.fontSizeMedium
+                    color: Theme.surfaceText
+                    font.weight: Font.Medium
+                }
+
+                Text {
+                    text: dropdownRoot.description
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceVariantText
+                    visible: description.length > 0
+                    wrapMode: Text.WordWrap
+                    width: parent.width
+                }
+            }
+
+            Rectangle {
+                id: dropdown
+                
+                width: 180
+                height: 36
+                anchors.right: parent.right
+                anchors.rightMargin: Theme.spacingM
+                anchors.verticalCenter: parent.verticalCenter
+                radius: Theme.cornerRadiusSmall
+                color: dropdownArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Theme.contentBackground()
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                border.width: 1
+
+                Row {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.leftMargin: Theme.spacingM
+                    anchors.rightMargin: Theme.spacingS
+
+                    Text {
+                        text: dropdownRoot.currentValue
+                        font.pixelSize: Theme.fontSizeMedium
+                        color: Theme.surfaceText
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 24
+                        elide: Text.ElideRight
+                    }
+
+                    DankIcon {
+                        name: "expand_more"
+                        size: 20
+                        color: Theme.surfaceVariantText
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                MouseArea {
+                    id: dropdownArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (typeof globalDropdownWindow !== 'undefined') {
+                            // Get global position of the dropdown button
+                            var globalPos = dropdown.mapToGlobal(0, 0);
+                            globalDropdownWindow.showAt(dropdownRoot, globalPos.x, globalPos.y + dropdown.height + 4, dropdownRoot.options, dropdownRoot.currentValue);
+                            
+                            // Connect to value selection (with cleanup)
+                            globalDropdownWindow.valueSelected.connect(function(value) {
+                                dropdownRoot.currentValue = value;
+                                dropdownRoot.valueChanged(value);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     anchors {
         top: true
@@ -123,12 +231,38 @@ PanelWindow {
             }
 
             // Settings sections
-            ScrollView {
+            Flickable {
+                id: settingsScrollView
                 width: parent.width
                 height: parent.height - 80
                 clip: true
+                contentHeight: settingsColumn.height
+                boundsBehavior: Flickable.DragAndOvershootBounds
+                flickDeceleration: 8000
+                maximumFlickVelocity: 15000
+                
+                property real wheelStepSize: 60
+
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.NoButton
+                    propagateComposedEvents: true
+                    z: -1
+                    onWheel: (wheel) => {
+                        var delta = wheel.angleDelta.y
+                        var steps = delta / 120
+                        settingsScrollView.contentY -= steps * settingsScrollView.wheelStepSize
+                        
+                        // Keep within bounds
+                        if (settingsScrollView.contentY < 0)
+                            settingsScrollView.contentY = 0
+                        else if (settingsScrollView.contentY > settingsScrollView.contentHeight - settingsScrollView.height)
+                            settingsScrollView.contentY = Math.max(0, settingsScrollView.contentHeight - settingsScrollView.height)
+                    }
+                }
 
                 Column {
+                    id: settingsColumn
                     width: parent.width
                     spacing: Theme.spacingL
 
@@ -340,6 +474,7 @@ PanelWindow {
 
                     }
 
+
                     // Weather Settings
                     SettingsSection {
                         title: "Weather"
@@ -531,6 +666,31 @@ PanelWindow {
                                 onToggled: (checked) => {
                                     Prefs.setLightMode(checked);
                                     Theme.isLightMode = checked;
+                                }
+                            }
+
+                            Loader {
+                                width: parent.width
+                                sourceComponent: settingsDropdownComponent
+                                onLoaded: {
+                                    item.text = "Icon Theme"
+                                    item.description = "Select icon theme (requires restart)"
+                                    item.currentValue = Prefs.iconTheme
+                                    // Set initial options, will be updated when detection completes
+                                    item.options = Qt.binding(function() { return Prefs.availableIconThemes; })
+                                    item.valueChanged.connect(function(value) {
+                                        Prefs.setIconTheme(value);
+                                    })
+                                }
+                                
+                                // Update options when available themes change
+                                Connections {
+                                    target: Prefs
+                                    function onAvailableIconThemesChanged() {
+                                        if (parent.item && parent.item.hasOwnProperty('options')) {
+                                            parent.item.options = Prefs.availableIconThemes;
+                                        }
+                                    }
                                 }
                             }
 
