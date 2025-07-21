@@ -11,11 +11,53 @@ import "../../Widgets"
 Item {
     id: networkTab
 
+    // Helper function for consistent WiFi signal icons
+    function getWiFiSignalIcon(signalStrength) {
+        switch (signalStrength) {
+            case "excellent": return "wifi";
+            case "good": return "wifi_2_bar";
+            case "fair": return "wifi_1_bar";
+            case "poor": return "signal_wifi_0_bar";
+            default: return "wifi";
+        }
+    }
+
+    // Properly sorted WiFi networks with connected networks first
+    property var sortedWifiNetworks: {
+        if (!NetworkService.wifiAvailable || !NetworkService.wifiEnabled) {
+            return [];
+        }
+        
+        var networks = [...WifiService.wifiNetworks];
+        
+        // Update connected status and signal strength based on current WiFi SSID
+        networks.forEach(function(network) {
+            network.connected = (network.ssid === WifiService.currentWifiSSID);
+            // Use current connection's signal strength for connected network
+            if (network.connected && WifiService.wifiSignalStrength) {
+                network.signalStrength = WifiService.wifiSignalStrength;
+            }
+        });
+        
+        // Sort: connected networks first, then by signal strength
+        networks.sort(function(a, b) {
+            // Connected networks always come first
+            if (a.connected && !b.connected) return -1;
+            if (!a.connected && b.connected) return 1;
+            // If both connected or both not connected, sort by signal strength
+            return b.signal - a.signal;
+        });
+        
+        return networks;
+    }
+
     // Auto-enable WiFi auto-refresh when network tab is visible
     Component.onCompleted: {
         WifiService.autoRefreshEnabled = true;
         if (NetworkService.wifiEnabled)
             WifiService.scanWifi();
+        // Start smart monitoring
+        wifiMonitorTimer.start();
     }
 
     // Two-column layout for WiFi and Ethernet (WiFi on left, Ethernet on right)
@@ -78,7 +120,7 @@ Item {
                                         if (!NetworkService.wifiEnabled) {
                                             return "wifi_off";
                                         } else if (NetworkService.networkStatus === "wifi") {
-                                            return WifiService.wifiSignalStrength === "excellent" ? "wifi" : WifiService.wifiSignalStrength === "good" ? "wifi_2_bar" : WifiService.wifiSignalStrength === "fair" ? "wifi_1_bar" : WifiService.wifiSignalStrength === "poor" ? "wifi_calling_3" : "wifi";
+                                            return getWiFiSignalIcon(WifiService.wifiSignalStrength);
                                         } else {
                                             return "wifi";
                                         }
@@ -134,6 +176,17 @@ Item {
                             anchors.rightMargin: Theme.spacingM
                             anchors.verticalCenter: parent.verticalCenter
                             onClicked: {
+                                if (NetworkService.wifiEnabled) {
+                                    // When turning WiFi off, clear all cached WiFi data
+                                    WifiService.currentWifiSSID = "";
+                                    WifiService.wifiSignalStrength = "excellent";
+                                    WifiService.wifiNetworks = [];
+                                    WifiService.savedWifiNetworks = [];
+                                    WifiService.connectionStatus = "";
+                                    WifiService.connectingSSID = "";
+                                    WifiService.isScanning = false;
+                                    NetworkService.refreshNetworkStatus();
+                                }
                                 NetworkService.toggleWifiRadio();
                                 refreshTimer.triggered = true;
                             }
@@ -512,7 +565,6 @@ Item {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         if (!WifiService.isScanning) {
-                            console.log("Manual WiFi scan triggered (spanning)");
                             // Immediate visual feedback
                             refreshIconSpan.rotation += 30;
                             WifiService.scanWifi();
@@ -539,7 +591,7 @@ Item {
                 spacing: Theme.spacingXS
                 
                 Repeater {
-                    model: NetworkService.wifiAvailable && NetworkService.wifiEnabled ? WifiService.wifiNetworks : []
+                    model: NetworkService.wifiAvailable && NetworkService.wifiEnabled ? sortedWifiNetworks : []
 
                     Rectangle {
                         width: parent.width
@@ -558,7 +610,7 @@ Item {
                                 id: signalIcon2
                                 anchors.left: parent.left
                                 anchors.verticalCenter: parent.verticalCenter
-                                name: modelData.signalStrength === "excellent" ? "wifi" : modelData.signalStrength === "good" ? "wifi_2_bar" : modelData.signalStrength === "fair" ? "wifi_1_bar" : modelData.signalStrength === "poor" ? "wifi_calling_3" : "wifi"
+                                name: getWiFiSignalIcon(modelData.signalStrength)
                                 size: Theme.iconSize - 2
                                 color: modelData.connected ? Theme.primary : Theme.surfaceText
                             }
@@ -682,7 +734,6 @@ Item {
         onTriggered: {
             NetworkService.refreshNetworkStatus();
             if (NetworkService.wifiEnabled && !WifiService.isScanning) {
-                console.log("RefreshTimer: Scanning WiFi after toggle");
                 WifiService.scanWifi();
             }
             triggered = false;
@@ -697,6 +748,20 @@ Item {
                 // When WiFi is enabled, scan and update info (only if tab is visible)
                 // Add a small delay to ensure WiFi service is ready
                 wifiScanDelayTimer.start();
+                // Start monitoring when WiFi comes back on
+                wifiMonitorTimer.start();
+            } else {
+                // When WiFi is disabled, clear all cached WiFi data
+                WifiService.currentWifiSSID = "";
+                WifiService.wifiSignalStrength = "excellent";
+                WifiService.wifiNetworks = [];
+                WifiService.savedWifiNetworks = [];
+                WifiService.connectionStatus = "";
+                WifiService.connectingSSID = "";
+                WifiService.isScanning = false;
+                NetworkService.refreshNetworkStatus();
+                // Stop monitoring when WiFi is off
+                wifiMonitorTimer.stop();
             }
         }
     }
@@ -709,7 +774,6 @@ Item {
         repeat: false
         onTriggered: {
             if (NetworkService.wifiEnabled && visible) {
-                console.log("Delayed WiFi scan triggered after enabling WiFi");
                 if (!WifiService.isScanning) {
                     WifiService.scanWifi();
                 } else {
@@ -728,11 +792,53 @@ Item {
         repeat: false
         onTriggered: {
             if (NetworkService.wifiEnabled && visible && WifiService.wifiNetworks.length === 0) {
-                console.log("Retry WiFi scan - no networks found yet");
                 if (!WifiService.isScanning) {
                     WifiService.scanWifi();
                 }
             }
+        }
+    }
+
+    // Smart WiFi monitoring - only runs when tab visible and conditions met
+    Timer {
+        id: wifiMonitorTimer
+        interval: 8000 // Check every 8 seconds
+        running: false
+        repeat: true
+        onTriggered: {
+            if (!visible || !NetworkService.wifiEnabled) {
+                // Stop monitoring when not needed
+                running = false;
+                return;
+            }
+
+            // Monitor connection changes and refresh networks when disconnected
+            var shouldScan = false;
+            var reason = "";
+
+            // Always scan if not connected to WiFi
+            if (NetworkService.networkStatus !== "wifi") {
+                shouldScan = true;
+                reason = "not connected to WiFi";
+            }
+            // Also scan occasionally even when connected to keep networks fresh
+            else if (WifiService.wifiNetworks.length === 0) {
+                shouldScan = true;
+                reason = "no networks cached";
+            }
+
+            if (shouldScan && !WifiService.isScanning) {
+                WifiService.scanWifi();
+            }
+        }
+    }
+
+    // Monitor tab visibility to start/stop smart monitoring
+    onVisibleChanged: {
+        if (visible && NetworkService.wifiEnabled) {
+            wifiMonitorTimer.start();
+        } else {
+            wifiMonitorTimer.stop();
         }
     }
 }

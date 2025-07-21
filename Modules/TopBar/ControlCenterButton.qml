@@ -9,6 +9,17 @@ Rectangle {
     property bool isActive: false
 
     signal clicked()
+    
+    // Helper function for consistent WiFi signal icons
+    function getWiFiSignalIcon(signalStrength) {
+        switch (signalStrength) {
+            case "excellent": return "wifi";
+            case "good": return "wifi_2_bar";
+            case "fair": return "wifi_1_bar";
+            case "poor": return "signal_wifi_0_bar";
+            default: return "wifi";
+        }
+    }
 
     width: Math.max(80, controlIndicators.implicitWidth + Theme.spacingS * 2)
     height: 30
@@ -27,18 +38,7 @@ Rectangle {
                 if (NetworkService.networkStatus === "ethernet") {
                     return "lan";
                 } else if (NetworkService.networkStatus === "wifi") {
-                    switch (WifiService.wifiSignalStrength) {
-                    case "excellent":
-                        return "wifi";
-                    case "good":
-                        return "wifi_2_bar";
-                    case "fair":
-                        return "wifi_1_bar";
-                    case "poor":
-                        return "wifi_calling_3";
-                    default:
-                        return "wifi";
-                    }
+                    return getWiFiSignalIcon(WifiService.wifiSignalStrength);
                 } else {
                     return "wifi_off";
                 }
