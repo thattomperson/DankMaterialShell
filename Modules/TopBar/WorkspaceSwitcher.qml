@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 import qs.Common
 import qs.Services
@@ -8,7 +9,15 @@ Rectangle {
 
     property string screenName: ""
     property int currentWorkspace: getDisplayActiveWorkspace()
-    property var workspaceList: getDisplayWorkspaces()
+    property var workspaceList: padWorkspaces(getDisplayWorkspaces())
+
+    function padWorkspaces(list) {
+        var padded = list.slice();
+        while (padded.length < 3) {
+            padded.push(-1); // Use -1 as a placeholder
+        }
+        return padded;
+    }
 
     function getDisplayWorkspaces() {
         if (!NiriWorkspaceService.niriAvailable || NiriWorkspaceService.allWorkspaces.length === 0)
@@ -51,7 +60,7 @@ Rectangle {
 
     Connections {
         function onAllWorkspacesChanged() {
-            root.workspaceList = root.getDisplayWorkspaces();
+            root.workspaceList = padWorkspaces(root.getDisplayWorkspaces());
             root.currentWorkspace = root.getDisplayActiveWorkspace();
         }
 
@@ -61,7 +70,7 @@ Rectangle {
 
         function onNiriAvailableChanged() {
             if (NiriWorkspaceService.niriAvailable) {
-                root.workspaceList = root.getDisplayWorkspaces();
+                root.workspaceList = padWorkspaces(root.getDisplayWorkspaces());
                 root.currentWorkspace = root.getDisplayActiveWorkspace();
             }
         }
@@ -80,33 +89,46 @@ Rectangle {
 
             Rectangle {
                 property bool isActive: modelData === root.currentWorkspace
+                property bool isPlaceholder: modelData === -1
                 property bool isHovered: mouseArea.containsMouse
                 property int sequentialNumber: index + 1
 
                 width: isActive ? Theme.spacingXL + Theme.spacingM : Theme.spacingL + Theme.spacingXS
                 height: Theme.spacingL
                 radius: height / 2
-                color: isActive ? Theme.primary : isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.5) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3)
+                color: isActive ? Theme.primary : isPlaceholder ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.5) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3)
 
                 MouseArea {
                     id: mouseArea
-
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
+                    enabled: !isPlaceholder
                     onClicked: {
-                        Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", (modelData - 1).toString()]);
+                        if (!isPlaceholder) {
+                            Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", (modelData - 1).toString()]);
+                        }
                     }
                 }
 
-                        // Only show index if enabled in preferences
-                        Text {
-                            visible: Prefs.showWorkspaceIndex
-                            anchors.centerIn: parent
-                            text: sequentialNumber
-                            color: Theme.surfaceText
-                            font.pixelSize: Theme.fontSizeMedium
-                            font.bold: isActive
+                // Show index for placeholders if Prefs.showWorkspaceIndex is true, otherwise show a subtle dot
+                Text {
+                    visible: Prefs.showWorkspaceIndex
+                    anchors.centerIn: parent
+                    text: isPlaceholder ? sequentialNumber : sequentialNumber
+                    color: isPlaceholder ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3) : Theme.surfaceText
+                    font.pixelSize: Theme.fontSizeMedium
+                    font.bold: isActive && !isPlaceholder
+                }
+
+                // If not showing index, show a subtle dot for placeholders
+                Rectangle {
+                    visible: isPlaceholder && !Prefs.showWorkspaceIndex
+                    anchors.centerIn: parent
+                    width: Theme.spacingXS
+                    height: Theme.spacingXS
+                    radius: Theme.spacingXS / 2
+                    color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.18)
                 }
 
                 Behavior on width {
@@ -114,7 +136,6 @@ Rectangle {
                         duration: Theme.mediumDuration
                         easing.type: Theme.emphasizedEasing
                     }
-
                 }
 
                 Behavior on color {
@@ -122,11 +143,8 @@ Rectangle {
                         duration: Theme.mediumDuration
                         easing.type: Theme.emphasizedEasing
                     }
-
                 }
-
             }
-
         }
 
     }
