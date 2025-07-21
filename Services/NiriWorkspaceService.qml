@@ -24,6 +24,8 @@ Singleton {
     // Overview state
     property bool inOverview: false
     
+    signal windowOpenedOrChanged(var windowData)
+    
     // Feature availability
     property bool niriAvailable: false
     
@@ -75,9 +77,57 @@ Singleton {
         }
     }
     
+    // Load initial windows data
+    Process {
+        id: initialWindowsQuery
+        command: ["niri", "msg", "-j", "windows"]
+        running: false
+        
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (text && text.trim()) {
+                    try {
+                        const windowsData = JSON.parse(text.trim())
+                        if (windowsData && windowsData.windows) {
+                            handleWindowsChanged(windowsData)
+                            console.log("NiriWorkspaceService: Loaded", windowsData.windows.length, "initial windows")
+                        }
+                    } catch (e) {
+                        console.warn("NiriWorkspaceService: Failed to parse initial windows data:", e)
+                    }
+                }
+            }
+        }
+    }
+    
+    // Load initial focused window data
+    Process {
+        id: initialFocusedWindowQuery
+        command: ["niri", "msg", "-j", "focused-window"]
+        running: false
+        
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (text && text.trim()) {
+                    try {
+                        const focusedData = JSON.parse(text.trim())
+                        if (focusedData && focusedData.id) {
+                            handleWindowFocusChanged({ id: focusedData.id })
+                            console.log("NiriWorkspaceService: Loaded initial focused window:", focusedData.id)
+                        }
+                    } catch (e) {
+                        console.warn("NiriWorkspaceService: Failed to parse initial focused window data:", e)
+                    }
+                }
+            }
+        }
+    }
+    
     function loadInitialWorkspaceData() {
         console.log("NiriWorkspaceService: Loading initial workspace data...")
         initialDataQuery.running = true
+        initialWindowsQuery.running = true
+        initialFocusedWindowQuery.running = true
     }
     
     // Event stream for real-time updates
@@ -117,6 +167,8 @@ Singleton {
             handleWindowClosed(event.WindowClosed)
         } else if (event.WindowFocusChanged) {
             handleWindowFocusChanged(event.WindowFocusChanged)
+        } else if (event.WindowOpenedOrChanged) {
+            handleWindowOpenedOrChanged(event.WindowOpenedOrChanged)
         } else if (event.OverviewOpenedOrClosed) {
             handleOverviewChanged(event.OverviewOpenedOrClosed)
         }
@@ -192,6 +244,34 @@ Singleton {
         updateFocusedWindow()
     }
     
+    function handleWindowOpenedOrChanged(data) {
+        if (!data.window) return;
+        
+        const window = data.window;
+        const existingIndex = windows.findIndex(w => w.id === window.id);
+        
+        if (existingIndex >= 0) {
+            // Update existing window - create new array to trigger property change
+            let updatedWindows = [...windows];
+            updatedWindows[existingIndex] = window;
+            windows = updatedWindows.sort((a, b) => a.id - b.id);
+        } else {
+            // Add new window
+            windows = [...windows, window].sort((a, b) => a.id - b.id);
+        }
+        
+        // Update focused window if this window is focused
+        if (window.is_focused) {
+            focusedWindowId = window.id;
+            focusedWindowIndex = windows.findIndex(w => w.id === window.id);
+        }
+        
+        updateFocusedWindow();
+        
+        // Emit signal for other services to listen to
+        windowOpenedOrChanged(window);
+    }
+
     function handleOverviewChanged(data) {
         inOverview = data.is_open
     }

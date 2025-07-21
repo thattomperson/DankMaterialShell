@@ -14,17 +14,33 @@ Singleton {
     property string focusedWindowTitle: ""
     property int focusedWindowId: -1
 
+
+    function updateFromNiriData() {
+        if (!root.niriAvailable) {
+            clearFocusedWindow();
+            return;
+        }
+
+        const focusedWindowId = NiriWorkspaceService.focusedWindowId;
+        if (!focusedWindowId) {
+            clearFocusedWindow();
+            return;
+        }
+
+        const focusedWindow = NiriWorkspaceService.windows.find(w => w.id === focusedWindowId);
+        if (focusedWindow) {
+            root.focusedAppId = focusedWindow.app_id || "";
+            root.focusedWindowTitle = focusedWindow.title || "";
+            root.focusedAppName = getDisplayName(focusedWindow.app_id || "");
+            root.focusedWindowId = parseInt(focusedWindow.id) || -1;
+        } else {
+            clearFocusedWindow();
+        }
+    }
+
     function loadInitialFocusedWindow() {
         if (root.niriAvailable)
             focusedWindowQuery.running = true;
-
-    }
-
-    function updateFocusedWindowData() {
-        if (root.niriAvailable && root.focusedWindowId !== -1)
-            focusedWindowQuery.running = true;
-        else
-            clearFocusedWindow();
     }
 
     function clearFocusedWindow() {
@@ -38,7 +54,6 @@ Singleton {
         if (!appId)
             return "";
 
-        // Common app_id to display name mappings
         const appNames = {
             "com.mitchellh.ghostty": "Ghostty",
             "org.mozilla.firefox": "Firefox",
@@ -59,12 +74,10 @@ Singleton {
             "slack": "Slack",
             "zoom": "Zoom"
         };
-        // Return mapped name or clean up the app_id
         if (appNames[appId])
             return appNames[appId];
 
-        // Try to extract a clean name from the app_id
-        // Remove common prefixes and make first letter uppercase
+        
         let cleanName = appId.replace(/^(org\.|com\.|net\.|io\.)/, '').replace(/\./g, ' ').split(' ').map((word) => {
             return word.charAt(0).toUpperCase() + word.slice(1);
         }).join(' ');
@@ -72,9 +85,7 @@ Singleton {
     }
 
     Component.onCompleted: {
-        // Use the availability from NiriWorkspaceService to avoid duplicate checks
         root.niriAvailable = NiriWorkspaceService.niriAvailable;
-        // Connect to workspace service events
         NiriWorkspaceService.onNiriAvailableChanged.connect(() => {
             root.niriAvailable = NiriWorkspaceService.niriAvailable;
             if (root.niriAvailable)
@@ -86,21 +97,32 @@ Singleton {
 
     }
 
-    // Listen to window focus changes from NiriWorkspaceService
     Connections {
         function onFocusedWindowIdChanged() {
             root.focusedWindowId = parseInt(NiriWorkspaceService.focusedWindowId) || -1;
-            updateFocusedWindowData();
+            updateFromNiriData();
         }
 
         function onFocusedWindowTitleChanged() {
             root.focusedWindowTitle = NiriWorkspaceService.focusedWindowTitle;
         }
 
+        function onWindowsChanged() {
+            updateFromNiriData();
+        }
+
+        function onWindowOpenedOrChanged(windowData) {
+            if (windowData.is_focused) {
+                root.focusedAppId = windowData.app_id || "";
+                root.focusedWindowTitle = windowData.title || "";
+                root.focusedAppName = getDisplayName(windowData.app_id || "");
+                root.focusedWindowId = parseInt(windowData.id) || -1;
+            }
+        }
+
         target: NiriWorkspaceService
     }
 
-    // Process to get focused window info
     Process {
         id: focusedWindowQuery
 
@@ -125,7 +147,7 @@ Singleton {
                 }
             }
         }
-
     }
+
 
 }
