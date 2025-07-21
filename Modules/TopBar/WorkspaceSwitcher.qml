@@ -9,15 +9,7 @@ Rectangle {
 
     property string screenName: ""
     property int currentWorkspace: getDisplayActiveWorkspace()
-    property var workspaceList: padWorkspaces(getDisplayWorkspaces())
-
-    function padWorkspaces(list) {
-        var padded = list.slice();
-        while (padded.length < 3) {
-            padded.push(-1); // Use -1 as a placeholder
-        }
-        return padded;
-    }
+    property var workspaceList: getDisplayWorkspaces()
 
     function getDisplayWorkspaces() {
         if (!NiriWorkspaceService.niriAvailable || NiriWorkspaceService.allWorkspaces.length === 0)
@@ -52,7 +44,7 @@ Rectangle {
         return 1;
     }
 
-    width: Math.max(120, workspaceRow.implicitWidth + Theme.spacingL * 2)
+    width: workspaceRow.implicitWidth + Theme.spacingL * 2
     height: 30
     radius: Theme.cornerRadiusLarge
     color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
@@ -60,7 +52,7 @@ Rectangle {
 
     Connections {
         function onAllWorkspacesChanged() {
-            root.workspaceList = padWorkspaces(root.getDisplayWorkspaces());
+            root.workspaceList = root.getDisplayWorkspaces();
             root.currentWorkspace = root.getDisplayActiveWorkspace();
         }
 
@@ -70,7 +62,7 @@ Rectangle {
 
         function onNiriAvailableChanged() {
             if (NiriWorkspaceService.niriAvailable) {
-                root.workspaceList = padWorkspaces(root.getDisplayWorkspaces());
+                root.workspaceList = root.getDisplayWorkspaces();
                 root.currentWorkspace = root.getDisplayActiveWorkspace();
             }
         }
