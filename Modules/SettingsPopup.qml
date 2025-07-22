@@ -461,7 +461,7 @@ PanelWindow {
                             width: parent.width
                             spacing: Theme.spacingM
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "24-Hour Format"
                                 description: "Use 24-hour time format instead of 12-hour AM/PM"
                                 checked: Prefs.use24HourClock
@@ -484,7 +484,7 @@ PanelWindow {
                             width: parent.width
                             spacing: Theme.spacingM
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "Fahrenheit"
                                 description: "Use Fahrenheit instead of Celsius for temperature"
                                 checked: Prefs.useFahrenheit
@@ -570,7 +570,7 @@ PanelWindow {
                             width: parent.width
                             spacing: Theme.spacingM
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "Focused Window"
                                 description: "Show the currently focused application in the top bar"
                                 checked: Prefs.showFocusedWindow
@@ -579,7 +579,7 @@ PanelWindow {
                                 }
                             }
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "Weather Widget"
                                 description: "Display weather information in the top bar"
                                 checked: Prefs.showWeather
@@ -588,7 +588,7 @@ PanelWindow {
                                 }
                             }
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "Media Controls"
                                 description: "Show currently playing media in the top bar"
                                 checked: Prefs.showMusic
@@ -597,7 +597,7 @@ PanelWindow {
                                 }
                             }
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "Clipboard Button"
                                 description: "Show clipboard access button in the top bar"
                                 checked: Prefs.showClipboard
@@ -606,7 +606,7 @@ PanelWindow {
                                 }
                             }
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "System Resources"
                                 description: "Display CPU and RAM usage indicators"
                                 checked: Prefs.showSystemResources
@@ -615,7 +615,7 @@ PanelWindow {
                                 }
                             }
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "System Tray"
                                 description: "Show system tray icons in the top bar"
                                 checked: Prefs.showSystemTray
@@ -638,7 +638,7 @@ PanelWindow {
                             width: parent.width
                             spacing: Theme.spacingM
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "Workspace Index Numbers"
                                 description: "Show workspace index numbers in the top bar workspace switcher"
                                 checked: Prefs.showWorkspaceIndex
@@ -647,7 +647,7 @@ PanelWindow {
                                 }
                             }
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "Workspace Padding"
                                 description: "Always show a minimum of 3 workspaces, even if fewer are available"
                                 checked: Prefs.showWorkspacePadding
@@ -669,7 +669,7 @@ PanelWindow {
                             width: parent.width
                             spacing: Theme.spacingL
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "Night Mode"
                                 description: "Apply warm color temperature to reduce eye strain"
                                 checked: Prefs.nightModeEnabled
@@ -682,7 +682,7 @@ PanelWindow {
                                 }
                             }
 
-                            SettingsToggle {
+                            DankToggle {
                                 text: "Light Mode"
                                 description: "Use light theme instead of dark theme"
                                 checked: Prefs.isLightMode
