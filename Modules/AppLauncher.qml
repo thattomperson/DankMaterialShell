@@ -18,7 +18,10 @@ PanelWindow {
     // App management
     property var categories: AppSearchService.getAllCategories()
     property string selectedCategory: "All"
-    property var recentApps: Prefs.getRecentApps()
+    property var recentApps: Prefs.recentlyUsedApps.map(recentApp => {
+        var app = AppSearchService.getAppByExec(recentApp.exec);
+        return app && !app.noDisplay ? app : null;
+    }).filter(app => app !== null)
     property var pinnedApps: ["firefox", "code", "terminal", "file-manager"]
     property bool showCategories: false
     property string viewMode: Prefs.appLauncherViewMode // "list" or "grid"
@@ -137,7 +140,6 @@ PanelWindow {
 
     function show() {
         launcher.isVisible = true;
-        recentApps = Prefs.getRecentApps(); // Refresh recent apps
         searchDebounceTimer.stop(); // Stop any pending search
         updateFilteredModel();
         Qt.callLater(function() {
@@ -173,7 +175,6 @@ PanelWindow {
             return cat !== "All";
         }));
         updateFilteredModel();
-        recentApps = Prefs.getRecentApps(); // Load recent apps on startup
     }
 
     // Full screen overlay setup for proper focus
@@ -221,13 +222,6 @@ PanelWindow {
     }
 
 
-    Connections {
-        function onRecentlyUsedAppsChanged() {
-            recentApps = Prefs.getRecentApps();
-        }
-
-        target: Prefs
-    }
 
     Component {
         id: iconComponent

@@ -28,6 +28,7 @@ Singleton {
     property bool showSystemResources: true
     property bool showSystemTray: true
     property bool showWorkspaceIndex: false
+    property bool showWorkspacePadding: false
     property string appLauncherViewMode: "list"
     property string spotlightLauncherViewMode: "list"
     property string networkPreference: "auto"
@@ -61,6 +62,7 @@ Singleton {
                 showSystemResources = settings.showSystemResources !== undefined ? settings.showSystemResources : true;
                 showSystemTray = settings.showSystemTray !== undefined ? settings.showSystemTray : true;
                 showWorkspaceIndex = settings.showWorkspaceIndex !== undefined ? settings.showWorkspaceIndex : false;
+                showWorkspacePadding = settings.showWorkspacePadding !== undefined ? settings.showWorkspacePadding : false;
                 appLauncherViewMode = settings.appLauncherViewMode !== undefined ? settings.appLauncherViewMode : "list";
                 spotlightLauncherViewMode = settings.spotlightLauncherViewMode !== undefined ? settings.spotlightLauncherViewMode : "list";
                 networkPreference = settings.networkPreference !== undefined ? settings.networkPreference : "auto";
@@ -97,6 +99,7 @@ Singleton {
             "showSystemResources": showSystemResources,
             "showSystemTray": showSystemTray,
             "showWorkspaceIndex": showWorkspaceIndex,
+            "showWorkspacePadding": showWorkspacePadding,
             "appLauncherViewMode": appLauncherViewMode,
             "spotlightLauncherViewMode": spotlightLauncherViewMode,
             "networkPreference": networkPreference,
@@ -106,6 +109,11 @@ Singleton {
 
     function setShowWorkspaceIndex(enabled) {
         showWorkspaceIndex = enabled;
+        saveSettings();
+    }
+
+    function setShowWorkspacePadding(enabled) {
+        showWorkspacePadding = enabled;
         saveSettings();
     }
 
