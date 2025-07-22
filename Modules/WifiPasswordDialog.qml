@@ -20,9 +20,14 @@ PanelWindow {
     WlrLayershell.keyboardFocus: wifiPasswordDialogVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     color: "transparent"
     onVisibleChanged: {
-        if (visible)
-            passwordInput.forceActiveFocus();
-
+        if (visible) {
+            passwordInput.enabled = true;
+            Qt.callLater(function() {
+                passwordInput.forceActiveFocus();
+            });
+        } else {
+            passwordInput.enabled = false;
+        }
     }
 
     anchors {
@@ -40,6 +45,7 @@ PanelWindow {
         MouseArea {
             anchors.fill: parent
             onClicked: {
+                passwordInput.enabled = false; // Disable before hiding to prevent Wayland warnings
                 wifiPasswordDialogVisible = false;
                 wifiPasswordInput = "";
             }
@@ -102,6 +108,7 @@ PanelWindow {
                     iconColor: Theme.surfaceText
                     hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
                     onClicked: {
+                        passwordInput.enabled = false; // Disable before hiding to prevent Wayland warnings
                         wifiPasswordDialogVisible = false;
                         wifiPasswordInput = "";
                     }
@@ -118,18 +125,19 @@ PanelWindow {
                 border.color: passwordInput.activeFocus ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
                 border.width: passwordInput.activeFocus ? 2 : 1
 
-                TextInput {
+                DankTextField {
                     id: passwordInput
 
                     anchors.fill: parent
-                    anchors.margins: Theme.spacingM
                     font.pixelSize: Theme.fontSizeMedium
-                    color: Theme.surfaceText
+                    textColor: Theme.surfaceText
                     echoMode: showPasswordCheckbox.checked ? TextInput.Normal : TextInput.Password
-                    verticalAlignment: TextInput.AlignVCenter
-                    cursorVisible: activeFocus
-                    selectByMouse: true
-                    onTextChanged: {
+                    enabled: wifiPasswordDialogVisible
+                    placeholderText: "Enter password"
+                    backgroundColor: "transparent"
+                    normalBorderColor: "transparent"
+                    focusedBorderColor: "transparent"
+                    onTextEdited: {
                         wifiPasswordInput = text;
                     }
                     onAccepted: {
@@ -141,23 +149,6 @@ PanelWindow {
 
                     }
 
-                    Text {
-                        anchors.fill: parent
-                        text: "Enter password"
-                        font: parent.font
-                        color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
-                        verticalAlignment: Text.AlignVCenter
-                        visible: parent.text.length === 0
-                    }
-
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.IBeamCursor
-                    onClicked: {
-                        passwordInput.forceActiveFocus();
-                    }
                 }
 
             }
@@ -241,6 +232,7 @@ PanelWindow {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
+                                passwordInput.enabled = false; // Disable before hiding to prevent Wayland warnings
                                 wifiPasswordDialogVisible = false;
                                 wifiPasswordInput = "";
                             }

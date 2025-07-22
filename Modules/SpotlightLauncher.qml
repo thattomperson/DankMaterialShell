@@ -33,6 +33,7 @@ PanelWindow {
     function show() {
         console.log("SpotlightLauncher: show() called");
         spotlightOpen = true;
+        searchField.enabled = true;
         console.log("SpotlightLauncher: spotlightOpen set to", spotlightOpen);
         searchDebounceTimer.stop(); // Stop any pending search
         updateFilteredApps(); // Immediate update when showing
@@ -43,6 +44,7 @@ PanelWindow {
     }
 
     function hide() {
+        searchField.enabled = false; // Disable before hiding to prevent Wayland warnings
         spotlightOpen = false;
         searchDebounceTimer.stop(); // Stop any pending search
         searchField.text = "";
@@ -239,7 +241,6 @@ PanelWindow {
     }
 
     Connections {
-        target: AppSearchService
         function onReadyChanged() {
             if (AppSearchService.ready) {
                 var allCategories = AppSearchService.getAllCategories().filter((cat) => {
@@ -255,8 +256,9 @@ PanelWindow {
 
             }
         }
-    }
 
+        target: AppSearchService
+    }
 
     // Dimmed overlay background
     Rectangle {
@@ -426,92 +428,49 @@ PanelWindow {
                 width: parent.width
                 spacing: Theme.spacingM
 
-                Rectangle {
-                    id: searchContainer
+                DankTextField {
+                    id: searchField
 
                     width: parent.width - 80 - Theme.spacingM // Leave space for view toggle buttons
                     height: 56
-                    radius: Theme.cornerRadiusLarge
-                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.7)
-                    border.width: searchField.activeFocus ? 2 : 1
-                    border.color: searchField.activeFocus ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
-
-                    Row {
-                        anchors.fill: parent
-                        anchors.leftMargin: Theme.spacingL
-                        anchors.rightMargin: Theme.spacingL
-                        spacing: Theme.spacingM
-
-                        DankIcon {
-                            anchors.verticalCenter: parent.verticalCenter
-                            name: "search"
-                            size: Theme.iconSize
-                            color: searchField.activeFocus ? Theme.primary : Theme.surfaceVariantText
-                        }
-
-                        TextInput {
-                            id: searchField
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - parent.spacing - Theme.iconSize - 32
-                            height: parent.height - Theme.spacingS
-                            color: Theme.surfaceText
-                            font.pixelSize: Theme.fontSizeLarge
-                            verticalAlignment: Text.AlignVCenter
-                            focus: spotlightOpen
-                            selectByMouse: true
-                            onTextChanged: {
-                                searchDebounceTimer.restart();
-                            }
-                            Keys.onPressed: (event) => {
-                                if (event.key === Qt.Key_Escape) {
-                                    hide();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                                    launchSelected();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Down) {
-                                    selectNext();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Up) {
-                                    selectPrevious();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Right && viewMode === "grid") {
-                                    selectNextInRow();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Left && viewMode === "grid") {
-                                    selectPreviousInRow();
-                                    event.accepted = true;
-                                }
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.IBeamCursor
-                                acceptedButtons: Qt.NoButton
-                            }
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: "Search applications..."
-                                color: Theme.surfaceVariantText
-                                font.pixelSize: Theme.fontSizeLarge
-                                visible: searchField.text.length === 0 && !searchField.activeFocus
-                            }
-
-                        }
-
+                    cornerRadius: Theme.cornerRadiusLarge
+                    backgroundColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.7)
+                    normalBorderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+                    focusedBorderColor: Theme.primary
+                    leftIconName: "search"
+                    leftIconSize: Theme.iconSize
+                    leftIconColor: Theme.surfaceVariantText
+                    leftIconFocusedColor: Theme.primary
+                    showClearButton: true
+                    textColor: Theme.surfaceText
+                    font.pixelSize: Theme.fontSizeLarge
+                    focus: spotlightOpen
+                    enabled: spotlightOpen
+                    placeholderText: "Search applications..."
+                    onTextEdited: {
+                        searchDebounceTimer.restart();
                     }
-
-                    Behavior on border.color {
-                        ColorAnimation {
-                            duration: Theme.shortDuration
-                            easing.type: Theme.standardEasing
+                    Keys.onPressed: (event) => {
+                        if (event.key === Qt.Key_Escape) {
+                            hide();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                            launchSelected();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Down) {
+                            selectNext();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Up) {
+                            selectPrevious();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Right && viewMode === "grid") {
+                            selectNextInRow();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Left && viewMode === "grid") {
+                            selectPreviousInRow();
+                            event.accepted = true;
                         }
-
                     }
-
                 }
 
                 // View mode toggle buttons next to search bar
@@ -595,6 +554,7 @@ PanelWindow {
                 // List view
                 DankListView {
                     id: resultsList
+
                     anchors.fill: parent
                     visible: viewMode === "list"
                     model: filteredModel
@@ -613,6 +573,7 @@ PanelWindow {
                 // Grid view
                 DankGridView {
                     id: resultsGrid
+
                     anchors.fill: parent
                     visible: viewMode === "grid"
                     model: filteredModel

@@ -49,14 +49,17 @@ PanelWindow {
 
     function show() {
         clipboardHistory.isVisible = true;
-        searchField.focus = true;
+        searchField.enabled = true;
         refreshClipboard();
+        Qt.callLater(function() {
+            searchField.forceActiveFocus();
+        });
         console.log("ClipboardHistory: Opening and refreshing");
     }
 
     function hide() {
+        searchField.enabled = false; // Disable before hiding to prevent Wayland warnings
         clipboardHistory.isVisible = false;
-        searchField.focus = false;
         searchField.text = "";
         // Clean up temporary image files
         cleanupTempFiles();
@@ -244,71 +247,30 @@ PanelWindow {
             }
 
             // Search field
-            Rectangle {
+            DankTextField {
+                id: searchField
+
                 width: parent.width
                 height: 48
-                radius: activeTheme.cornerRadiusLarge
-                color: Qt.rgba(activeTheme.surfaceVariant.r, activeTheme.surfaceVariant.g, activeTheme.surfaceVariant.b, activeTheme.getContentBackgroundAlpha() * 0.4)
-                border.color: searchField.focus ? activeTheme.primary : Qt.rgba(activeTheme.outline.r, activeTheme.outline.g, activeTheme.outline.b, 0.08)
-                border.width: searchField.focus ? 2 : 1
-
-                Row {
-                    anchors.left: parent.left
-                    anchors.leftMargin: activeTheme.spacingL
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: activeTheme.spacingM
-
-                    DankIcon {
-                        name: "search"
-                        size: activeTheme.iconSize
-                        color: searchField.focus ? activeTheme.primary : Qt.rgba(activeTheme.surfaceText.r, activeTheme.surfaceText.g, activeTheme.surfaceText.b, 0.6)
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    TextInput {
-                        id: searchField
-
-                        width: parent.parent.width - 80
-                        height: parent.parent.height
-                        font.pixelSize: activeTheme.fontSizeLarge
-                        color: activeTheme.surfaceText
-                        verticalAlignment: TextInput.AlignVCenter
-                        selectByMouse: true
-                        enabled: clipboardHistory.isVisible
-                        onTextChanged: updateFilteredModel()
-                        Keys.onPressed: (event) => {
-                            if (event.key === Qt.Key_Escape)
-                                clipboardHistory.hide();
-
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.IBeamCursor
-                            acceptedButtons: Qt.NoButton
-                        }
-
-                        // Placeholder text
-                        Text {
-                            text: "Search clipboard entries..."
-                            font: searchField.font
-                            color: Qt.rgba(activeTheme.surfaceText.r, activeTheme.surfaceText.g, activeTheme.surfaceText.b, 0.6)
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: searchField.text.length === 0 && !searchField.focus
-                        }
-
-                    }
+                cornerRadius: activeTheme.cornerRadiusLarge
+                backgroundColor: Qt.rgba(activeTheme.surfaceVariant.r, activeTheme.surfaceVariant.g, activeTheme.surfaceVariant.b, activeTheme.getContentBackgroundAlpha() * 0.4)
+                normalBorderColor: Qt.rgba(activeTheme.outline.r, activeTheme.outline.g, activeTheme.outline.b, 0.08)
+                focusedBorderColor: activeTheme.primary
+                leftIconName: "search"
+                leftIconSize: activeTheme.iconSize
+                leftIconColor: Qt.rgba(activeTheme.surfaceText.r, activeTheme.surfaceText.g, activeTheme.surfaceText.b, 0.6)
+                leftIconFocusedColor: activeTheme.primary
+                showClearButton: true
+                font.pixelSize: activeTheme.fontSizeLarge
+                textColor: activeTheme.surfaceText
+                placeholderText: "Search clipboard entries..."
+                enabled: clipboardHistory.isVisible
+                onTextEdited: updateFilteredModel()
+                Keys.onPressed: (event) => {
+                    if (event.key === Qt.Key_Escape)
+                        clipboardHistory.hide();
 
                 }
-
-                Behavior on border.color {
-                    ColorAnimation {
-                        duration: activeTheme.shortDuration
-                    }
-
-                }
-
             }
 
         }

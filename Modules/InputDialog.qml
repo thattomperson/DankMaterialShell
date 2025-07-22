@@ -33,6 +33,7 @@ PanelWindow {
     }
 
     function hideDialog() {
+        textInput.enabled = false; // Disable before hiding to prevent Wayland warnings
         dialogVisible = false;
         inputValue = "";
     }
@@ -44,8 +45,13 @@ PanelWindow {
     color: "transparent"
     onVisibleChanged: {
         if (visible) {
-            textInput.forceActiveFocus();
-            textInput.text = inputValue;
+            textInput.enabled = true;
+            Qt.callLater(function() {
+                textInput.forceActiveFocus();
+                textInput.text = inputValue;
+            });
+        } else {
+            textInput.enabled = false;
         }
     }
 
@@ -64,6 +70,7 @@ PanelWindow {
         MouseArea {
             anchors.fill: parent
             onClicked: {
+                textInput.enabled = false; // Disable before hiding to prevent Wayland warnings
                 inputDialog.cancelled();
                 hideDialog();
             }
@@ -144,18 +151,19 @@ PanelWindow {
                 border.color: textInput.activeFocus ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
                 border.width: textInput.activeFocus ? 2 : 1
 
-                TextInput {
+                DankTextField {
                     id: textInput
 
                     anchors.fill: parent
-                    anchors.margins: Theme.spacingM
                     font.pixelSize: Theme.fontSizeMedium
-                    color: Theme.surfaceText
+                    textColor: Theme.surfaceText
                     echoMode: isPassword && !showPasswordCheckbox.checked ? TextInput.Password : TextInput.Normal
-                    verticalAlignment: TextInput.AlignVCenter
-                    cursorVisible: activeFocus
-                    selectByMouse: true
-                    onTextChanged: {
+                    enabled: dialogVisible
+                    placeholderText: inputPlaceholder
+                    backgroundColor: "transparent"
+                    normalBorderColor: "transparent"
+                    focusedBorderColor: "transparent"
+                    onTextEdited: {
                         inputValue = text;
                     }
                     onAccepted: {
@@ -168,23 +176,6 @@ PanelWindow {
 
                     }
 
-                    Text {
-                        anchors.fill: parent
-                        text: inputPlaceholder
-                        font: parent.font
-                        color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
-                        verticalAlignment: Text.AlignVCenter
-                        visible: parent.text.length === 0
-                    }
-
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.IBeamCursor
-                    onClicked: {
-                        textInput.forceActiveFocus();
-                    }
                 }
 
             }
@@ -269,6 +260,7 @@ PanelWindow {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
+                                textInput.enabled = false; // Disable before hiding to prevent Wayland warnings
                                 inputDialog.cancelled();
                                 hideDialog();
                             }

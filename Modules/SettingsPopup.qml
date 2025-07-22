@@ -385,34 +385,19 @@ PanelWindow {
                                             border.color: profileImageInput.activeFocus ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
                                             border.width: profileImageInput.activeFocus ? 2 : 1
 
-                                            TextInput {
+                                            DankTextField {
                                                 id: profileImageInput
 
                                                 anchors.fill: parent
-                                                anchors.margins: Theme.spacingM
-                                                verticalAlignment: TextInput.AlignVCenter
-                                                color: Theme.surfaceText
+                                                textColor: Theme.surfaceText
                                                 font.pixelSize: Theme.fontSizeMedium
                                                 text: Prefs.profileImage
-                                                selectByMouse: true
+                                                placeholderText: "Enter image path or URL..."
+                                                backgroundColor: "transparent"
+                                                normalBorderColor: "transparent"
+                                                focusedBorderColor: "transparent"
                                                 onEditingFinished: {
                                                     Prefs.setProfileImage(text);
-                                                }
-
-                                                // Placeholder text
-                                                Text {
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: "Enter image path or URL..."
-                                                    color: Qt.rgba(Theme.surfaceVariantText.r, Theme.surfaceVariantText.g, Theme.surfaceVariantText.b, 0.6)
-                                                    font.pixelSize: Theme.fontSizeMedium
-                                                    visible: profileImageInput.text.length === 0 && !profileImageInput.activeFocus
-                                                }
-
-                                                MouseArea {
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.IBeamCursor
-                                                    acceptedButtons: Qt.NoButton
                                                 }
 
                                             }
@@ -498,34 +483,19 @@ PanelWindow {
                                     border.color: weatherLocationInput.activeFocus ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
                                     border.width: weatherLocationInput.activeFocus ? 2 : 1
 
-                                    TextInput {
+                                    DankTextField {
                                         id: weatherLocationInput
 
                                         anchors.fill: parent
-                                        anchors.margins: Theme.spacingM
-                                        verticalAlignment: TextInput.AlignVCenter
-                                        color: Theme.surfaceText
+                                        textColor: Theme.surfaceText
                                         font.pixelSize: Theme.fontSizeMedium
                                         text: Prefs.weatherLocationOverride
-                                        selectByMouse: true
+                                        placeholderText: "Enter location..."
+                                        backgroundColor: "transparent"
+                                        normalBorderColor: "transparent"
+                                        focusedBorderColor: "transparent"
                                         onEditingFinished: {
                                             Prefs.setWeatherLocationOverride(text);
-                                        }
-
-                                        // Placeholder text
-                                        Text {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: "Enter location..."
-                                            color: Qt.rgba(Theme.surfaceVariantText.r, Theme.surfaceVariantText.g, Theme.surfaceVariantText.b, 0.6)
-                                            font.pixelSize: Theme.fontSizeMedium
-                                            visible: weatherLocationInput.text.length === 0 && !weatherLocationInput.activeFocus
-                                        }
-
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.IBeamCursor
-                                            acceptedButtons: Qt.NoButton
                                         }
 
                                     }

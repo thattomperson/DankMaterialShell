@@ -18,10 +18,12 @@ PanelWindow {
     // App management
     property var categories: AppSearchService.getAllCategories()
     property string selectedCategory: "All"
-    property var recentApps: Prefs.recentlyUsedApps.map(recentApp => {
+    property var recentApps: Prefs.recentlyUsedApps.map((recentApp) => {
         var app = AppSearchService.getAppByExec(recentApp.exec);
         return app && !app.noDisplay ? app : null;
-    }).filter(app => app !== null)
+    }).filter((app) => {
+        return app !== null;
+    })
     property var pinnedApps: ["firefox", "code", "terminal", "file-manager"]
     property bool showCategories: false
     property string viewMode: Prefs.appLauncherViewMode // "list" or "grid"
@@ -140,6 +142,7 @@ PanelWindow {
 
     function show() {
         launcher.isVisible = true;
+        searchField.enabled = true;
         searchDebounceTimer.stop(); // Stop any pending search
         updateFilteredModel();
         Qt.callLater(function() {
@@ -148,6 +151,7 @@ PanelWindow {
     }
 
     function hide() {
+        searchField.enabled = false; // Disable before hiding to prevent Wayland warnings
         launcher.isVisible = false;
         searchDebounceTimer.stop(); // Stop any pending search
         searchField.text = "";
@@ -220,8 +224,6 @@ PanelWindow {
         }
 
     }
-
-
 
     Component {
         id: iconComponent
@@ -424,117 +426,43 @@ PanelWindow {
                 }
 
                 // Enhanced search field
-                Rectangle {
-                    id: searchContainer
+                DankTextField {
+                    id: searchField
 
                     width: parent.width
                     height: 52
-                    radius: Theme.cornerRadiusLarge
-                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.7)
-                    border.width: searchField.activeFocus ? 2 : 1
-                    border.color: searchField.activeFocus ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
-
-                    Row {
-                        anchors.fill: parent
-                        anchors.leftMargin: Theme.spacingL
-                        anchors.rightMargin: Theme.spacingL
-                        spacing: Theme.spacingM
-
-                        DankIcon {
-                            anchors.verticalCenter: parent.verticalCenter
-                            name: "search"
-                            size: Theme.iconSize
-                            color: searchField.activeFocus ? Theme.primary : Theme.surfaceVariantText
-                        }
-
-                        TextInput {
-                            id: searchField
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - parent.spacing - Theme.iconSize - 32
-                            height: parent.height - Theme.spacingS
-                            color: Theme.surfaceText
-                            font.pixelSize: Theme.fontSizeLarge
-                            verticalAlignment: TextInput.AlignVCenter
-                            focus: launcher.isVisible
-                            selectByMouse: true
-                            activeFocusOnTab: true
-                            onTextChanged: {
-                                searchDebounceTimer.restart();
-                            }
-                            Keys.onPressed: function(event) {
-                                if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && filteredModel.count) {
-                                    var firstApp = filteredModel.get(0);
-                                    if (firstApp.desktopEntry) {
-                                        Prefs.addRecentApp(firstApp.desktopEntry);
-                                        firstApp.desktopEntry.execute();
-                                    } else {
-                                        launcher.launchApp(firstApp.exec);
-                                    }
-                                    launcher.hide();
-                                    event.accepted = true;
-                                } else if (event.key === Qt.Key_Escape) {
-                                    launcher.hide();
-                                    event.accepted = true;
-                                }
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.IBeamCursor
-                                acceptedButtons: Qt.NoButton
-                            }
-
-                            // Placeholder text
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: "Search applications..."
-                                color: Theme.surfaceVariantText
-                                font.pixelSize: Theme.fontSizeLarge
-                                visible: searchField.text.length === 0 && !searchField.activeFocus
-                            }
-
-                            // Clear button
-                            Rectangle {
-                                width: 24
-                                height: 24
-                                radius: 12
-                                color: clearSearchArea.containsMouse ? Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12) : "transparent"
-                                anchors.right: parent.right
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: searchField.text.length > 0
-
-                                DankIcon {
-                                    anchors.centerIn: parent
-                                    name: "close"
-                                    size: 16
-                                    color: clearSearchArea.containsMouse ? Theme.outline : Theme.surfaceVariantText
-                                }
-
-                                MouseArea {
-                                    id: clearSearchArea
-
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: searchField.text = ""
-                                }
-
-                            }
-
-                        }
-
+                    cornerRadius: Theme.cornerRadiusLarge
+                    backgroundColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.7)
+                    normalBorderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
+                    focusedBorderColor: Theme.primary
+                    leftIconName: "search"
+                    leftIconSize: Theme.iconSize
+                    leftIconColor: Theme.surfaceVariantText
+                    leftIconFocusedColor: Theme.primary
+                    showClearButton: true
+                    font.pixelSize: Theme.fontSizeLarge
+                    focus: launcher.isVisible
+                    enabled: launcher.isVisible
+                    placeholderText: "Search applications..."
+                    onTextEdited: {
+                        searchDebounceTimer.restart();
                     }
-
-                    Behavior on border.color {
-                        ColorAnimation {
-                            duration: Theme.shortDuration
-                            easing.type: Theme.standardEasing
+                    Keys.onPressed: function(event) {
+                        if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && filteredModel.count) {
+                            var firstApp = filteredModel.get(0);
+                            if (firstApp.desktopEntry) {
+                                Prefs.addRecentApp(firstApp.desktopEntry);
+                                firstApp.desktopEntry.execute();
+                            } else {
+                                launcher.launchApp(firstApp.exec);
+                            }
+                            launcher.hide();
+                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Escape) {
+                            launcher.hide();
+                            event.accepted = true;
                         }
-
                     }
-
                 }
 
                 // Category filter and view mode controls
@@ -656,6 +584,7 @@ PanelWindow {
                     // List view
                     DankListView {
                         id: appList
+
                         anchors.fill: parent
                         visible: viewMode === "list"
                         model: filteredModel
@@ -680,6 +609,7 @@ PanelWindow {
                     // Grid view
                     DankGridView {
                         id: appGrid
+
                         anchors.fill: parent
                         visible: viewMode === "grid"
                         model: filteredModel
@@ -820,7 +750,5 @@ PanelWindow {
         }
 
     }
-
-
 
 }
