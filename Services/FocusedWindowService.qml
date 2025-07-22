@@ -90,10 +90,22 @@ Singleton {
 
     Connections {
         function onFocusedWindowIdChanged() {
-            root.focusedWindowId = parseInt(NiriWorkspaceService.focusedWindowId) || -1;
-            updateFromNiriData();
+            const focusedWindowId = NiriWorkspaceService.focusedWindowId;
+            if (!focusedWindowId) {
+                clearFocusedWindow();
+                return;
+            }
+            
+            const focusedWindow = NiriWorkspaceService.windows.find(w => w.id == focusedWindowId);
+            if (focusedWindow) {
+                root.focusedAppId = focusedWindow.app_id || "";
+                root.focusedWindowTitle = focusedWindow.title || "";
+                root.focusedAppName = getDisplayName(focusedWindow.app_id || "");
+                root.focusedWindowId = parseInt(focusedWindow.id) || -1;
+            } else {
+                clearFocusedWindow();
+            }
         }
-
 
         function onWindowsChanged() {
             updateFromNiriData();
