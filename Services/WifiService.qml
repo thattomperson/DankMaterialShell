@@ -13,10 +13,19 @@ Singleton {
     property var wifiNetworks: []
     property var savedWifiNetworks: []
     property bool isScanning: false
-    property string connectionStatus: "" // "cosnnecting", "connected", "failed", ""
+    property string connectionStatus: "" // "connecting", "connected", "failed", "invalid_password", ""
     property string connectingSSID: ""
+    property string lastConnectionError: ""
+    property bool passwordDialogShouldReopen: false
     // Auto-refresh timer for when control center is open
     property bool autoRefreshEnabled: false
+    
+    signal networksUpdated()
+    
+    // Network info properties
+    property string networkInfoSSID: ""
+    property string networkInfoDetails: ""
+    property bool networkInfoLoading: false
 
     function scanWifi() {
         if (root.isScanning)
@@ -33,106 +42,48 @@ Singleton {
         console.log("Connecting to WiFi:", ssid);
         root.connectionStatus = "connecting";
         root.connectingSSID = ssid;
-        let connectProcess = Qt.createQmlObject(`
-            import Quickshell.Io
-            Process {
-                command: ["bash", "-c", "nmcli dev wifi connect \\"' + ssid + '\\" || nmcli connection up \\"' + ssid + '\\"; if [ $? -eq 0 ]; then nmcli connection modify \\"' + ssid + '\\" connection.autoconnect-priority 50; nmcli connection down \\"' + ssid + '\\"; nmcli connection up \\"' + ssid + '\\"; fi"]
-                running: true
-                onExited: (exitCode) => {
-                    console.log("WiFi connection result:", exitCode)
-                    if (exitCode === 0) {
-                        root.connectionStatus = "connected"
-                        console.log("Connected to WiFi successfully")
-                        // Set user preference to WiFi when manually connecting
-                        NetworkService.setNetworkPreference("wifi")
-                        // Force network status refresh after successful connection
-                        NetworkService.delayedRefreshNetworkStatus()
-                    } else {
-                        root.connectionStatus = "failed"
-                        console.log("WiFi connection failed")
-                    }
-                    scanWifi()
-
-                    statusResetTimer.start()
-                }
-
-                stderr: SplitParser {
-                    splitMarker: "\\n"
-                    onRead: (data) => {
-                        console.log("WiFi connection stderr:", data)
-                    }
-                }
-            }
-        `, root);
+        ToastService.showInfo("Connecting to " + ssid + "...");
+        wifiConnector.running = true;
     }
 
+    property string wifiPassword: ""
+    
     function connectToWifiWithPassword(ssid, password) {
         console.log("Connecting to WiFi with password:", ssid);
         root.connectionStatus = "connecting";
         root.connectingSSID = ssid;
-        let connectProcess = Qt.createQmlObject(`
-            import Quickshell.Io
-            Process {
-                command: ["bash", "-c", "nmcli dev wifi connect \\"' + ssid + '\\" password \\"' + password + '\\"; if [ $? -eq 0 ]; then nmcli connection modify \\"' + ssid + '\\" connection.autoconnect-priority 50; nmcli connection down \\"' + ssid + '\\"; nmcli connection up \\"' + ssid + '\\"; fi"]
-                running: true
-                onExited: (exitCode) => {
-                    console.log("WiFi connection with password result:", exitCode)
-                    if (exitCode === 0) {
-                        root.connectionStatus = "connected"
-                        console.log("Connected to WiFi with password successfully")
-                        // Set user preference to WiFi when manually connecting
-                        NetworkService.setNetworkPreference("wifi")
-                        // Force network status refresh after successful connection
-                        NetworkService.delayedRefreshNetworkStatus()
-                    } else {
-                        root.connectionStatus = "failed"
-                        console.log("WiFi connection with password failed")
-                    }
-                    scanWifi()
-
-                    statusResetTimer.start()
-                }
-
-                stderr: SplitParser {
-                    splitMarker: "\\n"
-                    onRead: (data) => {
-                        console.log("WiFi connection with password stderr:", data)
-                    }
-                }
-            }
-        `, root);
+        root.wifiPassword = password;
+        root.lastConnectionError = "";
+        root.passwordDialogShouldReopen = false;
+        ToastService.showInfo("Connecting to " + ssid + "...");
+        wifiPasswordConnector.running = true;
     }
 
+    function disconnectWifi() {
+        console.log("Disconnecting from current WiFi network");
+        wifiDisconnector.running = true;
+    }
+
+    property string forgetSSID: ""
+    
     function forgetWifiNetwork(ssid) {
         console.log("Forgetting WiFi network:", ssid);
-        let forgetProcess = Qt.createQmlObject(`
-            import Quickshell.Io
-            Process {
-                command: ["bash", "-c", "nmcli connection delete \\"' + ssid + '\\" || nmcli connection delete id \\"' + ssid + '\\""]
-                running: true
-                onExited: (exitCode) => {
-                    console.log("WiFi forget result:", exitCode)
-                    if (exitCode === 0) {
-                        console.log("Successfully forgot WiFi network:", "' + ssid + '")
-                    } else {
-                        console.log("Failed to forget WiFi network:", "' + ssid + '")
-                    }
-                    scanWifi()
-                }
+        root.forgetSSID = ssid;
+        wifiForget.running = true;
+    }
 
-                stderr: SplitParser {
-                    splitMarker: "\\n"
-                    onRead: (data) => {
-                        console.log("WiFi forget stderr:", data)
-                    }
-                }
-            }
-        `, root);
+    function fetchNetworkInfo(ssid) {
+        console.log("Fetching network info for:", ssid);
+        root.networkInfoSSID = ssid;
+        root.networkInfoLoading = true;
+        root.networkInfoDetails = "Loading network information...";
+        wifiInfoFetcher.running = true;
     }
 
     function updateCurrentWifiInfo() {
         currentWifiInfo.running = true;
     }
+
 
     Process {
         id: currentWifiInfo
@@ -245,6 +196,7 @@ Singleton {
 
     }
 
+
     Timer {
         id: fallbackTimer
 
@@ -271,6 +223,306 @@ Singleton {
         running: root.autoRefreshEnabled
         repeat: true
         onTriggered: root.scanWifi()
+    }
+
+    // WiFi Connection Process
+    Process {
+        id: wifiConnector
+        command: ["bash", "-c", "timeout 30 nmcli dev wifi connect \"" + root.connectingSSID + "\" || nmcli connection up \"" + root.connectingSSID + "\"; exit_code=$?; echo \"nmcli exit code: $exit_code\" >&2; if [ $exit_code -eq 0 ]; then nmcli connection modify \"" + root.connectingSSID + "\" connection.autoconnect-priority 50; sleep 2; if nmcli -t -f ACTIVE,SSID dev wifi | grep -q \"^yes:" + root.connectingSSID + "\"; then echo \"Connection verified\" >&2; exit 0; else echo \"Connection failed verification\" >&2; exit 4; fi; else exit $exit_code; fi"]
+        running: false
+        
+        stderr: StdioCollector {
+            onStreamFinished: {
+                console.log("WiFi connection debug output:", text.trim())
+            }
+        }
+        
+        onExited: (exitCode) => {
+            console.log("WiFi connection result:", exitCode)
+            if (exitCode === 0) {
+                root.connectionStatus = "connected"
+                root.passwordDialogShouldReopen = false
+                console.log("Connected to WiFi successfully")
+                ToastService.showInfo("Connected to " + root.connectingSSID)
+                NetworkService.setNetworkPreference("wifi")
+                NetworkService.delayedRefreshNetworkStatus()
+                
+                // Immediately update savedWifiNetworks to include the new connection
+                if (!root.savedWifiNetworks.some((saved) => saved.ssid === root.connectingSSID)) {
+                    let updatedSaved = [...root.savedWifiNetworks];
+                    updatedSaved.push({"ssid": root.connectingSSID, "saved": true});
+                    root.savedWifiNetworks = updatedSaved;
+                }
+                
+                // Update wifiNetworks to reflect the change
+                let updatedNetworks = [...root.wifiNetworks];
+                for (let i = 0; i < updatedNetworks.length; i++) {
+                    if (updatedNetworks[i].ssid === root.connectingSSID) {
+                        updatedNetworks[i].saved = true;
+                        updatedNetworks[i].connected = true;
+                        break;
+                    }
+                }
+                root.wifiNetworks = updatedNetworks;
+            } else if (exitCode === 4) {
+                // Connection failed - likely needs password for saved network
+                root.connectionStatus = "invalid_password"
+                root.passwordDialogShouldReopen = true
+                console.log("Saved network connection failed - password required")
+                ToastService.showError("Authentication failed for " + root.connectingSSID)
+            } else {
+                root.connectionStatus = "failed"
+                console.log("WiFi connection failed")
+                ToastService.showError("Failed to connect to " + root.connectingSSID)
+            }
+            scanWifi()
+            statusResetTimer.start()
+        }
+
+    }
+
+    // WiFi Connection with Password Process
+    Process {
+        id: wifiPasswordConnector
+        command: ["bash", "-c", "nmcli connection delete \"" + root.connectingSSID + "\" 2>/dev/null || true; timeout 30 nmcli dev wifi connect \"" + root.connectingSSID + "\" password \"" + root.wifiPassword + "\"; exit_code=$?; echo \"nmcli exit code: $exit_code\" >&2; if [ $exit_code -eq 0 ]; then nmcli connection modify \"" + root.connectingSSID + "\" connection.autoconnect-priority 50; sleep 2; if nmcli -t -f ACTIVE,SSID dev wifi | grep -q \"^yes:" + root.connectingSSID + "\"; then echo \"Connection verified\" >&2; exit 0; else echo \"Connection failed verification\" >&2; exit 4; fi; else exit $exit_code; fi"]
+        running: false
+        
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (text.trim()) {
+                    console.log("WiFi connection stdout:", text.trim())
+                }
+            }
+        }
+        
+        stderr: StdioCollector {
+            onStreamFinished: {
+                root.lastConnectionError = text.trim()
+                console.log("WiFi connection debug output:", text.trim())
+            }
+        }
+        
+        onExited: (exitCode) => {
+            console.log("WiFi connection with password result:", exitCode)
+            console.log("Error output:", root.lastConnectionError)
+            
+            if (exitCode === 0) {
+                root.connectionStatus = "connected"
+                root.passwordDialogShouldReopen = false
+                console.log("Connected to WiFi with password successfully")
+                ToastService.showInfo("Connected to " + root.connectingSSID)
+                NetworkService.setNetworkPreference("wifi")
+                NetworkService.delayedRefreshNetworkStatus()
+                
+                // Immediately update savedWifiNetworks to include the new connection
+                if (!root.savedWifiNetworks.some((saved) => saved.ssid === root.connectingSSID)) {
+                    let updatedSaved = [...root.savedWifiNetworks];
+                    updatedSaved.push({"ssid": root.connectingSSID, "saved": true});
+                    root.savedWifiNetworks = updatedSaved;
+                }
+                
+                // Update wifiNetworks to reflect the change
+                let updatedNetworks = [...root.wifiNetworks];
+                for (let i = 0; i < updatedNetworks.length; i++) {
+                    if (updatedNetworks[i].ssid === root.connectingSSID) {
+                        updatedNetworks[i].saved = true;
+                        updatedNetworks[i].connected = true;
+                        break;
+                    }
+                }
+                root.wifiNetworks = updatedNetworks;
+            } else if (exitCode === 4) {
+                // Connection activation failed - likely invalid credentials
+                if (root.lastConnectionError.includes("Secrets were required") || 
+                    root.lastConnectionError.includes("authentication") ||
+                    root.lastConnectionError.includes("AUTH_TIMED_OUT")) {
+                    root.connectionStatus = "invalid_password"
+                    root.passwordDialogShouldReopen = true
+                    console.log("Invalid password detected")
+                    ToastService.showError("Invalid password for " + root.connectingSSID)
+                } else {
+                    root.connectionStatus = "failed"
+                    console.log("Connection failed - not password related")
+                    ToastService.showError("Failed to connect to " + root.connectingSSID)
+                }
+            } else if (exitCode === 3 || exitCode === 124) {
+                root.connectionStatus = "failed"
+                console.log("Connection timed out")
+                ToastService.showError("Connection to " + root.connectingSSID + " timed out")
+            } else {
+                root.connectionStatus = "failed"
+                console.log("WiFi connection with password failed")
+                ToastService.showError("Failed to connect to " + root.connectingSSID)
+            }
+            root.wifiPassword = "" // Clear password
+            scanWifi()
+            statusResetTimer.start()
+        }
+
+    }
+
+    // WiFi Disconnect Process
+    Process {
+        id: wifiDisconnector
+        command: ["bash", "-c", "WIFI_DEV=$(nmcli -t -f DEVICE,TYPE device | grep wifi | cut -d: -f1 | head -1); [ -n \"$WIFI_DEV\" ] && nmcli device disconnect \"$WIFI_DEV\""]
+        running: false
+        
+        onExited: (exitCode) => {
+            console.log("WiFi disconnect result:", exitCode)
+            if (exitCode === 0) {
+                console.log("Successfully disconnected from WiFi")
+                ToastService.showInfo("Disconnected from WiFi")
+                root.currentWifiSSID = ""
+                root.connectionStatus = ""
+                NetworkService.refreshNetworkStatus()
+            } else {
+                console.log("Failed to disconnect from WiFi")
+                ToastService.showError("Failed to disconnect from WiFi")
+            }
+        }
+
+        stderr: SplitParser {
+            splitMarker: "\\n"
+            onRead: (data) => {
+                console.log("WiFi disconnect stderr:", data)
+            }
+        }
+    }
+
+    // WiFi Forget Network Process
+    Process {
+        id: wifiForget
+        command: ["bash", "-c", "nmcli connection delete \"" + root.forgetSSID + "\" || nmcli connection delete id \"" + root.forgetSSID + "\""]
+        running: false
+        
+        onExited: (exitCode) => {
+            console.log("WiFi forget result:", exitCode)
+            if (exitCode === 0) {
+                console.log("Successfully forgot WiFi network:", root.forgetSSID)
+                ToastService.showInfo("Forgot network \"" + root.forgetSSID + "\"")
+                
+                // If we forgot the currently connected network, clear connection status
+                if (root.forgetSSID === root.currentWifiSSID) {
+                    root.currentWifiSSID = "";
+                    root.connectionStatus = "";
+                    NetworkService.refreshNetworkStatus();
+                }
+                
+                // Update savedWifiNetworks to remove the forgotten network
+                root.savedWifiNetworks = root.savedWifiNetworks.filter((saved) => {
+                    return saved.ssid !== root.forgetSSID;
+                });
+                
+                // Update wifiNetworks - create new array with updated objects
+                let updatedNetworks = [];
+                for (let i = 0; i < root.wifiNetworks.length; i++) {
+                    let network = root.wifiNetworks[i];
+                    if (network.ssid === root.forgetSSID) {
+                        let updatedNetwork = Object.assign({}, network);
+                        updatedNetwork.saved = false;
+                        updatedNetwork.connected = false;
+                        updatedNetworks.push(updatedNetwork);
+                    } else {
+                        updatedNetworks.push(network);
+                    }
+                }
+                root.wifiNetworks = updatedNetworks;
+                root.networksUpdated();
+            } else {
+                console.log("Failed to forget WiFi network:", root.forgetSSID)
+                ToastService.showError("Failed to forget network \"" + root.forgetSSID + "\"")
+            }
+            root.forgetSSID = "" // Clear SSID
+        }
+
+        stderr: SplitParser {
+            splitMarker: "\\n"
+            onRead: (data) => {
+                console.log("WiFi forget stderr:", data)
+            }
+        }
+    }
+
+    // WiFi Network Info Fetcher Process - Using detailed nmcli output
+    Process {
+        id: wifiInfoFetcher
+        command: ["nmcli", "-t", "-f", "SSID,SIGNAL,SECURITY,FREQ,RATE,MODE,CHAN,WPA-FLAGS,RSN-FLAGS", "dev", "wifi", "list"]
+        running: false
+        
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let details = "";
+                if (text.trim()) {
+                    let lines = text.trim().split('\n');
+                    for (let line of lines) {
+                        let parts = line.split(':');
+                        if (parts.length >= 9 && parts[0] === root.networkInfoSSID) {
+                            let ssid = parts[0] || "Unknown";
+                            let signal = parts[1] || "0";
+                            let security = parts[2] || "Open";
+                            let freq = parts[3] || "Unknown";
+                            let rate = parts[4] || "Unknown";
+                            let mode = parts[5] || "Unknown";
+                            let channel = parts[6] || "Unknown";
+                            let wpaFlags = parts[7] || "";
+                            let rsnFlags = parts[8] || "";
+                            
+                            // Determine band from frequency
+                            let band = "Unknown";
+                            let freqNum = parseInt(freq);
+                            if (freqNum >= 2400 && freqNum <= 2500) {
+                                band = "2.4 GHz";
+                            } else if (freqNum >= 5000 && freqNum <= 6000) {
+                                band = "5 GHz";
+                            } else if (freqNum >= 6000) {
+                                band = "6 GHz";
+                            }
+                            
+                            details = "Network Name: " + ssid + "\\n";
+                            details += "Signal Strength: " + signal + "%\\n";
+                            details += "Security: " + (security === "" ? "Open" : security) + "\\n";
+                            details += "Frequency: " + freq + " MHz\\n";
+                            details += "Band: " + band + "\\n";
+                            details += "Channel: " + channel + "\\n";
+                            details += "Mode: " + mode + "\\n";
+                            details += "Max Rate: " + rate + " Mbit/s\\n";
+                            
+                            if (wpaFlags !== "") {
+                                details += "WPA Flags: " + wpaFlags + "\\n";
+                            }
+                            if (rsnFlags !== "") {
+                                details += "RSN Flags: " + rsnFlags + "\\n";
+                            }
+                            
+                            break;
+                        }
+                    }
+                }
+                
+                if (details === "") {
+                    details = "Network information not found or network not available.";
+                }
+                
+                root.networkInfoDetails = details;
+                root.networkInfoLoading = false;
+                console.log("Network info fetched for:", root.networkInfoSSID);
+            }
+        }
+        
+        onExited: (exitCode) => {
+            root.networkInfoLoading = false;
+            if (exitCode !== 0) {
+                console.log("Failed to fetch network info, exit code:", exitCode);
+                root.networkInfoDetails = "Failed to fetch network information";
+            }
+        }
+        
+        stderr: SplitParser {
+            splitMarker: "\\n"
+            onRead: (data) => {
+                console.log("WiFi info stderr:", data);
+            }
+        }
     }
 
 }

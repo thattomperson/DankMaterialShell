@@ -75,35 +75,7 @@ Singleton {
                             console.log("User prefers Ethernet, setting status to ethernet")
                         } else {
                             // Auto mode - check which interface has the default route
-                            let priorityChecker = Qt.createQmlObject(`
-                                import Quickshell.Io
-                                Process {
-                                    command: ["sh", "-c", "ip route show default | head -1 | cut -d\\\" \\\" -f5"]
-                                    running: true
-                                    stdout: SplitParser {
-                                        splitMarker: "\\n"
-                                        onRead: function(data) {
-                                            let defaultInterface = data.trim()
-                                            console.log("Default route interface:", defaultInterface)
-                                            // Check if the interface is wifi or ethernet
-                                            if (defaultInterface.startsWith("wl") || defaultInterface.includes("wifi")) {
-                                                root.networkStatus = "wifi"
-                                                console.log("WiFi interface has default route, setting status to wifi")
-                                                // Trigger WiFi SSID update
-                                                if (root.wifiEnabled) {
-                                                    WifiService.updateCurrentWifiInfo()
-                                                }
-                                            } else if (defaultInterface.startsWith("en") || defaultInterface.includes("eth")) {
-                                                root.networkStatus = "ethernet"
-                                                console.log("Ethernet interface has default route, setting status to ethernet")
-                                            } else {
-                                                root.networkStatus = "disconnected"
-                                                console.log("Unknown interface type:", defaultInterface)
-                                            }
-                                        }
-                                    }
-                                }
-                            `, root)
+                            defaultRouteChecker.running = true
                         }
                     } else if (hasWifi) {
                         root.networkStatus = "wifi"
@@ -158,6 +130,35 @@ Singleton {
     }
     
     Process {
+        id: defaultRouteChecker
+        command: ["sh", "-c", "ip route show default | head -1 | cut -d' ' -f5"]
+        running: false
+        
+        stdout: SplitParser {
+            splitMarker: "\n"
+            onRead: function(data) {
+                let defaultInterface = data.trim()
+                console.log("Default route interface:", defaultInterface)
+                // Check if the interface is wifi or ethernet
+                if (defaultInterface.startsWith("wl") || defaultInterface.includes("wifi")) {
+                    root.networkStatus = "wifi"
+                    console.log("WiFi interface has default route, setting status to wifi")
+                    // Trigger WiFi SSID update
+                    if (root.wifiEnabled) {
+                        WifiService.updateCurrentWifiInfo()
+                    }
+                } else if (defaultInterface.startsWith("en") || defaultInterface.includes("eth")) {
+                    root.networkStatus = "ethernet"
+                    console.log("Ethernet interface has default route, setting status to ethernet")
+                } else {
+                    root.networkStatus = "disconnected"
+                    console.log("Unknown interface type:", defaultInterface)
+                }
+            }
+        }
+    }
+    
+    Process {
         id: wifiRadioChecker
         command: ["nmcli", "radio", "wifi"]
         running: false
@@ -186,29 +187,30 @@ Singleton {
                     console.log("Ethernet IP:", root.ethernetIP)
                     
                     // Get the ethernet interface name
-                    let ethInterfaceProcess = Qt.createQmlObject(`
-                        import Quickshell.Io
-                        Process {
-                            command: ["sh", "-c", "nmcli -t -f DEVICE,TYPE device | grep ethernet | grep connected | cut -d: -f1 | head -1"]
-                            running: true
-                            stdout: SplitParser {
-                                splitMarker: "\\n"
-                                onRead: function(interfaceData) {
-                                    if (interfaceData.trim()) {
-                                        root.ethernetInterface = interfaceData.trim()
-                                        console.log("Ethernet Interface:", root.ethernetInterface)
-                                        
-                                        // Ethernet interface detected - status will be determined by route checking
-                                        console.log("Ethernet interface detected:", root.ethernetInterface)
-                                    }
-                                }
-                            }
-                        }
-                    `, root)
+                    ethernetInterfaceChecker.running = true
                 } else {
                     console.log("No ethernet IP found")
                     root.ethernetIP = ""
                     root.ethernetInterface = ""
+                }
+            }
+        }
+    }
+    
+    Process {
+        id: ethernetInterfaceChecker
+        command: ["sh", "-c", "nmcli -t -f DEVICE,TYPE device | grep ethernet | grep connected | cut -d: -f1 | head -1"]
+        running: false
+        
+        stdout: SplitParser {
+            splitMarker: "\n"
+            onRead: function(interfaceData) {
+                if (interfaceData.trim()) {
+                    root.ethernetInterface = interfaceData.trim()
+                    console.log("Ethernet Interface:", root.ethernetInterface)
+                    
+                    // Ethernet interface detected - status will be determined by route checking
+                    console.log("Ethernet interface detected:", root.ethernetInterface)
                 }
             }
         }
@@ -236,76 +238,154 @@ Singleton {
         }
     }
     
+    // Static processes for network operations
+    Process {
+        id: ethernetDisconnector
+        command: ["sh", "-c", "nmcli device disconnect $(nmcli -t -f DEVICE,TYPE device | grep ethernet | cut -d: -f1 | head -1)"]
+        running: false
+        
+        onExited: function(exitCode) {
+            console.log("Ethernet disconnect result:", exitCode)
+            delayedRefreshNetworkStatus()
+        }
+        
+        stderr: SplitParser {
+            splitMarker: "\n"
+            onRead: function(data) {
+                console.log("Ethernet disconnect stderr:", data)
+            }
+        }
+    }
+    
+    Process {
+        id: ethernetConnector
+        command: ["sh", "-c", "ETH_DEV=$(nmcli -t -f DEVICE,TYPE device | grep ethernet | cut -d: -f1 | head -1); if [ -n \"$ETH_DEV\" ]; then nmcli device connect \"$ETH_DEV\"; ETH_CONN=$(nmcli -t -f NAME,DEVICE connection show --active | grep \"$ETH_DEV\" | cut -d: -f1); if [ -n \"$ETH_CONN\" ]; then nmcli connection modify \"$ETH_CONN\" connection.autoconnect-priority 100; nmcli connection down \"$ETH_CONN\"; nmcli connection up \"$ETH_CONN\"; fi; else echo \"No ethernet device found\"; exit 1; fi"]
+        running: false
+        
+        onExited: function(exitCode) {
+            console.log("Ethernet connect result:", exitCode)
+            if (exitCode === 0) {
+                console.log("Ethernet connected successfully with higher priority")
+            } else {
+                console.log("Ethernet connection failed")
+            }
+            delayedRefreshNetworkStatus()
+        }
+        
+        stderr: SplitParser {
+            splitMarker: "\n"
+            onRead: function(data) {
+                console.log("Ethernet connect stderr:", data)
+            }
+        }
+    }
+    
+    Process {
+        id: wifiDeviceConnector
+        command: ["sh", "-c", "WIFI_DEV=$(nmcli -t -f DEVICE,TYPE device | grep wifi | cut -d: -f1 | head -1); if [ -n \"$WIFI_DEV\" ]; then nmcli device connect \"$WIFI_DEV\"; else echo \"No WiFi device found\"; exit 1; fi"]
+        running: false
+        
+        onExited: function(exitCode) {
+            console.log("WiFi device connect result:", exitCode)
+            delayedRefreshNetworkStatus()
+        }
+        
+        stderr: SplitParser {
+            splitMarker: "\n"
+            onRead: function(data) {
+                console.log("WiFi device connect stderr:", data)
+            }
+        }
+    }
+    
+    Process {
+        id: wifiSwitcher
+        command: ["sh", "-c", "ETH_DEV=$(nmcli -t -f DEVICE,TYPE device | grep ethernet | cut -d: -f1 | head -1); WIFI_DEV=$(nmcli -t -f DEVICE,TYPE device | grep wifi | cut -d: -f1 | head -1); [ -n \"$ETH_DEV\" ] && nmcli device disconnect \"$ETH_DEV\" 2>/dev/null; [ -n \"$WIFI_DEV\" ] && nmcli device connect \"$WIFI_DEV\" 2>/dev/null || true"]
+        running: false
+        
+        onExited: function(exitCode) {
+            console.log("Switch to wifi result:", exitCode)
+            delayedRefreshNetworkStatus()
+        }
+        
+        stderr: SplitParser {
+            splitMarker: "\n"
+            onRead: function(data) {
+                console.log("Switch to wifi stderr:", data)
+            }
+        }
+    }
+    
+    Process {
+        id: ethernetSwitcher
+        command: ["sh", "-c", "WIFI_DEV=$(nmcli -t -f DEVICE,TYPE device | grep wifi | cut -d: -f1 | head -1); ETH_DEV=$(nmcli -t -f DEVICE,TYPE device | grep ethernet | cut -d: -f1 | head -1); [ -n \"$WIFI_DEV\" ] && nmcli device disconnect \"$WIFI_DEV\" 2>/dev/null; [ -n \"$ETH_DEV\" ] && nmcli device connect \"$ETH_DEV\" 2>/dev/null || true"]
+        running: false
+        
+        onExited: function(exitCode) {
+            console.log("Switch to ethernet result:", exitCode)
+            delayedRefreshNetworkStatus()
+        }
+        
+        stderr: SplitParser {
+            splitMarker: "\n"
+            onRead: function(data) {
+                console.log("Switch to ethernet stderr:", data)
+            }
+        }
+    }
+    
+    Process {
+        id: wifiRadioToggler
+        command: ["nmcli", "radio", "wifi", root.wifiEnabled ? "off" : "on"]
+        running: false
+        
+        onExited: {
+            root.wifiToggling = false
+            networkStatusChecker.running = true
+        }
+    }
+    
+    Process {
+        id: wifiPriorityChanger
+        command: ["sh", "-c", "nmcli -t -f NAME,TYPE connection show | grep 802-11-wireless | cut -d: -f1 | while read conn; do nmcli connection modify \"$conn\" ipv4.route-metric 50; done; nmcli -t -f NAME,TYPE connection show | grep 802-3-ethernet | cut -d: -f1 | while read conn; do nmcli connection modify \"$conn\" ipv4.route-metric 200; done; nmcli -t -f NAME,TYPE connection show --active | grep -E \"(802-11-wireless|802-3-ethernet)\" | cut -d: -f1 | while read conn; do nmcli connection down \"$conn\" && nmcli connection up \"$conn\"; done"]
+        running: false
+        
+        onExited: function(exitCode) {
+            console.log("WiFi route metric set to 50, ethernet to 200, connections restarted, exit code:", exitCode)
+            // Don't reset changingPreference here - let network status check handle it
+            delayedRefreshNetworkStatus()
+        }
+    }
+    
+    Process {
+        id: ethernetPriorityChanger
+        command: ["sh", "-c", "nmcli -t -f NAME,TYPE connection show | grep 802-3-ethernet | cut -d: -f1 | while read conn; do nmcli connection modify \"$conn\" ipv4.route-metric 50; done; nmcli -t -f NAME,TYPE connection show | grep 802-11-wireless | cut -d: -f1 | while read conn; do nmcli connection modify \"$conn\" ipv4.route-metric 200; done; nmcli -t -f NAME,TYPE connection show --active | grep -E \"(802-11-wireless|802-3-ethernet)\" | cut -d: -f1 | while read conn; do nmcli connection down \"$conn\" && nmcli connection up \"$conn\"; done"]
+        running: false
+        
+        onExited: function(exitCode) {
+            console.log("Ethernet route metric set to 50, WiFi to 200, connections restarted, exit code:", exitCode)
+            // Don't reset changingPreference here - let network status check handle it
+            delayedRefreshNetworkStatus()
+        }
+    }
+    
     function toggleNetworkConnection(type) {
         if (type === "ethernet") {
             // Toggle ethernet connection
             if (root.networkStatus === "ethernet") {
                 // Disconnect ethernet
                 console.log("Disconnecting ethernet...")
-                let disconnectProcess = Qt.createQmlObject(`
-                    import Quickshell.Io
-                    Process {
-                        command: ["sh", "-c", "nmcli device disconnect $(nmcli -t -f DEVICE,TYPE device | grep ethernet | cut -d: -f1 | head -1)"]
-                        running: true
-                        onExited: function(exitCode) {
-                            console.log("Ethernet disconnect result:", exitCode)
-                            delayedRefreshNetworkStatus()
-                        }
-                        stderr: SplitParser {
-                            splitMarker: "\\n"
-                            onRead: function(data) {
-                                console.log("Ethernet disconnect stderr:", data)
-                            }
-                        }
-                    }
-                `, root)
+                ethernetDisconnector.running = true
             } else {
                 // Connect ethernet and set higher priority
                 console.log("Connecting ethernet...")
-                let connectProcess = Qt.createQmlObject(`
-                    import Quickshell.Io
-                    Process {
-                        command: ["sh", "-c", "ETH_DEV=$(nmcli -t -f DEVICE,TYPE device | grep ethernet | cut -d: -f1 | head -1); if [ -n \\"$ETH_DEV\\" ]; then nmcli device connect \\"$ETH_DEV\\"; ETH_CONN=$(nmcli -t -f NAME,DEVICE connection show --active | grep \\"$ETH_DEV\\" | cut -d: -f1); if [ -n \\"$ETH_CONN\\" ]; then nmcli connection modify \\"$ETH_CONN\\" connection.autoconnect-priority 100; nmcli connection down \\"$ETH_CONN\\"; nmcli connection up \\"$ETH_CONN\\"; fi; else echo \\"No ethernet device found\\"; exit 1; fi"]
-                        running: true
-                        onExited: function(exitCode) {
-                            console.log("Ethernet connect result:", exitCode)
-                            if (exitCode === 0) {
-                                console.log("Ethernet connected successfully with higher priority")
-                            } else {
-                                console.log("Ethernet connection failed")
-                            }
-                            delayedRefreshNetworkStatus()
-                        }
-                        stderr: SplitParser {
-                            splitMarker: "\\n"
-                            onRead: function(data) {
-                                console.log("Ethernet connect stderr:", data)
-                            }
-                        }
-                    }
-                `, root)
+                ethernetConnector.running = true
             }
         } else if (type === "wifi") {
             // Connect to WiFi if disconnected
             if (root.networkStatus !== "wifi" && root.wifiEnabled) {
                 console.log("Connecting to WiFi device...")
-                let connectProcess = Qt.createQmlObject(`
-                    import Quickshell.Io
-                    Process {
-                        command: ["sh", "-c", "WIFI_DEV=$(nmcli -t -f DEVICE,TYPE device | grep wifi | cut -d: -f1 | head -1); if [ -n \\"$WIFI_DEV\\" ]; then nmcli device connect \\"$WIFI_DEV\\"; else echo \\"No WiFi device found\\"; exit 1; fi"]
-                        running: true
-                        onExited: function(exitCode) {
-                            console.log("WiFi device connect result:", exitCode)
-                            delayedRefreshNetworkStatus()
-                        }
-                        stderr: SplitParser {
-                            splitMarker: "\\n"
-                            onRead: function(data) {
-                                console.log("WiFi device connect stderr:", data)
-                            }
-                        }
-                    }
-                `, root)
+                wifiDeviceConnector.running = true
             }
         }
     }
@@ -313,63 +393,21 @@ Singleton {
     function switchToWifi() {
         console.log("Switching to WiFi")
         // Disconnect ethernet first, then try to connect to a known WiFi network
-        let switchProcess = Qt.createQmlObject(`
-            import Quickshell.Io
-            Process {
-                command: ["sh", "-c", "ETH_DEV=$(nmcli -t -f DEVICE,TYPE device | grep ethernet | cut -d: -f1 | head -1); WIFI_DEV=$(nmcli -t -f DEVICE,TYPE device | grep wifi | cut -d: -f1 | head -1); [ -n \\"$ETH_DEV\\" ] && nmcli device disconnect \\"$ETH_DEV\\" 2>/dev/null; [ -n \\"$WIFI_DEV\\" ] && nmcli device connect \\"$WIFI_DEV\\" 2>/dev/null || true"]
-                running: true
-                onExited: function(exitCode) {
-                    console.log("Switch to wifi result:", exitCode)
-                    delayedRefreshNetworkStatus()
-                }
-                stderr: SplitParser {
-                    splitMarker: "\\n"
-                    onRead: function(data) {
-                        console.log("Switch to wifi stderr:", data)
-                    }
-                }
-            }
-        `, root)
+        wifiSwitcher.running = true
     }
     
     function switchToEthernet() {
         console.log("Switching to Ethernet")
         // Disconnect WiFi first, then connect ethernet
-        let switchProcess = Qt.createQmlObject(`
-            import Quickshell.Io
-            Process {
-                command: ["sh", "-c", "WIFI_DEV=$(nmcli -t -f DEVICE,TYPE device | grep wifi | cut -d: -f1 | head -1); ETH_DEV=$(nmcli -t -f DEVICE,TYPE device | grep ethernet | cut -d: -f1 | head -1); [ -n \\"$WIFI_DEV\\" ] && nmcli device disconnect \\"$WIFI_DEV\\" 2>/dev/null; [ -n \\"$ETH_DEV\\" ] && nmcli device connect \\"$ETH_DEV\\" 2>/dev/null || true"]
-                running: true
-                onExited: function(exitCode) {
-                    console.log("Switch to ethernet result:", exitCode)
-                    delayedRefreshNetworkStatus()
-                }
-                stderr: SplitParser {
-                    splitMarker: "\\n"
-                    onRead: function(data) {
-                        console.log("Switch to ethernet stderr:", data)
-                    }
-                }
-            }
-        `, root)
+        ethernetSwitcher.running = true
     }
     
     function toggleWifiRadio() {
         if (root.wifiToggling) return
         
         root.wifiToggling = true
-        let action = root.wifiEnabled ? "off" : "on"
-        let toggleProcess = Qt.createQmlObject(`
-            import Quickshell.Io
-            Process {
-                command: ["nmcli", "radio", "wifi", "${action}"]
-                running: true
-                onExited: {
-                    root.wifiToggling = false
-                    networkStatusChecker.running = true
-                }
-            }
-        `, root)
+        wifiRadioToggler.command = ["nmcli", "radio", "wifi", root.wifiEnabled ? "off" : "on"]
+        wifiRadioToggler.running = true
     }
     
     function refreshNetworkStatus() {
@@ -391,32 +429,10 @@ Singleton {
         
         if (preference === "wifi") {
             // Set WiFi to low route metric (high priority), ethernet to high route metric (low priority)
-            let wifiPriorityProcess = Qt.createQmlObject(`
-                import Quickshell.Io
-                Process {
-                    command: ["sh", "-c", "nmcli -t -f NAME,TYPE connection show | grep 802-11-wireless | cut -d: -f1 | while read conn; do nmcli connection modify \\\\\\"$conn\\\\\\" ipv4.route-metric 50; done; nmcli -t -f NAME,TYPE connection show | grep 802-3-ethernet | cut -d: -f1 | while read conn; do nmcli connection modify \\\\\\"$conn\\\\\\" ipv4.route-metric 200; done; nmcli -t -f NAME,TYPE connection show --active | grep -E \\\\\\"(802-11-wireless|802-3-ethernet)\\\\\\" | cut -d: -f1 | while read conn; do nmcli connection down \\\\\\"$conn\\\\\\" && nmcli connection up \\\\\\"$conn\\\\\\"; done"]
-                    running: true
-                    onExited: function(exitCode) {
-                        console.log("WiFi route metric set to 50, ethernet to 200, connections restarted, exit code:", exitCode)
-                        // Don't reset changingPreference here - let network status check handle it
-                        delayedRefreshNetworkStatus()
-                    }
-                }
-            `, root)
+            wifiPriorityChanger.running = true
         } else if (preference === "ethernet") {
             // Set ethernet to low route metric (high priority), WiFi to high route metric (low priority)
-            let ethernetPriorityProcess = Qt.createQmlObject(`
-                import Quickshell.Io
-                Process {
-                    command: ["sh", "-c", "nmcli -t -f NAME,TYPE connection show | grep 802-3-ethernet | cut -d: -f1 | while read conn; do nmcli connection modify \\\\\\"$conn\\\\\\" ipv4.route-metric 50; done; nmcli -t -f NAME,TYPE connection show | grep 802-11-wireless | cut -d: -f1 | while read conn; do nmcli connection modify \\\\\\"$conn\\\\\\" ipv4.route-metric 200; done; nmcli -t -f NAME,TYPE connection show --active | grep -E \\\\\\"(802-11-wireless|802-3-ethernet)\\\\\\" | cut -d: -f1 | while read conn; do nmcli connection down \\\\\\"$conn\\\\\\" && nmcli connection up \\\\\\"$conn\\\\\\"; done"]
-                    running: true
-                    onExited: function(exitCode) {
-                        console.log("Ethernet route metric set to 50, WiFi to 200, connections restarted, exit code:", exitCode)
-                        // Don't reset changingPreference here - let network status check handle it
-                        delayedRefreshNetworkStatus()
-                    }
-                }
-            `, root)
+            ethernetPriorityChanger.running = true
         }
     }
     

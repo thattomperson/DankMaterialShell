@@ -43,6 +43,10 @@ ShellRoot {
         id: wifiPasswordDialog
     }
 
+    NetworkInfoDialog {
+        id: networkInfoDialog
+    }
+
     InputDialog {
         id: globalInputDialog
     }

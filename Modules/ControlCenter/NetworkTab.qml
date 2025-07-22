@@ -28,14 +28,25 @@ Item {
             return [];
         }
         
-        var networks = [...WifiService.wifiNetworks];
+        // Explicitly reference both arrays to ensure reactivity
+        var allNetworks = WifiService.wifiNetworks;
+        var savedNetworks = WifiService.savedWifiNetworks;
+        var currentSSID = WifiService.currentWifiSSID;
+        var signalStrength = WifiService.wifiSignalStrength;
+        var refreshTrigger = forceRefresh; // Force recalculation
         
-        // Update connected status and signal strength based on current WiFi SSID
+        var networks = [...allNetworks];
+        
+        // Update connected status, saved status and signal strength based on current state
         networks.forEach(function(network) {
-            network.connected = (network.ssid === WifiService.currentWifiSSID);
+            network.connected = (network.ssid === currentSSID);
+            // Update saved status based on savedWifiNetworks
+            network.saved = savedNetworks.some(function(saved) {
+                return saved.ssid === network.ssid;
+            });
             // Use current connection's signal strength for connected network
-            if (network.connected && WifiService.wifiSignalStrength) {
-                network.signalStrength = WifiService.wifiSignalStrength;
+            if (network.connected && signalStrength) {
+                network.signalStrength = signalStrength;
             }
         });
         
@@ -51,6 +62,16 @@ Item {
         return networks;
     }
 
+    // Force refresh of sortedWifiNetworks when networks are updated
+    property int forceRefresh: 0
+    
+    Connections {
+        target: WifiService
+        function onNetworksUpdated() {
+            forceRefresh++;
+        }
+    }
+    
     // Auto-enable WiFi auto-refresh when network tab is visible
     Component.onCompleted: {
         WifiService.autoRefreshEnabled = true;
@@ -166,6 +187,29 @@ Item {
 
                         }
 
+                        // Loading spinner for preference changes
+                        DankIcon {
+                            id: wifiLoadingSpinner
+                            name: "refresh"
+                            size: Theme.iconSize - 4
+                            color: Theme.primary
+                            anchors.right: wifiToggle.left
+                            anchors.rightMargin: Theme.spacingS
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: NetworkService.changingPreference && NetworkService.targetPreference === "wifi"
+                            z: 10
+                            
+                            RotationAnimation {
+                                target: wifiLoadingSpinner
+                                property: "rotation"
+                                running: wifiLoadingSpinner.visible
+                                from: 0
+                                to: 360
+                                duration: 1000
+                                loops: Animation.Infinite
+                            }
+                        }
+
                         // WiFi toggle switch
                         DankToggle {
                             id: wifiToggle
@@ -219,111 +263,6 @@ Item {
                         }
                     }
 
-                    // Connection status indicator
-                    Rectangle {
-                        width: parent.width
-                        height: 32
-                        radius: Theme.cornerRadius
-                        color: {
-                            if (WifiService.connectionStatus === "connecting")
-                                return Qt.rgba(Theme.warning.r, Theme.warning.g, Theme.warning.b, 0.12);
-                            else if (WifiService.connectionStatus === "failed")
-                                return Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12);
-                            else if (WifiService.connectionStatus === "connected")
-                                return Qt.rgba(Theme.success.r, Theme.success.g, Theme.success.b, 0.12);
-                            return "transparent";
-                        }
-                        border.color: {
-                            if (WifiService.connectionStatus === "connecting")
-                                return Qt.rgba(Theme.warning.r, Theme.warning.g, Theme.warning.b, 0.3);
-                            else if (WifiService.connectionStatus === "failed")
-                                return Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.3);
-                            else if (WifiService.connectionStatus === "connected")
-                                return Qt.rgba(Theme.success.r, Theme.success.g, Theme.success.b, 0.3);
-                            return "transparent";
-                        }
-                        border.width: WifiService.connectionStatus !== "" ? 1 : 0
-                        visible: WifiService.connectionStatus !== ""
-
-                        Row {
-                            anchors.centerIn: parent
-                            spacing: Theme.spacingS
-
-                            DankIcon {
-                                id: connectionIcon
-
-                                name: {
-                                    if (WifiService.connectionStatus === "connecting")
-                                        return "sync";
-                                    if (WifiService.connectionStatus === "failed")
-                                        return "error";
-                                    if (WifiService.connectionStatus === "connected")
-                                        return "check_circle";
-                                    return "";
-                                }
-                                size: Theme.iconSize - 6
-                                color: {
-                                    if (WifiService.connectionStatus === "connecting")
-                                        return Theme.warning;
-                                    if (WifiService.connectionStatus === "failed")
-                                        return Theme.error;
-                                    if (WifiService.connectionStatus === "connected")
-                                        return Theme.success;
-                                    return Theme.surfaceText;
-                                }
-                                anchors.verticalCenter: parent.verticalCenter
-                                rotation: WifiService.connectionStatus === "connecting" ? connectionIcon.rotation : 0
-
-                                RotationAnimation {
-                                    target: connectionIcon
-                                    property: "rotation"
-                                    running: WifiService.connectionStatus === "connecting"
-                                    from: 0
-                                    to: 360
-                                    duration: 1000
-                                    loops: Animation.Infinite
-                                }
-
-                                Behavior on rotation {
-                                    RotationAnimation {
-                                        duration: 200
-                                        easing.type: Easing.OutQuad
-                                    }
-                                }
-                            }
-
-                            Text {
-                                text: {
-                                    if (WifiService.connectionStatus === "connecting")
-                                        return "Connecting to " + WifiService.connectingSSID;
-                                    if (WifiService.connectionStatus === "failed")
-                                        return "Failed to connect to " + WifiService.connectingSSID;
-                                    if (WifiService.connectionStatus === "connected")
-                                        return "Connected to " + WifiService.connectingSSID;
-                                    return "";
-                                }
-                                font.pixelSize: Theme.fontSizeSmall
-                                color: {
-                                    if (WifiService.connectionStatus === "connecting")
-                                        return Theme.warning;
-                                    if (WifiService.connectionStatus === "failed")
-                                        return Theme.error;
-                                    if (WifiService.connectionStatus === "connected")
-                                        return Theme.success;
-                                    return Theme.surfaceText;
-                                }
-                                anchors.verticalCenter: parent.verticalCenter
-                                elide: Text.ElideRight
-                            }
-                        }
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: Theme.shortDuration
-                                easing.type: Theme.standardEasing
-                            }
-                        }
-                    }
 
 
                 }
@@ -407,6 +346,29 @@ Item {
                                 color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                                 leftPadding: Theme.iconSize + Theme.spacingM
                                 elide: Text.ElideRight
+                            }
+                        }
+
+                        // Loading spinner for preference changes
+                        DankIcon {
+                            id: ethernetLoadingSpinner
+                            name: "refresh"
+                            size: Theme.iconSize - 4
+                            color: Theme.primary
+                            anchors.right: ethernetToggle.left
+                            anchors.rightMargin: Theme.spacingS
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: NetworkService.changingPreference && NetworkService.targetPreference === "ethernet"
+                            z: 10
+                            
+                            RotationAnimation {
+                                target: ethernetLoadingSpinner
+                                property: "rotation"
+                                running: ethernetLoadingSpinner.visible
+                                from: 0
+                                to: 360
+                                duration: 1000
+                                loops: Animation.Infinite
                             }
                         }
 
@@ -604,6 +566,7 @@ Item {
                         Item {
                             anchors.fill: parent
                             anchors.margins: Theme.spacingXS
+                            anchors.rightMargin: Theme.spacingM  // Extra right margin for scrollbar
 
                             // Signal strength icon
                             DankIcon {
@@ -638,12 +601,22 @@ Item {
                                     text: {
                                         if (modelData.connected)
                                             return "Connected";
+                                        if (WifiService.connectionStatus === "connecting" && WifiService.connectingSSID === modelData.ssid)
+                                            return "Connecting...";
+                                        if (WifiService.connectionStatus === "invalid_password" && WifiService.connectingSSID === modelData.ssid)
+                                            return "Invalid password";
                                         if (modelData.saved)
                                             return "Saved" + (modelData.secured ? " • Secured" : " • Open");
                                         return modelData.secured ? "Secured" : "Open";
                                     }
                                     font.pixelSize: Theme.fontSizeSmall - 1
-                                    color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                                    color: {
+                                        if (WifiService.connectionStatus === "connecting" && WifiService.connectingSSID === modelData.ssid)
+                                            return Theme.primary;
+                                        if (WifiService.connectionStatus === "invalid_password" && WifiService.connectingSSID === modelData.ssid)
+                                            return Theme.error;
+                                        return Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7);
+                                    }
                                     elide: Text.ElideRight
                                 }
                             }
@@ -664,28 +637,37 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
 
-                                // Forget button (for saved networks)
+                                // Context menu button
                                 Rectangle {
+                                    id: wifiMenuButton
                                     width: 24
                                     height: 24
                                     radius: 12
-                                    color: forgetArea2.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
-                                    visible: modelData.saved || modelData.connected
+                                    color: wifiMenuButtonArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
 
                                     DankIcon {
-                                        anchors.centerIn: parent
-                                        name: "delete"
+                                        name: "more_vert"
                                         size: Theme.iconSize - 8
-                                        color: forgetArea2.containsMouse ? Theme.error : Theme.surfaceText
+                                        color: Theme.surfaceText
+                                        opacity: 0.6
+                                        anchors.centerIn: parent
                                     }
 
                                     MouseArea {
-                                        id: forgetArea2
+                                        id: wifiMenuButtonArea
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            WifiService.forgetWifiNetwork(modelData.ssid);
+                                            wifiContextMenuWindow.networkData = modelData;
+                                            let localPos = wifiMenuButtonArea.mapToItem(networkTab, wifiMenuButtonArea.width / 2, wifiMenuButtonArea.height);
+                                            wifiContextMenuWindow.show(localPos.x, localPos.y);
+                                        }
+                                    }
+
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: Theme.shortDuration
                                         }
                                     }
                                 }
@@ -695,6 +677,7 @@ Item {
                         MouseArea {
                             id: networkArea2
                             anchors.fill: parent
+                            anchors.rightMargin: 32  // Exclude menu button area
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
@@ -839,6 +822,281 @@ Item {
             wifiMonitorTimer.start();
         } else {
             wifiMonitorTimer.stop();
+        }
+    }
+
+    // WiFi Context Menu Window
+    Rectangle {
+        id: wifiContextMenuWindow
+
+        property var networkData: null
+        property bool menuVisible: false
+
+        function show(x, y) {
+            const menuWidth = 160;
+            const menuHeight = wifiMenuColumn.implicitHeight + Theme.spacingS * 2;
+            let finalX = x - menuWidth / 2;
+            let finalY = y;
+            finalX = Math.max(0, Math.min(finalX, networkTab.width - menuWidth));
+            finalY = Math.max(0, Math.min(finalY, networkTab.height - menuHeight));
+            wifiContextMenuWindow.x = finalX;
+            wifiContextMenuWindow.y = finalY;
+            wifiContextMenuWindow.visible = true;
+            wifiContextMenuWindow.menuVisible = true;
+        }
+
+        function hide() {
+            wifiContextMenuWindow.menuVisible = false;
+            Qt.callLater(() => {
+                wifiContextMenuWindow.visible = false;
+            });
+        }
+
+        visible: false
+        width: 160
+        height: wifiMenuColumn.implicitHeight + Theme.spacingS * 2
+        radius: Theme.cornerRadiusLarge
+        color: Theme.popupBackground()
+        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+        border.width: 1
+        z: 1000
+        opacity: menuVisible ? 1 : 0
+        scale: menuVisible ? 1 : 0.85
+
+        // Drop shadow
+        Rectangle {
+            anchors.fill: parent
+            anchors.topMargin: 4
+            anchors.leftMargin: 2
+            anchors.rightMargin: -2
+            anchors.bottomMargin: -4
+            radius: parent.radius
+            color: Qt.rgba(0, 0, 0, 0.15)
+            z: parent.z - 1
+        }
+
+        Column {
+            id: wifiMenuColumn
+            anchors.fill: parent
+            anchors.margins: Theme.spacingS
+            spacing: 1
+
+            // Connect/Disconnect option
+            Rectangle {
+                width: parent.width
+                height: 32
+                radius: Theme.cornerRadiusSmall
+                color: connectWifiArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+
+                Row {
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.spacingS
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: Theme.spacingS
+
+                    DankIcon {
+                        name: wifiContextMenuWindow.networkData && wifiContextMenuWindow.networkData.connected ? "wifi_off" : "wifi"
+                        size: Theme.iconSize - 2
+                        color: Theme.surfaceText
+                        opacity: 0.7
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                        text: wifiContextMenuWindow.networkData && wifiContextMenuWindow.networkData.connected ? "Disconnect" : "Connect"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceText
+                        font.weight: Font.Normal
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                MouseArea {
+                    id: connectWifiArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (wifiContextMenuWindow.networkData) {
+                            if (wifiContextMenuWindow.networkData.connected) {
+                                // Disconnect from current network
+                                WifiService.disconnectWifi();
+                            } else {
+                                // Connect to selected network
+                                if (wifiContextMenuWindow.networkData.saved) {
+                                    WifiService.connectToWifi(wifiContextMenuWindow.networkData.ssid);
+                                } else if (wifiContextMenuWindow.networkData.secured) {
+                                    // Show password dialog for secured networks
+                                    wifiPasswordDialog.wifiPasswordSSID = wifiContextMenuWindow.networkData.ssid;
+                                    wifiPasswordDialog.wifiPasswordInput = "";
+                                    wifiPasswordDialog.wifiPasswordDialogVisible = true;
+                                } else {
+                                    WifiService.connectToWifi(wifiContextMenuWindow.networkData.ssid);
+                                }
+                            }
+                        }
+                        wifiContextMenuWindow.hide();
+                    }
+                }
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Theme.shortDuration
+                        easing.type: Theme.standardEasing
+                    }
+                }
+            }
+
+            // Separator
+            Rectangle {
+                width: parent.width - Theme.spacingS * 2
+                height: 5
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "transparent"
+
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: parent.width
+                    height: 1
+                    color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                }
+            }
+
+            // Forget Network option (only for saved networks)
+            Rectangle {
+                width: parent.width
+                height: 32
+                radius: Theme.cornerRadiusSmall
+                color: forgetWifiArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
+                visible: wifiContextMenuWindow.networkData && (wifiContextMenuWindow.networkData.saved || wifiContextMenuWindow.networkData.connected)
+
+                Row {
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.spacingS
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: Theme.spacingS
+
+                    DankIcon {
+                        name: "delete"
+                        size: Theme.iconSize - 2
+                        color: forgetWifiArea.containsMouse ? Theme.error : Theme.surfaceText
+                        opacity: 0.7
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                        text: "Forget Network"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: forgetWifiArea.containsMouse ? Theme.error : Theme.surfaceText
+                        font.weight: Font.Normal
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                MouseArea {
+                    id: forgetWifiArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (wifiContextMenuWindow.networkData) {
+                            WifiService.forgetWifiNetwork(wifiContextMenuWindow.networkData.ssid);
+                        }
+                        wifiContextMenuWindow.hide();
+                    }
+                }
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Theme.shortDuration
+                        easing.type: Theme.standardEasing
+                    }
+                }
+            }
+
+            // Network Info option
+            Rectangle {
+                width: parent.width
+                height: 32
+                radius: Theme.cornerRadiusSmall
+                color: infoWifiArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+
+                Row {
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.spacingS
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: Theme.spacingS
+
+                    DankIcon {
+                        name: "info"
+                        size: Theme.iconSize - 2
+                        color: Theme.surfaceText
+                        opacity: 0.7
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                        text: "Network Info"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceText
+                        font.weight: Font.Normal
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                MouseArea {
+                    id: infoWifiArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (wifiContextMenuWindow.networkData) {
+                            networkInfoDialog.showNetworkInfo(wifiContextMenuWindow.networkData.ssid, wifiContextMenuWindow.networkData);
+                        }
+                        wifiContextMenuWindow.hide();
+                    }
+                }
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Theme.shortDuration
+                        easing.type: Theme.standardEasing
+                    }
+                }
+            }
+        }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.mediumDuration
+                easing.type: Theme.emphasizedEasing
+            }
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Theme.mediumDuration
+                easing.type: Theme.emphasizedEasing
+            }
+        }
+    }
+
+    // Background MouseArea to close the context menu
+    MouseArea {
+        anchors.fill: parent
+        visible: wifiContextMenuWindow.visible
+        onClicked: {
+            wifiContextMenuWindow.hide();
+        }
+
+        MouseArea {
+            x: wifiContextMenuWindow.x
+            y: wifiContextMenuWindow.y
+            width: wifiContextMenuWindow.width
+            height: wifiContextMenuWindow.height
+            onClicked: {
+                // Prevent clicks on menu from closing it
+            }
         }
     }
 }

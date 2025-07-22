@@ -72,6 +72,14 @@ PanelWindow {
         opacity: wifiPasswordDialogVisible ? 1 : 0
         scale: wifiPasswordDialogVisible ? 1 : 0.9
 
+        // Prevent clicks inside dialog from closing it
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                // Do nothing - prevent propagation to background
+            }
+        }
+
         Column {
             anchors.fill: parent
             anchors.margins: Theme.spacingL
@@ -131,6 +139,7 @@ PanelWindow {
                     anchors.fill: parent
                     font.pixelSize: Theme.fontSizeMedium
                     textColor: Theme.surfaceText
+                    text: wifiPasswordInput
                     echoMode: showPasswordCheckbox.checked ? TextInput.Normal : TextInput.Password
                     enabled: wifiPasswordDialogVisible
                     placeholderText: "Enter password"
@@ -142,6 +151,10 @@ PanelWindow {
                     }
                     onAccepted: {
                         WifiService.connectToWifiWithPassword(wifiPasswordSSID, wifiPasswordInput);
+                        // Close dialog immediately after pressing Enter
+                        passwordInput.enabled = false;
+                        wifiPasswordDialogVisible = false;
+                        wifiPasswordInput = "";
                     }
                     Component.onCompleted: {
                         if (wifiPasswordDialogVisible)
@@ -267,6 +280,10 @@ PanelWindow {
                             enabled: parent.enabled
                             onClicked: {
                                 WifiService.connectToWifiWithPassword(wifiPasswordSSID, wifiPasswordInput);
+                                // Close dialog immediately after clicking connect
+                                passwordInput.enabled = false;
+                                wifiPasswordDialogVisible = false;
+                                wifiPasswordInput = "";
                             }
                         }
 
@@ -302,6 +319,19 @@ PanelWindow {
 
         }
 
+    }
+
+    // Auto-reopen dialog on invalid password
+    Connections {
+        target: WifiService
+        function onPasswordDialogShouldReopenChanged() {
+            if (WifiService.passwordDialogShouldReopen && WifiService.connectingSSID !== "") {
+                wifiPasswordSSID = WifiService.connectingSSID;
+                wifiPasswordInput = "";
+                wifiPasswordDialogVisible = true;
+                WifiService.passwordDialogShouldReopen = false;
+            }
+        }
     }
 
 }

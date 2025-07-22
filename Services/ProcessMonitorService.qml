@@ -119,25 +119,13 @@ Singleton {
         updateProcessList();
     }
 
+    property int killPid: 0
+    
     function killProcess(pid) {
         if (pid > 0) {
-            const killCmd = ["bash", "-c", "kill " + pid];
-            const killProcess = Qt.createQmlObject(`
-                import QtQuick
-                import Quickshell.Io
-                Process {
-                    command: ${JSON.stringify(killCmd)}
-                    running: true
-                    onExited: (exitCode) => {
-                        if (exitCode === 0) {
-                            console.log("Process killed successfully:", ${pid})
-                        } else {
-                            console.warn("Failed to kill process:", ${pid}, "exit code:", exitCode)
-                        }
-                        destroy()
-                    }
-                }
-            `, root);
+            root.killPid = pid
+            processKiller.command = ["bash", "-c", "kill " + pid]
+            processKiller.running = true
         }
     }
 
@@ -436,6 +424,21 @@ Singleton {
             }
         }
 
+    }
+
+    Process {
+        id: processKiller
+        command: ["bash", "-c", "kill " + root.killPid]
+        running: false
+        
+        onExited: (exitCode) => {
+            if (exitCode === 0) {
+                console.log("Process killed successfully:", root.killPid)
+            } else {
+                console.warn("Failed to kill process:", root.killPid, "exit code:", exitCode)
+            }
+            root.killPid = 0
+        }
     }
 
     Timer {
