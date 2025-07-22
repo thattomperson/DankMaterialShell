@@ -16,6 +16,7 @@ ShellRoot {
         delegate: TopBar {
             modelData: item
         }
+
     }
 
     // Global popup windows
@@ -41,6 +42,10 @@ ShellRoot {
 
     WifiPasswordDialog {
         id: wifiPasswordDialog
+    }
+
+    BluetoothPairingDialog {
+        id: bluetoothPairingDialog
     }
 
     NetworkInfoDialog {
@@ -95,4 +100,5 @@ ShellRoot {
     Toast {
         id: toastWidget
     }
+
 }
