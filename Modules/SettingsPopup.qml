@@ -204,28 +204,13 @@ PanelWindow {
                 }
 
                 // Close button
-                Rectangle {
-                    width: 32
-                    height: 32
-                    radius: Theme.cornerRadius
-                    color: closeButton.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
-
-                    DankIcon {
-                        name: "close"
-                        size: Theme.iconSize - 4
-                        color: Theme.surfaceText
-                        anchors.centerIn: parent
-                    }
-
-                    MouseArea {
-                        id: closeButton
-
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: settingsPopup.settingsVisible = false
-                    }
-
+                DankActionButton {
+                    circular: false
+                    iconName: "close"
+                    iconSize: Theme.iconSize - 4
+                    iconColor: Theme.surfaceText
+                    hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                    onClicked: settingsPopup.settingsVisible = false
                 }
 
             }

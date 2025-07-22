@@ -605,59 +605,33 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
 
                         // List view button
-                        Rectangle {
-                            width: 36
-                            height: 36
-                            radius: Theme.cornerRadius
-                            color: viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : listViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
-
-                            DankIcon {
-                                anchors.centerIn: parent
-                                name: "view_list"
-                                size: 20
-                                color: viewMode === "list" ? Theme.primary : Theme.surfaceText
+                        DankActionButton {
+                            buttonSize: 36
+                            circular: false
+                            iconName: "view_list"
+                            iconSize: 20
+                            iconColor: viewMode === "list" ? Theme.primary : Theme.surfaceText
+                            hoverColor: viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
+                            backgroundColor: viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+                            onClicked: {
+                                viewMode = "list";
+                                Prefs.setAppLauncherViewMode("list");
                             }
-
-                            MouseArea {
-                                id: listViewArea
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    viewMode = "list";
-                                    Prefs.setAppLauncherViewMode("list");
-                                }
-                            }
-
                         }
 
                         // Grid view button
-                        Rectangle {
-                            width: 36
-                            height: 36
-                            radius: Theme.cornerRadius
-                            color: viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : gridViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
-
-                            DankIcon {
-                                anchors.centerIn: parent
-                                name: "grid_view"
-                                size: 20
-                                color: viewMode === "grid" ? Theme.primary : Theme.surfaceText
+                        DankActionButton {
+                            buttonSize: 36
+                            circular: false
+                            iconName: "grid_view"
+                            iconSize: 20
+                            iconColor: viewMode === "grid" ? Theme.primary : Theme.surfaceText
+                            hoverColor: viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
+                            backgroundColor: viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+                            onClicked: {
+                                viewMode = "grid";
+                                Prefs.setAppLauncherViewMode("grid");
                             }
-
-                            MouseArea {
-                                id: gridViewArea
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    viewMode = "grid";
-                                    Prefs.setAppLauncherViewMode("grid");
-                                }
-                            }
-
                         }
 
                     }

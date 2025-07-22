@@ -78,30 +78,14 @@ PanelWindow {
                     height: 1
                 }
 
-                Rectangle {
-                    width: 32
-                    height: 32
-                    radius: 16
-                    color: closePowerArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
-
-                    DankIcon {
-                        anchors.centerIn: parent
-                        name: "close"
-                        size: Theme.iconSize - 4
-                        color: closePowerArea.containsMouse ? Theme.error : Theme.surfaceText
+                DankActionButton {
+                    iconName: "close"
+                    iconSize: Theme.iconSize - 4
+                    iconColor: Theme.surfaceText
+                    hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                    onClicked: {
+                        powerMenuVisible = false;
                     }
-
-                    MouseArea {
-                        id: closePowerArea
-
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            powerMenuVisible = false;
-                        }
-                    }
-
                 }
 
             }

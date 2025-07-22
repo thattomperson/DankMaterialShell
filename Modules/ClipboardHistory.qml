@@ -217,70 +217,26 @@ PanelWindow {
                     spacing: activeTheme.spacingS
 
                     // Clear all button
-                    Rectangle {
-                        id: clearAllButton
-
-                        width: 40
-                        height: 32
-                        radius: activeTheme.cornerRadius
-                        color: clearArea.containsMouse ? Qt.rgba(activeTheme.primary.r, activeTheme.primary.g, activeTheme.primary.b, 0.12) : "transparent"
+                    DankActionButton {
+                        buttonSize: 40
+                        circular: false
+                        iconName: "delete_sweep"
+                        iconSize: activeTheme.iconSize
+                        iconColor: activeTheme.surfaceText
+                        hoverColor: Qt.rgba(activeTheme.primary.r, activeTheme.primary.g, activeTheme.primary.b, 0.12)
                         visible: clipboardHistory.totalCount > 0
-
-                        DankIcon {
-                            anchors.centerIn: parent
-                            name: "delete_sweep"
-                            size: activeTheme.iconSize
-                            color: clearArea.containsMouse ? activeTheme.primary : activeTheme.surfaceText
-                        }
-
-                        MouseArea {
-                            id: clearArea
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: showClearConfirmation = true
-                        }
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: activeTheme.shortDuration
-                            }
-
-                        }
-
+                        onClicked: showClearConfirmation = true
                     }
 
                     // Close button
-                    Rectangle {
-                        width: 40
-                        height: 32
-                        radius: activeTheme.cornerRadius
-                        color: closeArea.containsMouse ? Qt.rgba(activeTheme.primary.r, activeTheme.primary.g, activeTheme.primary.b, 0.12) : "transparent"
-
-                        DankIcon {
-                            anchors.centerIn: parent
-                            name: "close"
-                            size: activeTheme.iconSize
-                            color: closeArea.containsMouse ? activeTheme.primary : activeTheme.surfaceText
-                        }
-
-                        MouseArea {
-                            id: closeArea
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: clipboardHistory.hide()
-                        }
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: activeTheme.shortDuration
-                            }
-
-                        }
-
+                    DankActionButton {
+                        buttonSize: 40
+                        circular: false
+                        iconName: "close"
+                        iconSize: activeTheme.iconSize
+                        iconColor: activeTheme.surfaceText
+                        hoverColor: Qt.rgba(activeTheme.primary.r, activeTheme.primary.g, activeTheme.primary.b, 0.12)
+                        onClicked: clipboardHistory.hide()
                     }
 
                 }

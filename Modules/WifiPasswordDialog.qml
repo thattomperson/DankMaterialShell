@@ -96,31 +96,15 @@ PanelWindow {
 
                 }
 
-                Rectangle {
-                    width: 32
-                    height: 32
-                    radius: 16
-                    color: closeDialogArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
-
-                    DankIcon {
-                        anchors.centerIn: parent
-                        name: "close"
-                        size: Theme.iconSize - 4
-                        color: closeDialogArea.containsMouse ? Theme.error : Theme.surfaceText
+                DankActionButton {
+                    iconName: "close"
+                    iconSize: Theme.iconSize - 4
+                    iconColor: Theme.surfaceText
+                    hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                    onClicked: {
+                        wifiPasswordDialogVisible = false;
+                        wifiPasswordInput = "";
                     }
-
-                    MouseArea {
-                        id: closeDialogArea
-
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            wifiPasswordDialogVisible = false;
-                            wifiPasswordInput = "";
-                        }
-                    }
-
                 }
 
             }

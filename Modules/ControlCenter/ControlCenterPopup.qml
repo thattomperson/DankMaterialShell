@@ -352,39 +352,17 @@ PanelWindow {
                         }
 
                         // Settings Button
-                        Rectangle {
-                            width: 40
-                            height: 40
-                            radius: 20
-                            color: settingsButton.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
-
-                            DankIcon {
-                                anchors.centerIn: parent
-                                name: "settings"
-                                size: Theme.iconSize - 2
-                                color: Theme.surfaceText
+                        DankActionButton {
+                            buttonSize: 40
+                            iconName: "settings"
+                            iconSize: Theme.iconSize - 2
+                            iconColor: Theme.surfaceText
+                            backgroundColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
+                            hoverColor: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
+                            onClicked: {
+                                controlCenterVisible = false;
+                                settingsPopup.settingsVisible = true;
                             }
-
-                            MouseArea {
-                                id: settingsButton
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    controlCenterVisible = false;
-                                    settingsPopup.settingsVisible = true;
-                                }
-                            }
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.shortDuration
-                                    easing.type: Theme.standardEasing
-                                }
-
-                            }
-
                         }
 
                     }
