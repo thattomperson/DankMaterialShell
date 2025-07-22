@@ -21,13 +21,8 @@ Singleton {
             return;
         }
 
-        const focusedWindowId = NiriWorkspaceService.focusedWindowId;
-        if (!focusedWindowId) {
-            clearFocusedWindow();
-            return;
-        }
+        let focusedWindow = NiriWorkspaceService.windows.find(w => w.is_focused);
 
-        const focusedWindow = NiriWorkspaceService.windows.find(w => w.id === focusedWindowId);
         if (focusedWindow) {
             root.focusedAppId = focusedWindow.app_id || "";
             root.focusedWindowTitle = focusedWindow.title || "";
@@ -38,10 +33,6 @@ Singleton {
         }
     }
 
-    function loadInitialFocusedWindow() {
-        if (root.niriAvailable)
-            focusedWindowQuery.running = true;
-    }
 
     function clearFocusedWindow() {
         root.focusedAppId = "";
@@ -89,11 +80,11 @@ Singleton {
         NiriWorkspaceService.onNiriAvailableChanged.connect(() => {
             root.niriAvailable = NiriWorkspaceService.niriAvailable;
             if (root.niriAvailable)
-                loadInitialFocusedWindow();
+                updateFromNiriData();
 
         });
         if (root.niriAvailable)
-            loadInitialFocusedWindow();
+            updateFromNiriData();
 
     }
 
@@ -103,9 +94,6 @@ Singleton {
             updateFromNiriData();
         }
 
-        function onFocusedWindowTitleChanged() {
-            root.focusedWindowTitle = NiriWorkspaceService.focusedWindowTitle;
-        }
 
         function onWindowsChanged() {
             updateFromNiriData();
@@ -123,31 +111,6 @@ Singleton {
         target: NiriWorkspaceService
     }
 
-    Process {
-        id: focusedWindowQuery
-
-        command: ["niri", "msg", "--json", "focused-window"]
-        running: false
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (text && text.trim()) {
-                    try {
-                        const windowData = JSON.parse(text.trim());
-                        root.focusedAppId = windowData.app_id || "";
-                        root.focusedWindowTitle = windowData.title || "";
-                        root.focusedAppName = getDisplayName(windowData.app_id || "");
-                        root.focusedWindowId = parseInt(windowData.id) || -1;
-                    } catch (e) {
-                        console.warn("FocusedWindowService: Failed to parse focused window data:", e);
-                        clearFocusedWindow();
-                    }
-                } else {
-                    clearFocusedWindow();
-                }
-            }
-        }
-    }
 
 
 }
