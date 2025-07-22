@@ -131,7 +131,7 @@ PanelWindow {
     visible: isVisible
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: isVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
     anchors {
         top: true
@@ -274,6 +274,7 @@ PanelWindow {
                         color: activeTheme.surfaceText
                         verticalAlignment: TextInput.AlignVCenter
                         selectByMouse: true
+                        enabled: clipboardHistory.isVisible
                         onTextChanged: updateFilteredModel()
                         Keys.onPressed: (event) => {
                             if (event.key === Qt.Key_Escape)
@@ -347,6 +348,8 @@ PanelWindow {
                     MouseArea {
                         anchors.fill: parent
                         acceptedButtons: Qt.NoButton
+                        propagateComposedEvents: true
+                        z: -1
                         onWheel: (wheel) => {
                             var delta = wheel.angleDelta.y;
                             var steps = delta / 120; // Standard wheel step
