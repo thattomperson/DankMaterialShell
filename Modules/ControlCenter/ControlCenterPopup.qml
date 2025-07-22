@@ -18,6 +18,8 @@ PanelWindow {
     property string currentTab: "network" // "network", "audio", "bluetooth", "display"
     property bool powerOptionsExpanded: false
 
+    signal powerActionRequested(string action, string title, string message)
+
     visible: controlCenterVisible
     onVisibleChanged: {
         // Enable/disable WiFi auto-refresh based on control center visibility
@@ -293,6 +295,7 @@ PanelWindow {
                                 clip: true
 
                                 DankIcon {
+                                    id: dankIcon
                                     anchors.centerIn: parent
                                     name: root.powerOptionsExpanded ? "expand_less" : "power_settings_new"
                                     size: Theme.iconSize - 2
@@ -302,7 +305,7 @@ PanelWindow {
                                         // Smooth icon transition
                                         SequentialAnimation {
                                             NumberAnimation {
-                                                target: parent
+                                                target: dankIcon
                                                 property: "opacity"
                                                 to: 0
                                                 duration: Theme.shortDuration / 2
@@ -310,12 +313,12 @@ PanelWindow {
                                             }
 
                                             PropertyAction {
-                                                target: parent
+                                                target: dankIcon
                                                 property: "name"
                                             }
 
                                             NumberAnimation {
-                                                target: parent
+                                                target: dankIcon
                                                 property: "opacity"
                                                 to: 1
                                                 duration: Theme.shortDuration / 2
@@ -421,12 +424,7 @@ PanelWindow {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     root.powerOptionsExpanded = false;
-                                    if (typeof root !== "undefined" && root.powerConfirmDialog) {
-                                        root.powerConfirmDialog.powerConfirmAction = "logout";
-                                        root.powerConfirmDialog.powerConfirmTitle = "Logout";
-                                        root.powerConfirmDialog.powerConfirmMessage = "Are you sure you want to logout?";
-                                        root.powerConfirmDialog.powerConfirmVisible = true;
-                                    }
+                                    root.powerActionRequested("logout", "Logout", "Are you sure you want to logout?");
                                 }
                             }
 
@@ -476,12 +474,57 @@ PanelWindow {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     root.powerOptionsExpanded = false;
-                                    if (typeof root !== "undefined" && root.powerConfirmDialog) {
-                                        root.powerConfirmDialog.powerConfirmAction = "reboot";
-                                        root.powerConfirmDialog.powerConfirmTitle = "Restart";
-                                        root.powerConfirmDialog.powerConfirmMessage = "Are you sure you want to restart?";
-                                        root.powerConfirmDialog.powerConfirmVisible = true;
-                                    }
+                                    root.powerActionRequested("reboot", "Restart", "Are you sure you want to restart?");
+                                }
+                            }
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Theme.shortDuration
+                                    easing.type: Theme.standardEasing
+                                }
+
+                            }
+
+                        }
+
+                        // Suspend
+                        Rectangle {
+                            width: 100
+                            height: 34
+                            radius: Theme.cornerRadius
+                            color: suspendButton.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
+
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: Theme.spacingXS
+
+                                DankIcon {
+                                    name: "bedtime"
+                                    size: Theme.fontSizeSmall
+                                    color: suspendButton.containsMouse ? Theme.primary : Theme.surfaceText
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                Text {
+                                    text: "Suspend"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    color: suspendButton.containsMouse ? Theme.primary : Theme.surfaceText
+                                    font.weight: Font.Medium
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                            }
+
+                            MouseArea {
+                                id: suspendButton
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    root.powerOptionsExpanded = false;
+                                    root.powerActionRequested("suspend", "Suspend", "Are you sure you want to suspend?");
                                 }
                             }
 
@@ -531,12 +574,7 @@ PanelWindow {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     root.powerOptionsExpanded = false;
-                                    if (typeof root !== "undefined" && root.powerConfirmDialog) {
-                                        root.powerConfirmDialog.powerConfirmAction = "poweroff";
-                                        root.powerConfirmDialog.powerConfirmTitle = "Shutdown";
-                                        root.powerConfirmDialog.powerConfirmMessage = "Are you sure you want to shutdown?";
-                                        root.powerConfirmDialog.powerConfirmVisible = true;
-                                    }
+                                    root.powerActionRequested("poweroff", "Shutdown", "Are you sure you want to shutdown?");
                                 }
                             }
 

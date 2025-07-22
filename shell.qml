@@ -4,6 +4,7 @@ import Quickshell
 import qs.Modules
 import qs.Modules.CenterCommandCenter
 import qs.Modules.ControlCenter
+import qs.Modules.Settings
 import qs.Modules.TopBar
 
 ShellRoot {
@@ -38,6 +39,12 @@ ShellRoot {
 
     ControlCenterPopup {
         id: controlCenterPopup
+        onPowerActionRequested: (action, title, message) => {
+            powerConfirmDialog.powerConfirmAction = action;
+            powerConfirmDialog.powerConfirmTitle = title;
+            powerConfirmDialog.powerConfirmMessage = message;
+            powerConfirmDialog.powerConfirmVisible = true;
+        }
     }
 
     WifiPasswordDialog {

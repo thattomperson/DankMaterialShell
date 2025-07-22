@@ -43,7 +43,7 @@ Rectangle {
     signal textEdited()
     signal editingFinished()
     signal accepted()
-    signal focusChanged(bool hasFocus)
+    signal activeFocusChanged(bool hasFocus)
 
     // Access to inner TextInput properties via functions
     function getActiveFocus() {
@@ -120,7 +120,7 @@ Rectangle {
         onTextChanged: root.textEdited()
         onEditingFinished: root.editingFinished()
         onAccepted: root.accepted()
-        onActiveFocusChanged: root.focusChanged(activeFocus)
+        onActiveFocusChanged: root.activeFocusChanged(activeFocus)
 
         MouseArea {
             anchors.fill: parent

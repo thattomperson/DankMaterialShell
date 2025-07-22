@@ -11,6 +11,10 @@ PanelWindow {
     id: root
 
     property bool powerMenuVisible: false
+    property bool powerConfirmVisible: false
+    property string powerConfirmAction: ""
+    property string powerConfirmTitle: ""
+    property string powerConfirmMessage: ""
 
     visible: powerMenuVisible
     implicitWidth: 400
