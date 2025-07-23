@@ -18,6 +18,7 @@ Item {
 
     Row {
         id: tabRow
+
         anchors.fill: parent
         spacing: tabBar.spacing
 
@@ -30,19 +31,14 @@ Item {
                 property bool hasIcon: tabBar.showIcons && modelData.icon && modelData.icon.length > 0
                 property bool hasText: modelData.text && modelData.text.length > 0
 
-                width: tabBar.equalWidthTabs ? 
-                    (tabBar.width - tabBar.spacing * (tabCount - 1)) / tabCount :
-                    contentRow.implicitWidth + Theme.spacingM * 2
+                width: tabBar.equalWidthTabs ? (tabBar.width - tabBar.spacing * (tabCount - 1)) / tabCount : contentRow.implicitWidth + Theme.spacingM * 2
                 height: tabBar.tabHeight
                 radius: Theme.cornerRadiusSmall
-                color: isActive ? 
-                    Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : 
-                    tabArea.containsMouse ? 
-                        Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : 
-                        "transparent"
+                color: isActive ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : tabArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
 
                 Row {
                     id: contentRow
+
                     anchors.centerIn: parent
                     spacing: Theme.spacingXS
 
@@ -62,16 +58,18 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         visible: parent.parent.hasText
                     }
+
                 }
 
                 MouseArea {
                     id: tabArea
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        tabBar.currentIndex = index
-                        tabBar.tabClicked(index)
+                        tabBar.currentIndex = index;
+                        tabBar.tabClicked(index);
                     }
                 }
 
@@ -80,8 +78,13 @@ Item {
                         duration: Theme.shortDuration
                         easing.type: Theme.standardEasing
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

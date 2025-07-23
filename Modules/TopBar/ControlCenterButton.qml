@@ -9,15 +9,20 @@ Rectangle {
     property bool isActive: false
 
     signal clicked()
-    
+
     // Helper function for consistent WiFi signal icons
     function getWiFiSignalIcon(signalStrength) {
         switch (signalStrength) {
-            case "excellent": return "wifi";
-            case "good": return "wifi_2_bar";
-            case "fair": return "wifi_1_bar";
-            case "poor": return "signal_wifi_0_bar";
-            default: return "wifi";
+        case "excellent":
+            return "wifi";
+        case "good":
+            return "wifi_2_bar";
+        case "fair":
+            return "wifi_1_bar";
+        case "poor":
+            return "signal_wifi_0_bar";
+        default:
+            return "wifi";
         }
     }
 
@@ -35,13 +40,12 @@ Rectangle {
         // Network Status Icon
         DankIcon {
             name: {
-                if (NetworkService.networkStatus === "ethernet") {
+                if (NetworkService.networkStatus === "ethernet")
                     return "lan";
-                } else if (NetworkService.networkStatus === "wifi") {
+                else if (NetworkService.networkStatus === "wifi")
                     return getWiFiSignalIcon(WifiService.wifiSignalStrength);
-                } else {
+                else
                     return "wifi_off";
-                }
             }
             size: Theme.iconSize - 8
             color: NetworkService.networkStatus !== "disconnected" ? Theme.primary : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
@@ -68,7 +72,7 @@ Rectangle {
             DankIcon {
                 id: audioIcon
 
-                name: AudioService.sinkMuted ? "volume_off" : AudioService.volumeLevel < 33 ? "volume_down" : "volume_up"
+                name: (AudioService.sink && AudioService.sink.audio && AudioService.sink.audio.muted) ? "volume_off" : (AudioService.sink && AudioService.sink.audio && AudioService.sink.audio.volume * 100) < 33 ? "volume_down" : "volume_up"
                 size: Theme.iconSize - 8
                 color: audioWheelArea.containsMouse || controlCenterArea.containsMouse || root.isActive ? Theme.primary : Theme.surfaceText
                 anchors.centerIn: parent

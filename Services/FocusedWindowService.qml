@@ -21,7 +21,7 @@ Singleton {
             return;
         }
 
-        let focusedWindow = NiriWorkspaceService.windows.find(w => w.is_focused);
+        let focusedWindow = NiriService.windows.find(w => w.is_focused);
 
         if (focusedWindow) {
             root.focusedAppId = focusedWindow.app_id || "";
@@ -76,9 +76,9 @@ Singleton {
     }
 
     Component.onCompleted: {
-        root.niriAvailable = NiriWorkspaceService.niriAvailable;
-        NiriWorkspaceService.onNiriAvailableChanged.connect(() => {
-            root.niriAvailable = NiriWorkspaceService.niriAvailable;
+        root.niriAvailable = NiriService.niriAvailable;
+        NiriService.onNiriAvailableChanged.connect(() => {
+            root.niriAvailable = NiriService.niriAvailable;
             if (root.niriAvailable)
                 updateFromNiriData();
 
@@ -90,13 +90,13 @@ Singleton {
 
     Connections {
         function onFocusedWindowIdChanged() {
-            const focusedWindowId = NiriWorkspaceService.focusedWindowId;
+            const focusedWindowId = NiriService.focusedWindowId;
             if (!focusedWindowId) {
                 clearFocusedWindow();
                 return;
             }
             
-            const focusedWindow = NiriWorkspaceService.windows.find(w => w.id == focusedWindowId);
+            const focusedWindow = NiriService.windows.find(w => w.id == focusedWindowId);
             if (focusedWindow) {
                 root.focusedAppId = focusedWindow.app_id || "";
                 root.focusedWindowTitle = focusedWindow.title || "";
@@ -120,7 +120,7 @@ Singleton {
             }
         }
 
-        target: NiriWorkspaceService
+        target: NiriService
     }
 
 

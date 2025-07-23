@@ -1,3 +1,4 @@
+import "../../Widgets"
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
@@ -9,7 +10,6 @@ import Quickshell.Widgets
 import qs.Common
 import qs.Services
 import qs.Widgets
-import "../../Widgets"
 
 PanelWindow {
     id: root
@@ -25,13 +25,13 @@ PanelWindow {
         // Enable/disable WiFi auto-refresh based on control center visibility
         WifiService.autoRefreshEnabled = visible && NetworkService.wifiEnabled;
         // Stop bluetooth scanning when control center is closed
-        if (!visible && BluetoothService.adapter && BluetoothService.adapter.discovering) {
+        if (!visible && BluetoothService.adapter && BluetoothService.adapter.discovering)
             BluetoothService.adapter.discovering = false;
-        }
+
         // Refresh uptime when opened
-        if (visible && UserInfoService) {
+        if (visible && UserInfoService)
             UserInfoService.getUptime();
-        }
+
     }
     implicitWidth: 600
     implicitHeight: 500
@@ -296,6 +296,7 @@ PanelWindow {
 
                                 DankIcon {
                                     id: dankIcon
+
                                     anchors.centerIn: parent
                                     name: root.powerOptionsExpanded ? "expand_less" : "power_settings_new"
                                     size: Theme.iconSize - 2
@@ -617,46 +618,47 @@ PanelWindow {
                         let tabs = ["network", "audio"];
                         if (BluetoothService.available)
                             tabs.push("bluetooth");
+
                         tabs.push("display");
                         return tabs.indexOf(root.currentTab);
                     }
                     model: {
-                            let tabs = [{
-                                "text": "Network",
-                                "icon": "wifi",
-                                "id": "network"
-                            }];
-                            // Always show audio
+                        let tabs = [{
+                            "text": "Network",
+                            "icon": "wifi",
+                            "id": "network"
+                        }];
+                        // Always show audio
+                        tabs.push({
+                            "text": "Audio",
+                            "icon": "volume_up",
+                            "id": "audio"
+                        });
+                        // Show Bluetooth only if available
+                        if (BluetoothService.available)
                             tabs.push({
-                                "text": "Audio",
-                                "icon": "volume_up",
-                                "id": "audio"
-                            });
-                            // Show Bluetooth only if available
-                            if (BluetoothService.available)
-                                tabs.push({
-                                "text": "Bluetooth",
-                                "icon": "bluetooth",
-                                "id": "bluetooth"
-                            });
+                            "text": "Bluetooth",
+                            "icon": "bluetooth",
+                            "id": "bluetooth"
+                        });
 
-                            // Always show display
-                            tabs.push({
-                                "text": "Display",
-                                "icon": "brightness_6",
-                                "id": "display"
-                            });
-                            return tabs;
+                        // Always show display
+                        tabs.push({
+                            "text": "Display",
+                            "icon": "brightness_6",
+                            "id": "display"
+                        });
+                        return tabs;
                     }
                     onTabClicked: function(index) {
                         let tabs = ["network", "audio"];
                         if (BluetoothService.available)
                             tabs.push("bluetooth");
+
                         tabs.push("display");
                         root.currentTab = tabs[index];
                     }
                 }
-
 
             }
 

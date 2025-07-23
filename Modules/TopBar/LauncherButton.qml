@@ -6,9 +6,9 @@ import qs.Widgets
 Rectangle {
     id: root
 
-    signal clicked()
-
     property bool isActive: false
+
+    signal clicked()
 
     width: 40
     height: 30

@@ -115,7 +115,7 @@ shell.qml           # Main entry point (minimal orchestration)
    - Services handle system commands, state management, and hardware integration
 
 4. **Modules/** - UI components
-   - **Full-screen components**: AppLauncher, ClipboardHistory, ControlCenter
+   - **Full-screen components**: AppLauncher, ClipboardHistoryModal, ControlCenter
    - **Panel components**: TopBar, SystemTrayWidget, NotificationPopup
    - **Layout components**: WorkspaceSwitcher
 
@@ -160,7 +160,7 @@ shell.qml           # Main entry point (minimal orchestration)
 
 - **ControlCenter**: System controls (WiFi, Bluetooth, brightness, volume, night mode)
 - **AppLauncher**: Full-featured app grid/list with 93+ applications, search, categories
-- **ClipboardHistory**: Complete clipboard management with cliphist integration
+- **ClipboardHistoryModal**: Complete clipboard management with cliphist integration
 - **TopBar**: Per-monitor panels with workspace switching, clock, system tray
 
 #### Key Widgets

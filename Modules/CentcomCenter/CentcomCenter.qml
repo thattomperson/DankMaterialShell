@@ -16,9 +16,9 @@ PanelWindow {
 
     visible: calendarVisible
     onVisibleChanged: {
-        if (visible && CalendarService) {
+        if (visible && CalendarService)
             CalendarService.loadCurrentMonth();
-        }
+
     }
     implicitWidth: 480
     implicitHeight: 600

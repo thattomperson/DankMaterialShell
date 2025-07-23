@@ -14,49 +14,44 @@ Column {
             return Prefs.setTemperatureUnit(checked);
         }
     }
-    
+
     // Weather Location Override
     Column {
         width: parent.width
         spacing: Theme.spacingM
-        
+
         DankToggle {
             text: "Override Location"
             description: "Use a specific location instead of auto-detection"
             checked: Prefs.weatherLocationOverrideEnabled
-            onToggled: (checked) => Prefs.setWeatherLocationOverrideEnabled(checked)
+            onToggled: (checked) => {
+                return Prefs.setWeatherLocationOverrideEnabled(checked);
+            }
         }
-        
+
         // Location input - only visible when override is enabled
         Column {
             width: parent.width
             spacing: Theme.spacingS
             visible: Prefs.weatherLocationOverrideEnabled
-            opacity: visible ? 1.0 : 0.0
-            
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: Theme.mediumDuration
-                    easing.type: Theme.emphasizedEasing
-                }
-            }
-            
+            opacity: visible ? 1 : 0
+
             Text {
                 text: "Location"
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.surfaceText
                 font.weight: Font.Medium
             }
-            
+
             DankLocationSearch {
                 width: parent.width
                 currentLocation: Prefs.weatherLocationOverride
                 placeholderText: "Search for a location..."
                 onLocationSelected: (displayName, coordinates) => {
-                    Prefs.setWeatherLocationOverride(coordinates)
+                    Prefs.setWeatherLocationOverride(coordinates);
                 }
             }
-            
+
             Text {
                 text: "Examples: \"New York\", \"Tokyo\", \"44511\""
                 font.pixelSize: Theme.fontSizeSmall
@@ -64,6 +59,17 @@ Column {
                 wrapMode: Text.WordWrap
                 width: parent.width
             }
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: Theme.mediumDuration
+                    easing.type: Theme.emphasizedEasing
+                }
+
+            }
+
         }
+
     }
+
 }

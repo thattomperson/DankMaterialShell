@@ -13,13 +13,12 @@ Item {
     property bool enabled: true
     property string unit: "%"
     property bool showValue: true
+    property bool isDragging: false
 
     signal sliderValueChanged(int newValue)
     signal sliderDragFinished(int finalValue)
 
     height: 80
-    
-    property bool isDragging: false
 
     Column {
         anchors.fill: parent

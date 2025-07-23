@@ -10,9 +10,9 @@ import Quickshell.Services.SystemTray
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
+import qs.Modules
 import qs.Services
 import qs.Widgets
-import qs.Modules
 
 PanelWindow {
     // Proxy objects for external connections
@@ -29,12 +29,11 @@ PanelWindow {
     screen: modelData
     implicitHeight: Theme.barHeight - 4
     color: "transparent"
-
     Component.onCompleted: {
         let fonts = Qt.fontFamilies();
-        if (fonts.indexOf("Material Symbols Rounded") === -1) {
+        if (fonts.indexOf("Material Symbols Rounded") === -1)
             ToastService.showError("Please install Material Symbols Rounded and Restart your Shell. See README.md for instructions");
-        }
+
     }
 
     Connections {
@@ -226,7 +225,7 @@ PanelWindow {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            clipboardHistoryPopup.toggle();
+                            clipboardHistoryModalPopup.toggle();
                         }
                     }
 

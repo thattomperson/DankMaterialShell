@@ -14,4 +14,5 @@ Column {
             return Prefs.setClockFormat(checked);
         }
     }
+
 }

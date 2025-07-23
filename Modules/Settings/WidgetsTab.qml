@@ -109,13 +109,13 @@ Column {
                 bottomPadding: Theme.spacingS
                 onEditingFinished: {
                     var color = text.trim();
-                    if (color === "" || /^#[0-9A-Fa-f]{6}$/.test(color)) {
+                    if (color === "" || /^#[0-9A-Fa-f]{6}$/.test(color))
                         Prefs.setOSLogoColorOverride(color);
-                    } else {
+                    else
                         text = Prefs.osLogoColorOverride;
-                    }
                 }
             }
+
         }
 
         Row {
@@ -139,9 +139,10 @@ Column {
                 unit: ""
                 showValue: false
                 onSliderValueChanged: (newValue) => {
-                    Prefs.setOSLogoBrightness(newValue / 100.0);
+                    Prefs.setOSLogoBrightness(newValue / 100);
                 }
             }
+
         }
 
         Row {
@@ -165,9 +166,12 @@ Column {
                 unit: ""
                 showValue: false
                 onSliderValueChanged: (newValue) => {
-                    Prefs.setOSLogoContrast(newValue / 100.0);
+                    Prefs.setOSLogoContrast(newValue / 100);
                 }
             }
+
         }
+
     }
+
 }

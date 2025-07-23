@@ -85,6 +85,7 @@ PanelWindow {
 
                 anchors.fill: parent
                 spacing: 1
+                model: menuOpener.children
 
                 TextMetrics {
                     id: textMetrics
@@ -92,8 +93,6 @@ PanelWindow {
                     font.pixelSize: Theme.fontSizeSmall
                     text: "M"
                 }
-
-                model: menuOpener.children
 
                 delegate: Rectangle {
                     width: ListView.view.width

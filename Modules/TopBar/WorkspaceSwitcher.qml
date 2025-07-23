@@ -16,22 +16,20 @@ Rectangle {
 
     function padWorkspaces(list) {
         var padded = list.slice();
-        while (padded.length < 3) {
-            padded.push(-1); // Use -1 as a placeholder
-        }
+        while (padded.length < 3)padded.push(-1) // Use -1 as a placeholder
         return padded;
     }
 
     function getDisplayWorkspaces() {
-        if (!NiriWorkspaceService.niriAvailable || NiriWorkspaceService.allWorkspaces.length === 0)
+        if (!NiriService.niriAvailable || NiriService.allWorkspaces.length === 0)
             return [1, 2];
 
         if (!root.screenName)
-            return NiriWorkspaceService.getCurrentOutputWorkspaceNumbers();
+            return NiriService.getCurrentOutputWorkspaceNumbers();
 
         var displayWorkspaces = [];
-        for (var i = 0; i < NiriWorkspaceService.allWorkspaces.length; i++) {
-            var ws = NiriWorkspaceService.allWorkspaces[i];
+        for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
+            var ws = NiriService.allWorkspaces[i];
             if (ws.output === root.screenName)
                 displayWorkspaces.push(ws.idx + 1);
 
@@ -40,14 +38,14 @@ Rectangle {
     }
 
     function getDisplayActiveWorkspace() {
-        if (!NiriWorkspaceService.niriAvailable || NiriWorkspaceService.allWorkspaces.length === 0)
+        if (!NiriService.niriAvailable || NiriService.allWorkspaces.length === 0)
             return 1;
 
         if (!root.screenName)
-            return NiriWorkspaceService.getCurrentWorkspaceNumber();
+            return NiriService.getCurrentWorkspaceNumber();
 
-        for (var i = 0; i < NiriWorkspaceService.allWorkspaces.length; i++) {
-            var ws = NiriWorkspaceService.allWorkspaces[i];
+        for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
+            var ws = NiriService.allWorkspaces[i];
             if (ws.output === root.screenName && ws.is_active)
                 return ws.idx + 1;
 
@@ -59,7 +57,7 @@ Rectangle {
     height: 30
     radius: Theme.cornerRadiusLarge
     color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
-    visible: NiriWorkspaceService.niriAvailable
+    visible: NiriService.niriAvailable
 
     Connections {
         function onAllWorkspacesChanged() {
@@ -72,13 +70,13 @@ Rectangle {
         }
 
         function onNiriAvailableChanged() {
-            if (NiriWorkspaceService.niriAvailable) {
+            if (NiriService.niriAvailable) {
                 root.workspaceList = Prefs.showWorkspacePadding ? root.padWorkspaces(root.getDisplayWorkspaces()) : root.getDisplayWorkspaces();
                 root.currentWorkspace = root.getDisplayActiveWorkspace();
             }
         }
 
-        target: NiriWorkspaceService
+        target: NiriService
     }
 
     // Force update when padding preference changes
@@ -91,7 +89,6 @@ Rectangle {
 
         target: Prefs
     }
-
 
     Row {
         id: workspaceRow
@@ -115,14 +112,15 @@ Rectangle {
 
                 MouseArea {
                     id: mouseArea
+
                     anchors.fill: parent
                     hoverEnabled: !isPlaceholder
                     cursorShape: isPlaceholder ? Qt.ArrowCursor : Qt.PointingHandCursor
                     enabled: !isPlaceholder
                     onClicked: {
-                        if (!isPlaceholder) {
+                        if (!isPlaceholder)
                             Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", (modelData - 1).toString()]);
-                        }
+
                     }
                 }
 
@@ -136,12 +134,12 @@ Rectangle {
                     font.bold: isActive && !isPlaceholder
                 }
 
-
                 Behavior on width {
                     NumberAnimation {
                         duration: Theme.mediumDuration
                         easing.type: Theme.emphasizedEasing
                     }
+
                 }
 
                 Behavior on color {
@@ -149,8 +147,11 @@ Rectangle {
                         duration: Theme.mediumDuration
                         easing.type: Theme.emphasizedEasing
                     }
+
                 }
+
             }
+
         }
 
     }

@@ -42,9 +42,7 @@ Rectangle {
         interval: 2000
         running: {
             // Run when no active player (for cache clearing) OR when playing (for position updates)
-            return (!activePlayer) || 
-                   (activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing && 
-                    activePlayer.length > 0 && !progressMouseArea.isSeeking);
+            return (!activePlayer) || (activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing && activePlayer.length > 0 && !progressMouseArea.isSeeking);
         }
         repeat: true
         onTriggered: {

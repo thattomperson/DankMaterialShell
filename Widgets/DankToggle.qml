@@ -18,6 +18,7 @@ Item {
 
     Rectangle {
         id: background
+
         anchors.fill: parent
         radius: toggle.text ? Theme.cornerRadius : 0
         color: toggle.text ? (toggleArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)) : "transparent"
@@ -26,6 +27,7 @@ Item {
 
     Row {
         id: textRow
+
         anchors.left: parent.left
         anchors.right: toggleTrack.left
         anchors.verticalCenter: parent.verticalCenter
@@ -53,11 +55,14 @@ Item {
                 width: Math.min(implicitWidth, toggle.width - 120)
                 visible: toggle.description.length > 0
             }
+
         }
+
     }
 
     Rectangle {
         id: toggleTrack
+
         width: toggle.text ? 48 : parent.width
         height: toggle.text ? 24 : parent.height
         anchors.right: parent.right
@@ -69,19 +74,13 @@ Item {
 
         Rectangle {
             id: toggleHandle
+
             width: 20
             height: 20
             radius: 10
             color: Theme.surface
             anchors.verticalCenter: parent.verticalCenter
             x: toggle.checked ? parent.width - width - 2 : 2
-
-            Behavior on x {
-                NumberAnimation {
-                    duration: Theme.shortDuration
-                    easing.type: Theme.emphasizedEasing
-                }
-            }
 
             Rectangle {
                 anchors.centerIn: parent
@@ -93,12 +92,22 @@ Item {
                 border.width: 1
                 z: -1
             }
+
+            Behavior on x {
+                NumberAnimation {
+                    duration: Theme.shortDuration
+                    easing.type: Theme.emphasizedEasing
+                }
+
+            }
+
         }
 
     }
 
     MouseArea {
         id: toggleArea
+
         anchors.fill: toggle.text ? toggle : toggleTrack
         hoverEnabled: true
         cursorShape: toggle.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor

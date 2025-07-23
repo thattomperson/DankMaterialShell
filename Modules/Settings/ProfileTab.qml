@@ -146,7 +146,6 @@ Column {
                         onEditingFinished: {
                             Prefs.setProfileImage(text);
                         }
-
                     }
 
                 }
@@ -164,4 +163,5 @@ Column {
         }
 
     }
+
 }

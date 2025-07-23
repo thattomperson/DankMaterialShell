@@ -369,11 +369,10 @@ PanelWindow {
         Item {
             anchors.fill: parent
             focus: true
-            
             Component.onCompleted: {
-                if (launcher.isVisible) {
+                if (launcher.isVisible)
                     forceActiveFocus();
-                }
+
             }
             // Handle keyboard shortcuts
             Keys.onPressed: function(event) {
@@ -458,17 +457,6 @@ PanelWindow {
                     onTextEdited: {
                         searchDebounceTimer.restart();
                     }
-
-                    Connections {
-                        target: launcher
-                        function onVisibleChanged() {
-                            if (launcher.visible) {
-                                searchField.forceActiveFocus();
-                            } else {
-                                searchField.clearFocus();
-                            }
-                        }
-                    }
                     Keys.onPressed: function(event) {
                         if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && filteredModel.count && text.length > 0) {
                             // Launch first app when typing in search field
@@ -481,14 +469,23 @@ PanelWindow {
                             }
                             launcher.hide();
                             event.accepted = true;
-                        } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || 
-                                   (event.key === Qt.Key_Left && viewMode === "grid") ||
-                                   (event.key === Qt.Key_Right && viewMode === "grid") ||
-                                   ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
+                        } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || (event.key === Qt.Key_Left && viewMode === "grid") || (event.key === Qt.Key_Right && viewMode === "grid") || ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
                             // Pass navigation keys and enter (when not searching) to main handler
                             event.accepted = false;
                         }
                     }
+
+                    Connections {
+                        function onVisibleChanged() {
+                            if (launcher.visible)
+                                searchField.forceActiveFocus();
+                            else
+                                searchField.clearFocus();
+                        }
+
+                        target: launcher
+                    }
+
                 }
 
                 // Category filter and view mode controls

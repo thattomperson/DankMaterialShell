@@ -30,9 +30,7 @@ ScrollView {
     GridView {
         id: grid
 
-        property int baseCellWidth: adaptiveColumns ? 
-            Math.max(minCellWidth, Math.min(maxCellWidth, width / columns)) :
-            (width - Theme.spacingS * 2) / columns
+        property int baseCellWidth: adaptiveColumns ? Math.max(minCellWidth, Math.min(maxCellWidth, width / columns)) : (width - Theme.spacingS * 2) / columns
         property int baseCellHeight: baseCellWidth + 20
         property int actualColumns: adaptiveColumns ? Math.floor(width / cellWidth) : columns
         property int remainingSpace: width - (actualColumns * cellWidth)
@@ -68,14 +66,8 @@ ScrollView {
             width: grid.cellWidth - cellPadding
             height: grid.cellHeight - cellPadding
             radius: Theme.cornerRadiusLarge
-            color: currentIndex === index ? 
-                Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : 
-                mouseArea.containsMouse ? 
-                    Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : 
-                    Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
-            border.color: currentIndex === index ? 
-                Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : 
-                Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            color: currentIndex === index ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : mouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
+            border.color: currentIndex === index ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
             border.width: currentIndex === index ? 2 : 1
 
             Column {
@@ -91,6 +83,7 @@ ScrollView {
 
                     IconImage {
                         id: iconImg
+
                         anchors.fill: parent
                         source: (model.icon) ? Quickshell.iconPath(model.icon, "") : ""
                         smooth: true
@@ -113,7 +106,9 @@ ScrollView {
                             color: Theme.primary
                             font.weight: Font.Bold
                         }
+
                     }
+
                 }
 
                 Text {
@@ -128,24 +123,29 @@ ScrollView {
                     maximumLineCount: 2
                     wrapMode: Text.WordWrap
                 }
+
             }
 
             MouseArea {
                 id: mouseArea
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 z: 10
                 onEntered: {
-                    if (hoverUpdatesSelection) {
+                    if (hoverUpdatesSelection)
                         currentIndex = index;
-                    }
+
                     itemHovered(index);
                 }
                 onClicked: {
                     itemClicked(index, model);
                 }
             }
+
         }
+
     }
+
 }

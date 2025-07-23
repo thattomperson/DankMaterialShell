@@ -5,6 +5,7 @@ import qs.Widgets
 
 Column {
     id: root
+
     width: parent.width
     spacing: Theme.spacingL
 
@@ -158,4 +159,5 @@ Column {
 
         }
     }
+
 }

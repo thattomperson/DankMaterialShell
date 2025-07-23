@@ -55,14 +55,8 @@ ScrollView {
             width: list.width
             height: itemHeight
             radius: Theme.cornerRadiusLarge
-            color: ListView.isCurrentItem ? 
-                Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : 
-                mouseArea.containsMouse ? 
-                    Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : 
-                    Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
-            border.color: ListView.isCurrentItem ? 
-                Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : 
-                Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            color: ListView.isCurrentItem ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : mouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
+            border.color: ListView.isCurrentItem ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
             border.width: ListView.isCurrentItem ? 2 : 1
 
             Row {
@@ -77,6 +71,7 @@ ScrollView {
 
                     IconImage {
                         id: iconImg
+
                         anchors.fill: parent
                         source: (model.icon) ? Quickshell.iconPath(model.icon, "") : ""
                         smooth: true
@@ -99,7 +94,9 @@ ScrollView {
                             color: Theme.primary
                             font.weight: Font.Bold
                         }
+
                     }
+
                 }
 
                 Column {
@@ -124,25 +121,31 @@ ScrollView {
                         elide: Text.ElideRight
                         visible: showDescription && model.comment && model.comment.length > 0
                     }
+
                 }
+
             }
 
             MouseArea {
                 id: mouseArea
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 z: 10
                 onEntered: {
-                    if (hoverUpdatesSelection) {
+                    if (hoverUpdatesSelection)
                         listView.currentIndex = index;
-                    }
+
                     itemHovered(index);
                 }
                 onClicked: {
                     itemClicked(index, model);
                 }
             }
+
         }
+
     }
+
 }

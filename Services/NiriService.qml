@@ -30,7 +30,7 @@ Singleton {
     property bool niriAvailable: false
     
     Component.onCompleted: {
-        console.log("NiriWorkspaceService: Component.onCompleted - initializing service")
+        console.log("NiriService: Component.onCompleted - initializing service")
         checkNiriAvailability()
     }
     
@@ -42,11 +42,11 @@ Singleton {
         onExited: (exitCode) => {
             root.niriAvailable = exitCode === 0
             if (root.niriAvailable) {
-                console.log("NiriWorkspaceService: niri found, starting event stream and loading initial data")
+                console.log("NiriService: niri found, starting event stream and loading initial data")
                 eventStreamProcess.running = true
                 loadInitialWorkspaceData()
             } else {
-                console.log("NiriWorkspaceService: niri not found, workspace features disabled")
+                console.log("NiriService: niri not found, workspace features disabled")
             }
         }
     }
@@ -65,12 +65,12 @@ Singleton {
             onStreamFinished: {
                 if (text && text.trim()) {
                     try {
-                        console.log("NiriWorkspaceService: Loaded initial workspace data")
+                        console.log("NiriService: Loaded initial workspace data")
                         const workspaces = JSON.parse(text.trim())
                         // Initial query returns array directly, event stream wraps it in WorkspacesChanged
                         handleWorkspacesChanged({ workspaces: workspaces })
                     } catch (e) {
-                        console.warn("NiriWorkspaceService: Failed to parse initial workspace data:", e)
+                        console.warn("NiriService: Failed to parse initial workspace data:", e)
                     }
                 }
             }
@@ -90,10 +90,10 @@ Singleton {
                         const windowsData = JSON.parse(text.trim())
                         if (windowsData && windowsData.windows) {
                             handleWindowsChanged(windowsData)
-                            console.log("NiriWorkspaceService: Loaded", windowsData.windows.length, "initial windows")
+                            console.log("NiriService: Loaded", windowsData.windows.length, "initial windows")
                         }
                     } catch (e) {
-                        console.warn("NiriWorkspaceService: Failed to parse initial windows data:", e)
+                        console.warn("NiriService: Failed to parse initial windows data:", e)
                     }
                 }
             }
@@ -113,10 +113,10 @@ Singleton {
                         const focusedData = JSON.parse(text.trim())
                         if (focusedData && focusedData.id) {
                             handleWindowFocusChanged({ id: focusedData.id })
-                            console.log("NiriWorkspaceService: Loaded initial focused window:", focusedData.id)
+                            console.log("NiriService: Loaded initial focused window:", focusedData.id)
                         }
                     } catch (e) {
-                        console.warn("NiriWorkspaceService: Failed to parse initial focused window data:", e)
+                        console.warn("NiriService: Failed to parse initial focused window data:", e)
                     }
                 }
             }
@@ -124,7 +124,7 @@ Singleton {
     }
     
     function loadInitialWorkspaceData() {
-        console.log("NiriWorkspaceService: Loading initial workspace data...")
+        console.log("NiriService: Loading initial workspace data...")
         initialDataQuery.running = true
         initialWindowsQuery.running = true
         initialFocusedWindowQuery.running = true
@@ -142,14 +142,14 @@ Singleton {
                     const event = JSON.parse(data.trim())
                     handleNiriEvent(event)
                 } catch (e) {
-                    console.warn("NiriWorkspaceService: Failed to parse event:", data, e)
+                    console.warn("NiriService: Failed to parse event:", data, e)
                 }
             }
         }
         
         onExited: (exitCode) => {
             if (exitCode !== 0 && root.niriAvailable) {
-                console.warn("NiriWorkspaceService: Event stream exited with code", exitCode, "restarting immediately")
+                console.warn("NiriService: Event stream exited with code", exitCode, "restarting immediately")
                 eventStreamProcess.running = true
             }
         }
@@ -316,7 +316,7 @@ Singleton {
         
         var targetOutput = output || currentOutput
         if (!targetOutput) {
-            console.warn("NiriWorkspaceService: No output specified for workspace switching")
+            console.warn("NiriService: No output specified for workspace switching")
             return false
         }
         
@@ -329,7 +329,7 @@ Singleton {
             return switchToWorkspace(workspace.id)
         }
         
-        console.warn("NiriWorkspaceService: No workspace", number, "found on output", targetOutput)
+        console.warn("NiriService: No workspace", number, "found on output", targetOutput)
         return false
     }
     

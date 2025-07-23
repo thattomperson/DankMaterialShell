@@ -408,7 +408,9 @@ PanelWindow {
                                         font.pixelSize: 9
                                         font.weight: Font.Bold
                                     }
+
                                 }
+
                             }
 
                             Rectangle {
@@ -465,6 +467,8 @@ PanelWindow {
                                         }
 
                                         Text {
+                                            // No truncation for notification center - show full text
+
                                             property bool hasUrls: {
                                                 const urlRegex = /(https?:\/\/[^\s]+)/g;
                                                 return urlRegex.test(modelData.latestNotification.body);
@@ -473,8 +477,6 @@ PanelWindow {
                                             text: {
                                                 // Auto-detect and make URLs clickable, with truncation for center notifications
                                                 let bodyText = modelData.latestNotification.body;
-                                                // No truncation for notification center - show full text
-                                                
                                                 const urlRegex = /(https?:\/\/[^\s]+)/g;
                                                 return bodyText.replace(urlRegex, '<a href="$1" style="color: ' + Theme.primary + '; text-decoration: underline;">$1</a>');
                                             }
@@ -490,8 +492,11 @@ PanelWindow {
                                                 Qt.openUrlExternally(link);
                                             }
                                         }
+
                                     }
+
                                 }
+
                             }
 
                             Item {
@@ -507,6 +512,7 @@ PanelWindow {
                                 // Expand button - always takes up space but only visible when needed
                                 Rectangle {
                                     id: collapsedExpandButton
+
                                     anchors.left: parent.left
                                     anchors.top: parent.top
                                     width: 20
@@ -524,11 +530,13 @@ PanelWindow {
 
                                     MouseArea {
                                         id: expandArea
+
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: NotificationService.toggleGroupExpansion(modelData.key)
                                     }
+
                                 }
 
                                 // Close button - always positioned at the right edge
@@ -569,8 +577,11 @@ PanelWindow {
                                         }
                                         onClicked: NotificationService.dismissGroup(modelData.key)
                                     }
+
                                 }
+
                             }
+
                         }
 
                         // Expanded view - shows all notifications stacked
@@ -836,67 +847,8 @@ PanelWindow {
                                                 height: contentColumn.height
 
                                                 Column {
-                                                    id: contentColumn
-
-                                                    property bool isMessageExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
-
-                                                    width: parent.width
-                                                    spacing: 2 // Reduced from Theme.spacingXS (4px) by 2px
-
-                                                // Title • timestamp format
-                                                Text {
-                                                    text: {
-                                                        const summary = modelData.summary || "";
-                                                        const timeStr = modelData.timeStr || "";
-                                                        if (summary && timeStr)
-                                                            return summary + " • " + timeStr;
-                                                        else if (summary)
-                                                            return summary;
-                                                        else
-                                                            return "Message • " + timeStr;
-                                                    }
-                                                    color: Theme.surfaceText
-                                                    font.pixelSize: Theme.fontSizeSmall
-                                                    font.weight: Font.Medium
-                                                    width: parent.width
-                                                    elide: Text.ElideRight
-                                                    maximumLineCount: 1
-                                                }
-
-                                                // Body text with expandable behavior
-                                                Text {
-                                                    text: modelData.body
-                                                    color: Theme.surfaceVariantText
-                                                    font.pixelSize: Theme.fontSizeSmall
-                                                    width: parent.width
-                                                    wrapMode: Text.WordWrap
-                                                    maximumLineCount: parent.isMessageExpanded ? -1 : 3 // Unlimited when expanded, 3 when collapsed (more space in center)
-                                                    elide: parent.isMessageExpanded ? Text.ElideNone : Text.ElideRight
-                                                    visible: text.length > 0
-                                                }
-
-                                                // Clickable area for View action on individual message
-                                                MouseArea {
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: {
-                                                        // Find and invoke the View action
-                                                        if (modelData.actions) {
-                                                            for (const action of modelData.actions) {
-                                                                if (action.text && action.text.toLowerCase() === "view") {
-                                                                    if (action.invoke)
-                                                                        action.invoke();
-
-                                                                    break;
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-
-                                                // COMMENTED OUT: Individual inline reply
-                                                /*
+                                                    // COMMENTED OUT: Individual inline reply
+                                                    /*
                                                 Row {
                                                     width: parent.width
                                                     spacing: Theme.spacingS
@@ -960,7 +912,67 @@ PanelWindow {
                                                 }
                                                 */
 
+                                                    id: contentColumn
+
+                                                    property bool isMessageExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
+
+                                                    width: parent.width
+                                                    spacing: 2 // Reduced from Theme.spacingXS (4px) by 2px
+
+                                                    // Title • timestamp format
+                                                    Text {
+                                                        text: {
+                                                            const summary = modelData.summary || "";
+                                                            const timeStr = modelData.timeStr || "";
+                                                            if (summary && timeStr)
+                                                                return summary + " • " + timeStr;
+                                                            else if (summary)
+                                                                return summary;
+                                                            else
+                                                                return "Message • " + timeStr;
+                                                        }
+                                                        color: Theme.surfaceText
+                                                        font.pixelSize: Theme.fontSizeSmall
+                                                        font.weight: Font.Medium
+                                                        width: parent.width
+                                                        elide: Text.ElideRight
+                                                        maximumLineCount: 1
+                                                    }
+
+                                                    // Body text with expandable behavior
+                                                    Text {
+                                                        text: modelData.body
+                                                        color: Theme.surfaceVariantText
+                                                        font.pixelSize: Theme.fontSizeSmall
+                                                        width: parent.width
+                                                        wrapMode: Text.WordWrap
+                                                        maximumLineCount: parent.isMessageExpanded ? -1 : 3 // Unlimited when expanded, 3 when collapsed (more space in center)
+                                                        elide: parent.isMessageExpanded ? Text.ElideNone : Text.ElideRight
+                                                        visible: text.length > 0
+                                                    }
+
+                                                    // Clickable area for View action on individual message
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        hoverEnabled: true
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: {
+                                                            // Find and invoke the View action
+                                                            if (modelData.actions) {
+                                                                for (const action of modelData.actions) {
+                                                                    if (action.text && action.text.toLowerCase() === "view") {
+                                                                        if (action.invoke)
+                                                                            action.invoke();
+
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
                                                 }
+
                                             }
 
                                         }

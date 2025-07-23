@@ -7,6 +7,7 @@ import qs.Modules.ControlCenter
 import qs.Modules.Settings
 import qs.Modules.TopBar
 import qs.Modules.ProcessList
+import qs.Modules.ControlCenter.Network
 
 ShellRoot {
     id: root
@@ -90,8 +91,8 @@ ShellRoot {
         id: processListModal
     }
 
-    ClipboardHistory {
-        id: clipboardHistoryPopup
+    ClipboardHistoryModal {
+        id: clipboardHistoryModalPopup
     }
 
     Toast {

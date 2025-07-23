@@ -29,6 +29,7 @@ Rectangle {
 
     MouseArea {
         id: mouseArea
+
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
@@ -40,5 +41,7 @@ Rectangle {
             duration: Theme.shortDuration
             easing.type: Theme.standardEasing
         }
+
     }
+
 }

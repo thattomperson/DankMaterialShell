@@ -3,7 +3,7 @@ import qs.Common
 
 Text {
     id: icon
-    
+
     property alias name: icon.text
     property alias size: icon.font.pixelSize
     property alias color: icon.color

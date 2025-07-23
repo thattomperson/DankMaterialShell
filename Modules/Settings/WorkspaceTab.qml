@@ -23,4 +23,5 @@ Column {
             return Prefs.setShowWorkspacePadding(checked);
         }
     }
+
 }
