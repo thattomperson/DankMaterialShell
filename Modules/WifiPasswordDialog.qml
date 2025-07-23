@@ -12,7 +12,8 @@ DankModal {
     property string wifiPasswordInput: ""
 
     visible: wifiPasswordDialogVisible
-    size: "medium"
+    width: 450
+    height: 280
     keyboardFocus: "exclusive"
 
     onVisibleChanged: {
@@ -27,16 +28,19 @@ DankModal {
     }
 
     content: Component {
-        Column {
+        Item {
             anchors.fill: parent
-            anchors.margins: Theme.spacingL
-            spacing: Theme.spacingL
-            
+
             Component.onCompleted: {
                 Qt.callLater(function() {
                     passwordInput.forceActiveFocus();
                 });
             }
+
+            Column {
+                anchors.centerIn: parent
+                width: parent.width - Theme.spacingL * 2
+                spacing: Theme.spacingL
 
             // Header
             Row {
@@ -224,6 +228,7 @@ DankModal {
                         }
                     }
                 }
+            }
             }
         }
     }

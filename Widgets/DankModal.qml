@@ -12,9 +12,8 @@ PanelWindow {
     property alias content: contentLoader.sourceComponent
 
     // Sizing
-    property string size: "medium" // "small", "medium", "large", "extra-large", "auto", "custom"
-    property real customWidth: 400
-    property real customHeight: 300
+    property real width: 400
+    property real height: 300
 
     // Background behavior
     property bool showBackground: true
@@ -46,26 +45,6 @@ PanelWindow {
     signal dialogClosed()
     signal backgroundClicked()
 
-    // Internal properties
-    readonly property var sizePresets: ({
-        "small": { width: 350, height: 200 },
-        "medium": { width: 500, height: 400 },
-        "large": { width: 600, height: 500 },
-        "extra-large": { width: 700, height: 600 },
-        "fit-content": { width: 600, height: 500 }
-    })
-
-    readonly property real contentWidth: {
-        if (size === "custom") return customWidth
-        if (size === "auto") return Math.min(contentLoader.item ? contentLoader.item.implicitWidth || 400 : 400, parent.width - Theme.spacingL * 2)
-        return sizePresets[size] ? sizePresets[size].width : sizePresets["medium"].width
-    }
-
-    readonly property real contentHeight: {
-        if (size === "custom") return customHeight
-        if (size === "auto") return Math.min(contentLoader.item ? contentLoader.item.implicitHeight || 300 : 300, parent.height - Theme.spacingL * 2)
-        return sizePresets[size] ? sizePresets[size].height : sizePresets["medium"].height
-    }
 
     // PanelWindow configuration
     // visible property is inherited from PanelWindow
@@ -128,8 +107,8 @@ PanelWindow {
     Rectangle {
         id: contentContainer
         
-        width: root.contentWidth
-        height: root.contentHeight
+        width: root.width
+        height: root.height
         
         // Positioning
         anchors.centerIn: positioning === "center" ? parent : undefined

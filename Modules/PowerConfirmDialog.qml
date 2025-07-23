@@ -37,7 +37,8 @@ DankModal {
 
     // DankModal configuration
     visible: powerConfirmVisible
-    size: "small"
+    width: 350
+    height: 200
     keyboardFocus: "ondemand"
     enableShadow: false
     onBackgroundClicked: {

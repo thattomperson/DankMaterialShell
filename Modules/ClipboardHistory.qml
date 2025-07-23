@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import Quickshell
 import Quickshell.Io
 import qs.Common
 import qs.Widgets
@@ -113,7 +114,8 @@ DankModal {
 
     // DankModal configuration
     visible: isVisible
-    size: "large"
+    width: 600
+    height: 500
     keyboardFocus: "ondemand"
 
     onVisibleChanged: {
@@ -312,7 +314,8 @@ DankModal {
     DankModal {
         id: clearConfirmDialog
         visible: showClearConfirmation
-        size: "small"
+        width: 350
+        height: 180
         keyboardFocus: "ondemand"
         
         onBackgroundClicked: {
@@ -472,5 +475,24 @@ DankModal {
     Process {
         id: cleanupProcess
         running: false
+    }
+
+    IpcHandler {
+        function open() {
+            console.log("ClipboardHistory: IPC open() called");
+            clipboardHistory.show();
+            return "CLIPBOARD_OPEN_SUCCESS";
+        }
+        function close() {
+            console.log("ClipboardHistory: IPC close() called");
+            clipboardHistory.hide();
+            return "CLIPBOARD_CLOSE_SUCCESS";
+        }
+        function toggle() {
+            console.log("ClipboardHistory: IPC toggle() called");
+            clipboardHistory.toggle();
+            return "CLIPBOARD_TOGGLE_SUCCESS";
+        }
+        target: "clipboard"
     }
 }

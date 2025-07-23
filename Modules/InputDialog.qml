@@ -36,7 +36,8 @@ DankModal {
     }
 
     visible: dialogVisible
-    size: "medium"
+    width: 400
+    height: 250
     keyboardFocus: "exclusive"
 
     onVisibleChanged: {

@@ -18,8 +18,8 @@ Rectangle {
     SystemLogo {
         visible: Prefs.useOSLogo
         anchors.centerIn: parent
-        width: Theme.iconSize - 6
-        height: Theme.iconSize - 6
+        width: Theme.iconSize - 3
+        height: Theme.iconSize - 3
         color: Theme.surfaceText
     }
 

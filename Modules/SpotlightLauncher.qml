@@ -200,23 +200,8 @@ DankModal {
 
     // DankModal configuration
     visible: spotlightOpen
-    size: "custom"
-    customWidth: 600
-    customHeight: {
-        // Fixed height to prevent shrinking - consistent experience
-        let baseHeight = Theme.spacingXL * 2 + Theme.spacingL * 3;
-        // Add category section height if visible
-        if (categories.length > 1 || filteredModel.count > 0)
-            baseHeight += 36 * 2 + Theme.spacingS + Theme.spacingM;
-        // Add search field height
-        baseHeight += 56;
-        // Add fixed results height for consistent size
-        let fixedResultsHeight = 400;
-        // Always same height regardless of content
-        baseHeight += fixedResultsHeight;
-        // Ensure reasonable bounds
-        return Math.min(Math.max(baseHeight, 500), 800);
-    }
+    width: 600
+    height: 500
     keyboardFocus: "exclusive"
     backgroundColor: Theme.popupBackground()
     cornerRadius: Theme.cornerRadiusXLarge

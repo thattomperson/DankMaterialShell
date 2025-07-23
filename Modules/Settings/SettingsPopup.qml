@@ -21,7 +21,8 @@ DankModal {
 
     // DankModal configuration
     visible: settingsVisible
-    size: "extra-large"
+    width: 700
+    height: 600
     keyboardFocus: "ondemand"
     enableShadow: true
 
