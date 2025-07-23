@@ -17,6 +17,7 @@ Item {
     property int gridColumns: 4
     property bool debounceSearch: true
     property int debounceInterval: 50
+    property bool keyboardNavigationActive: false
 
     // Categories (computed from AppSearchService)
     property var categories: {
@@ -28,6 +29,9 @@ Item {
             return cat !== "All";
         }));
     }
+    
+    // Category icons (computed from AppSearchService)
+    property var categoryIcons: categories.map(category => AppSearchService.getCategoryIcon(category))
 
     // Recent apps helper
     property var recentApps: Prefs.recentlyUsedApps.map(recentApp => {
@@ -129,6 +133,7 @@ Item {
     // Keyboard navigation functions
     function selectNext() {
         if (filteredModel.count > 0) {
+            keyboardNavigationActive = true;
             if (viewMode === "grid") {
                 var newIndex = Math.min(selectedIndex + gridColumns, filteredModel.count - 1);
                 selectedIndex = newIndex;
@@ -140,6 +145,7 @@ Item {
 
     function selectPrevious() {
         if (filteredModel.count > 0) {
+            keyboardNavigationActive = true;
             if (viewMode === "grid") {
                 var newIndex = Math.max(selectedIndex - gridColumns, 0);
                 selectedIndex = newIndex;
@@ -151,12 +157,14 @@ Item {
 
     function selectNextInRow() {
         if (filteredModel.count > 0 && viewMode === "grid") {
+            keyboardNavigationActive = true;
             selectedIndex = Math.min(selectedIndex + 1, filteredModel.count - 1);
         }
     }
 
     function selectPreviousInRow() {
         if (filteredModel.count > 0 && viewMode === "grid") {
+            keyboardNavigationActive = true;
             selectedIndex = Math.max(selectedIndex - 1, 0);
         }
     }

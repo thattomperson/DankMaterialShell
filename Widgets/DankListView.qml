@@ -15,9 +15,31 @@ ScrollView {
     property bool showDescription: true
     property int itemSpacing: Theme.spacingS
     property bool hoverUpdatesSelection: true
-
+    property bool keyboardNavigationActive: false
+    
+    signal keyboardNavigationReset()
     signal itemClicked(int index, var modelData)
     signal itemHovered(int index)
+
+    // Ensure the current item is visible
+    function ensureVisible(index) {
+        if (index < 0 || index >= list.count) return;
+        
+        var itemY = index * (itemHeight + itemSpacing);
+        var itemBottom = itemY + itemHeight;
+        
+        if (itemY < list.contentY) {
+            list.contentY = itemY;
+        } else if (itemBottom > list.contentY + list.height) {
+            list.contentY = itemBottom - list.height;
+        }
+    }
+
+    onCurrentIndexChanged: {
+        if (keyboardNavigationActive) {
+            ensureVisible(currentIndex);
+        }
+    }
 
     clip: true
     ScrollBar.vertical.policy: ScrollBar.AlwaysOn
@@ -134,10 +156,14 @@ ScrollView {
                 cursorShape: Qt.PointingHandCursor
                 z: 10
                 onEntered: {
-                    if (hoverUpdatesSelection)
+                    if (hoverUpdatesSelection && !keyboardNavigationActive) {
                         listView.currentIndex = index;
-
+                    }
                     itemHovered(index);
+                }
+                onPositionChanged: {
+                    // Signal parent to reset keyboard navigation flag when mouse moves
+                    keyboardNavigationReset();
                 }
                 onClicked: {
                     itemClicked(index, model);

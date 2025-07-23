@@ -15,6 +15,10 @@ Rectangle {
     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
     border.width: 1
     layer.enabled: true
+    
+    Ref {
+        service: WeatherService
+    }
 
     // Placeholder when no weather - centered in entire widget
     Column {

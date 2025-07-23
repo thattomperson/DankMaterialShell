@@ -162,7 +162,7 @@ PanelWindow {
 
             Media {
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.right: clockWidget.left
+                anchors.right: clock.left
                 anchors.rightMargin: Theme.spacingS
                 visible: Prefs.showMusic && MprisController.activePlayer
                 onClicked: {

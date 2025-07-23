@@ -87,13 +87,23 @@ PanelWindow {
         border.width: 1
         layer.enabled: true
         opacity: calendarVisible ? 1 : 0
+        scale: calendarVisible ? 1 : 0.9
         x: (Screen.width - targetWidth) / 2
         y: Theme.barHeight + 4
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Anims.durShort
-                easing.type: Easing.OutCubic
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
+            }
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
             }
         }
 
@@ -241,8 +251,13 @@ PanelWindow {
         anchors.fill: parent
         z: -1
         enabled: calendarVisible
-        onClicked: {
-            calendarVisible = false;
+        onClicked: function(mouse) {
+            // Only close if click is outside the main container
+            var localPos = mapToItem(mainContainer, mouse.x, mouse.y);
+            if (localPos.x < 0 || localPos.x > mainContainer.width || 
+                localPos.y < 0 || localPos.y > mainContainer.height) {
+                calendarVisible = false;
+            }
         }
     }
 

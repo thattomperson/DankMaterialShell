@@ -12,6 +12,7 @@ Rectangle {
     property string description: ""
     property string currentValue: ""
     property var options: []
+    property var optionIcons: [] // Array of icon names corresponding to options
 
     signal valueChanged(string value)
 
@@ -72,13 +73,33 @@ Rectangle {
             anchors.leftMargin: Theme.spacingM
             anchors.rightMargin: Theme.spacingS
 
-            Text {
-                text: root.currentValue
-                font.pixelSize: Theme.fontSizeMedium
-                color: Theme.surfaceText
+            Row {
                 anchors.verticalCenter: parent.verticalCenter
+                spacing: Theme.spacingS
                 width: parent.width - 24
-                elide: Text.ElideRight
+                
+                DankIcon {
+                    name: {
+                        var currentIndex = root.options.indexOf(root.currentValue);
+                        return root.optionIcons.length > currentIndex && currentIndex >= 0 ? root.optionIcons[currentIndex] : "";
+                    }
+                    size: 18
+                    color: Theme.surfaceVariantText
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: {
+                        var currentIndex = root.options.indexOf(root.currentValue);
+                        return root.optionIcons.length > currentIndex && currentIndex >= 0 && root.optionIcons[currentIndex] !== "";
+                    }
+                }
+                
+                Text {
+                    text: root.currentValue
+                    font.pixelSize: Theme.fontSizeMedium
+                    color: Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.parent.width - (visible ? 24 + Theme.spacingS : 24) - (parent.children[0].visible ? 18 + Theme.spacingS : 0)
+                    elide: Text.ElideRight
+                }
             }
 
             DankIcon {
@@ -170,14 +191,27 @@ Rectangle {
                         radius: Theme.cornerRadiusSmall
                         color: optionArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
 
-                        Text {
+                        Row {
                             anchors.left: parent.left
                             anchors.leftMargin: Theme.spacingS
                             anchors.verticalCenter: parent.verticalCenter
-                            text: modelData
-                            font.pixelSize: Theme.fontSizeMedium
-                            color: root.currentValue === modelData ? Theme.primary : Theme.surfaceText
-                            font.weight: root.currentValue === modelData ? Font.Medium : Font.Normal
+                            spacing: Theme.spacingS
+                            
+                            DankIcon {
+                                name: root.optionIcons.length > index ? root.optionIcons[index] : ""
+                                size: 18
+                                color: root.currentValue === modelData ? Theme.primary : Theme.surfaceVariantText
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: root.optionIcons.length > index && root.optionIcons[index] !== ""
+                            }
+                            
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: modelData
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: root.currentValue === modelData ? Theme.primary : Theme.surfaceText
+                                font.weight: root.currentValue === modelData ? Font.Medium : Font.Normal
+                            }
                         }
 
                         MouseArea {

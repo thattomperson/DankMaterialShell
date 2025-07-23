@@ -71,7 +71,9 @@ DankModal {
         gridColumns: 4
         
         onAppLaunched: hide()
-        onViewModeSelected: Prefs.setSpotlightModalViewMode(mode)
+        onViewModeSelected: function(mode) {
+            Prefs.setSpotlightModalViewMode(mode);
+        }
     }
 
     content: Component {
@@ -265,11 +267,15 @@ DankModal {
                     iconSize: 40
                     showDescription: true
                     hoverUpdatesSelection: false
+                    keyboardNavigationActive: appLauncher.keyboardNavigationActive
                     onItemClicked: function(index, modelData) {
                         appLauncher.launchApp(modelData);
                     }
                     onItemHovered: function(index) {
                         appLauncher.selectedIndex = index;
+                    }
+                    onKeyboardNavigationReset: {
+                        appLauncher.keyboardNavigationActive = false;
                     }
                 }
 
@@ -288,11 +294,15 @@ DankModal {
                     maxIconSize: 48
                     currentIndex: appLauncher.selectedIndex
                     hoverUpdatesSelection: false
+                    keyboardNavigationActive: appLauncher.keyboardNavigationActive
                     onItemClicked: function(index, modelData) {
                         appLauncher.launchApp(modelData);
                     }
                     onItemHovered: function(index) {
                         appLauncher.selectedIndex = index;
+                    }
+                    onKeyboardNavigationReset: {
+                        appLauncher.keyboardNavigationActive = false;
                     }
                 }
             }

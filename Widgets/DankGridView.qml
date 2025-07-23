@@ -19,9 +19,32 @@ ScrollView {
     property int minIconSize: 32
     property real wheelStepSize: 60
     property bool hoverUpdatesSelection: true
+    property bool keyboardNavigationActive: false
+    
+    signal keyboardNavigationReset()
 
     signal itemClicked(int index, var modelData)
     signal itemHovered(int index)
+
+    // Ensure the current item is visible
+    function ensureVisible(index) {
+        if (index < 0 || index >= grid.count) return;
+        
+        var itemY = Math.floor(index / grid.actualColumns) * grid.cellHeight;
+        var itemBottom = itemY + grid.cellHeight;
+        
+        if (itemY < grid.contentY) {
+            grid.contentY = itemY;
+        } else if (itemBottom > grid.contentY + grid.height) {
+            grid.contentY = itemBottom - grid.height;
+        }
+    }
+
+    onCurrentIndexChanged: {
+        if (keyboardNavigationActive) {
+            ensureVisible(currentIndex);
+        }
+    }
 
     clip: true
     ScrollBar.vertical.policy: ScrollBar.AsNeeded
@@ -134,10 +157,14 @@ ScrollView {
                 cursorShape: Qt.PointingHandCursor
                 z: 10
                 onEntered: {
-                    if (hoverUpdatesSelection)
+                    if (hoverUpdatesSelection && !keyboardNavigationActive) {
                         currentIndex = index;
-
+                    }
                     itemHovered(index);
+                }
+                onPositionChanged: {
+                    // Signal parent to reset keyboard navigation flag when mouse moves
+                    keyboardNavigationReset();
                 }
                 onClicked: {
                     itemClicked(index, model);

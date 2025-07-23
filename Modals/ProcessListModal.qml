@@ -19,8 +19,6 @@ DankModal {
 
     function show() {
         processListModal.visible = true;
-        ProcessMonitorService.updateSystemInfo();
-        ProcessMonitorService.updateProcessList();
         SystemMonitorService.enableDetailedMonitoring(true);
         SystemMonitorService.updateSystemInfo();
         UserInfoService.getUptime();
@@ -46,9 +44,10 @@ DankModal {
     cornerRadius: Theme.cornerRadiusXLarge
     enableShadow: true
     
-    onVisibleChanged: {
-        ProcessMonitorService.enableMonitoring(visible);
+    Ref {
+        service: ProcessMonitorService
     }
+    
 
     onBackgroundClicked: hide()
 

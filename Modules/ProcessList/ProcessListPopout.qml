@@ -23,8 +23,6 @@ PanelWindow {
 
     function show() {
         isVisible = true;
-        ProcessMonitorService.updateSystemInfo();
-        ProcessMonitorService.updateProcessList();
     }
 
     function toggle() {
@@ -35,9 +33,11 @@ PanelWindow {
     }
 
     visible: isVisible
-    onIsVisibleChanged: {
-        ProcessMonitorService.enableMonitoring(isVisible);
+    
+    Ref {
+        service: ProcessMonitorService
     }
+    
     implicitWidth: 600
     implicitHeight: 600
     WlrLayershell.layer: WlrLayershell.Overlay
@@ -54,84 +54,86 @@ PanelWindow {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: processListPopout.hide()
+        onClicked: function(mouse) {
+            // Only close if click is outside the content loader
+            var localPos = mapToItem(contentLoader, mouse.x, mouse.y);
+            if (localPos.x < 0 || localPos.x > contentLoader.width || 
+                localPos.y < 0 || localPos.y > contentLoader.height) {
+                processListPopout.hide();
+            }
+        }
     }
 
-    Rectangle {
-        id: dropdownContent
-
+    Loader {
+        id: contentLoader
+        asynchronous: true
+        active: processListPopout.isVisible
+        
         readonly property real targetWidth: Math.min(600, Screen.width - Theme.spacingL * 2)
         readonly property real targetHeight: Math.min(600, Screen.height - Theme.barHeight - Theme.spacingS * 2)
         width: targetWidth
         height: targetHeight
         y: Theme.barHeight + Theme.spacingXS
-        radius: Theme.cornerRadiusLarge
-        color: Theme.popupBackground()
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
-        border.width: 1
-        clip: true
+        x: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
+        
+        // GPU-accelerated scale + opacity animation
         opacity: processListPopout.isVisible ? 1 : 0
-        layer.enabled: true
-        property real normalX: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
-        x: processListPopout.isVisible ? normalX : normalX + Anims.slidePx
-
-        Behavior on x {
-            NumberAnimation {
-                duration: Anims.durMed
-                easing.type: Easing.OutCubic
-            }
-        }
-
-        MouseArea {
-
-            anchors.fill: parent
-            onClicked: {
-            }
-        }
-
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: Theme.spacingL
-            spacing: Theme.spacingM
-
-            SystemOverview {
-                Layout.fillWidth: true
-            }
-
-            Rectangle {
-                width: parent.width
-                height: 1
-                color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
-            }
-
-            ProcessListView {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                contextMenu: processContextMenuWindow
-                processContextMenuWindow: processContextMenuWindow
-            }
-        }
-
-        layer.effect: MultiEffect {
-            shadowEnabled: true
-            shadowHorizontalOffset: 0
-            shadowVerticalOffset: 8
-            shadowBlur: 1
-            shadowColor: Qt.rgba(0, 0, 0, 0.15)
-            shadowOpacity: processListPopout.isVisible ? 0.15 : 0
-        }
-
+        scale: processListPopout.isVisible ? 1 : 0.9
+        
         Behavior on opacity {
             NumberAnimation {
-                duration: Anims.durShort
-                easing.type: Easing.OutCubic
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
             }
         }
+        
+        Behavior on scale {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
+            }
+        }
+        
+        sourceComponent: Rectangle {
+            id: dropdownContent
+            radius: Theme.cornerRadiusLarge
+            color: Theme.popupBackground()
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            border.width: 1
+            clip: true
+            
+            // Remove layer rendering for better performance
+            antialiasing: true
+            smooth: true
 
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: Theme.spacingL
+                spacing: Theme.spacingM
+
+                SystemOverview {
+                    Layout.fillWidth: true
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: 1
+                    color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
+                }
+
+                ProcessListView {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    contextMenu: processContextMenuWindow
+                }
+            }
+        }
     }
 
     ProcessContextMenu {
         id: processContextMenuWindow
     }
-
 }

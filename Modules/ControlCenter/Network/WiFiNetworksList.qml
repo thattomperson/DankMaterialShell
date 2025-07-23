@@ -119,7 +119,7 @@ Column {
                 model: NetworkService.wifiAvailable && NetworkService.wifiEnabled ? sortedWifiNetworks : []
 
                 Rectangle {
-                    width: parent.width
+                    width: spanningNetworksColumn.width
                     height: 38
                     radius: Theme.cornerRadiusSmall
                     color: networkArea2.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : modelData.connected ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"

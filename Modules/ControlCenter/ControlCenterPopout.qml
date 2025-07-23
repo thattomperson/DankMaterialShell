@@ -47,25 +47,46 @@ PanelWindow {
         bottom: true
     }
 
-    Rectangle {
+    Loader {
+        id: contentLoader
+        asynchronous: true
+        active: controlCenterVisible
+        
         readonly property real targetWidth: Math.min(600, Screen.width - Theme.spacingL * 2)
         width: targetWidth
         height: root.powerOptionsExpanded ? 570 : 500
         y: Theme.barHeight + Theme.spacingXS
-        color: Theme.popupBackground()
-        radius: Theme.cornerRadiusLarge
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
-        border.width: 1
+        x: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
+        
+        // GPU-accelerated scale + opacity animation
         opacity: controlCenterVisible ? 1 : 0
-        property real normalX: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
-        x: controlCenterVisible ? normalX : normalX + Anims.slidePx
-
-        Behavior on x {
+        scale: controlCenterVisible ? 1 : 0.9
+        
+        Behavior on opacity {
             NumberAnimation {
                 duration: Anims.durMed
-                easing.type: Easing.OutCubic
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
             }
         }
+        
+        Behavior on scale {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
+            }
+        }
+        
+        sourceComponent: Rectangle {
+            color: Theme.popupBackground()
+            radius: Theme.cornerRadiusLarge
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            border.width: 1
+            
+            // Remove layer rendering for better performance
+            antialiasing: true
+            smooth: true
 
         ColumnLayout {
             anchors.fill: parent
@@ -647,30 +668,27 @@ PanelWindow {
 
         }
 
-        // Power menu height animation
-        Behavior on height {
-            NumberAnimation {
-                duration: Theme.shortDuration // Faster for height changes
-                easing.type: Theme.standardEasing
-            }
-
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Anims.durShort
-                easing.type: Easing.OutCubic
+            // Power menu height animation
+            Behavior on height {
+                NumberAnimation {
+                    duration: Theme.shortDuration // Faster for height changes
+                    easing.type: Theme.standardEasing
+                }
             }
         }
-
     }
 
     // Click outside to close
     MouseArea {
         anchors.fill: parent
         z: -1
-        onClicked: {
-            controlCenterVisible = false;
+        onClicked: function(mouse) {
+            // Only close if click is outside the content loader
+            var localPos = mapToItem(contentLoader, mouse.x, mouse.y);
+            if (localPos.x < 0 || localPos.x > contentLoader.width || 
+                localPos.y < 0 || localPos.y > contentLoader.height) {
+                controlCenterVisible = false;
+            }
         }
     }
 

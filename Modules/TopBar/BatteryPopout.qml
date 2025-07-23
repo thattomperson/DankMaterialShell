@@ -48,33 +48,58 @@ PanelWindow {
     // Click outside to dismiss overlay
     MouseArea {
         anchors.fill: parent
-        onClicked: {
-            batteryPopupVisible = false;
+        onClicked: function(mouse) {
+            // Only close if click is outside the content loader
+            var localPos = mapToItem(contentLoader, mouse.x, mouse.y);
+            if (localPos.x < 0 || localPos.x > contentLoader.width || 
+                localPos.y < 0 || localPos.y > contentLoader.height) {
+                batteryPopupVisible = false;
+            }
         }
     }
 
-    Rectangle {
+    Loader {
+        id: contentLoader
+        asynchronous: true
+        active: batteryPopupVisible
+        
         readonly property real targetWidth: Math.min(380, Screen.width - Theme.spacingL * 2)
         readonly property real targetHeight: Math.min(450, Screen.height - Theme.barHeight - Theme.spacingS * 2)
         width: targetWidth
         height: targetHeight
-        property real normalX: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
-        x: batteryPopupVisible ? normalX : normalX + Anims.slidePx
+        x: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
         y: Theme.barHeight + Theme.spacingS
-        color: Theme.popupBackground()
-        radius: Theme.cornerRadiusLarge
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
-        border.width: 1
+        
+        // GPU-accelerated scale + opacity animation
         opacity: batteryPopupVisible ? 1 : 0
-
-        // Prevent click-through to background
-        MouseArea {
-            // Consume the click to prevent it from reaching the background
-
-            anchors.fill: parent
-            onClicked: {
+        scale: batteryPopupVisible ? 1 : 0.9
+        
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
             }
         }
+        
+        Behavior on scale {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
+            }
+        }
+        
+        sourceComponent: Rectangle {
+            color: Theme.popupBackground()
+            radius: Theme.cornerRadiusLarge
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            border.width: 1
+            
+            // Remove layer rendering for better performance
+            antialiasing: true
+            smooth: true
+
 
         ScrollView {
             anchors.fill: parent
@@ -461,20 +486,8 @@ PanelWindow {
 
         }
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Anims.durShort
-                easing.type: Easing.OutCubic
-            }
-        }
 
-        Behavior on x {
-            NumberAnimation {
-                duration: Anims.durMed
-                easing.type: Easing.OutCubic
-            }
         }
-
     }
 
 

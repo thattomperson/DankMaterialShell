@@ -6,14 +6,13 @@ import Quickshell
 import Quickshell.Io
 
 Singleton {
-    // console.log("ProcessMonitorService: Updated - CPU:", root.totalCpuUsage.toFixed(1) + "%", "Memory:", memoryPercent.toFixed(1) + "%", "History length:", root.cpuHistory.length)
-
     id: root
 
+    property int refCount
+    
     property var processes: []
     property bool isUpdating: false
     property int processUpdateInterval: 3000
-    property bool monitoringEnabled: false
     property int totalMemoryKB: 0
     property int usedMemoryKB: 0
     property int totalSwapKB: 0
@@ -43,47 +42,8 @@ Singleton {
     property bool sortDescending: true
     property int maxProcesses: 20
 
-    function updateSystemInfo() {
-        if (!systemInfoProcess.running && root.monitoringEnabled)
-            systemInfoProcess.running = true;
-
-    }
-
-    function enableMonitoring(enabled) {
-        console.log("ProcessMonitorService: Monitoring", enabled ? "enabled" : "disabled");
-        root.monitoringEnabled = enabled;
-        if (enabled) {
-            root.cpuHistory = [];
-            root.memoryHistory = [];
-            root.networkHistory = ({
-                "rx": [],
-                "tx": []
-            });
-            root.diskHistory = ({
-                "read": [],
-                "write": []
-            });
-            updateSystemInfo();
-            updateProcessList();
-            updateNetworkStats();
-            updateDiskStats();
-        }
-    }
-
-    function updateNetworkStats() {
-        if (!networkStatsProcess.running && root.monitoringEnabled)
-            networkStatsProcess.running = true;
-
-    }
-
-    function updateDiskStats() {
-        if (!diskStatsProcess.running && root.monitoringEnabled)
-            diskStatsProcess.running = true;
-
-    }
-
     function updateProcessList() {
-        if (!root.isUpdating && root.monitoringEnabled) {
+        if (!root.isUpdating) {
             root.isUpdating = true;
             let sortOption = "";
             switch (root.sortBy) {
@@ -315,10 +275,17 @@ Singleton {
 
     }
 
-    Component.onCompleted: {
-        console.log("ProcessMonitorService: Starting initialization...");
-        updateProcessList();
-        console.log("ProcessMonitorService: Initialization complete");
+    Timer {
+        running: root.refCount > 0
+        interval: root.processUpdateInterval
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: {
+            systemInfoProcess.running = true;
+            updateProcessList();
+            networkStatsProcess.running = true;
+            diskStatsProcess.running = true;
+        }
     }
 
     Process {
@@ -438,22 +405,6 @@ Singleton {
                 console.warn("Failed to kill process:", root.killPid, "exit code:", exitCode)
             }
             root.killPid = 0
-        }
-    }
-
-    Timer {
-        id: processTimer
-
-        interval: root.processUpdateInterval
-        running: root.monitoringEnabled
-        repeat: true
-        onTriggered: {
-            if (root.monitoringEnabled) {
-                updateSystemInfo();
-                updateProcessList();
-                updateNetworkStats();
-                updateDiskStats();
-            }
         }
     }
 

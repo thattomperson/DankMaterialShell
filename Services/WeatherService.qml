@@ -9,6 +9,8 @@ import qs.Common
 Singleton {
     id: root
     
+    property int refCount: 0
+    
     property var weather: ({
         available: false,
         loading: true,
@@ -95,7 +97,27 @@ Singleton {
         return url
     }
     
+    function addRef() {
+        refCount++;
+        console.log("WeatherService: addRef, refCount now:", refCount);
+        if (refCount === 1 && !weather.available) {
+            // Start fetching when first consumer appears
+            fetchWeather();
+        }
+    }
+    
+    function removeRef() {
+        refCount = Math.max(0, refCount - 1);
+        console.log("WeatherService: removeRef, refCount now:", refCount);
+    }
+    
     function fetchWeather() {
+        // Only fetch if someone is consuming the data
+        if (root.refCount === 0) {
+            console.log("WeatherService: Skipping fetch - no consumers");
+            return;
+        }
+        
         if (weatherFetcher.running) {
             console.log("Weather fetch already in progress, skipping")
             return
@@ -217,7 +239,7 @@ Singleton {
     Timer {
         id: updateTimer
         interval: root.updateInterval
-        running: true
+        running: root.refCount > 0
         repeat: true
         triggeredOnStart: true
         onTriggered: {

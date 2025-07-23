@@ -116,6 +116,25 @@ Singleton {
         return Array.from(mappedCategories)
     }
     
+    // Category icon mappings
+    property var categoryIcons: ({
+        "All": "apps",
+        "Recents": "history",
+        "Media": "music_video",
+        "Development": "code",
+        "Games": "sports_esports",
+        "Graphics": "photo_library", 
+        "Internet": "web",
+        "Office": "content_paste",
+        "Settings": "settings",
+        "System": "host",
+        "Utilities": "build"
+    })
+    
+    function getCategoryIcon(category) {
+        return categoryIcons[category] || "folder"
+    }
+    
     function getAllCategories() {
         var categories = new Set(["All"])
         

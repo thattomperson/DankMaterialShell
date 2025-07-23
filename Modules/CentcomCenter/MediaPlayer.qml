@@ -317,8 +317,8 @@ Rectangle {
 
                     x: 0
                     y: 0
-                    width: mediaPlayerWidget.width
-                    height: mediaPlayerWidget.height
+                    width: mediaPlayer.width
+                    height: mediaPlayer.height
                     enabled: progressMouseArea.isSeeking
                     visible: false
                     preventStealing: true
