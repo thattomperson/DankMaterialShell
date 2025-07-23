@@ -149,6 +149,9 @@ PanelWindow {
         searchField.enabled = true;
         searchDebounceTimer.stop(); // Stop any pending search
         updateFilteredModel();
+        Qt.callLater(function() {
+            searchField.forceActiveFocus();
+        });
     }
 
     function hide() {

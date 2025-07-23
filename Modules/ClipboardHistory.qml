@@ -14,6 +14,7 @@ DankModal {
     property var clipboardEntries: []
 
     property string searchText: ""
+    property bool shouldFocusSearch: false
 
     function updateFilteredModel() {
         filteredClipboardModel.clear();
@@ -118,6 +119,7 @@ DankModal {
     onVisibleChanged: {
         if (visible) {
             refreshClipboard();
+            shouldFocusSearch = true;
         }
     }
 
@@ -194,12 +196,24 @@ DankModal {
                     clipboardHistory.searchText = text;
                     updateFilteredModel();
                 }
+                
+                Connections {
+                    target: clipboardHistory
+                    function onShouldFocusSearchChanged() {
+                        if (shouldFocusSearch) {
+                            Qt.callLater(function() {
+                                searchField.forceActiveFocus();
+                                shouldFocusSearch = false;
+                            });
+                        }
+                    }
+                }
             }
 
             // Clipboard entries list  
             Rectangle {
                 width: parent.width
-                height: parent.height - 100
+                height: parent.height - 110
                 radius: Theme.cornerRadius
                 color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
                 clip: true
@@ -280,14 +294,13 @@ DankModal {
                             onClicked: copyEntry(model.entry)
                         }
                     }
-                }
-
-                Text {
-                    text: "No clipboard entries found"
-                    anchors.centerIn: parent
-                    font.pixelSize: Theme.fontSizeMedium
-                    color: Theme.surfaceVariantText
-                    visible: filteredClipboardModel.count === 0
+                    Text {
+                        text: "No clipboard entries found"
+                        anchors.centerIn: parent
+                        font.pixelSize: Theme.fontSizeMedium
+                        color: Theme.surfaceVariantText
+                        visible: filteredClipboardModel.count === 0
+                    }
                 }
                 }
             }
