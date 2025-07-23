@@ -299,26 +299,19 @@ PanelWindow {
                     delegate: Rectangle {
                         required property var modelData
                         readonly property bool expanded: NotificationService.expandedGroups[modelData.key] || false
+                        readonly property string groupKey: modelData.key
 
                         width: ListView.view.width
                         height: {
-                            if (expanded) {
-                                // Calculate expanded height: header (48) + spacing (16) + individual notifications
-                                let headerHeight = 48 + Theme.spacingM;
-                                let notificationHeight = modelData.notifications.length * (60 + Theme.spacingS); // Each notification ~60px + spacing
-                                let totalExpandedHeight = headerHeight + notificationHeight + Theme.spacingL * 2;
-                                return Math.max(totalExpandedHeight, 200); // Minimum expanded height
-                            } else {
-                                // Collapsed height: icon + content + quick reply (if any)
-                                let collapsedHeight = 72 + Theme.spacingS * 2;
-                                // Header height + spacing
-                                if (modelData.latestNotification.notification.hasInlineReply)
-                                    collapsedHeight += 36 + Theme.spacingS;
-
-                                return collapsedHeight + Theme.spacingL * 2;
+                            if (expanded && modelData.count >= 1) {
+                                const baseHeight = (116 * modelData.count) + (12 * (modelData.count - 1));
+                                // Add extra bottom margin for expanded groups
+                                const bottomMargin = modelData.count === 1 ? 50 : (modelData.count < 3 ? 40 : 20);
+                                return baseHeight + bottomMargin;
                             }
+                            return 116;
                         }
-                        radius: Theme.cornerRadiusLarge
+                        radius: 12
                         color: Theme.popupBackground()
                         border.color: modelData.latestNotification.urgency === 2 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
                         border.width: modelData.latestNotification.urgency === 2 ? 2 : 1
@@ -336,356 +329,248 @@ PanelWindow {
                             visible: modelData.latestNotification.urgency === 2
                         }
 
-                        // Collapsed view - shows app header and latest notification
-                        Column {
+                        // Collapsed view - show latest notification using popup style
+                        Item {
                             id: collapsedContent
 
                             anchors.top: parent.top
                             anchors.left: parent.left
                             anchors.right: parent.right
-                            anchors.topMargin: 14 // Reduced from Theme.spacingL (16px) by 10%
-                            anchors.bottomMargin: 14 // Reduced from Theme.spacingL (16px) by 10%
-                            anchors.leftMargin: Theme.spacingL
-                            anchors.rightMargin: Theme.spacingL
-                            spacing: Theme.spacingS
+                            anchors.topMargin: 12
+                            anchors.leftMargin: 16
+                            anchors.rightMargin: 16
+                            height: 92
                             visible: !expanded
 
-                            // App header with group info
-                            Item {
-                                width: parent.width
-                                height: 72
+                            Rectangle {
+                                id: iconContainer
 
-                                // App icon with proper fallback handling
-                                Item {
-                                    id: iconContainer
+                                readonly property bool hasNotificationImage: modelData.latestNotification.image && modelData.latestNotification.image !== ""
+                                readonly property bool appIconIsImage: modelData.latestNotification.appIcon && (modelData.latestNotification.appIcon.startsWith("file://") || modelData.latestNotification.appIcon.startsWith("http://") || modelData.latestNotification.appIcon.startsWith("https://"))
 
-                                    width: 48
-                                    height: 48
-                                    anchors.left: parent.left
-                                    anchors.verticalCenter: parent.verticalCenter
+                                width: 55
+                                height: 55
+                                radius: 27.5
+                                color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1)
+                                border.color: "transparent"
+                                border.width: 0
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
 
-                                    Rectangle {
-                                        width: 48
-                                        height: 48
-                                        radius: 24
-                                        color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1)
-                                        border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3)
-                                        border.width: 1
-                                        clip: true
+                                IconImage {
+                                    anchors.fill: parent
+                                    anchors.margins: 2
+                                    source: {
+                                        // Priority 1: Use notification image if available
+                                        if (parent.hasNotificationImage)
+                                            return modelData.latestNotification.cleanImage;
 
-                                        readonly property bool hasNotificationImage: modelData.latestNotification.image && modelData.latestNotification.image !== ""
+                                        // Priority 2: Use appIcon - handle URLs directly, use iconPath for icon names
+                                        if (modelData.latestNotification.appIcon) {
+                                            const appIcon = modelData.latestNotification.appIcon;
+                                            if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://"))
+                                                return appIcon;
 
-                                        IconImage {
-                                            anchors.fill: parent
-                                            anchors.margins: 2
-                                            source: {
-                                                // Priority 1: Use notification image if available
-                                                if (parent.hasNotificationImage) {
-                                                    return modelData.latestNotification.cleanImage;
-                                                }
-                                                
-                                                // Priority 2: Use appIcon - handle URLs directly, use iconPath for icon names
-                                                if (modelData.latestNotification.appIcon) {
-                                                    const appIcon = modelData.latestNotification.appIcon;
-                                                    if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://")) {
-                                                        return appIcon;
-                                                    }
-                                                    return Quickshell.iconPath(appIcon, "");
-                                                }
-                                                
-                                                return "";
-                                            }
-                                            visible: status === Image.Ready
+                                            return Quickshell.iconPath(appIcon, "");
                                         }
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            visible: !parent.hasNotificationImage && (!modelData.latestNotification.appIcon || modelData.latestNotification.appIcon === "")
-                                            text: {
-                                                const appName = modelData.appName || "?";
-                                                return appName.charAt(0).toUpperCase();
-                                            }
-                                            font.pixelSize: 20
-                                            font.weight: Font.Bold
-                                            color: Theme.primaryText
-                                        }
-
+                                        return "";
                                     }
-
-                                    // Count badge for multiple notifications
-                                    Rectangle {
-                                        width: 18
-                                        height: 18
-                                        radius: 9
-                                        color: Theme.primary
-                                        anchors.top: parent.top
-                                        anchors.right: parent.right
-                                        anchors.topMargin: -2
-                                        anchors.rightMargin: -2
-                                        visible: modelData.count > 1
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: modelData.count > 99 ? "99+" : modelData.count.toString()
-                                            color: Theme.primaryText
-                                            font.pixelSize: 9
-                                            font.weight: Font.Bold
-                                        }
-
-                                    }
-
+                                    visible: status === Image.Ready
                                 }
 
-                                // Content area with proper spacing
-                                Column {
-                                    anchors.left: iconContainer.right
-                                    anchors.leftMargin: Theme.spacingM
-                                    anchors.right: controlsContainer.left
-                                    anchors.rightMargin: 8 // Reduced to align text with close button
+                                Text {
+                                    anchors.centerIn: parent
+                                    visible: !parent.hasNotificationImage && (!modelData.latestNotification.appIcon || modelData.latestNotification.appIcon === "")
+                                    text: {
+                                        const appName = modelData.appName || "?";
+                                        return appName.charAt(0).toUpperCase();
+                                    }
+                                    font.pixelSize: 20
+                                    font.weight: Font.Bold
+                                    color: Theme.primaryText
+                                }
+
+                                Rectangle {
+                                    width: 18
+                                    height: 18
+                                    radius: 9
+                                    color: Theme.primary
                                     anchors.top: parent.top
-                                    anchors.topMargin: Theme.spacingS
-                                    spacing: 6 // Reduced from Theme.spacingS (8px) by 2px
-
-                                    // App name and timestamp
-                                    Text {
-                                        width: parent.width
-                                        text: {
-                                            if (modelData.latestNotification.timeStr.length > 0)
-                                                return modelData.appName + " • " + modelData.latestNotification.timeStr;
-                                            else
-                                                return modelData.appName;
-                                        }
-                                        color: Theme.surfaceVariantText
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.weight: Font.Medium
-                                        elide: Text.ElideRight
-                                        maximumLineCount: 1
-                                    }
-
-                                    // Latest notification title (emphasized)
-                                    Text {
-                                        text: modelData.latestNotification.summary
-                                        color: Theme.surfaceText
-                                        font.pixelSize: Theme.fontSizeMedium + 1
-                                        font.weight: Font.Medium
-                                        width: parent.width
-                                        elide: Text.ElideRight
-                                        maximumLineCount: 1
-                                        visible: text.length > 0
-                                    }
-
-                                    // Latest notification body
-                                    Text {
-                                        text: modelData.latestNotification.body
-                                        color: Theme.surfaceVariantText
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        width: parent.width
-                                        elide: Text.ElideRight
-                                        maximumLineCount: modelData.count > 1 ? 1 : 2
-                                        wrapMode: Text.WordWrap
-                                        visible: text.length > 0
-                                    }
-
-                                }
-
-                                // Controls aligned with app name and timestamp row
-                                Item {
-                                    id: controlsContainer
-
-                                    width: 72
-                                    height: 32
                                     anchors.right: parent.right
-                                    anchors.top: parent.top
-                                    anchors.topMargin: 8
+                                    anchors.topMargin: -2
+                                    anchors.rightMargin: -2
+                                    visible: modelData.count > 1
 
-                                    Rectangle {
-                                        width: 32
-                                        height: 32
-                                        radius: 16
-                                        anchors.left: parent.left
-                                        color: expandArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
-                                        visible: modelData.count > 1
-
-                                        DankIcon {
-                                            anchors.centerIn: parent
-                                            name: "expand_more"
-                                            size: 18
-                                            color: Theme.surfaceText
-                                            rotation: expanded ? 180 : 0
-
-                                            Behavior on rotation {
-                                                NumberAnimation {
-                                                    duration: Theme.shortDuration
-                                                    easing.type: Theme.standardEasing
-                                                }
-
-                                            }
-
-                                        }
-
-                                        MouseArea {
-                                            id: expandArea
-
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: NotificationService.toggleGroupExpansion(modelData.key)
-                                        }
-
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: modelData.count > 99 ? "99+" : modelData.count.toString()
+                                        color: Theme.primaryText
+                                        font.pixelSize: 9
+                                        font.weight: Font.Bold
                                     }
-
-                                    Rectangle {
-                                        width: 32
-                                        height: 32
-                                        radius: 16
-                                        anchors.right: parent.right
-                                        color: dismissArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
-
-                                        DankIcon {
-                                            anchors.centerIn: parent
-                                            name: "close"
-                                            size: 16
-                                            color: Theme.surfaceText
-                                        }
-
-                                        MouseArea {
-                                            id: dismissArea
-
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: NotificationService.dismissGroup(modelData.key)
-                                        }
-
-                                    }
-
                                 }
-
                             }
 
-                            // Action buttons for collapsed view
-                            Row {
-                                width: parent.width
-                                spacing: Theme.spacingS
-                                visible: modelData.latestNotification.actions && modelData.latestNotification.actions.length > 0 && !modelData.latestNotification.notification.hasInlineReply && !expanded
+                            Rectangle {
+                                id: textContainer
 
-                                Repeater {
-                                    model: modelData.latestNotification.actions ? modelData.latestNotification.actions.slice(0, 2) : []
-                                    delegate: Rectangle {
-                                        width: Math.min((parent.width - (parent.spacing * (parent.children.length - 1))) / parent.children.length, 120)
-                                        height: 32
-                                        radius: 16
-                                        color: collapsedActionArea.containsMouse ? Theme.primary : Theme.surfaceContainer
-                                        border.color: collapsedActionArea.containsMouse ? "transparent" : Theme.outline
-                                        border.width: 1
+                                anchors.left: iconContainer.right
+                                anchors.leftMargin: 12
+                                anchors.right: controlsContainer.left
+                                anchors.rightMargin: 0
+                                anchors.top: parent.top
+                                anchors.bottom: parent.bottom
+                                anchors.bottomMargin: 8
+                                color: "transparent"
+                                opacity: 1
+                                border.color: "transparent"
+                                border.width: 0
+
+                                Item {
+                                    width: parent.width
+                                    height: parent.height
+                                    anchors.top: parent.top
+                                    anchors.topMargin: 2
+
+                                    Column {
+                                        id: textContent
+
+                                        width: parent.width
+                                        spacing: 2
 
                                         Text {
-                                            anchors.centerIn: parent
-                                            text: modelData.text || ""
-                                            color: collapsedActionArea.containsMouse ? Theme.primaryText : Theme.surfaceText
+                                            width: parent.width
+                                            text: {
+                                                if (modelData.latestNotification.timeStr.length > 0)
+                                                    return modelData.appName + " • " + modelData.latestNotification.timeStr;
+                                                else
+                                                    return modelData.appName;
+                                            }
+                                            color: Theme.surfaceVariantText
                                             font.pixelSize: Theme.fontSizeSmall
                                             font.weight: Font.Medium
                                             elide: Text.ElideRight
                                             maximumLineCount: 1
-                                            width: parent.width - 16
-                                            horizontalAlignment: Text.AlignHCenter
                                         }
 
-                                        MouseArea {
-                                            id: collapsedActionArea
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                if (modelData.invoke) {
-                                                    modelData.invoke();
-                                                }
+                                        Text {
+                                            text: modelData.latestNotification.summary
+                                            color: Theme.surfaceText
+                                            font.pixelSize: Theme.fontSizeMedium
+                                            font.weight: Font.Medium
+                                            width: parent.width
+                                            elide: Text.ElideRight
+                                            maximumLineCount: 1
+                                            visible: text.length > 0
+                                        }
+
+                                        Text {
+                                            property bool hasUrls: {
+                                                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                                return urlRegex.test(modelData.latestNotification.body);
                                             }
-                                        }
 
-                                        Behavior on color {
-                                            ColorAnimation {
-                                                duration: Theme.shortDuration
-                                                easing.type: Theme.standardEasing
+                                            text: {
+                                                // Auto-detect and make URLs clickable, with truncation for center notifications
+                                                let bodyText = modelData.latestNotification.body;
+                                                // No truncation for notification center - show full text
+                                                
+                                                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                                return bodyText.replace(urlRegex, '<a href="$1" style="color: ' + Theme.primary + '; text-decoration: underline;">$1</a>');
+                                            }
+                                            color: Theme.surfaceVariantText
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            width: parent.width
+                                            elide: Text.ElideRight
+                                            maximumLineCount: modelData.count > 1 ? 2 : 3
+                                            wrapMode: Text.WordWrap
+                                            visible: text.length > 0
+                                            textFormat: Text.RichText
+                                            onLinkActivated: function(link) {
+                                                Qt.openUrlExternally(link);
                                             }
                                         }
                                     }
                                 }
                             }
 
-                            // Enhanced quick reply for conversations
-                            Row {
-                                width: parent.width
-                                spacing: Theme.spacingS
-                                visible: modelData.latestNotification.notification.hasInlineReply && !expanded
+                            Item {
+                                id: controlsContainer
 
+                                anchors.right: parent.right
+                                anchors.rightMargin: 0
+                                anchors.top: parent.top
+                                anchors.topMargin: 0
+                                width: modelData.count > 1 ? 40 : 20 // Dynamic width: 40px for expand+close, 20px for close only
+                                height: 24
+
+                                // Expand button - always takes up space but only visible when needed
                                 Rectangle {
-                                    width: parent.width - 60
-                                    height: 36
-                                    radius: 18
-                                    color: Theme.surfaceContainer
-                                    border.color: quickReplyField.activeFocus ? Theme.primary : Theme.outline
-                                    border.width: 1
-
-                                    TextField {
-                                        id: quickReplyField
-
-                                        anchors.fill: parent
-                                        anchors.margins: Theme.spacingS
-                                        placeholderText: modelData.latestNotification.notification.inlineReplyPlaceholder || "Quick reply..."
-                                        color: Theme.surfaceText
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        onAccepted: {
-                                            if (text.length > 0) {
-                                                modelData.latestNotification.notification.sendInlineReply(text);
-                                                text = "";
-                                            }
-                                        }
-
-                                        background: Item {
-                                        }
-
-                                    }
-
-                                }
-
-                                Rectangle {
-                                    width: 52
-                                    height: 36
-                                    radius: 18
-                                    color: quickReplyField.text.length > 0 ? Theme.primary : Theme.surfaceContainer
-                                    border.color: quickReplyField.text.length > 0 ? "transparent" : Theme.outline
-                                    border.width: quickReplyField.text.length > 0 ? 0 : 1
+                                    id: collapsedExpandButton
+                                    anchors.left: parent.left
+                                    anchors.top: parent.top
+                                    width: 20
+                                    height: 20
+                                    radius: 10
+                                    color: expandArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
+                                    visible: modelData.count > 1
 
                                     DankIcon {
                                         anchors.centerIn: parent
-                                        name: "send"
-                                        size: 16
-                                        color: quickReplyField.text.length > 0 ? Theme.primaryText : Theme.surfaceVariantText
+                                        name: expanded ? "expand_less" : "expand_more"
+                                        size: 14
+                                        color: Theme.surfaceText
                                     }
 
                                     MouseArea {
+                                        id: expandArea
                                         anchors.fill: parent
-                                        enabled: quickReplyField.text.length > 0
-                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        onClicked: {
-                                            modelData.latestNotification.notification.sendInlineReply(quickReplyField.text);
-                                            quickReplyField.text = "";
-                                        }
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: NotificationService.toggleGroupExpansion(modelData.key)
                                     }
-
-                                    Behavior on color {
-                                        ColorAnimation {
-                                            duration: Theme.shortDuration
-                                            easing.type: Theme.standardEasing
-                                        }
-
-                                    }
-
                                 }
 
-                            }
+                                // Close button - always positioned at the right edge
+                                Rectangle {
+                                    id: closeButton
 
+                                    property bool isHovered: false
+
+                                    anchors.right: parent.right
+                                    anchors.top: parent.top
+                                    width: 20
+                                    height: 20
+                                    radius: 10
+                                    color: isHovered ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
+                                    z: 10
+
+                                    DankIcon {
+                                        id: closeIcon
+
+                                        name: "close"
+                                        size: 14
+                                        color: closeButton.isHovered ? Theme.primary : Theme.surfaceText
+                                        anchors.centerIn: parent
+                                    }
+
+                                    MouseArea {
+                                        id: dismissArea
+
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        z: 11
+                                        onEntered: {
+                                            closeButton.isHovered = true;
+                                        }
+                                        onExited: {
+                                            closeButton.isHovered = false;
+                                        }
+                                        onClicked: NotificationService.dismissGroup(modelData.key)
+                                    }
+                                }
+                            }
                         }
 
                         // Expanded view - shows all notifications stacked
@@ -702,7 +587,7 @@ PanelWindow {
                             spacing: 9 // Reduced from Theme.spacingM (12px) by 1/4
                             visible: expanded
 
-                            // 1st tier controls with app name - optimized spacing  
+                            // 1st tier controls with app name - optimized spacing
                             Item {
                                 width: parent.width
                                 height: 40
@@ -737,27 +622,29 @@ PanelWindow {
                                             font.pixelSize: 10
                                             font.weight: Font.Bold
                                         }
+
                                     }
+
                                 }
 
                                 // Controls container - fixed position on right
                                 Item {
-                                    width: 72
-                                    height: 32
+                                    width: 48
+                                    height: 24
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
 
                                     Rectangle {
-                                        width: 32
-                                        height: 32
-                                        radius: 16
+                                        width: 20
+                                        height: 20
+                                        radius: 10
                                         anchors.left: parent.left
                                         color: collapseAreaTop.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
 
                                         DankIcon {
                                             anchors.centerIn: parent
                                             name: "expand_less"
-                                            size: 18
+                                            size: 14
                                             color: Theme.surfaceText
                                         }
 
@@ -773,16 +660,16 @@ PanelWindow {
                                     }
 
                                     Rectangle {
-                                        width: 32
-                                        height: 32
-                                        radius: 16
+                                        width: 20
+                                        height: 20
+                                        radius: 10
                                         anchors.right: parent.right
                                         color: dismissAllAreaTop.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
 
                                         DankIcon {
                                             anchors.centerIn: parent
                                             name: "close"
-                                            size: 16
+                                            size: 14
                                             color: Theme.surfaceText
                                         }
 
@@ -798,8 +685,8 @@ PanelWindow {
                                     }
 
                                 }
-                            }
 
+                            }
 
                             // Individual notifications
                             Column {
@@ -830,6 +717,8 @@ PanelWindow {
                                             height: Math.max(32, contentColumn.height)
 
                                             Rectangle {
+                                                readonly property bool hasNotificationImage: modelData.image && modelData.image !== ""
+
                                                 width: 32
                                                 height: 32
                                                 radius: 16
@@ -839,26 +728,22 @@ PanelWindow {
                                                 border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
                                                 border.width: 1
 
-                                                readonly property bool hasNotificationImage: modelData.image && modelData.image !== ""
-
                                                 IconImage {
                                                     anchors.fill: parent
                                                     anchors.margins: 1
                                                     source: {
                                                         // Priority 1: Use notification image if available
-                                                        if (parent.hasNotificationImage) {
+                                                        if (parent.hasNotificationImage)
                                                             return modelData.cleanImage;
-                                                        }
-                                                        
+
                                                         // Priority 2: Use appIcon - handle URLs directly, use iconPath for icon names
                                                         if (modelData.appIcon) {
                                                             const appIcon = modelData.appIcon;
-                                                            if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://")) {
+                                                            if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://"))
                                                                 return appIcon;
-                                                            }
+
                                                             return Quickshell.iconPath(appIcon, "");
                                                         }
-                                                        
                                                         return "";
                                                     }
                                                     visible: status === Image.Ready
@@ -889,19 +774,19 @@ PanelWindow {
 
                                                 // Expand/collapse button for 2nd tier
                                                 Rectangle {
-                                                    width: 24
-                                                    height: 24
-                                                    radius: 12
-                                                    color: individualExpandArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
-                                                    visible: modelData.body && modelData.body.length > 50 // Only show if body text is long enough
-
                                                     property bool isExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
+
+                                                    width: 20
+                                                    height: 20
+                                                    radius: 10
+                                                    color: individualExpandArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
+                                                    visible: (modelData.body || "").length > 80 // Only show if body text is long enough
 
                                                     DankIcon {
                                                         anchors.centerIn: parent
                                                         name: parent.isExpanded ? "expand_less" : "expand_more"
                                                         size: 12
-                                                        color: Theme.surfaceVariantText
+                                                        color: Theme.surfaceText
                                                     }
 
                                                     MouseArea {
@@ -912,20 +797,21 @@ PanelWindow {
                                                         cursorShape: Qt.PointingHandCursor
                                                         onClicked: NotificationService.toggleMessageExpansion(modelData.notification.id)
                                                     }
+
                                                 }
 
                                                 // Individual dismiss button
                                                 Rectangle {
-                                                    width: 24
-                                                    height: 24
-                                                    radius: 12
+                                                    width: 20
+                                                    height: 20
+                                                    radius: 10
                                                     color: individualDismissArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
 
                                                     DankIcon {
                                                         anchors.centerIn: parent
                                                         name: "close"
                                                         size: 12
-                                                        color: Theme.surfaceVariantText
+                                                        color: individualDismissArea.containsMouse ? Theme.primary : Theme.surfaceText
                                                     }
 
                                                     MouseArea {
@@ -936,33 +822,38 @@ PanelWindow {
                                                         cursorShape: Qt.PointingHandCursor
                                                         onClicked: NotificationService.dismissNotification(modelData)
                                                     }
+
                                                 }
+
                                             }
 
-                                            Column {
-                                                id: contentColumn
-
+                                            Item {
                                                 anchors.left: parent.left
                                                 anchors.leftMargin: 44
                                                 anchors.right: parent.right
                                                 anchors.rightMargin: 24 // Align text with close button
                                                 anchors.top: parent.top
-                                                spacing: 2 // Reduced from Theme.spacingXS (4px) by 2px
+                                                height: contentColumn.height
 
-                                                property bool isMessageExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
+                                                Column {
+                                                    id: contentColumn
+
+                                                    property bool isMessageExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
+
+                                                    width: parent.width
+                                                    spacing: 2 // Reduced from Theme.spacingXS (4px) by 2px
 
                                                 // Title • timestamp format
                                                 Text {
                                                     text: {
                                                         const summary = modelData.summary || "";
                                                         const timeStr = modelData.timeStr || "";
-                                                        if (summary && timeStr) {
+                                                        if (summary && timeStr)
                                                             return summary + " • " + timeStr;
-                                                        } else if (summary) {
+                                                        else if (summary)
                                                             return summary;
-                                                        } else {
+                                                        else
                                                             return "Message • " + timeStr;
-                                                        }
                                                     }
                                                     color: Theme.surfaceText
                                                     font.pixelSize: Theme.fontSizeSmall
@@ -984,57 +875,28 @@ PanelWindow {
                                                     visible: text.length > 0
                                                 }
 
-                                                // Individual action buttons
-                                                Row {
-                                                    width: parent.width
-                                                    spacing: Theme.spacingXS
-                                                    visible: modelData.actions && modelData.actions.length > 0 && !modelData.notification.hasInlineReply
+                                                // Clickable area for View action on individual message
+                                                MouseArea {
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    cursorShape: Qt.PointingHandCursor
+                                                    onClicked: {
+                                                        // Find and invoke the View action
+                                                        if (modelData.actions) {
+                                                            for (const action of modelData.actions) {
+                                                                if (action.text && action.text.toLowerCase() === "view") {
+                                                                    if (action.invoke)
+                                                                        action.invoke();
 
-                                                    Repeater {
-                                                        model: modelData.actions ? modelData.actions.slice(0, 2) : []
-                                                        delegate: Rectangle {
-                                                            width: Math.min((parent.width - (parent.spacing * (parent.children.length - 1))) / parent.children.length, 80)
-                                                            height: 24
-                                                            radius: 12
-                                                            color: expandedActionArea.containsMouse ? Theme.primary : Theme.surfaceContainer
-                                                            border.color: expandedActionArea.containsMouse ? "transparent" : Theme.outline
-                                                            border.width: 1
-
-                                                            Text {
-                                                                anchors.centerIn: parent
-                                                                text: modelData.text || ""
-                                                                color: expandedActionArea.containsMouse ? Theme.primaryText : Theme.surfaceText
-                                                                font.pixelSize: 10
-                                                                font.weight: Font.Medium
-                                                                elide: Text.ElideRight
-                                                                maximumLineCount: 1
-                                                                width: parent.width - 8
-                                                                horizontalAlignment: Text.AlignHCenter
-                                                            }
-
-                                                            MouseArea {
-                                                                id: expandedActionArea
-                                                                anchors.fill: parent
-                                                                hoverEnabled: true
-                                                                cursorShape: Qt.PointingHandCursor
-                                                                onClicked: {
-                                                                    if (modelData.invoke) {
-                                                                        modelData.invoke();
-                                                                    }
-                                                                }
-                                                            }
-
-                                                            Behavior on color {
-                                                                ColorAnimation {
-                                                                    duration: Theme.shortDuration
-                                                                    easing.type: Theme.standardEasing
+                                                                    break;
                                                                 }
                                                             }
                                                         }
                                                     }
                                                 }
 
-                                                // Individual inline reply
+                                                // COMMENTED OUT: Individual inline reply
+                                                /*
                                                 Row {
                                                     width: parent.width
                                                     spacing: Theme.spacingS
@@ -1096,7 +958,9 @@ PanelWindow {
                                                     }
 
                                                 }
+                                                */
 
+                                                }
                                             }
 
                                         }
@@ -1140,7 +1004,6 @@ PanelWindow {
                 Item {
                     width: parent.width
                     height: 200
-                    anchors.centerIn: parent
                     visible: NotificationService.notifications.length === 0
 
                     Column {
