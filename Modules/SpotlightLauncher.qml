@@ -3,13 +3,11 @@ import QtQuick.Controls
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
-import Quickshell.Wayland
-import Quickshell.Widgets
 import qs.Common
 import qs.Services
 import qs.Widgets
 
-PanelWindow {
+DankModal {
     id: spotlightLauncher
 
     property bool spotlightOpen: false
@@ -28,26 +26,20 @@ PanelWindow {
     }
     property string selectedCategory: "All"
     property string viewMode: Prefs.spotlightLauncherViewMode // "list" or "grid"
+    property int gridColumns: 4
 
-    // ...existing code...
     function show() {
         console.log("SpotlightLauncher: show() called");
         spotlightOpen = true;
-        searchField.enabled = true;
         console.log("SpotlightLauncher: spotlightOpen set to", spotlightOpen);
         searchDebounceTimer.stop(); // Stop any pending search
         updateFilteredApps(); // Immediate update when showing
-        Qt.callLater(function() {
-            searchField.forceActiveFocus();
-            searchField.selectAll();
-        });
     }
 
     function hide() {
-        searchField.enabled = false; // Disable before hiding to prevent Wayland warnings
         spotlightOpen = false;
         searchDebounceTimer.stop(); // Stop any pending search
-        searchField.text = "";
+        searchQuery = "";
         selectedIndex = 0;
         selectedCategory = "All";
         updateFilteredApps();
@@ -60,11 +52,13 @@ PanelWindow {
             show();
     }
 
+    property string searchQuery: ""
+    property bool shouldFocusSearch: false
+    
     function updateFilteredApps() {
         filteredApps = [];
         selectedIndex = 0;
         var apps = [];
-        var searchQuery = searchField.text;
         if (searchQuery.length === 0) {
             // Show apps from category
             if (selectedCategory === "All") {
@@ -156,58 +150,95 @@ PanelWindow {
     }
 
     function selectNext() {
-        if (filteredApps.length > 0) {
+        if (filteredModel.count > 0) {
             if (viewMode === "grid") {
-                // Grid navigation: move by columns
-                var columnsCount = resultsGrid.columns || 6;
-                selectedIndex = Math.min(selectedIndex + columnsCount, filteredApps.length - 1);
+                // Grid navigation: move DOWN by one row (gridColumns positions)
+                var columnsCount = gridColumns;
+                var newIndex = Math.min(selectedIndex + columnsCount, filteredModel.count - 1);
+                selectedIndex = newIndex;
             } else {
                 // List navigation: next item
-                selectedIndex = (selectedIndex + 1) % filteredApps.length;
+                selectedIndex = (selectedIndex + 1) % filteredModel.count;
             }
         }
     }
 
     function selectPrevious() {
-        if (filteredApps.length > 0) {
+        if (filteredModel.count > 0) {
             if (viewMode === "grid") {
-                // Grid navigation: move by columns
-                var columnsCount = resultsGrid.columns || 6;
-                selectedIndex = Math.max(selectedIndex - columnsCount, 0);
+                // Grid navigation: move UP by one row (gridColumns positions)
+                var columnsCount = gridColumns;
+                var newIndex = Math.max(selectedIndex - columnsCount, 0);
+                selectedIndex = newIndex;
             } else {
                 // List navigation: previous item
-                selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : filteredApps.length - 1;
+                selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : filteredModel.count - 1;
             }
         }
     }
 
     function selectNextInRow() {
-        if (filteredApps.length > 0 && viewMode === "grid")
-            selectedIndex = Math.min(selectedIndex + 1, filteredApps.length - 1);
-
+        if (filteredModel.count > 0 && viewMode === "grid") {
+            // Grid navigation: move RIGHT by one position
+            selectedIndex = Math.min(selectedIndex + 1, filteredModel.count - 1);
+        }
     }
 
     function selectPreviousInRow() {
-        if (filteredApps.length > 0 && viewMode === "grid")
+        if (filteredModel.count > 0 && viewMode === "grid") {
+            // Grid navigation: move LEFT by one position
             selectedIndex = Math.max(selectedIndex - 1, 0);
-
+        }
     }
 
     function launchSelected() {
-        if (filteredApps.length > 0 && selectedIndex >= 0 && selectedIndex < filteredApps.length)
-            launchApp(filteredApps[selectedIndex]);
-
+        if (filteredModel.count > 0 && selectedIndex >= 0 && selectedIndex < filteredModel.count) {
+            var selectedApp = filteredModel.get(selectedIndex);
+            launchApp(selectedApp);
+        }
     }
 
-    WlrLayershell.layer: WlrLayershell.Overlay
-    WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: spotlightOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    WlrLayershell.namespace: "quickshell-spotlight"
+    // DankModal configuration
     visible: spotlightOpen
+    size: "custom"
+    customWidth: 600
+    customHeight: {
+        // Fixed height to prevent shrinking - consistent experience
+        let baseHeight = Theme.spacingXL * 2 + Theme.spacingL * 3;
+        // Add category section height if visible
+        if (categories.length > 1 || filteredModel.count > 0)
+            baseHeight += 36 * 2 + Theme.spacingS + Theme.spacingM;
+        // Add search field height
+        baseHeight += 56;
+        // Add fixed results height for consistent size
+        let fixedResultsHeight = 400;
+        // Always same height regardless of content
+        baseHeight += fixedResultsHeight;
+        // Ensure reasonable bounds
+        return Math.min(Math.max(baseHeight, 500), 800);
+    }
+    keyboardFocus: "exclusive"
+    backgroundColor: Theme.popupBackground()
+    cornerRadius: Theme.cornerRadiusXLarge
+    borderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+    borderWidth: 1
+    enableShadow: true
+    
     onVisibleChanged: {
         console.log("SpotlightLauncher visibility changed to:", visible);
+        if (visible && !spotlightOpen) {
+            show();
+        }
     }
-    color: "transparent"
+    
+    onOpened: {
+        shouldFocusSearch = true;
+    }
+
+    onBackgroundClicked: {
+        spotlightOpen = false;
+    }
+
     Component.onCompleted: {
         console.log("SpotlightLauncher: Component.onCompleted called - component loaded successfully!");
         var allCategories = AppSearchService.getAllCategories().filter((cat) => {
@@ -223,17 +254,9 @@ PanelWindow {
     // Search debouncing
     Timer {
         id: searchDebounceTimer
-
         interval: 50
         repeat: false
         onTriggered: updateFilteredApps()
-    }
-
-    anchors {
-        top: true
-        left: true
-        right: true
-        bottom: true
     }
 
     ListModel {
@@ -253,72 +276,59 @@ PanelWindow {
                 }));
                 if (spotlightOpen)
                     updateFilteredApps();
-
             }
         }
-
         target: AppSearchService
     }
 
-    // Dimmed overlay background
-    Rectangle {
-        anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.4)
-        opacity: spotlightOpen ? 1 : 0
-
-        MouseArea {
+    content: Component {
+        Item {
             anchors.fill: parent
-            enabled: spotlightOpen
-            onClicked: hide()
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
+            focus: true
+            
+            Component.onCompleted: {
+                forceActiveFocus();
             }
-
-        }
-
-    }
-
-    // Main container with search and results
-    Rectangle {
-        // Margins and spacing
-        // Categories (2 rows)
-
-        id: mainContainer
-
-        width: 600
-        height: {
-            // Fixed height to prevent shrinking - consistent experience
-            let baseHeight = Theme.spacingXL * 2 + Theme.spacingL * 3;
-            // Add category section height if visible
-            if (categories.length > 1 || filteredModel.count > 0)
-                baseHeight += 36 * 2 + Theme.spacingS + Theme.spacingM;
-
-            // Add search field height
-            baseHeight += 56;
-            // Add fixed results height for consistent size
-            let fixedResultsHeight = 400;
-            // Always same height regardless of content
-            baseHeight += fixedResultsHeight;
-            // Ensure reasonable bounds
-            return Math.min(Math.max(baseHeight, 500), parent.height - 40);
-        }
-        anchors.centerIn: parent
-        color: Theme.popupBackground()
-        radius: Theme.cornerRadiusXLarge
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
-        border.width: 1
-        layer.enabled: true
-        opacity: spotlightOpen ? 1 : 0
-        scale: spotlightOpen ? 1 : 0.96
+            
+            onVisibleChanged: {
+                if (visible) {
+                    forceActiveFocus();
+                }
+            }
+            
+            // Handle keyboard shortcuts
+            Keys.onPressed: function(event) {
+                if (event.key === Qt.Key_Escape) {
+                    hide();
+                    event.accepted = true;
+                } else if (event.key === Qt.Key_Down) {
+                    selectNext();
+                    event.accepted = true;
+                } else if (event.key === Qt.Key_Up) {
+                    selectPrevious();
+                    event.accepted = true;
+                } else if (event.key === Qt.Key_Right && viewMode === "grid") {
+                    selectNextInRow();
+                    event.accepted = true;
+                } else if (event.key === Qt.Key_Left && viewMode === "grid") {
+                    selectPreviousInRow();
+                    event.accepted = true;
+                } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                    launchSelected();
+                    event.accepted = true;
+                } else if (event.text && event.text.length > 0 && event.text.match(/[a-zA-Z0-9\\s]/)) {
+                    // User started typing, focus search field and pass the character
+                    searchField.forceActiveFocus();
+                    searchField.text = event.text;
+                    event.accepted = true;
+                }
+            }
 
         Column {
             anchors.fill: parent
             anchors.margins: Theme.spacingXL
             spacing: Theme.spacingL
+            
 
             // Combined row for categories and view mode toggle
             Column {
@@ -368,11 +378,8 @@ PanelWindow {
                                         updateFilteredApps();
                                     }
                                 }
-
                             }
-
                         }
-
                     }
 
                     // Bottom row: Media, Office, Settings, System, Utilities (5 items)
@@ -412,15 +419,10 @@ PanelWindow {
                                         updateFilteredApps();
                                     }
                                 }
-
                             }
-
                         }
-
                     }
-
                 }
-
             }
 
             // Search field with view toggle buttons
@@ -444,31 +446,51 @@ PanelWindow {
                     showClearButton: true
                     textColor: Theme.surfaceText
                     font.pixelSize: Theme.fontSizeLarge
-                    focus: spotlightOpen
+                    focus: false
                     enabled: spotlightOpen
                     placeholderText: "Search applications..."
+                    text: searchQuery
                     onTextEdited: {
+                        searchQuery = text;
                         searchDebounceTimer.restart();
                     }
+                    
+                    Connections {
+                        target: spotlightLauncher
+                        function onShouldFocusSearchChanged() {
+                            if (shouldFocusSearch) {
+                                Qt.callLater(function() {
+                                    searchField.forceActiveFocus();
+                                    searchField.selectAll();
+                                    shouldFocusSearch = false;
+                                });
+                            }
+                        }
+                    }
+                    
+                    onActiveFocusChanged: {
+                        if (!activeFocus && searchQuery.length === 0) {
+                            // If search field loses focus and there's no search text, give focus back to main handler
+                            parent.parent.forceActiveFocus();
+                        }
+                    }
+                    
                     Keys.onPressed: (event) => {
                         if (event.key === Qt.Key_Escape) {
                             hide();
                             event.accepted = true;
-                        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                            launchSelected();
+                        } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && searchQuery.length > 0) {
+                            // Launch first app when typing in search field
+                            if (filteredApps.length > 0) {
+                                launchApp(filteredApps[0]);
+                            }
                             event.accepted = true;
-                        } else if (event.key === Qt.Key_Down) {
-                            selectNext();
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Up) {
-                            selectPrevious();
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Right && viewMode === "grid") {
-                            selectNextInRow();
-                            event.accepted = true;
-                        } else if (event.key === Qt.Key_Left && viewMode === "grid") {
-                            selectPreviousInRow();
-                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || 
+                                   (event.key === Qt.Key_Left && viewMode === "grid") ||
+                                   (event.key === Qt.Key_Right && viewMode === "grid") ||
+                                   ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && searchQuery.length === 0)) {
+                            // Pass navigation keys and enter (when not searching) to main handler
+                            event.accepted = false;
                         }
                     }
                 }
@@ -506,7 +528,6 @@ PanelWindow {
                                 Prefs.setSpotlightLauncherViewMode("list");
                             }
                         }
-
                     }
 
                     // Grid view button
@@ -536,11 +557,8 @@ PanelWindow {
                                 Prefs.setSpotlightLauncherViewMode("grid");
                             }
                         }
-
                     }
-
                 }
-
             }
 
             // Results container
@@ -562,6 +580,7 @@ PanelWindow {
                     itemHeight: 60
                     iconSize: 40
                     showDescription: true
+                    hoverUpdatesSelection: false
                     onItemClicked: function(index, modelData) {
                         launchApp(modelData);
                     }
@@ -577,13 +596,14 @@ PanelWindow {
                     anchors.fill: parent
                     visible: viewMode === "grid"
                     model: filteredModel
-                    columns: 6
-                    adaptiveColumns: true
+                    columns: 4
+                    adaptiveColumns: false
                     minCellWidth: 120
                     maxCellWidth: 160
                     iconSizeRatio: 0.55
                     maxIconSize: 48
                     currentIndex: selectedIndex
+                    hoverUpdatesSelection: false
                     onItemClicked: function(index, modelData) {
                         launchApp(modelData);
                     }
@@ -591,37 +611,9 @@ PanelWindow {
                         selectedIndex = index;
                     }
                 }
-
             }
-
         }
-
-        layer.effect: MultiEffect {
-            shadowEnabled: true
-            shadowHorizontalOffset: 0
-            shadowVerticalOffset: 8
-            shadowBlur: 1 // radius/32
-            shadowColor: Qt.rgba(0, 0, 0, 0.3)
-            shadowOpacity: 0.3
         }
-        // Center-screen fade with subtle scale
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
     }
 
     IpcHandler {
@@ -645,5 +637,4 @@ PanelWindow {
 
         target: "spotlight"
     }
-
 }

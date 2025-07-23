@@ -10,25 +10,21 @@ Rectangle {
 
     property bool isActive: false
 
-    readonly property bool nerdFontAvailable: Qt.fontFamilies()
-                                  .indexOf("Symbols Nerd Font") !== -1
-
     width: 40
     height: 30
     radius: Theme.cornerRadius
     color: launcherArea.containsMouse || isActive ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
 
-    Text {
-        visible: nerdFontAvailable && OSDetectorService.osLogo
+    SystemLogo {
+        visible: Prefs.useOSLogo
         anchors.centerIn: parent
-        text: OSDetectorService.osLogo
-        font.family: "Symbols Nerd Font"
-        font.pixelSize: Theme.iconSize - 6
+        width: Theme.iconSize - 6
+        height: Theme.iconSize - 6
         color: Theme.surfaceText
     }
 
     DankIcon {
-        visible: !nerdFontAvailable || !OSDetectorService.osLogo
+        visible: !Prefs.useOSLogo
         anchors.centerIn: parent
         name: "apps"
         size: Theme.iconSize - 6

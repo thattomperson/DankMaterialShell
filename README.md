@@ -34,7 +34,10 @@ paru -S quickshell-git
 
 ```bash
 # Arch
-paru -S nerd-fonts ttf-material-symbols-variable-git matugen cliphist cava wl-clipboard ddcutil swaybg
+paru -S ttf-material-symbols-variable-git matugen cliphist cava wl-clipboard ddcutil swaybg
+```
+
+**Note on networking:** 
 
 3. Configure SwayBG (If Desired)
 

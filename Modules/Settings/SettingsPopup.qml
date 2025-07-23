@@ -1,73 +1,35 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Effects
-import Quickshell
-import Quickshell.Wayland
 import qs.Common
 import qs.Widgets
-import qs.Modules.Settings
 
-PanelWindow {
+DankModal {
     id: settingsPopup
 
     property bool settingsVisible: false
 
     signal closingPopup()
 
-    onSettingsVisibleChanged: {
-        if (!settingsVisible) {
+    onVisibleChanged: {
+        if (!visible) {
             closingPopup();
-            // Hide any open dropdown when settings close
             if (typeof globalDropdownWindow !== 'undefined') {
                 globalDropdownWindow.hide();
             }
         }
     }
+
+    // DankModal configuration
     visible: settingsVisible
-    implicitWidth: 600
-    implicitHeight: 700
-    WlrLayershell.layer: WlrLayershell.Overlay
-    WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
-    color: "transparent"
+    size: "extra-large"
+    keyboardFocus: "ondemand"
+    enableShadow: true
 
-    anchors {
-        top: true
-        left: true
-        right: true
-        bottom: true
+    onBackgroundClicked: {
+        settingsVisible = false;
     }
 
-    // Darkened background
-    Rectangle {
-        anchors.fill: parent
-        color: "black"
-        opacity: 0.5
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: settingsPopup.settingsVisible = false
-        }
-
-    }
-
-    // Main settings panel - spotlight-like centered appearance
-    Rectangle {
-        id: mainPanel
-
-        width: Math.min(600, parent.width - Theme.spacingXL * 2)
-        height: Math.min(700, parent.height - Theme.spacingXL * 2)
-        anchors.centerIn: parent
-        color: Theme.popupBackground()
-        radius: Theme.cornerRadiusLarge
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
-        border.width: 1
-        // Simple opacity and scale control tied directly to settingsVisible
-        opacity: settingsPopup.settingsVisible ? 1 : 0
-        scale: settingsPopup.settingsVisible ? 1 : 0.95
-        // Add shadow effect
-        layer.enabled: true
-
+    content: Component {
         Column {
             anchors.fill: parent
             anchors.margins: Theme.spacingL
@@ -111,40 +73,19 @@ PanelWindow {
             }
 
             // Settings sections
-            Flickable {
+            ScrollView {
                 id: settingsScrollView
                 width: parent.width
-                height: parent.height - 80
+                height: parent.height - 50
                 clip: true
-                contentHeight: settingsColumn.height
-                boundsBehavior: Flickable.DragAndOvershootBounds
-                flickDeceleration: 8000
-                maximumFlickVelocity: 15000
-                
-                property real wheelStepSize: 60
-
-                MouseArea {
-                    anchors.fill: parent
-                    acceptedButtons: Qt.NoButton
-                    propagateComposedEvents: true
-                    z: -1
-                    onWheel: (wheel) => {
-                        var delta = wheel.angleDelta.y
-                        var steps = delta / 120
-                        settingsScrollView.contentY -= steps * settingsScrollView.wheelStepSize
-                        
-                        // Keep within bounds
-                        if (settingsScrollView.contentY < 0)
-                            settingsScrollView.contentY = 0
-                        else if (settingsScrollView.contentY > settingsScrollView.contentHeight - settingsScrollView.height)
-                            settingsScrollView.contentY = Math.max(0, settingsScrollView.contentHeight - settingsScrollView.height)
-                    }
-                }
+                ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
                 Column {
                     id: settingsColumn
-                    width: parent.width
+                    width: settingsScrollView.width - 20
                     spacing: Theme.spacingL
+                    bottomPadding: Theme.spacingL
 
                     // Profile Settings
                     SettingsSection {
@@ -193,32 +134,6 @@ PanelWindow {
             }
 
         }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
-        layer.effect: MultiEffect {
-            shadowEnabled: true
-            shadowHorizontalOffset: 0
-            shadowVerticalOffset: 8
-            shadowBlur: 1
-            shadowColor: Qt.rgba(0, 0, 0, 0.3)
-            shadowOpacity: 0.3
-        }
-
     }
 
     // Keyboard focus and shortcuts

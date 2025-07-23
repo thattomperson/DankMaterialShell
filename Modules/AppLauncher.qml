@@ -81,7 +81,9 @@ PanelWindow {
             if (viewMode === "grid") {
                 // Grid navigation: move by columns
                 var columnsCount = appGrid.columns || 4;
-                selectedIndex = Math.min(selectedIndex + columnsCount, filteredModel.count - 1);
+                var newIndex = Math.min(selectedIndex + columnsCount, filteredModel.count - 1);
+                console.log("Grid navigation DOWN: from", selectedIndex, "to", newIndex, "columns:", columnsCount);
+                selectedIndex = newIndex;
             } else {
                 // List navigation: next item
                 selectedIndex = (selectedIndex + 1) % filteredModel.count;
@@ -94,7 +96,9 @@ PanelWindow {
             if (viewMode === "grid") {
                 // Grid navigation: move by columns
                 var columnsCount = appGrid.columns || 4;
-                selectedIndex = Math.max(selectedIndex - columnsCount, 0);
+                var newIndex = Math.max(selectedIndex - columnsCount, 0);
+                console.log("Grid navigation UP: from", selectedIndex, "to", newIndex, "columns:", columnsCount);
+                selectedIndex = newIndex;
             } else {
                 // List navigation: previous item
                 selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : filteredModel.count - 1;
@@ -145,9 +149,6 @@ PanelWindow {
         searchField.enabled = true;
         searchDebounceTimer.stop(); // Stop any pending search
         updateFilteredModel();
-        Qt.callLater(function() {
-            searchField.forceActiveFocus();
-        });
     }
 
     function hide() {
@@ -368,6 +369,12 @@ PanelWindow {
         Item {
             anchors.fill: parent
             focus: true
+            
+            Component.onCompleted: {
+                if (launcher.isVisible) {
+                    forceActiveFocus();
+                }
+            }
             // Handle keyboard shortcuts
             Keys.onPressed: function(event) {
                 if (event.key === Qt.Key_Escape) {
@@ -387,6 +394,11 @@ PanelWindow {
                     event.accepted = true;
                 } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                     launchSelected();
+                    event.accepted = true;
+                } else if (event.text && event.text.length > 0 && event.text.match(/[a-zA-Z0-9\s]/)) {
+                    // User started typing, focus search field and pass the character
+                    searchField.forceActiveFocus();
+                    searchField.text = event.text;
                     event.accepted = true;
                 }
             }
@@ -441,14 +453,14 @@ PanelWindow {
                     leftIconFocusedColor: Theme.primary
                     showClearButton: true
                     font.pixelSize: Theme.fontSizeLarge
-                    focus: launcher.isVisible
                     enabled: launcher.isVisible
                     placeholderText: "Search applications..."
                     onTextEdited: {
                         searchDebounceTimer.restart();
                     }
                     Keys.onPressed: function(event) {
-                        if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && filteredModel.count) {
+                        if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && filteredModel.count && text.length > 0) {
+                            // Launch first app when typing in search field
                             var firstApp = filteredModel.get(0);
                             if (firstApp.desktopEntry) {
                                 Prefs.addRecentApp(firstApp.desktopEntry);
@@ -458,9 +470,12 @@ PanelWindow {
                             }
                             launcher.hide();
                             event.accepted = true;
-                        } else if (event.key === Qt.Key_Escape) {
-                            launcher.hide();
-                            event.accepted = true;
+                        } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || 
+                                   (event.key === Qt.Key_Left && viewMode === "grid") ||
+                                   (event.key === Qt.Key_Right && viewMode === "grid") ||
+                                   ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
+                            // Pass navigation keys and enter (when not searching) to main handler
+                            event.accepted = false;
                         }
                     }
                 }
@@ -592,6 +607,7 @@ PanelWindow {
                         itemHeight: 72
                         iconSize: 56
                         showDescription: true
+                        hoverUpdatesSelection: false
                         onItemClicked: function(index, modelData) {
                             if (modelData.desktopEntry) {
                                 Prefs.addRecentApp(modelData.desktopEntry);
@@ -616,6 +632,7 @@ PanelWindow {
                         columns: 4
                         adaptiveColumns: false
                         currentIndex: selectedIndex
+                        hoverUpdatesSelection: false
                         onItemClicked: function(index, modelData) {
                             if (modelData.desktopEntry) {
                                 Prefs.addRecentApp(modelData.desktopEntry);

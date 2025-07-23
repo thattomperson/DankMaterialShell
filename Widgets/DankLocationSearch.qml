@@ -162,7 +162,7 @@ Item {
                 }
             }
             
-            onActiveFocusChanged: (hasFocus) => {
+            onFocusStateChanged: (hasFocus) => {
                 if (hasFocus) {
                     dropdownHideTimer.stop()
                     if (text.length <= 2) {

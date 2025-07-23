@@ -35,6 +35,7 @@ Singleton {
     property string iconTheme: "System Default"
     property var availableIconThemes: ["System Default"]
     property string systemDefaultIconTheme: "Adwaita"
+    property bool useOSLogo: false
 
     function loadSettings() {
         parseSettings(settingsFile.text());
@@ -67,6 +68,7 @@ Singleton {
                 spotlightLauncherViewMode = settings.spotlightLauncherViewMode !== undefined ? settings.spotlightLauncherViewMode : "list";
                 networkPreference = settings.networkPreference !== undefined ? settings.networkPreference : "auto";
                 iconTheme = settings.iconTheme !== undefined ? settings.iconTheme : "System Default";
+                useOSLogo = settings.useOSLogo !== undefined ? settings.useOSLogo : false;
                         applyStoredTheme();
                         detectAvailableIconThemes();
                         updateGtkIconTheme(iconTheme);
@@ -103,7 +105,8 @@ Singleton {
             "appLauncherViewMode": appLauncherViewMode,
             "spotlightLauncherViewMode": spotlightLauncherViewMode,
             "networkPreference": networkPreference,
-            "iconTheme": iconTheme
+            "iconTheme": iconTheme,
+            "useOSLogo": useOSLogo
         }, null, 2));
     }
 
@@ -376,6 +379,11 @@ gtk-application-prefer-dark-theme=true`;
         if (iconTheme && iconTheme !== "System Default") {
             updateGtkIconTheme(iconTheme);
         }
+    }
+
+    function setUseOSLogo(enabled) {
+        useOSLogo = enabled;
+        saveSettings();
     }
 
     Component.onCompleted: loadSettings()

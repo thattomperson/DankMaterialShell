@@ -1,13 +1,10 @@
 import QtQuick
 import QtQuick.Controls
-import Quickshell
-import Quickshell.Wayland
-import Quickshell.Widgets
 import qs.Common
 import qs.Services
 import qs.Widgets
 
-PanelWindow {
+DankModal {
     id: root
 
     property bool wifiPasswordDialogVisible: false
@@ -15,75 +12,31 @@ PanelWindow {
     property string wifiPasswordInput: ""
 
     visible: wifiPasswordDialogVisible
-    WlrLayershell.layer: WlrLayershell.Overlay
-    WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: wifiPasswordDialogVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    color: "transparent"
+    size: "medium"
+    keyboardFocus: "exclusive"
+
     onVisibleChanged: {
-        if (visible) {
-            passwordInput.enabled = true;
-            Qt.callLater(function() {
-                passwordInput.forceActiveFocus();
-            });
-        } else {
-            passwordInput.enabled = false;
+        if (!visible) {
+            wifiPasswordInput = "";
         }
     }
 
-    anchors {
-        top: true
-        left: true
-        right: true
-        bottom: true
+    onBackgroundClicked: {
+        wifiPasswordDialogVisible = false;
+        wifiPasswordInput = "";
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.5)
-        opacity: wifiPasswordDialogVisible ? 1 : 0
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                passwordInput.enabled = false; // Disable before hiding to prevent Wayland warnings
-                wifiPasswordDialogVisible = false;
-                wifiPasswordInput = "";
-            }
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.standardEasing
-            }
-
-        }
-
-    }
-
-    Rectangle {
-        width: Math.min(400, parent.width - Theme.spacingL * 2)
-        height: Math.min(250, parent.height - Theme.spacingL * 2)
-        anchors.centerIn: parent
-        color: Theme.surfaceContainer
-        radius: Theme.cornerRadiusLarge
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
-        border.width: 1
-        opacity: wifiPasswordDialogVisible ? 1 : 0
-        scale: wifiPasswordDialogVisible ? 1 : 0.9
-
-        // Prevent clicks inside dialog from closing it
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                // Do nothing - prevent propagation to background
-            }
-        }
-
+    content: Component {
         Column {
             anchors.fill: parent
             anchors.margins: Theme.spacingL
             spacing: Theme.spacingL
+            
+            Component.onCompleted: {
+                Qt.callLater(function() {
+                    passwordInput.forceActiveFocus();
+                });
+            }
 
             // Header
             Row {
@@ -107,7 +60,6 @@ PanelWindow {
                         width: parent.width
                         elide: Text.ElideRight
                     }
-
                 }
 
                 DankActionButton {
@@ -116,12 +68,10 @@ PanelWindow {
                     iconColor: Theme.surfaceText
                     hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
                     onClicked: {
-                        passwordInput.enabled = false; // Disable before hiding to prevent Wayland warnings
                         wifiPasswordDialogVisible = false;
                         wifiPasswordInput = "";
                     }
                 }
-
             }
 
             // Password input
@@ -135,13 +85,11 @@ PanelWindow {
 
                 DankTextField {
                     id: passwordInput
-
                     anchors.fill: parent
                     font.pixelSize: Theme.fontSizeMedium
                     textColor: Theme.surfaceText
                     text: wifiPasswordInput
                     echoMode: showPasswordCheckbox.checked ? TextInput.Normal : TextInput.Password
-                    enabled: wifiPasswordDialogVisible
                     placeholderText: "Enter password"
                     backgroundColor: "transparent"
                     normalBorderColor: "transparent"
@@ -150,20 +98,12 @@ PanelWindow {
                         wifiPasswordInput = text;
                     }
                     onAccepted: {
-                        WifiService.connectToWifiWithPassword(wifiPasswordSSID, wifiPasswordInput);
-                        // Close dialog immediately after pressing Enter
-                        passwordInput.enabled = false;
+                        WifiService.connectToWifiWithPassword(wifiPasswordSSID, passwordInput.text);
                         wifiPasswordDialogVisible = false;
                         wifiPasswordInput = "";
+                        passwordInput.text = "";
                     }
-                    Component.onCompleted: {
-                        if (wifiPasswordDialogVisible)
-                            forceActiveFocus();
-
-                    }
-
                 }
-
             }
 
             // Show password checkbox
@@ -172,9 +112,7 @@ PanelWindow {
 
                 Rectangle {
                     id: showPasswordCheckbox
-
                     property bool checked: false
-
                     width: 20
                     height: 20
                     radius: 4
@@ -198,7 +136,6 @@ PanelWindow {
                             showPasswordCheckbox.checked = !showPasswordCheckbox.checked;
                         }
                     }
-
                 }
 
                 Text {
@@ -207,7 +144,6 @@ PanelWindow {
                     color: Theme.surfaceText
                     anchors.verticalCenter: parent.verticalCenter
                 }
-
             }
 
             // Buttons
@@ -230,7 +166,6 @@ PanelWindow {
 
                         Text {
                             id: cancelText
-
                             anchors.centerIn: parent
                             text: "Cancel"
                             font.pixelSize: Theme.fontSizeMedium
@@ -240,17 +175,14 @@ PanelWindow {
 
                         MouseArea {
                             id: cancelArea
-
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                passwordInput.enabled = false; // Disable before hiding to prevent Wayland warnings
                                 wifiPasswordDialogVisible = false;
                                 wifiPasswordInput = "";
                             }
                         }
-
                     }
 
                     Rectangle {
@@ -258,12 +190,11 @@ PanelWindow {
                         height: 36
                         radius: Theme.cornerRadius
                         color: connectArea.containsMouse ? Qt.darker(Theme.primary, 1.1) : Theme.primary
-                        enabled: wifiPasswordInput.length > 0
+                        enabled: passwordInput.text.length > 0
                         opacity: enabled ? 1 : 0.5
 
                         Text {
                             id: connectText
-
                             anchors.centerIn: parent
                             text: "Connect"
                             font.pixelSize: Theme.fontSizeMedium
@@ -273,17 +204,15 @@ PanelWindow {
 
                         MouseArea {
                             id: connectArea
-
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             enabled: parent.enabled
                             onClicked: {
-                                WifiService.connectToWifiWithPassword(wifiPasswordSSID, wifiPasswordInput);
-                                // Close dialog immediately after clicking connect
-                                passwordInput.enabled = false;
+                                WifiService.connectToWifiWithPassword(wifiPasswordSSID, passwordInput.text);
                                 wifiPasswordDialogVisible = false;
                                 wifiPasswordInput = "";
+                                passwordInput.text = "";
                             }
                         }
 
@@ -292,33 +221,11 @@ PanelWindow {
                                 duration: Theme.shortDuration
                                 easing.type: Theme.standardEasing
                             }
-
                         }
-
                     }
-
                 }
-
             }
-
         }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
     }
 
     // Auto-reopen dialog on invalid password
@@ -333,5 +240,4 @@ PanelWindow {
             }
         }
     }
-
 }

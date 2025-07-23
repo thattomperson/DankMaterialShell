@@ -14,6 +14,7 @@ ScrollView {
     property real wheelStepSize: 60
     property bool showDescription: true
     property int itemSpacing: Theme.spacingS
+    property bool hoverUpdatesSelection: true
 
     signal itemClicked(int index, var modelData)
     signal itemHovered(int index)
@@ -133,7 +134,9 @@ ScrollView {
                 cursorShape: Qt.PointingHandCursor
                 z: 10
                 onEntered: {
-                    listView.currentIndex = index;
+                    if (hoverUpdatesSelection) {
+                        listView.currentIndex = index;
+                    }
                     itemHovered(index);
                 }
                 onClicked: {

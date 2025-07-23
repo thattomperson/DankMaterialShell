@@ -59,4 +59,13 @@ Column {
             return Prefs.setShowSystemTray(checked);
         }
     }
+
+    DankToggle {
+        text: "Use OS Logo for App Launcher"
+        description: "Display operating system logo instead of apps icon"
+        checked: Prefs.useOSLogo
+        onToggled: (checked) => {
+            return Prefs.setUseOSLogo(checked);
+        }
+    }
 }

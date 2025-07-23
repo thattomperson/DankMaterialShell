@@ -1,12 +1,9 @@
 import QtQuick
 import QtQuick.Controls
-import Quickshell
-import Quickshell.Wayland
-import Quickshell.Widgets
 import qs.Common
 import qs.Widgets
 
-PanelWindow {
+DankModal {
     id: inputDialog
 
     property bool dialogVisible: false
@@ -39,298 +36,118 @@ PanelWindow {
     }
 
     visible: dialogVisible
-    WlrLayershell.layer: WlrLayershell.Overlay
-    WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: dialogVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    color: "transparent"
+    size: "medium"
+    keyboardFocus: "exclusive"
+
     onVisibleChanged: {
         if (visible) {
             textInput.enabled = true;
             Qt.callLater(function() {
                 textInput.forceActiveFocus();
-                textInput.text = inputValue;
             });
         } else {
             textInput.enabled = false;
         }
     }
 
-    anchors {
-        top: true
-        left: true
-        right: true
-        bottom: true
+    onBackgroundClicked: {
+        hideDialog();
+        cancelled();
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.5)
-        opacity: dialogVisible ? 1 : 0
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                textInput.enabled = false; // Disable before hiding to prevent Wayland warnings
-                inputDialog.cancelled();
-                hideDialog();
-            }
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.standardEasing
-            }
-
-        }
-
-    }
-
-    Rectangle {
-        width: Math.min(400, parent.width - Theme.spacingL * 2)
-        height: Math.min(250, parent.height - Theme.spacingL * 2)
-        anchors.centerIn: parent
-        color: Theme.surfaceContainer
-        radius: Theme.cornerRadiusLarge
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
-        border.width: 1
-        opacity: dialogVisible ? 1 : 0
-        scale: dialogVisible ? 1 : 0.9
-
+    content: Component {
         Column {
-            anchors.fill: parent
-            anchors.margins: Theme.spacingL
+            anchors.centerIn: parent
+            width: parent.width - Theme.spacingL * 2
             spacing: Theme.spacingL
 
-            // Header
-            Row {
-                width: parent.width
-
-                Column {
-                    width: parent.width - 40
-                    spacing: Theme.spacingXS
-
-                    Text {
-                        text: dialogTitle
-                        font.pixelSize: Theme.fontSizeLarge
-                        color: Theme.surfaceText
-                        font.weight: Font.Medium
-                    }
-
-                    Text {
-                        text: dialogSubtitle
-                        font.pixelSize: Theme.fontSizeMedium
-                        color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
-                        width: parent.width
-                        elide: Text.ElideRight
-                        wrapMode: Text.WordWrap
-                        maximumLineCount: 2
-                    }
-
-                }
-
-                DankActionButton {
-                    iconName: "close"
-                    iconSize: Theme.iconSize - 4
-                    iconColor: Theme.surfaceText
-                    hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
-                    onClicked: {
-                        inputDialog.cancelled();
-                        hideDialog();
-                    }
-                }
-
+            Text {
+                text: dialogTitle
+                font.pixelSize: Theme.fontSizeLarge
+                color: Theme.surfaceText
+                font.weight: Font.Medium
+                anchors.horizontalCenter: parent.horizontalCenter
             }
 
-            // Text input
-            Rectangle {
+            Text {
+                text: dialogSubtitle
+                font.pixelSize: Theme.fontSizeMedium
+                color: Theme.surfaceVariantText
+                anchors.horizontalCenter: parent.horizontalCenter
+                wrapMode: Text.WordWrap
                 width: parent.width
-                height: 50
-                radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
-                border.color: textInput.activeFocus ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
-                border.width: textInput.activeFocus ? 2 : 1
-
-                DankTextField {
-                    id: textInput
-
-                    anchors.fill: parent
-                    font.pixelSize: Theme.fontSizeMedium
-                    textColor: Theme.surfaceText
-                    echoMode: isPassword && !showPasswordCheckbox.checked ? TextInput.Password : TextInput.Normal
-                    enabled: dialogVisible
-                    placeholderText: inputPlaceholder
-                    backgroundColor: "transparent"
-                    normalBorderColor: "transparent"
-                    focusedBorderColor: "transparent"
-                    onTextEdited: {
-                        inputValue = text;
-                    }
-                    onAccepted: {
-                        inputDialog.confirmed(inputValue);
-                        hideDialog();
-                    }
-                    Component.onCompleted: {
-                        if (dialogVisible)
-                            forceActiveFocus();
-
-                    }
-
-                }
-
+                horizontalAlignment: Text.AlignHCenter
             }
 
-            // Show password checkbox (only visible for password inputs)
+            DankTextField {
+                id: textInput
+                width: parent.width
+                placeholderText: inputPlaceholder
+                text: inputValue
+                echoMode: isPassword ? TextInput.Password : TextInput.Normal
+                onTextChanged: inputValue = text
+                onAccepted: {
+                    hideDialog();
+                    confirmed(text);
+                }
+            }
+
             Row {
-                spacing: Theme.spacingS
-                visible: isPassword
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: Theme.spacingM
 
                 Rectangle {
-                    id: showPasswordCheckbox
+                    width: 120
+                    height: 40
+                    radius: Theme.cornerRadius
+                    color: cancelButton.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
 
-                    property bool checked: false
-
-                    width: 20
-                    height: 20
-                    radius: 4
-                    color: checked ? Theme.primary : "transparent"
-                    border.color: checked ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.5)
-                    border.width: 2
-
-                    DankIcon {
+                    Text {
+                        text: cancelButtonText
+                        font.pixelSize: Theme.fontSizeMedium
+                        color: Theme.surfaceText
+                        font.weight: Font.Medium
                         anchors.centerIn: parent
-                        name: "check"
-                        size: 12
-                        color: Theme.background
-                        visible: parent.checked
                     }
 
                     MouseArea {
+                        id: cancelButton
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            showPasswordCheckbox.checked = !showPasswordCheckbox.checked;
+                            hideDialog();
+                            cancelled();
                         }
                     }
-
                 }
 
-                Text {
-                    text: "Show password"
-                    font.pixelSize: Theme.fontSizeMedium
-                    color: Theme.surfaceText
-                    anchors.verticalCenter: parent.verticalCenter
-                }
+                Rectangle {
+                    width: 120
+                    height: 40
+                    radius: Theme.cornerRadius
+                    color: confirmButton.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.9) : Theme.primary
 
-            }
-
-            // Buttons
-            Item {
-                width: parent.width
-                height: 40
-
-                Row {
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: Theme.spacingM
-
-                    Rectangle {
-                        width: Math.max(70, cancelText.contentWidth + Theme.spacingM * 2)
-                        height: 36
-                        radius: Theme.cornerRadius
-                        color: cancelArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
-                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
-                        border.width: 1
-
-                        Text {
-                            id: cancelText
-
-                            anchors.centerIn: parent
-                            text: cancelButtonText
-                            font.pixelSize: Theme.fontSizeMedium
-                            color: Theme.surfaceText
-                            font.weight: Font.Medium
-                        }
-
-                        MouseArea {
-                            id: cancelArea
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                textInput.enabled = false; // Disable before hiding to prevent Wayland warnings
-                                inputDialog.cancelled();
-                                hideDialog();
-                            }
-                        }
-
+                    Text {
+                        text: confirmButtonText
+                        font.pixelSize: Theme.fontSizeMedium
+                        color: Theme.primaryText
+                        font.weight: Font.Medium
+                        anchors.centerIn: parent
                     }
 
-                    Rectangle {
-                        width: Math.max(80, confirmText.contentWidth + Theme.spacingM * 2)
-                        height: 36
-                        radius: Theme.cornerRadius
-                        color: confirmArea.containsMouse ? Qt.darker(Theme.primary, 1.1) : Theme.primary
-                        enabled: inputValue.length > 0
-                        opacity: enabled ? 1 : 0.5
-
-                        Text {
-                            id: confirmText
-
-                            anchors.centerIn: parent
-                            text: confirmButtonText
-                            font.pixelSize: Theme.fontSizeMedium
-                            color: Theme.background
-                            font.weight: Font.Medium
+                    MouseArea {
+                        id: confirmButton
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            hideDialog();
+                            confirmed(textInput.text);
                         }
-
-                        MouseArea {
-                            id: confirmArea
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            enabled: parent.enabled
-                            onClicked: {
-                                inputDialog.confirmed(inputValue);
-                                hideDialog();
-                            }
-                        }
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: Theme.shortDuration
-                                easing.type: Theme.standardEasing
-                            }
-
-                        }
-
                     }
-
                 }
-
             }
-
         }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
     }
-
 }

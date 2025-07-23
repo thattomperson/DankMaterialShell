@@ -18,6 +18,7 @@ ScrollView {
     property int maxIconSize: 56
     property int minIconSize: 32
     property real wheelStepSize: 60
+    property bool hoverUpdatesSelection: true
 
     signal itemClicked(int index, var modelData)
     signal itemHovered(int index)
@@ -136,7 +137,9 @@ ScrollView {
                 cursorShape: Qt.PointingHandCursor
                 z: 10
                 onEntered: {
-                    currentIndex = index;
+                    if (hoverUpdatesSelection) {
+                        currentIndex = index;
+                    }
                     itemHovered(index);
                 }
                 onClicked: {
