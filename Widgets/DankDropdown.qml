@@ -1,7 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import Quickshell
-import Quickshell.Wayland
 import qs.Common
 import qs.Widgets
 
@@ -20,11 +18,11 @@ Rectangle {
     height: 60
     radius: Theme.cornerRadius
     color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
-    // Global keyboard handler for escape key
-    Keys.onEscapePressed: {
-        if (dropdownMenu.visible)
-            dropdownMenu.visible = false;
 
+    onVisibleChanged: {
+        if (!visible && dropdownMenu.visible) {
+            dropdownMenu.close();
+        }
     }
 
     Column {
@@ -50,7 +48,6 @@ Rectangle {
             wrapMode: Text.WordWrap
             width: parent.width
         }
-
     }
 
     Rectangle {
@@ -66,115 +63,81 @@ Rectangle {
         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
         border.width: 1
 
-        Row {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.leftMargin: Theme.spacingM
-            anchors.rightMargin: Theme.spacingS
-
-            Row {
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: Theme.spacingS
-                width: parent.width - 24
-                
-                DankIcon {
-                    name: {
-                        var currentIndex = root.options.indexOf(root.currentValue);
-                        return root.optionIcons.length > currentIndex && currentIndex >= 0 ? root.optionIcons[currentIndex] : "";
-                    }
-                    size: 18
-                    color: Theme.surfaceVariantText
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: {
-                        var currentIndex = root.options.indexOf(root.currentValue);
-                        return root.optionIcons.length > currentIndex && currentIndex >= 0 && root.optionIcons[currentIndex] !== "";
-                    }
-                }
-                
-                Text {
-                    text: root.currentValue
-                    font.pixelSize: Theme.fontSizeMedium
-                    color: Theme.surfaceText
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: parent.parent.width - (visible ? 24 + Theme.spacingS : 24) - (parent.children[0].visible ? 18 + Theme.spacingS : 0)
-                    elide: Text.ElideRight
-                }
-            }
-
-            DankIcon {
-                name: "expand_more"
-                size: 20
-                color: Theme.surfaceVariantText
-                anchors.verticalCenter: parent.verticalCenter
-            }
-
-        }
-
         MouseArea {
             id: dropdownArea
 
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onPressed: (mouse) => {
-                mouse.accepted = true;
-                if (!dropdownMenu.visible) {
-                    dropdownMenu.updatePosition();
-                    dropdownMenu.visible = true;
+
+            onClicked: {
+                if (dropdownMenu.visible) {
+                    dropdownMenu.close();
                 } else {
-                    dropdownMenu.visible = false;
+                    var pos = dropdown.mapToItem(Overlay.overlay, 0, dropdown.height + 4);
+                    dropdownMenu.x = pos.x;
+                    dropdownMenu.y = pos.y;
+                    dropdownMenu.open();
                 }
             }
         }
 
-    }
+        // Use a Row for the left-aligned content (icon + text)
+        Row {
+            id: contentRow
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.leftMargin: Theme.spacingM
+            spacing: Theme.spacingS
 
-    // Integrated dropdown menu with full-screen overlay
-    PanelWindow {
-        id: dropdownMenu
+            DankIcon {
+                name: {
+                    var currentIndex = root.options.indexOf(root.currentValue);
+                    return root.optionIcons.length > currentIndex && currentIndex >= 0 ? root.optionIcons[currentIndex] : "";
+                }
+                size: 18
+                color: Theme.surfaceVariantText
+                visible: name !== ""
+            }
 
-        property int targetX: 0
-        property int targetY: 0
-
-        function updatePosition() {
-            var globalPos = dropdown.mapToGlobal(0, 0);
-            targetX = globalPos.x;
-            targetY = globalPos.y + dropdown.height + 4;
-        }
-
-        visible: false
-        WlrLayershell.layer: WlrLayershell.Overlay
-        WlrLayershell.exclusiveZone: -1
-        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        color: "transparent"
-
-        anchors {
-            top: true
-            left: true
-            right: true
-            bottom: true
-        }
-
-        // Background click interceptor (invisible)
-        MouseArea {
-            anchors.fill: parent
-            z: -1
-            onPressed: {
-                dropdownMenu.visible = false;
+            Text {
+                text: root.currentValue
+                font.pixelSize: Theme.fontSizeMedium
+                color: Theme.surfaceText
+                // Constrain width for proper eliding
+                width: dropdown.width - contentRow.x - expandIcon.width - Theme.spacingM - Theme.spacingS
+                elide: Text.ElideRight
             }
         }
 
-        // Dropdown menu content
-        Rectangle {
-            x: dropdownMenu.targetX
-            y: dropdownMenu.targetY
-            width: 180
-            height: Math.min(200, root.options.length * 36 + 16)
-            radius: Theme.cornerRadiusSmall
+        // Anchor the expand icon to the right, outside of the Row
+        DankIcon {
+            id: expandIcon
+            name: "expand_more"
+            size: 20
+            color: Theme.surfaceVariantText
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.rightMargin: Theme.spacingS
+        }
+    }
+
+    Popup {
+        id: dropdownMenu
+        parent: Overlay.overlay
+        
+        width: 180
+        height: Math.min(200, root.options.length * 36 + 16)
+        
+        padding: 0
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+        background: Rectangle { color: "transparent" }
+
+        contentItem: Rectangle {
             color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 1)
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
             border.width: 1
+            radius: Theme.cornerRadiusSmall
 
             ScrollView {
                 anchors.fill: parent
@@ -201,8 +164,7 @@ Rectangle {
                                 name: root.optionIcons.length > index ? root.optionIcons[index] : ""
                                 size: 18
                                 color: root.currentValue === modelData ? Theme.primary : Theme.surfaceVariantText
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: root.optionIcons.length > index && root.optionIcons[index] !== ""
+                                visible: name !== ""
                             }
                             
                             Text {
@@ -216,25 +178,18 @@ Rectangle {
 
                         MouseArea {
                             id: optionArea
-
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onPressed: {
+                            onClicked: {
                                 root.currentValue = modelData;
                                 root.valueChanged(modelData);
-                                dropdownMenu.visible = false;
+                                dropdownMenu.close();
                             }
                         }
-
                     }
-
                 }
-
             }
-
         }
-
     }
-
 }

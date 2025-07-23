@@ -5,7 +5,6 @@ import qs.Services
 
 Column {
     id: root
-    property var processContextMenuWindow: null
     property var contextMenu: null
 
     Item {
@@ -130,7 +129,6 @@ Column {
             delegate: ProcessListItem {
                 process: modelData
                 contextMenu: root.contextMenu
-                processContextMenuWindow: root.contextMenu
             }
         }
     }

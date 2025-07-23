@@ -8,7 +8,7 @@ import qs.Services
 Item {
     id: root
 
-    property var audioLevels: [0, 0, 0, 0]
+    property var audioLevels: [0, 0, 0, 0, 0, 0]
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
     readonly property bool hasActiveMedia: activePlayer !== null
     property bool cavaAvailable: false
@@ -41,10 +41,10 @@ Item {
         id: cavaProcess
 
         running: false
-        command: ["sh", "-c", `printf '[general]\nmode=normal\nframerate=30\nautosens=0\nsensitivity=50\nbars=4\n[output]\nmethod=raw\nraw_target=/dev/stdout\ndata_format=ascii\nchannels=mono\nmono_option=average\n[smoothing]\nnoise_reduction=20' | cava -p /dev/stdin`]
+        command: ["sh", "-c", `printf '[general]\nmode=normal\nframerate=25\nautosens=0\nsensitivity=30\nbars=6\nlower_cutoff_freq=50\nhigher_cutoff_freq=12000\n[output]\nmethod=raw\nraw_target=/dev/stdout\ndata_format=ascii\nchannels=mono\nmono_option=average\n[smoothing]\nnoise_reduction=35\nintegral=90\ngravity=95\nignore=2\nmonstercat=1.5' | cava -p /dev/stdin`]
         onRunningChanged: {
             if (!running)
-                root.audioLevels = [0, 0, 0, 0];
+                root.audioLevels = [0, 0, 0, 0, 0, 0];
 
         }
 
@@ -57,8 +57,8 @@ Item {
                     }).filter((p) => {
                         return !isNaN(p);
                     });
-                    if (points.length >= 4)
-                        root.audioLevels = [points[0], points[1], points[2], points[3]];
+                    if (points.length >= 6)
+                        root.audioLevels = [points[0], points[1], points[2], points[3], points[4], points[5]];
 
                 }
             }
@@ -73,19 +73,19 @@ Item {
         interval: 100
         repeat: true
         onTriggered: {
-            root.audioLevels = [Math.random() * 40 + 10, Math.random() * 60 + 20, Math.random() * 50 + 15, Math.random() * 35 + 20];
+            root.audioLevels = [Math.random() * 40 + 10, Math.random() * 60 + 20, Math.random() * 50 + 15, Math.random() * 35 + 20, Math.random() * 45 + 15, Math.random() * 55 + 25];
         }
     }
 
     Row {
         anchors.centerIn: parent
-        spacing: 2
+        spacing: 1.5
 
         Repeater {
-            model: 4
+            model: 6
 
             Rectangle {
-                width: 3
+                width: 2
                 height: {
                     if (root.activePlayer && root.activePlayer.playbackState === MprisPlaybackState.Playing && root.audioLevels.length > index) {
                         const rawLevel = root.audioLevels[index] || 0;

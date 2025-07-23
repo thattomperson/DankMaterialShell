@@ -8,7 +8,6 @@ Rectangle {
 
     property var process: null
     property var contextMenu: null
-    property var processContextMenuWindow: null
 
     width: parent.width
     height: 40
@@ -29,15 +28,16 @@ Rectangle {
                 if (process && process.pid > 0 && contextMenu) {
                     contextMenu.processData = process;
                     let globalPos = processMouseArea.mapToGlobal(mouse.x, mouse.y);
-                    contextMenu.show(globalPos.x, globalPos.y);
+                    let localPos = contextMenu.parent ? contextMenu.parent.mapFromGlobal(globalPos.x, globalPos.y) : globalPos;
+                    contextMenu.show(localPos.x, localPos.y);
                 }
             }
         }
         onPressAndHold: {
-            if (process && process.pid > 0 && processContextMenuWindow) {
-                processContextMenuWindow.processData = process;
+            if (process && process.pid > 0 && contextMenu) {
+                contextMenu.processData = process;
                 let globalPos = processMouseArea.mapToGlobal(processMouseArea.width / 2, processMouseArea.height / 2);
-                processContextMenuWindow.show(globalPos.x, globalPos.y);
+                contextMenu.show(globalPos.x, globalPos.y);
             }
         }
     }
@@ -188,10 +188,11 @@ Rectangle {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    if (process && process.pid > 0 && processContextMenuWindow) {
-                        processContextMenuWindow.processData = process;
+                    if (process && process.pid > 0 && contextMenu) {
+                        contextMenu.processData = process;
                         let globalPos = menuButtonArea.mapToGlobal(menuButtonArea.width / 2, menuButtonArea.height);
-                        processContextMenuWindow.show(globalPos.x, globalPos.y);
+                        let localPos = contextMenu.parent ? contextMenu.parent.mapFromGlobal(globalPos.x, globalPos.y) : globalPos;
+                        contextMenu.show(localPos.x, localPos.y);
                     }
                 }
             }

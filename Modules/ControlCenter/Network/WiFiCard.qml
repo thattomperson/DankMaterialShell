@@ -49,8 +49,8 @@ Rectangle {
                 name: {
                     if (!NetworkService.wifiEnabled) {
                         return "wifi_off";
-                    } else if (WifiService.currentWifiSSID !== "") {
-                        return getWiFiSignalIcon(WifiService.wifiSignalStrength);
+                    } else if (NetworkService.currentWifiSSID !== "") {
+                        return getWiFiSignalIcon(NetworkService.wifiSignalStrength);
                     } else {
                         return "wifi";
                     }
@@ -64,8 +64,8 @@ Rectangle {
                 text: {
                     if (!NetworkService.wifiEnabled) {
                         return "WiFi is off";
-                    } else if (NetworkService.wifiEnabled && WifiService.currentWifiSSID) {
-                        return WifiService.currentWifiSSID || "Connected";
+                    } else if (NetworkService.wifiEnabled && NetworkService.currentWifiSSID) {
+                        return NetworkService.currentWifiSSID || "Connected";
                     } else {
                         return "Not Connected";
                     }
@@ -82,7 +82,7 @@ Rectangle {
             text: {
                 if (!NetworkService.wifiEnabled) {
                     return "Turn on WiFi to see networks";
-                } else if (NetworkService.wifiEnabled && WifiService.currentWifiSSID) {
+                } else if (NetworkService.wifiEnabled && NetworkService.currentWifiSSID) {
                     return NetworkService.wifiIP || "Connected";
                 } else {
                     return "Select a network below";
@@ -130,13 +130,13 @@ Rectangle {
         onClicked: {
             if (NetworkService.wifiEnabled) {
                 // When turning WiFi off, clear all cached WiFi data
-                WifiService.currentWifiSSID = "";
-                WifiService.wifiSignalStrength = "excellent";
-                WifiService.wifiNetworks = [];
-                WifiService.savedWifiNetworks = [];
-                WifiService.connectionStatus = "";
-                WifiService.connectingSSID = "";
-                WifiService.isScanning = false;
+                NetworkService.currentWifiSSID = "";
+                NetworkService.wifiSignalStrength = "excellent";
+                NetworkService.wifiNetworks = [];
+                NetworkService.savedWifiNetworks = [];
+                NetworkService.connectionStatus = "";
+                NetworkService.connectingSSID = "";
+                NetworkService.isScanning = false;
                 NetworkService.refreshNetworkStatus();
             }
             NetworkService.toggleWifiRadio();

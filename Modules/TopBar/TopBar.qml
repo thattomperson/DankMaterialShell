@@ -1,4 +1,3 @@
-import "../../Common/Utilities.js" as Utils
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
@@ -277,7 +276,7 @@ PanelWindow {
                         controlCenterPopout.controlCenterVisible = !controlCenterPopout.controlCenterVisible;
                         if (controlCenterPopout.controlCenterVisible) {
                             if (NetworkService.wifiEnabled)
-                                WifiService.scanWifi();
+                                NetworkService.scanWifi();
 
                         }
                     }

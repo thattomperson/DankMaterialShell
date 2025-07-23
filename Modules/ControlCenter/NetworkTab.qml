@@ -21,10 +21,10 @@ Item {
         }
         
         // Explicitly reference both arrays to ensure reactivity
-        var allNetworks = WifiService.wifiNetworks;
-        var savedNetworks = WifiService.savedWifiNetworks;
-        var currentSSID = WifiService.currentWifiSSID;
-        var signalStrength = WifiService.wifiSignalStrength;
+        var allNetworks = NetworkService.wifiNetworks;
+        var savedNetworks = NetworkService.savedWifiNetworks;
+        var currentSSID = NetworkService.currentWifiSSID;
+        var signalStrength = NetworkService.wifiSignalStrength;
         var refreshTrigger = forceRefresh; // Force recalculation
         
         var networks = [...allNetworks];
@@ -58,7 +58,7 @@ Item {
     property int forceRefresh: 0
     
     Connections {
-        target: WifiService
+        target: NetworkService
         function onNetworksUpdated() {
             forceRefresh++;
         }
@@ -66,9 +66,9 @@ Item {
     
     // Auto-enable WiFi auto-refresh when network tab is visible
     Component.onCompleted: {
-        WifiService.autoRefreshEnabled = true;
+        NetworkService.autoRefreshEnabled = true;
         if (NetworkService.wifiEnabled)
-            WifiService.scanWifi();
+            NetworkService.scanWifi();
         // Start smart monitoring
         wifiMonitorTimer.start();
     }
@@ -199,8 +199,8 @@ Item {
         property bool triggered: false
         onTriggered: {
             NetworkService.refreshNetworkStatus();
-            if (NetworkService.wifiEnabled && !WifiService.isScanning) {
-                WifiService.scanWifi();
+            if (NetworkService.wifiEnabled && !NetworkService.isScanning) {
+                NetworkService.scanWifi();
             }
             triggered = false;
         }
@@ -218,13 +218,13 @@ Item {
                 wifiMonitorTimer.start();
             } else {
                 // When WiFi is disabled, clear all cached WiFi data
-                WifiService.currentWifiSSID = "";
-                WifiService.wifiSignalStrength = "excellent";
-                WifiService.wifiNetworks = [];
-                WifiService.savedWifiNetworks = [];
-                WifiService.connectionStatus = "";
-                WifiService.connectingSSID = "";
-                WifiService.isScanning = false;
+                NetworkService.currentWifiSSID = "";
+                NetworkService.wifiSignalStrength = "excellent";
+                NetworkService.wifiNetworks = [];
+                NetworkService.savedWifiNetworks = [];
+                NetworkService.connectionStatus = "";
+                NetworkService.connectingSSID = "";
+                NetworkService.isScanning = false;
                 NetworkService.refreshNetworkStatus();
                 // Stop monitoring when WiFi is off
                 wifiMonitorTimer.stop();
@@ -240,8 +240,8 @@ Item {
         repeat: false
         onTriggered: {
             if (NetworkService.wifiEnabled && visible) {
-                if (!WifiService.isScanning) {
-                    WifiService.scanWifi();
+                if (!NetworkService.isScanning) {
+                    NetworkService.scanWifi();
                 } else {
                     // If still scanning, try again in a bit
                     wifiRetryTimer.start();
@@ -257,9 +257,9 @@ Item {
         running: false
         repeat: false
         onTriggered: {
-            if (NetworkService.wifiEnabled && visible && WifiService.wifiNetworks.length === 0) {
-                if (!WifiService.isScanning) {
-                    WifiService.scanWifi();
+            if (NetworkService.wifiEnabled && visible && NetworkService.wifiNetworks.length === 0) {
+                if (!NetworkService.isScanning) {
+                    NetworkService.scanWifi();
                 }
             }
         }
@@ -288,13 +288,13 @@ Item {
                 reason = "not connected to WiFi";
             }
             // Also scan occasionally even when connected to keep networks fresh
-            else if (WifiService.wifiNetworks.length === 0) {
+            else if (NetworkService.wifiNetworks.length === 0) {
                 shouldScan = true;
                 reason = "no networks cached";
             }
 
-            if (shouldScan && !WifiService.isScanning) {
-                WifiService.scanWifi();
+            if (shouldScan && !NetworkService.isScanning) {
+                NetworkService.scanWifi();
             }
         }
     }

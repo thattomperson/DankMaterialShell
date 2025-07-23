@@ -55,7 +55,7 @@ Column {
             width: 28
             height: 28
             radius: 14
-            color: refreshAreaSpan.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : WifiService.isScanning ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.06) : "transparent"
+            color: refreshAreaSpan.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : NetworkService.isScanning ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.06) : "transparent"
 
             DankIcon {
                 id: refreshIconSpan
@@ -63,12 +63,12 @@ Column {
                 name: "refresh"
                 size: Theme.iconSize - 6
                 color: refreshAreaSpan.containsMouse ? Theme.primary : Theme.surfaceText
-                rotation: WifiService.isScanning ? refreshIconSpan.rotation : 0
+                rotation: NetworkService.isScanning ? refreshIconSpan.rotation : 0
 
                 RotationAnimation {
                     target: refreshIconSpan
                     property: "rotation"
-                    running: WifiService.isScanning
+                    running: NetworkService.isScanning
                     from: 0
                     to: 360
                     duration: 1000
@@ -89,10 +89,10 @@ Column {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    if (!WifiService.isScanning) {
+                    if (!NetworkService.isScanning) {
                         // Immediate visual feedback
                         refreshIconSpan.rotation += 30;
-                        WifiService.scanWifi();
+                        NetworkService.scanWifi();
                     }
                 }
             }
@@ -164,9 +164,9 @@ Column {
                                 text: {
                                     if (modelData.connected)
                                         return "Connected";
-                                    if (WifiService.connectionStatus === "connecting" && WifiService.connectingSSID === modelData.ssid)
+                                    if (NetworkService.connectionStatus === "connecting" && NetworkService.connectingSSID === modelData.ssid)
                                         return "Connecting...";
-                                    if (WifiService.connectionStatus === "invalid_password" && WifiService.connectingSSID === modelData.ssid)
+                                    if (NetworkService.connectionStatus === "invalid_password" && NetworkService.connectingSSID === modelData.ssid)
                                         return "Invalid password";
                                     if (modelData.saved)
                                         return "Saved" + (modelData.secured ? " • Secured" : " • Open");
@@ -174,9 +174,9 @@ Column {
                                 }
                                 font.pixelSize: Theme.fontSizeSmall - 1
                                 color: {
-                                    if (WifiService.connectionStatus === "connecting" && WifiService.connectingSSID === modelData.ssid)
+                                    if (NetworkService.connectionStatus === "connecting" && NetworkService.connectingSSID === modelData.ssid)
                                         return Theme.primary;
-                                    if (WifiService.connectionStatus === "invalid_password" && WifiService.connectingSSID === modelData.ssid)
+                                    if (NetworkService.connectionStatus === "invalid_password" && NetworkService.connectingSSID === modelData.ssid)
                                         return Theme.error;
                                     return Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7);
                                 }
@@ -253,7 +253,7 @@ Column {
                                 return;
 
                             if (modelData.saved) {
-                                WifiService.connectToWifi(modelData.ssid);
+                                NetworkService.connectToWifi(modelData.ssid);
                             } else if (modelData.secured) {
                                 if (wifiPasswordModalRef) {
                                     wifiPasswordModalRef.wifiPasswordSSID = modelData.ssid;
@@ -261,7 +261,7 @@ Column {
                                     wifiPasswordModalRef.wifiPasswordModalVisible = true;
                                 }
                             } else {
-                                WifiService.connectToWifi(modelData.ssid);
+                                NetworkService.connectToWifi(modelData.ssid);
                             }
                         }
                     }
