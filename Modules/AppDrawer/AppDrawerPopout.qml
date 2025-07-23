@@ -65,27 +65,11 @@ PanelWindow {
         onViewModeSelected: Prefs.setAppLauncherViewMode(mode)
     }
 
-    // Background dim with click to close
-    Rectangle {
+    // Background click to close (no visual background)
+    MouseArea {
         anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.3)
-        opacity: appDrawerPopout.isVisible ? 1 : 0
-        visible: appDrawerPopout.isVisible
-
-        MouseArea {
-            anchors.fill: parent
-            enabled: appDrawerPopout.isVisible
-            onClicked: appDrawerPopout.hide()
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
-            }
-
-        }
-
+        enabled: appDrawerPopout.isVisible
+        onClicked: appDrawerPopout.hide()
     }
 
     Component {
