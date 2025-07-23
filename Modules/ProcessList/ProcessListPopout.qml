@@ -19,6 +19,10 @@ PanelWindow {
 
     function hide() {
         isVisible = false;
+        // Close any open context menus
+        if (processContextMenu.visible) {
+            processContextMenu.close();
+        }
     }
 
     function show() {
@@ -127,13 +131,13 @@ PanelWindow {
                 ProcessListView {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    contextMenu: processContextMenuWindow
+                    contextMenu: processContextMenu
                 }
             }
         }
     }
 
     ProcessContextMenu {
-        id: processContextMenuWindow
+        id: processContextMenu
     }
 }

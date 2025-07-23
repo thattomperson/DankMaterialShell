@@ -28,15 +28,15 @@ DankModal {
     // Auto-reopen dialog on invalid password
     Connections {
         function onPasswordDialogShouldReopenChanged() {
-            if (WifiService.passwordDialogShouldReopen && WifiService.connectingSSID !== "") {
-                wifiPasswordSSID = WifiService.connectingSSID;
+            if (NetworkService.passwordDialogShouldReopen && NetworkService.connectingSSID !== "") {
+                wifiPasswordSSID = NetworkService.connectingSSID;
                 wifiPasswordInput = "";
                 wifiPasswordModalVisible = true;
-                WifiService.passwordDialogShouldReopen = false;
+                NetworkService.passwordDialogShouldReopen = false;
             }
         }
 
-        target: WifiService
+        target: NetworkService
     }
 
     content: Component {
@@ -111,7 +111,7 @@ DankModal {
                             wifiPasswordInput = text;
                         }
                         onAccepted: {
-                            WifiService.connectToWifiWithPassword(wifiPasswordSSID, passwordInput.text);
+                            NetworkService.connectToWifiWithPassword(wifiPasswordSSID, passwordInput.text);
                             wifiPasswordModalVisible = false;
                             wifiPasswordInput = "";
                             passwordInput.text = "";
@@ -245,7 +245,7 @@ DankModal {
                                 cursorShape: Qt.PointingHandCursor
                                 enabled: parent.enabled
                                 onClicked: {
-                                    WifiService.connectToWifiWithPassword(wifiPasswordSSID, passwordInput.text);
+                                    NetworkService.connectToWifiWithPassword(wifiPasswordSSID, passwordInput.text);
                                     wifiPasswordModalVisible = false;
                                     wifiPasswordInput = "";
                                     passwordInput.text = "";

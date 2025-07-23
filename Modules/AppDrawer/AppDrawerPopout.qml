@@ -85,7 +85,6 @@ PanelWindow {
         x: Theme.spacingL
         y: Theme.barHeight + Theme.spacingXS
         
-        // GPU-accelerated scale + opacity animation
         opacity: appDrawerPopout.isVisible ? 1 : 0
         scale: appDrawerPopout.isVisible ? 1 : 0.9
         
@@ -249,12 +248,21 @@ PanelWindow {
                             }
                         }
 
+                        Component.onCompleted: {
+                            if (appDrawerPopout.isVisible) {
+                                searchField.forceActiveFocus();
+                            }
+                        }
+
                         Connections {
-                            function onVisibleChanged() {
-                                if (appDrawerPopout.visible)
-                                    searchField.forceActiveFocus();
-                                else
+                            function onIsVisibleChanged() {
+                                if (appDrawerPopout.isVisible) {
+                                    Qt.callLater(function() {
+                                        searchField.forceActiveFocus();
+                                    });
+                                } else {
                                     searchField.clearFocus();
+                                }
                             }
 
                             target: appDrawerPopout

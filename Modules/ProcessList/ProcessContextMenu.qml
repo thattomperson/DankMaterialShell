@@ -1,80 +1,74 @@
-
 import QtQuick
-import Quickshell
+import QtQuick.Controls
 import Quickshell.Io
-import Quickshell.Wayland
 import qs.Common
 import qs.Services
 
-PanelWindow {
-    id: processContextMenuWindow
+Popup {
+    id: processContextMenu
 
     property var processData: null
-    property bool menuVisible: false
 
     function show(x, y) {
+        if (!processContextMenu.parent && typeof Overlay !== "undefined" && Overlay.overlay) {
+            processContextMenu.parent = Overlay.overlay;
+        }
+        
         const menuWidth = 180;
         const menuHeight = menuColumn.implicitHeight + Theme.spacingS * 2;
-        const screenWidth = processContextMenuWindow.screen ? processContextMenuWindow.screen.width : 1920;
-        const screenHeight = processContextMenuWindow.screen ? processContextMenuWindow.screen.height : 1080;
+        const screenWidth = Screen.width;
+        const screenHeight = Screen.height;
+
         let finalX = x;
         let finalY = y;
-        if (x + menuWidth > screenWidth - 20)
+
+        if (x + menuWidth > screenWidth - 20) {
             finalX = x - menuWidth;
-
-        if (y + menuHeight > screenHeight - 20)
+        }
+        if (y + menuHeight > screenHeight - 20) {
             finalY = y - menuHeight;
+        }
 
-        finalX = Math.max(20, finalX);
-        finalY = Math.max(20, finalY);
-        processContextMenu.x = finalX;
-        processContextMenu.y = finalY;
-        processContextMenuWindow.menuVisible = true;
+        processContextMenu.x = Math.max(20, finalX);
+        processContextMenu.y = Math.max(20, finalY);
+        open();
     }
 
-    function hide() {
-        processContextMenuWindow.menuVisible = false;
+    width: 180
+    height: menuColumn.implicitHeight + Theme.spacingS * 2
+    padding: 0
+    modal: false
+    closePolicy: Popup.CloseOnEscape
+    
+    onClosed: {
+        closePolicy = Popup.CloseOnEscape;
+    }
+    
+    onOpened: {
+        outsideClickTimer.start();
+    }
+    
+    Timer {
+        id: outsideClickTimer
+        interval: 100
+        onTriggered: {
+            processContextMenu.closePolicy = Popup.CloseOnEscape | Popup.CloseOnPressOutside;
+        }
+    }
+    
+    background: Rectangle {
+        color: "transparent"
     }
 
-    visible: menuVisible
-    color: "transparent"
-    WlrLayershell.layer: WlrLayershell.Overlay
-    WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-
-    anchors {
-        top: true
-        left: true
-        right: true
-        bottom: true
-    }
-
-    Rectangle {
-        id: processContextMenu
-
-        width: 180
-        height: menuColumn.implicitHeight + Theme.spacingS * 2
-        radius: Theme.cornerRadiusLarge
+    contentItem: Rectangle {
+        id: menuContent
         color: Theme.popupBackground()
+        radius: Theme.cornerRadiusLarge
         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
         border.width: 1
-        opacity: processContextMenuWindow.menuVisible ? 1 : 0
-        scale: processContextMenuWindow.menuVisible ? 1 : 0.85
-
-        Rectangle {
-            anchors.fill: parent
-            anchors.topMargin: 4
-            anchors.leftMargin: 2
-            anchors.rightMargin: -2
-            anchors.bottomMargin: -4
-            radius: parent.radius
-            color: Qt.rgba(0, 0, 0, 0.15)
-            z: parent.z - 1
-        }
 
         Column {
             id: menuColumn
-
             anchors.fill: parent
             anchors.margins: Theme.spacingS
             spacing: 1
@@ -97,27 +91,17 @@ PanelWindow {
 
                 MouseArea {
                     id: copyPidArea
-
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        if (processContextMenuWindow.processData) {
-                            copyPidProcess.command = ["wl-copy", processContextMenuWindow.processData.pid.toString()];
+                        if (processContextMenu.processData) {
+                            copyPidProcess.command = ["wl-copy", processContextMenu.processData.pid.toString()];
                             copyPidProcess.running = true;
                         }
-                        processContextMenuWindow.hide();
+                        processContextMenu.close();
                     }
                 }
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.shortDuration
-                        easing.type: Theme.standardEasing
-                    }
-
-                }
-
             }
 
             Rectangle {
@@ -138,28 +122,18 @@ PanelWindow {
 
                 MouseArea {
                     id: copyNameArea
-
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        if (processContextMenuWindow.processData) {
-                            let processName = processContextMenuWindow.processData.displayName || processContextMenuWindow.processData.command;
+                        if (processContextMenu.processData) {
+                            let processName = processContextMenu.processData.displayName || processContextMenu.processData.command;
                             copyNameProcess.command = ["wl-copy", processName];
                             copyNameProcess.running = true;
                         }
-                        processContextMenuWindow.hide();
+                        processContextMenu.close();
                     }
                 }
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.shortDuration
-                        easing.type: Theme.standardEasing
-                    }
-
-                }
-
             }
 
             Rectangle {
@@ -174,7 +148,6 @@ PanelWindow {
                     height: 1
                     color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                 }
-
             }
 
             Rectangle {
@@ -182,7 +155,7 @@ PanelWindow {
                 height: 28
                 radius: Theme.cornerRadiusSmall
                 color: killArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
-                enabled: processContextMenuWindow.processData && processContextMenuWindow.processData.pid > 1000
+                enabled: processContextMenu.processData && processContextMenu.processData.pid > 1000
                 opacity: enabled ? 1 : 0.5
 
                 Text {
@@ -197,28 +170,18 @@ PanelWindow {
 
                 MouseArea {
                     id: killArea
-
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: parent.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     enabled: parent.enabled
                     onClicked: {
-                        if (processContextMenuWindow.processData) {
-                            killProcess.command = ["kill", processContextMenuWindow.processData.pid.toString()];
+                        if (processContextMenu.processData) {
+                            killProcess.command = ["kill", processContextMenu.processData.pid.toString()];
                             killProcess.running = true;
                         }
-                        processContextMenuWindow.hide();
+                        processContextMenu.close();
                     }
                 }
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.shortDuration
-                        easing.type: Theme.standardEasing
-                    }
-
-                }
-
             }
 
             Rectangle {
@@ -226,7 +189,7 @@ PanelWindow {
                 height: 28
                 radius: Theme.cornerRadiusSmall
                 color: forceKillArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
-                enabled: processContextMenuWindow.processData && processContextMenuWindow.processData.pid > 1000
+                enabled: processContextMenu.processData && processContextMenu.processData.pid > 1000
                 opacity: enabled ? 1 : 0.5
 
                 Text {
@@ -241,80 +204,40 @@ PanelWindow {
 
                 MouseArea {
                     id: forceKillArea
-
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: parent.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     enabled: parent.enabled
                     onClicked: {
-                        if (processContextMenuWindow.processData) {
-                            forceKillProcess.command = ["kill", "-9", processContextMenuWindow.processData.pid.toString()];
+                        if (processContextMenu.processData) {
+                            forceKillProcess.command = ["kill", "-9", processContextMenu.processData.pid.toString()];
                             forceKillProcess.running = true;
                         }
-                        processContextMenuWindow.hide();
+                        processContextMenu.close();
                     }
                 }
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.shortDuration
-                        easing.type: Theme.standardEasing
-                    }
-
-                }
-
             }
-
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        z: -1
-        onClicked: {
-            processContextMenuWindow.menuVisible = false;
         }
     }
 
     Process {
         id: copyPidProcess
-
         running: false
     }
 
     Process {
         id: copyNameProcess
-
         running: false
     }
 
     Process {
         id: killProcess
-
         running: false
     }
 
     Process {
         id: forceKillProcess
-
         running: false
     }
-
+    
 }

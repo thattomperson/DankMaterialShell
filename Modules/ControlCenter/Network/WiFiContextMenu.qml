@@ -118,10 +118,10 @@ Rectangle {
                 onClicked: {
                     if (wifiContextMenuWindow.networkData) {
                         if (wifiContextMenuWindow.networkData.connected) {
-                            WifiService.disconnectWifi();
+                            NetworkService.disconnectWifi();
                         } else {
                             if (wifiContextMenuWindow.networkData.saved) {
-                                WifiService.connectToWifi(wifiContextMenuWindow.networkData.ssid);
+                                NetworkService.connectToWifi(wifiContextMenuWindow.networkData.ssid);
                             } else if (wifiContextMenuWindow.networkData.secured) {
                                 if (wifiPasswordModalRef) {
                                     wifiPasswordModalRef.wifiPasswordSSID = wifiContextMenuWindow.networkData.ssid;
@@ -129,7 +129,7 @@ Rectangle {
                                     wifiPasswordModalRef.wifiPasswordModalVisible = true;
                                 }
                             } else {
-                                WifiService.connectToWifi(wifiContextMenuWindow.networkData.ssid);
+                                NetworkService.connectToWifi(wifiContextMenuWindow.networkData.ssid);
                             }
                         }
                     }
@@ -198,7 +198,7 @@ Rectangle {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     if (wifiContextMenuWindow.networkData) {
-                        WifiService.forgetWifiNetwork(wifiContextMenuWindow.networkData.ssid);
+                        NetworkService.forgetWifiNetwork(wifiContextMenuWindow.networkData.ssid);
                     }
                     wifiContextMenuWindow.hide();
                 }

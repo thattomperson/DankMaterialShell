@@ -27,6 +27,10 @@ DankModal {
     function hide() {
         processListModal.visible = false;
         SystemMonitorService.enableDetailedMonitoring(false);
+        // Close any open context menus
+        if (processContextMenu.visible) {
+            processContextMenu.close();
+        }
     }
 
     function toggle() {
@@ -276,7 +280,7 @@ DankModal {
     Component {
         id: processesTabComponent
         ProcessesTab {
-            contextMenu: processContextMenuWindow
+            contextMenu: processContextMenu
         }
     }
 
@@ -293,7 +297,7 @@ DankModal {
     
 
     ProcessContextMenu {
-        id: processContextMenuWindow
+        id: processContextMenu
     }
 
     IpcHandler {

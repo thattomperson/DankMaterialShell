@@ -43,7 +43,7 @@ Rectangle {
                 if (NetworkService.networkStatus === "ethernet")
                     return "lan";
                 else if (NetworkService.networkStatus === "wifi")
-                    return getWiFiSignalIcon(WifiService.wifiSignalStrength);
+                    return getWiFiSignalIcon(NetworkService.wifiSignalStrength);
                 else
                     return "wifi_off";
             }

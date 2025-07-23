@@ -85,8 +85,6 @@ Rectangle {
             spacing: Theme.spacingXS
 
             AudioVisualization {
-                width: 20
-                height: Theme.iconSize
                 anchors.verticalCenter: parent.verticalCenter
             }
 

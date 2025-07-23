@@ -19,7 +19,7 @@ DankModal {
         networkSSID = ssid;
         networkData = data;
         networkInfoModalVisible = true;
-        WifiService.fetchNetworkInfo(ssid);
+        NetworkService.fetchNetworkInfo(ssid);
     }
 
     function hideDialog() {
@@ -117,7 +117,7 @@ DankModal {
 
                             anchors.fill: parent
                             anchors.margins: Theme.spacingM
-                            text: WifiService.networkInfoDetails.replace(/\\n/g, '\n') || "No information available"
+                            text: NetworkService.networkInfoDetails.replace(/\\n/g, '\n') || "No information available"
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceText
                             wrapMode: Text.WordWrap

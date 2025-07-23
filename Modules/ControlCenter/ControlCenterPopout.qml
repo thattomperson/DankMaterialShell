@@ -23,7 +23,7 @@ PanelWindow {
     visible: controlCenterVisible
     onVisibleChanged: {
         // Enable/disable WiFi auto-refresh based on control center visibility
-        WifiService.autoRefreshEnabled = visible && NetworkService.wifiEnabled;
+        NetworkService.autoRefreshEnabled = visible && NetworkService.wifiEnabled;
         // Stop bluetooth scanning when control center is closed
         if (!visible && BluetoothService.adapter && BluetoothService.adapter.discovering)
             BluetoothService.adapter.discovering = false;
