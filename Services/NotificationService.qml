@@ -60,6 +60,8 @@ Singleton {
             });
 
             if (wrapper) {
+                const groupKey = getGroupKey(wrapper);
+                console.log("New notification added to group:", groupKey, "Expansion state:", expandedGroups[groupKey] || false);
                 // Handle media notification replacement
                 if (wrapper.isMedia) {
                     handleMediaNotification(wrapper);
@@ -67,19 +69,7 @@ Singleton {
                     root.notifications.push(wrapper);
                 }
                 
-                // Auto-expand conversation groups with new messages
-                if (wrapper.isConversation && notifications.length > 1) {
-                    const groupKey = getGroupKey(wrapper);
-                    const existingGroup = groupedNotifications.find(group => group.key === groupKey);
-                    if (existingGroup && existingGroup.count > 1) {
-                        let newExpandedGroups = {};
-                        for (const key in expandedGroups) {
-                            newExpandedGroups[key] = expandedGroups[key];
-                        }
-                        newExpandedGroups[groupKey] = true;
-                        expandedGroups = newExpandedGroups;
-                    }
-                }
+                // Don't auto-expand groups - let user control expansion state
                 
                 // Add to persistent storage (only for non-transient notifications)
                 if (!notif.transient) {
@@ -216,18 +206,7 @@ Singleton {
 
 
 
-        readonly property Timer timer: Timer {
-            running: wrapper.popup
-            interval: {
-                if (wrapper.notification.expireTimeout > 0) {
-                    return wrapper.notification.expireTimeout * 1000;
-                }
-                return NotificationSettings.getAppTimeout(wrapper.appName);
-            }
-            onTriggered: {
-                wrapper.popup = false;
-            }
-        }
+        
 
         readonly property Connections conn: Connections {
             target: wrapper.notification.Retainable
@@ -235,7 +214,19 @@ Singleton {
             function onDropped(): void {
                 const index = root.notifications.indexOf(wrapper);
                 if (index !== -1) {
+                    // Get the group key before removing the notification
+                    const groupKey = getGroupKey(wrapper);
                     root.notifications.splice(index, 1);
+                    
+                    // Check if this group now has no notifications left
+                    const remainingInGroup = root.notifications.filter(n => getGroupKey(n) === groupKey);
+                    if (remainingInGroup.length === 0) {
+                        // Immediately clear expansion state for empty group
+                        clearGroupExpansionState(groupKey);
+                    }
+                    
+                    // Clean up all expansion states
+                    cleanupExpansionStates();
                 }
             }
 
@@ -257,6 +248,7 @@ Singleton {
         for (const notif of notificationsCopy) {
             notif.notification.dismiss();
         }
+        // Note: Expansion states will be cleaned up by onDropped as notifications are removed
     }
 
     function dismissNotification(wrapper) {
@@ -411,13 +403,57 @@ Singleton {
     }
 
     function dismissGroup(groupKey) {
-        // Use array iteration to avoid spread operator issues
-        for (let i = notifications.length - 1; i >= 0; i--) {
-            const notif = notifications[i];
-            if (getGroupKey(notif) === groupKey) {
+        console.log("Completely dismissing group:", groupKey);
+        const group = groupedNotifications.find(g => g.key === groupKey);
+        if (group) {
+            for (const notif of group.notifications) {
                 notif.notification.dismiss();
             }
         }
+        // Note: Expansion state will be cleaned up by onDropped when notifications are removed
+    }
+    
+    function clearGroupExpansionState(groupKey) {
+        // Immediately remove expansion state for a specific group
+        let newExpandedGroups = {};
+        for (const key in expandedGroups) {
+            if (key !== groupKey && expandedGroups[key]) {
+                newExpandedGroups[key] = true;
+            }
+        }
+        expandedGroups = newExpandedGroups;
+        
+        console.log("Cleared expansion state for group:", groupKey);
+    }
+
+    function cleanupExpansionStates() {
+        // Get all current group keys and message IDs
+        const currentGroupKeys = new Set(groupedNotifications.map(g => g.key));
+        const currentMessageIds = new Set();
+        
+        for (const group of groupedNotifications) {
+            for (const notif of group.notifications) {
+                currentMessageIds.add(notif.notification.id);
+            }
+        }
+        
+        // Clean up expanded groups that no longer exist
+        let newExpandedGroups = {};
+        for (const key in expandedGroups) {
+            if (currentGroupKeys.has(key) && expandedGroups[key]) {
+                newExpandedGroups[key] = true;
+            }
+        }
+        expandedGroups = newExpandedGroups;
+        
+        // Clean up expanded messages that no longer exist
+        let newExpandedMessages = {};
+        for (const messageId in expandedMessages) {
+            if (currentMessageIds.has(messageId) && expandedMessages[messageId]) {
+                newExpandedMessages[messageId] = true;
+            }
+        }
+        expandedMessages = newExpandedMessages;
     }
 
     function toggleMessageExpansion(messageId) {
