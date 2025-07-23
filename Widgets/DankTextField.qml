@@ -159,7 +159,6 @@ Rectangle {
             cursorShape: Qt.PointingHandCursor
             onClicked: {
                 textInput.text = "";
-                textInput.forceActiveFocus();
             }
         }
 

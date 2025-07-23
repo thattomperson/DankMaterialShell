@@ -21,8 +21,8 @@ DankModal {
 
     // DankModal configuration
     visible: settingsVisible
-    width: 700
-    height: 600
+    width: 650
+    height: 750
     keyboardFocus: "ondemand"
     enableShadow: true
 
@@ -33,8 +33,8 @@ DankModal {
     content: Component {
         Column {
             anchors.fill: parent
-            anchors.margins: Theme.spacingL
-            spacing: Theme.spacingL
+            anchors.margins: Theme.spacingM
+            spacing: Theme.spacingS
 
             // Header
             Row {

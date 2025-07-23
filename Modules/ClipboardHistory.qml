@@ -114,8 +114,8 @@ DankModal {
 
     // DankModal configuration
     visible: isVisible
-    width: 600
-    height: 500
+    width: 650
+    height: 550
     keyboardFocus: "ondemand"
 
     onVisibleChanged: {
@@ -132,8 +132,8 @@ DankModal {
     content: Component {
         Column {
             anchors.fill: parent
-            anchors.margins: Theme.spacingL
-            spacing: Theme.spacingM
+            anchors.margins: Theme.spacingM
+            spacing: Theme.spacingS
 
             // Header with search
             Rectangle {
@@ -201,12 +201,10 @@ DankModal {
                 
                 Connections {
                     target: clipboardHistory
-                    function onShouldFocusSearchChanged() {
+                    function onOpened() {
                         if (shouldFocusSearch) {
-                            Qt.callLater(function() {
-                                searchField.forceActiveFocus();
-                                shouldFocusSearch = false;
-                            });
+                            searchField.forceActiveFocus()
+                            shouldFocusSearch = false
                         }
                     }
                 }
@@ -315,7 +313,7 @@ DankModal {
         id: clearConfirmDialog
         visible: showClearConfirmation
         width: 350
-        height: 180
+        height: 150
         keyboardFocus: "ondemand"
         
         onBackgroundClicked: {
@@ -328,8 +326,8 @@ DankModal {
 
                 Column {
                     anchors.centerIn: parent
-                    width: parent.width - Theme.spacingL * 2
-                    spacing: Theme.spacingL
+                    width: parent.width - Theme.spacingM * 2
+                    spacing: Theme.spacingM
 
                 Text {
                     text: "Clear All History?"

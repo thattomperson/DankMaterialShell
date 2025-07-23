@@ -200,9 +200,9 @@ DankModal {
 
     // DankModal configuration
     visible: spotlightOpen
-    width: 600
-    height: 500
-    keyboardFocus: "exclusive"
+    width: 550
+    height: 600
+    keyboardFocus: "ondemand"
     backgroundColor: Theme.popupBackground()
     cornerRadius: Theme.cornerRadiusXLarge
     borderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
@@ -271,16 +271,6 @@ DankModal {
             anchors.fill: parent
             focus: true
             
-            Component.onCompleted: {
-                forceActiveFocus();
-            }
-            
-            onVisibleChanged: {
-                if (visible) {
-                    forceActiveFocus();
-                }
-            }
-            
             // Handle keyboard shortcuts
             Keys.onPressed: function(event) {
                 if (event.key === Qt.Key_Escape) {
@@ -302,17 +292,16 @@ DankModal {
                     launchSelected();
                     event.accepted = true;
                 } else if (event.text && event.text.length > 0 && event.text.match(/[a-zA-Z0-9\\s]/)) {
-                    // User started typing, focus search field and pass the character
-                    searchField.forceActiveFocus();
                     searchField.text = event.text;
+                    searchField.forceActiveFocus();
                     event.accepted = true;
                 }
             }
 
         Column {
             anchors.fill: parent
-            anchors.margins: Theme.spacingXL
-            spacing: Theme.spacingL
+            anchors.margins: Theme.spacingM
+            spacing: Theme.spacingM
             
 
             // Combined row for categories and view mode toggle
@@ -442,21 +431,12 @@ DankModal {
                     
                     Connections {
                         target: spotlightLauncher
-                        function onShouldFocusSearchChanged() {
+                        function onOpened() {
                             if (shouldFocusSearch) {
-                                Qt.callLater(function() {
-                                    searchField.forceActiveFocus();
-                                    searchField.selectAll();
-                                    shouldFocusSearch = false;
-                                });
+                                searchField.forceActiveFocus()
+                                searchField.selectAll()
+                                shouldFocusSearch = false
                             }
-                        }
-                    }
-                    
-                    onActiveFocusChanged: {
-                        if (!activeFocus && searchQuery.length === 0) {
-                            // If search field loses focus and there's no search text, give focus back to main handler
-                            parent.parent.forceActiveFocus();
                         }
                     }
                     

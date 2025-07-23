@@ -36,16 +36,17 @@ DankModal {
     }
 
     visible: dialogVisible
-    width: 400
-    height: 250
-    keyboardFocus: "exclusive"
+    width: 380
+    height: 190
+    keyboardFocus: "ondemand"
+
+    onOpened: {
+        textInput.forceActiveFocus()
+    }
 
     onVisibleChanged: {
         if (visible) {
             textInput.enabled = true;
-            Qt.callLater(function() {
-                textInput.forceActiveFocus();
-            });
         } else {
             textInput.enabled = false;
         }
@@ -59,8 +60,8 @@ DankModal {
     content: Component {
         Column {
             anchors.centerIn: parent
-            width: parent.width - Theme.spacingL * 2
-            spacing: Theme.spacingL
+            width: parent.width - Theme.spacingM * 2
+            spacing: Theme.spacingM
 
             Text {
                 text: dialogTitle

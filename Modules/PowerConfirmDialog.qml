@@ -38,7 +38,7 @@ DankModal {
     // DankModal configuration
     visible: powerConfirmVisible
     width: 350
-    height: 200
+    height: 160
     keyboardFocus: "ondemand"
     enableShadow: false
     onBackgroundClicked: {
@@ -62,8 +62,8 @@ DankModal {
 
             Column {
                 anchors.centerIn: parent
-                width: parent.width - Theme.spacingL * 2
-                spacing: Theme.spacingL
+                width: parent.width - Theme.spacingM * 2
+                spacing: Theme.spacingM
 
                 // Title
                 Text {
@@ -95,7 +95,7 @@ DankModal {
                 }
 
                 Item {
-                    height: Theme.spacingL
+                    height: Theme.spacingS
                 }
 
                 // Buttons

@@ -11,9 +11,13 @@ PanelWindow {
     // Core properties
     property alias content: contentLoader.sourceComponent
 
-    // Sizing
+    // Sizing - can use fixed or relative to screen
     property real width: 400
     property real height: 300
+    
+    // Screen-relative sizing helpers
+    readonly property real screenWidth: parent ? parent.width : width
+    readonly property real screenHeight: parent ? parent.height : height
 
     // Background behavior
     property bool showBackground: true
@@ -71,6 +75,11 @@ PanelWindow {
         if (root.visible) {
             opened()
         } else {
+            // Properly cleanup text input surfaces
+            if (Qt.inputMethod) {
+                Qt.inputMethod.hide()
+                Qt.inputMethod.reset()
+            }
             dialogClosed()
         }
     }
