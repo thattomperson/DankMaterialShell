@@ -71,7 +71,7 @@ PanelWindow {
                             if (expanded && modelData.count >= 1) {
                                 const baseHeight = (116 * modelData.count) + (12 * (modelData.count - 1));
                                 // Add extra bottom margin for View/Dismiss buttons when there are fewer than 3 messages
-                                const bottomMargin = modelData.count === 1 ? 70 : (modelData.count < 3 ? 50 : 0);
+                                const bottomMargin = modelData.count === 1 ? 70 : (modelData.count < 3 ? 50 : -25);
                                 return baseHeight + bottomMargin;
                             }
                             return 116;

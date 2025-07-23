@@ -306,7 +306,7 @@ PanelWindow {
                             if (expanded && modelData.count >= 1) {
                                 const baseHeight = (116 * modelData.count) + (12 * (modelData.count - 1));
                                 // Add extra bottom margin for expanded groups
-                                const bottomMargin = modelData.count === 1 ? 50 : (modelData.count < 3 ? 40 : 20);
+                                const bottomMargin = modelData.count === 1 ? 65 : (modelData.count < 3 ? 30 : -45);
                                 return baseHeight + bottomMargin;
                             }
                             return 116;
@@ -643,7 +643,8 @@ PanelWindow {
                                     width: 48
                                     height: 24
                                     anchors.right: parent.right
-                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.top: parent.top
+                                    anchors.topMargin: 2
 
                                     Rectangle {
                                         width: 20
@@ -710,24 +711,22 @@ PanelWindow {
                                     delegate: Rectangle {
                                         required property var modelData
 
+                                        readonly property bool messageExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
+
                                         width: parent.width
-                                        height: Math.max(48, 32 + contentColumn.height + Theme.spacingM * 2) // 32 for icon height, plus content
-                                        radius: Theme.cornerRadius
-                                        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
-                                        border.color: modelData.urgency === 2 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : "transparent"
-                                        border.width: modelData.urgency === 2 ? 1 : 0
-                                        clip: true
+                                        height: messageExpanded ? Math.min(120, 50 + (bodyText.contentHeight || 0)) : 80
+                                        radius: 8
+                                        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.3)
+                                        border.color: "transparent"
+                                        border.width: 0
 
                                         Item {
-                                            id: notifContent
-
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            anchors.top: parent.top
-                                            anchors.margins: Theme.spacingM
-                                            height: Math.max(32, contentColumn.height)
+                                            anchors.fill: parent
+                                            anchors.margins: 12
 
                                             Rectangle {
+                                                id: messageIcon
+                                                
                                                 readonly property bool hasNotificationImage: modelData.image && modelData.image !== ""
 
                                                 width: 32
@@ -774,34 +773,101 @@ PanelWindow {
 
                                             }
 
-                                            // Individual controls - expand and dismiss buttons
-                                            Row {
-                                                width: 50
-                                                height: 24
-                                                anchors.right: parent.right
+                                            // Message content
+                                            Column {
+                                                anchors.left: messageIcon.right
+                                                anchors.leftMargin: 12
+                                                anchors.right: messageControls.left
+                                                anchors.rightMargin: 0
                                                 anchors.top: parent.top
-                                                anchors.topMargin: -4 // Move up into title area
-                                                spacing: 2
+                                                spacing: 4
 
-                                                // Expand/collapse button for 2nd tier
+                                                // App Title • Timestamp line
+                                                Text {
+                                                    width: parent.width
+                                                    text: {
+                                                        const appName = modelData.appName || "";
+                                                        const timeStr = modelData.timeStr || "";
+                                                        if (timeStr.length > 0)
+                                                            return appName + " • " + timeStr;
+                                                        else
+                                                            return appName;
+                                                    }
+                                                    color: Theme.surfaceVariantText
+                                                    font.pixelSize: Theme.fontSizeSmall
+                                                    font.weight: Font.Medium
+                                                    elide: Text.ElideRight
+                                                    maximumLineCount: 1
+                                                }
+
+                                                // Summary line (if exists)
+                                                Text {
+                                                    width: parent.width
+                                                    text: modelData.summary || ""
+                                                    color: Theme.surfaceText
+                                                    font.pixelSize: Theme.fontSizeMedium
+                                                    font.weight: Font.Medium
+                                                    elide: Text.ElideRight
+                                                    maximumLineCount: 1
+                                                    visible: text.length > 0
+                                                }
+
+                                                // Body text with expand capability
+                                                Text {
+                                                    id: bodyText
+
+                                                    width: parent.width
+                                                    text: {
+                                                        // Show up to 500 characters when expanded
+                                                        // Show truncated version when collapsed
+
+                                                        const body = modelData.body || "";
+                                                        if (messageExpanded)
+                                                            return body.length > 500 ? body.substring(0, 497) + "..." : body;
+                                                        else
+                                                            return body.length > 80 ? body.substring(0, 77) + "..." : body;
+                                                    }
+                                                    color: Theme.surfaceVariantText
+                                                    font.pixelSize: Theme.fontSizeSmall
+                                                    elide: messageExpanded ? Text.ElideNone : Text.ElideRight
+                                                    maximumLineCount: messageExpanded ? -1 : 2
+                                                    wrapMode: Text.WordWrap
+                                                    visible: text.length > 0
+                                                }
+
+                                            }
+
+                                            // Message controls (expand and close buttons)
+                                            Row {
+                                                id: messageControls
+
+                                                anchors.right: parent.right
+                                                anchors.rightMargin: -6
+                                                anchors.top: parent.top
+                                                spacing: 4
+
+                                                // Expand/collapse button for individual message
                                                 Rectangle {
-                                                    property bool isExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
+                                                    id: expandButton
 
                                                     width: 20
                                                     height: 20
                                                     radius: 10
-                                                    color: individualExpandArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
-                                                    visible: (modelData.body || "").length > 80 // Only show if body text is long enough
+                                                    color: expandMessageArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
+                                                    visible: (modelData.body || "").length > 80
 
                                                     DankIcon {
                                                         anchors.centerIn: parent
-                                                        name: parent.isExpanded ? "expand_less" : "expand_more"
+                                                        name: {
+                                                            const messageExpanded = NotificationService.expandedMessages[modelData.notification.id] || false;
+                                                            return messageExpanded ? "expand_less" : "expand_more";
+                                                        }
                                                         size: 12
                                                         color: Theme.surfaceText
                                                     }
 
                                                     MouseArea {
-                                                        id: individualExpandArea
+                                                        id: expandMessageArea
 
                                                         anchors.fill: parent
                                                         hoverEnabled: true
@@ -811,22 +877,22 @@ PanelWindow {
 
                                                 }
 
-                                                // Individual dismiss button
+                                                // Close button for individual message
                                                 Rectangle {
                                                     width: 20
                                                     height: 20
                                                     radius: 10
-                                                    color: individualDismissArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
+                                                    color: closeMessageArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
 
                                                     DankIcon {
                                                         anchors.centerIn: parent
                                                         name: "close"
                                                         size: 12
-                                                        color: individualDismissArea.containsMouse ? Theme.primary : Theme.surfaceText
+                                                        color: closeMessageArea.containsMouse ? Theme.primary : Theme.surfaceText
                                                     }
 
                                                     MouseArea {
-                                                        id: individualDismissArea
+                                                        id: closeMessageArea
 
                                                         anchors.fill: parent
                                                         hoverEnabled: true
@@ -838,142 +904,6 @@ PanelWindow {
 
                                             }
 
-                                            Item {
-                                                anchors.left: parent.left
-                                                anchors.leftMargin: 44
-                                                anchors.right: parent.right
-                                                anchors.rightMargin: 24 // Align text with close button
-                                                anchors.top: parent.top
-                                                height: contentColumn.height
-
-                                                Column {
-                                                    // COMMENTED OUT: Individual inline reply
-                                                    /*
-                                                Row {
-                                                    width: parent.width
-                                                    spacing: Theme.spacingS
-                                                    visible: modelData.notification.hasInlineReply
-
-                                                    Rectangle {
-                                                        width: parent.width - 50
-                                                        height: 28
-                                                        radius: 14
-                                                        color: Theme.surface
-                                                        border.color: replyField.activeFocus ? Theme.primary : Theme.outline
-                                                        border.width: 1
-
-                                                        TextField {
-                                                            id: replyField
-
-                                                            anchors.fill: parent
-                                                            anchors.margins: Theme.spacingXS
-                                                            placeholderText: modelData.notification.inlineReplyPlaceholder || "Reply..."
-                                                            color: Theme.surfaceText
-                                                            font.pixelSize: 11
-                                                            onAccepted: {
-                                                                if (text.length > 0) {
-                                                                    modelData.notification.sendInlineReply(text);
-                                                                    text = "";
-                                                                }
-                                                            }
-
-                                                            background: Item {
-                                                            }
-
-                                                        }
-
-                                                    }
-
-                                                    Rectangle {
-                                                        width: 42
-                                                        height: 28
-                                                        radius: 14
-                                                        color: replyField.text.length > 0 ? Theme.primary : Theme.surfaceContainer
-
-                                                        DankIcon {
-                                                            anchors.centerIn: parent
-                                                            name: "send"
-                                                            size: 12
-                                                            color: replyField.text.length > 0 ? Theme.primaryText : Theme.surfaceVariantText
-                                                        }
-
-                                                        MouseArea {
-                                                            anchors.fill: parent
-                                                            enabled: replyField.text.length > 0
-                                                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                                            onClicked: {
-                                                                modelData.notification.sendInlineReply(replyField.text);
-                                                                replyField.text = "";
-                                                            }
-                                                        }
-
-                                                    }
-
-                                                }
-                                                */
-
-                                                    id: contentColumn
-
-                                                    property bool isMessageExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
-
-                                                    width: parent.width
-                                                    spacing: 2 // Reduced from Theme.spacingXS (4px) by 2px
-
-                                                    // Title • timestamp format
-                                                    Text {
-                                                        text: {
-                                                            const summary = modelData.summary || "";
-                                                            const timeStr = modelData.timeStr || "";
-                                                            if (summary && timeStr)
-                                                                return summary + " • " + timeStr;
-                                                            else if (summary)
-                                                                return summary;
-                                                            else
-                                                                return "Message • " + timeStr;
-                                                        }
-                                                        color: Theme.surfaceText
-                                                        font.pixelSize: Theme.fontSizeSmall
-                                                        font.weight: Font.Medium
-                                                        width: parent.width
-                                                        elide: Text.ElideRight
-                                                        maximumLineCount: 1
-                                                    }
-
-                                                    // Body text with expandable behavior
-                                                    Text {
-                                                        text: modelData.body
-                                                        color: Theme.surfaceVariantText
-                                                        font.pixelSize: Theme.fontSizeSmall
-                                                        width: parent.width
-                                                        wrapMode: Text.WordWrap
-                                                        maximumLineCount: parent.isMessageExpanded ? -1 : 3 // Unlimited when expanded, 3 when collapsed (more space in center)
-                                                        elide: parent.isMessageExpanded ? Text.ElideNone : Text.ElideRight
-                                                        visible: text.length > 0
-                                                    }
-
-                                                    // Clickable area for View action on individual message
-                                                    MouseArea {
-                                                        anchors.fill: parent
-                                                        hoverEnabled: true
-                                                        cursorShape: Qt.PointingHandCursor
-                                                        onClicked: {
-                                                            // Find and invoke the View action
-                                                            if (modelData.actions) {
-                                                                for (const action of modelData.actions) {
-                                                                    if (action.text && action.text.toLowerCase() === "view") {
-                                                                        if (action.invoke)
-                                                                            action.invoke();
-
-                                                                        break;
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-
-                                                }
-
-                                            }
 
                                         }
 
@@ -981,6 +911,116 @@ PanelWindow {
 
                                 }
 
+                            }
+
+                        }
+
+                        // View button positioned at bottom-right of notification card
+                        Rectangle {
+                            id: viewButton
+
+                            property bool isHovered: false
+
+                            anchors.right: dismissButton.left
+                            anchors.rightMargin: 4
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 8
+                            width: viewText.width + 16
+                            height: viewText.height + 8
+                            radius: 6
+                            color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
+                            z: 10
+
+                            Text {
+                                id: viewText
+
+                                text: "View"
+                                color: viewButton.isHovered ? Theme.primary : Theme.surfaceVariantText
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.weight: Font.Medium
+                                anchors.centerIn: parent
+                            }
+
+                            MouseArea {
+                                id: viewArea
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                z: 11
+                                onEntered: {
+                                    viewButton.isHovered = true;
+                                }
+                                onExited: {
+                                    viewButton.isHovered = false;
+                                }
+                                onClicked: {
+                                    // Handle navigation to source message
+                                    if (modelData.latestNotification.actions) {
+                                        for (const action of modelData.latestNotification.actions) {
+                                            if (action.text && action.text.toLowerCase() === "view") {
+                                                if (action.invoke) {
+                                                    action.invoke();
+                                                    return ;
+                                                }
+                                            }
+                                        }
+                                        // If no View action, try the first available action
+                                        if (modelData.latestNotification.actions.length > 0) {
+                                            const firstAction = modelData.latestNotification.actions[0];
+                                            if (firstAction.invoke)
+                                                firstAction.invoke();
+
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+
+                        // Dismiss button positioned at bottom-right of notification card
+                        Rectangle {
+                            id: dismissButton
+
+                            property bool isHovered: false
+
+                            anchors.right: parent.right
+                            anchors.rightMargin: 16
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 8
+                            width: dismissText.width + 16
+                            height: dismissText.height + 8
+                            radius: 6
+                            color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
+                            z: 10
+
+                            Text {
+                                id: dismissText
+
+                                text: "Dismiss"
+                                color: dismissButton.isHovered ? Theme.primary : Theme.surfaceVariantText
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.weight: Font.Medium
+                                anchors.centerIn: parent
+                            }
+
+                            MouseArea {
+                                id: centerDismissArea
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                z: 11
+                                onEntered: {
+                                    dismissButton.isHovered = true;
+                                }
+                                onExited: {
+                                    dismissButton.isHovered = false;
+                                }
+                                onClicked: {
+                                    // Dismiss from notification center completely
+                                    NotificationService.dismissGroup(modelData.key);
+                                }
                             }
 
                         }
