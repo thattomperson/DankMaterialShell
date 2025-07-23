@@ -8,7 +8,7 @@ import qs.Services
 import qs.Widgets
 
 Rectangle {
-    id: mediaPlayerWidget
+    id: mediaPlayer
 
     property MprisPlayer activePlayer: MprisController.activePlayer
     property string lastValidTitle: ""

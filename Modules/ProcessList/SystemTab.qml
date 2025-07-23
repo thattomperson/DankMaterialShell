@@ -16,13 +16,16 @@ ScrollView {
 
         Rectangle {
             width: parent.width
-            height: 200
+            height: systemInfoColumn.implicitHeight + 2 * Theme.spacingL
             radius: Theme.cornerRadiusLarge
             color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.6)
             border.width: 0
 
             Column {
-                anchors.fill: parent
+                id: systemInfoColumn
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
                 anchors.margins: Theme.spacingL
                 spacing: Theme.spacingL
 
@@ -95,7 +98,8 @@ ScrollView {
                         Text {
                             text: SystemMonitorService.motherboard
                             font.pixelSize: Theme.fontSizeSmall
-                            color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                            font.weight: Font.Medium
+                            color: Theme.surfaceText
                             width: parent.width
                             elide: Text.ElideRight
                         }
@@ -118,7 +122,8 @@ ScrollView {
                         Text {
                             text: "BIOS " + SystemMonitorService.biosVersion
                             font.pixelSize: Theme.fontSizeSmall
-                            color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                            font.weight: Font.Medium
+                            color: Theme.surfaceText
                             width: parent.width
                             elide: Text.ElideRight
                         }
@@ -134,13 +139,16 @@ ScrollView {
 
         Rectangle {
             width: parent.width
-            height: Math.max(180, diskMountRepeater.count * 28 + 100)
+            height: storageColumn.implicitHeight + 2 * Theme.spacingL
             radius: Theme.cornerRadiusLarge
             color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.6)
             border.width: 0
 
             Column {
-                anchors.fill: parent
+                id: storageColumn
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
                 anchors.margins: Theme.spacingL
                 spacing: Theme.spacingS
 
@@ -173,16 +181,9 @@ ScrollView {
                     elide: Text.ElideRight
                 }
 
-                ScrollView {
+                Column {
                     width: parent.width
-                    height: Math.max(120, diskMountRepeater.count * 28 + 50)
-                    clip: true
-                    ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-
-                    Column {
-                        width: parent.width
-                        spacing: 2
+                    spacing: 2
 
                         Row {
                             width: parent.width
@@ -337,8 +338,6 @@ ScrollView {
                         }
 
                     }
-
-                }
 
             }
 

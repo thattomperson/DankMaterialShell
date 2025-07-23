@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import qs.Common
 import qs.Widgets
+import qs.Modules.Settings
 
 DankModal {
     id: settingsModal

@@ -13,8 +13,8 @@ Rectangle {
     property var networkData: null
     property bool menuVisible: false
     property var parentItem
-    property var wifiPasswordDialogRef
-    property var networkInfoDialogRef
+    property var wifiPasswordModalRef
+    property var networkInfoModalRef
 
     function show(x, y) {
         const menuWidth = 160;
@@ -123,10 +123,10 @@ Rectangle {
                             if (wifiContextMenuWindow.networkData.saved) {
                                 WifiService.connectToWifi(wifiContextMenuWindow.networkData.ssid);
                             } else if (wifiContextMenuWindow.networkData.secured) {
-                                if (wifiPasswordDialogRef) {
-                                    wifiPasswordDialogRef.wifiPasswordSSID = wifiContextMenuWindow.networkData.ssid;
-                                    wifiPasswordDialogRef.wifiPasswordInput = "";
-                                    wifiPasswordDialogRef.wifiPasswordDialogVisible = true;
+                                if (wifiPasswordModalRef) {
+                                    wifiPasswordModalRef.wifiPasswordSSID = wifiContextMenuWindow.networkData.ssid;
+                                    wifiPasswordModalRef.wifiPasswordInput = "";
+                                    wifiPasswordModalRef.wifiPasswordModalVisible = true;
                                 }
                             } else {
                                 WifiService.connectToWifi(wifiContextMenuWindow.networkData.ssid);
@@ -248,8 +248,8 @@ Rectangle {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    if (wifiContextMenuWindow.networkData && networkInfoDialogRef) {
-                        networkInfoDialogRef.showNetworkInfo(wifiContextMenuWindow.networkData.ssid, wifiContextMenuWindow.networkData);
+                    if (wifiContextMenuWindow.networkData && networkInfoModalRef) {
+                        networkInfoModalRef.showNetworkInfo(wifiContextMenuWindow.networkData.ssid, wifiContextMenuWindow.networkData);
                     }
                     wifiContextMenuWindow.hide();
                 }

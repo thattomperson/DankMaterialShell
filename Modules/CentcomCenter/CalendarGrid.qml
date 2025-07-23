@@ -6,7 +6,7 @@ import qs.Services
 import qs.Widgets
 
 Column {
-    id: calendarWidget
+    id: calendarGrid
 
     property date displayDate: new Date()
     property date selectedDate: new Date()

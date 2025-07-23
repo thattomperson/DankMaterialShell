@@ -5,7 +5,7 @@ import qs.Services
 import qs.Widgets
 
 Rectangle {
-    id: batteryWidget
+    id: battery
 
     property bool batteryPopupVisible: false
 

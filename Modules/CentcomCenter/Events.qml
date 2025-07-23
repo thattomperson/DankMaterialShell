@@ -7,7 +7,7 @@ import qs.Widgets
 
 // Events widget for selected date - Material Design 3 style
 Rectangle {
-    id: eventsWidget
+    id: events
 
     property date selectedDate: new Date()
     property var selectedDateEvents: []
@@ -17,7 +17,7 @@ Rectangle {
     function updateSelectedDateEvents() {
         if (CalendarService && CalendarService.khalAvailable) {
             let events = CalendarService.getEventsForDate(selectedDate);
-            console.log("EventsWidget: Updating events for", Qt.formatDate(selectedDate, "yyyy-MM-dd"), "found", events.length, "events");
+            console.log("Events: Updating events for", Qt.formatDate(selectedDate, "yyyy-MM-dd"), "found", events.length, "events");
             selectedDateEvents = events;
         } else {
             selectedDateEvents = [];
@@ -25,7 +25,7 @@ Rectangle {
     }
 
     onSelectedDateEventsChanged: {
-        console.log("EventsWidget: selectedDateEvents changed, count:", selectedDateEvents.length);
+        console.log("Events: selectedDateEvents changed, count:", selectedDateEvents.length);
         eventsList.model = selectedDateEvents;
     }
     width: parent.width

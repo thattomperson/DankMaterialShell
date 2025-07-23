@@ -8,6 +8,8 @@ import qs.Modules.Settings
 import qs.Modules.TopBar
 import qs.Modules.ProcessList
 import qs.Modules.ControlCenter.Network
+import qs.Modules.Popouts
+import qs.Modals
 
 ShellRoot {
     id: root
@@ -23,8 +25,8 @@ ShellRoot {
     }
 
     // Global popup windows
-    CentcomCenter {
-        id: centcomCenter
+    CentcomPopout {
+        id: centcomPopout
     }
 
     TrayMenuPopup {
@@ -39,38 +41,38 @@ ShellRoot {
         id: notificationPopup
     }
 
-    ControlCenter {
-        id: controlCenter
+    ControlCenterPopout {
+        id: controlCenterPopout
         onPowerActionRequested: (action, title, message) => {
-            powerConfirmDialog.powerConfirmAction = action;
-            powerConfirmDialog.powerConfirmTitle = title;
-            powerConfirmDialog.powerConfirmMessage = message;
-            powerConfirmDialog.powerConfirmVisible = true;
+            powerConfirmModal.powerConfirmAction = action;
+            powerConfirmModal.powerConfirmTitle = title;
+            powerConfirmModal.powerConfirmMessage = message;
+            powerConfirmModal.powerConfirmVisible = true;
         }
     }
 
-    WifiPasswordDialog {
-        id: wifiPasswordDialog
+    WifiPasswordModal {
+        id: wifiPasswordModal
     }
 
-    NetworkInfoDialog {
-        id: networkInfoDialog
+    NetworkInfoModal {
+        id: networkInfoModal
     }
 
-    BatteryControlPopup {
-        id: batteryControlPopup
+    BatteryPopout {
+        id: batteryPopout
     }
 
     PowerMenuPopup {
         id: powerMenuPopup
     }
 
-    PowerConfirmDialog {
-        id: powerConfirmDialog
+    PowerConfirmModal {
+        id: powerConfirmModal
     }
 
-    ProcessListDropdown {
-        id: processListDropdown
+    ProcessListPopout {
+        id: processListPopout
     }
 
     SettingsModal {
@@ -79,12 +81,12 @@ ShellRoot {
 
 
     // Application and clipboard components
-    AppLauncher {
-        id: appLauncher
+    AppDrawerPopout {
+        id: appDrawerPopout
     }
 
-    SpotlightLauncher {
-        id: spotlightLauncher
+    SpotlightModal {
+        id: spotlightModal
     }
 
     ProcessListModal {

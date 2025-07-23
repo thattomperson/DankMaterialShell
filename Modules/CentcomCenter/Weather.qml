@@ -6,7 +6,7 @@ import qs.Services
 import qs.Widgets
 
 Rectangle {
-    id: weatherWidget
+    id: weather
 
     width: parent.width
     height: parent.height

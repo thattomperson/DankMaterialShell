@@ -11,8 +11,8 @@ import qs.Modules.ControlCenter.Network
 Item {
     id: networkTab
 
-    property var wifiPasswordDialogRef: wifiPasswordDialog
-    property var networkInfoDialogRef: networkInfoDialog
+    property var wifiPasswordModalRef: wifiPasswordModal
+    property var networkInfoModalRef: networkInfoModal
 
     // Properly sorted WiFi networks with connected networks first
     property var sortedWifiNetworks: {
@@ -188,7 +188,7 @@ Item {
     WiFiNetworksList {
         wifiContextMenuWindow: wifiContextMenuWindow
         sortedWifiNetworks: networkTab.sortedWifiNetworks
-        wifiPasswordDialogRef: networkTab.wifiPasswordDialogRef
+        wifiPasswordModalRef: networkTab.wifiPasswordModalRef
     }
 
     // Timer for refreshing network status after WiFi toggle
@@ -312,8 +312,8 @@ Item {
     WiFiContextMenu {
         id: wifiContextMenuWindow
         parentItem: networkTab
-        wifiPasswordDialogRef: networkTab.wifiPasswordDialogRef
-        networkInfoDialogRef: networkTab.networkInfoDialogRef
+        wifiPasswordModalRef: networkTab.wifiPasswordModalRef
+        networkInfoModalRef: networkTab.networkInfoModalRef
     }
 
     // Background MouseArea to close the context menu

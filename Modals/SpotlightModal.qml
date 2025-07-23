@@ -8,7 +8,7 @@ import qs.Services
 import qs.Widgets
 
 DankModal {
-    id: spotlightLauncher
+    id: spotlightModal
 
     property bool spotlightOpen: false
     property var filteredApps: []
@@ -25,13 +25,13 @@ DankModal {
         }));
     }
     property string selectedCategory: "All"
-    property string viewMode: Prefs.spotlightLauncherViewMode // "list" or "grid"
+    property string viewMode: Prefs.spotlightModalViewMode // "list" or "grid"
     property int gridColumns: 4
 
     function show() {
-        console.log("SpotlightLauncher: show() called");
+        console.log("SpotlightModal: show() called");
         spotlightOpen = true;
-        console.log("SpotlightLauncher: spotlightOpen set to", spotlightOpen);
+        console.log("SpotlightModal: spotlightOpen set to", spotlightOpen);
         searchDebounceTimer.stop(); // Stop any pending search
         updateFilteredApps(); // Immediate update when showing
     }
@@ -208,7 +208,7 @@ DankModal {
     enableShadow: true
     
     onVisibleChanged: {
-        console.log("SpotlightLauncher visibility changed to:", visible);
+        console.log("SpotlightModal visibility changed to:", visible);
         if (visible && !spotlightOpen) {
             show();
         }
@@ -219,7 +219,7 @@ DankModal {
     }
 
     Component.onCompleted: {
-        console.log("SpotlightLauncher: Component.onCompleted called - component loaded successfully!");
+        console.log("SpotlightModal: Component.onCompleted called - component loaded successfully!");
         var allCategories = AppSearchService.getAllCategories().filter((cat) => {
             return cat !== "Education" && cat !== "Science";
         });
@@ -405,7 +405,7 @@ DankModal {
                     }
 
                     Connections {
-                        target: spotlightLauncher
+                        target: spotlightModal
                         function onOpened() {
                             searchField.forceActiveFocus();
                         }
@@ -464,7 +464,7 @@ DankModal {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 viewMode = "list";
-                                Prefs.setSpotlightLauncherViewMode("list");
+                                Prefs.setSpotlightModalViewMode("list");
                             }
                         }
                     }
@@ -493,7 +493,7 @@ DankModal {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 viewMode = "grid";
-                                Prefs.setSpotlightLauncherViewMode("grid");
+                                Prefs.setSpotlightModalViewMode("grid");
                             }
                         }
                     }
@@ -557,20 +557,20 @@ DankModal {
 
     IpcHandler {
         function open() {
-            console.log("SpotlightLauncher: IPC open() called");
-            spotlightLauncher.show();
+            console.log("SpotlightModal: IPC open() called");
+            spotlightModal.show();
             return "SPOTLIGHT_OPEN_SUCCESS";
         }
 
         function close() {
-            console.log("SpotlightLauncher: IPC close() called");
-            spotlightLauncher.hide();
+            console.log("SpotlightModal: IPC close() called");
+            spotlightModal.hide();
             return "SPOTLIGHT_CLOSE_SUCCESS";
         }
 
         function toggle() {
-            console.log("SpotlightLauncher: IPC toggle() called");
-            spotlightLauncher.toggle();
+            console.log("SpotlightModal: IPC toggle() called");
+            spotlightModal.toggle();
             return "SPOTLIGHT_TOGGLE_SUCCESS";
         }
 

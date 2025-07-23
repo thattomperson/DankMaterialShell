@@ -7,19 +7,33 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
+import qs.Modules.CentcomCenter
 
 PanelWindow {
     id: root
 
     readonly property bool hasActiveMedia: MprisController.activePlayer !== null
     property bool calendarVisible: false
+    property bool internalVisible: false
 
-    visible: calendarVisible
+    visible: internalVisible
+    
+    onCalendarVisibleChanged: {
+        if (calendarVisible) {
+            internalVisible = true
+            Qt.callLater(() => {
+                // This ensures opacity changes after window is visible
+                internalVisible = true // Force re-trigger if needed
+            })
+        } else {
+            internalVisible = false
+        }
+    }
     onVisibleChanged: {
         if (visible && CalendarService)
             CalendarService.loadCurrentMonth();
-
     }
+    
     implicitWidth: 480
     implicitHeight: 600
     WlrLayershell.layer: WlrLayershell.Overlay
@@ -57,24 +71,31 @@ PanelWindow {
             contentHeight += mainRowHeight + Theme.spacingM;
             // Add events widget height - use calculated height instead of actual
             if (CalendarService && CalendarService.khalAvailable) {
-                let hasEvents = eventsWidget.selectedDateEvents && eventsWidget.selectedDateEvents.length > 0;
-                let eventsHeight = hasEvents ? Math.min(300, 80 + eventsWidget.selectedDateEvents.length * 60) : 120;
+                let hasEvents = events.selectedDateEvents && events.selectedDateEvents.length > 0;
+                let eventsHeight = hasEvents ? Math.min(300, 80 + events.selectedDateEvents.length * 60) : 120;
                 contentHeight += eventsHeight;
             }
             return Math.min(contentHeight, parent.height * 0.9);
         }
 
-        width: calculateWidth()
+        readonly property real targetWidth: Math.min(Screen.width * 0.9, 600)
+        width: targetWidth
         height: calculateHeight()
-        x: (parent.width - width) / 2
-        y: Theme.barHeight + 4
         color: Theme.surfaceContainer
         radius: Theme.cornerRadiusLarge
         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
         border.width: 1
         layer.enabled: true
         opacity: calendarVisible ? 1 : 0
-        scale: calendarVisible ? 1 : 0.92
+        x: (Screen.width - targetWidth) / 2
+        y: Theme.barHeight + 4
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Anims.durShort
+                easing.type: Easing.OutCubic
+            }
+        }
 
         Rectangle {
             anchors.fill: parent
@@ -101,7 +122,6 @@ PanelWindow {
 
         }
 
-        // Update height when calendar service events change
         Connections {
             function onEventsByDateChanged() {
                 mainContainer.height = mainContainer.calculateHeight();
@@ -115,15 +135,15 @@ PanelWindow {
             enabled: CalendarService !== null
         }
 
-        // Update height when events widget's selectedDateEvents changes
         Connections {
             function onSelectedDateEventsChanged() {
                 mainContainer.height = mainContainer.calculateHeight();
             }
 
-            target: eventsWidget
-            enabled: eventsWidget !== null
+            target: events
+            enabled: events !== null
         }
+
 
         Column {
             anchors.fill: parent
@@ -153,13 +173,13 @@ PanelWindow {
                     visible: hasAnyWidgets
                     anchors.top: parent.top
 
-                    MediaPlayerWidget {
+                    MediaPlayer {
                         visible: true // Always visible - shows placeholder when no media
                         width: parent.width
                         height: 160
                     }
 
-                    WeatherWidget {
+                    Weather {
                         visible: true // Always visible - shows placeholder when no weather
                         width: parent.width
                         height: 140
@@ -168,8 +188,8 @@ PanelWindow {
                 }
 
                 // Right section for calendar
-                CalendarWidget {
-                    id: calendarWidget
+                CalendarGrid {
+                    id: calendarGrid
 
                     width: leftWidgets.hasAnyWidgets ? parent.width * 0.55 - Theme.spacingL : parent.width
                     height: parent.height
@@ -178,11 +198,11 @@ PanelWindow {
             }
 
             // Full-width events widget below
-            EventsWidget {
-                id: eventsWidget
+            Events {
+                id: events
 
                 width: parent.width
-                selectedDate: calendarWidget.selectedDate
+                selectedDate: calendarGrid.selectedDate
             }
 
         }
@@ -196,35 +216,14 @@ PanelWindow {
             shadowOpacity: 0.15
         }
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.longDuration
-                easing.type: Theme.emphasizedEasing
-            }
 
-        }
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.longDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
-        Behavior on height {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.standardEasing
-            }
-
-        }
 
     }
 
     MouseArea {
         anchors.fill: parent
         z: -1
+        enabled: calendarVisible
         onClicked: {
             calendarVisible = false;
         }

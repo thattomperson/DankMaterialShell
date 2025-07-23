@@ -10,7 +10,7 @@ import qs.Widgets
 DankModal {
     id: root
 
-    property bool networkInfoDialogVisible: false
+    property bool networkInfoModalVisible: false
     property string networkSSID: ""
     property var networkData: null
     property string networkDetails: ""
@@ -18,18 +18,18 @@ DankModal {
     function showNetworkInfo(ssid, data) {
         networkSSID = ssid;
         networkData = data;
-        networkInfoDialogVisible = true;
+        networkInfoModalVisible = true;
         WifiService.fetchNetworkInfo(ssid);
     }
 
     function hideDialog() {
-        networkInfoDialogVisible = false;
+        networkInfoModalVisible = false;
         networkSSID = "";
         networkData = null;
         networkDetails = "";
     }
 
-    visible: networkInfoDialogVisible
+    visible: networkInfoModalVisible
     width: 600
     height: 500
     enableShadow: true

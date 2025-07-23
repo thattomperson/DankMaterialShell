@@ -3,7 +3,6 @@ import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 import qs.Common
-import qs.Widgets
 
 PanelWindow {
     id: root

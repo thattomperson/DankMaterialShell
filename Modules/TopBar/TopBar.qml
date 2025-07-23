@@ -133,9 +133,9 @@ PanelWindow {
 
                 LauncherButton {
                     anchors.verticalCenter: parent.verticalCenter
-                    isActive: appLauncher.isVisible
+                    isActive: appDrawerPopout.isVisible
                     onClicked: {
-                        appLauncher.toggle();
+                        appDrawerPopout.toggle();
                     }
                 }
 
@@ -144,41 +144,41 @@ PanelWindow {
                     screenName: root.screenName
                 }
 
-                FocusedAppWidget {
+                FocusedApp {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: Prefs.showFocusedWindow
                 }
 
             }
 
-            ClockWidget {
-                id: clockWidget
+            Clock {
+                id: clock
 
                 anchors.centerIn: parent
                 onClockClicked: {
-                    centcomCenter.calendarVisible = !centcomCenter.calendarVisible;
+                    centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                 }
             }
 
-            MediaWidget {
+            Media {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: clockWidget.left
                 anchors.rightMargin: Theme.spacingS
                 visible: Prefs.showMusic && MprisController.activePlayer
                 onClicked: {
-                    centcomCenter.calendarVisible = !centcomCenter.calendarVisible;
+                    centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                 }
             }
 
-            WeatherWidget {
-                id: weatherWidget
+            Weather {
+                id: weather
 
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.left: clockWidget.right
+                anchors.left: clock.right
                 anchors.leftMargin: Theme.spacingS
                 visible: Prefs.showWeather && WeatherService.weather.available && WeatherService.weather.temp > 0 && WeatherService.weather.tempF > 0
                 onClicked: {
-                    centcomCenter.calendarVisible = !centcomCenter.calendarVisible;
+                    centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                 }
             }
 
@@ -190,7 +190,7 @@ PanelWindow {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
 
-                SystemTrayWidget {
+                SystemTrayBar {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: Prefs.showSystemTray
                     onMenuRequested: (menu, item, x, y) => {
@@ -240,12 +240,12 @@ PanelWindow {
                 }
 
                 // System Monitor Widgets
-                CpuMonitorWidget {
+                CpuMonitor {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: Prefs.showSystemResources
                 }
 
-                RamMonitorWidget {
+                RamMonitor {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: Prefs.showSystemResources
                 }
@@ -260,11 +260,11 @@ PanelWindow {
                 }
 
                 // Battery Widget
-                BatteryWidget {
+                Battery {
                     anchors.verticalCenter: parent.verticalCenter
-                    batteryPopupVisible: batteryControlPopup.batteryPopupVisible
+                    batteryPopupVisible: batteryPopout.batteryPopupVisible
                     onToggleBatteryPopup: {
-                        batteryControlPopup.batteryPopupVisible = !batteryControlPopup.batteryPopupVisible;
+                        batteryPopout.batteryPopupVisible = !batteryPopout.batteryPopupVisible;
                     }
                 }
 
@@ -272,10 +272,10 @@ PanelWindow {
                     // Bluetooth devices are automatically updated via signals
 
                     anchors.verticalCenter: parent.verticalCenter
-                    isActive: controlCenter.controlCenterVisible
+                    isActive: controlCenterPopout.controlCenterVisible
                     onClicked: {
-                        controlCenter.controlCenterVisible = !controlCenter.controlCenterVisible;
-                        if (controlCenter.controlCenterVisible) {
+                        controlCenterPopout.controlCenterVisible = !controlCenterPopout.controlCenterVisible;
+                        if (controlCenterPopout.controlCenterVisible) {
                             if (NetworkService.wifiEnabled)
                                 WifiService.scanWifi();
 

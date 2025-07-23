@@ -12,7 +12,7 @@ Column {
     
     property var wifiContextMenuWindow
     property var sortedWifiNetworks
-    property var wifiPasswordDialogRef
+    property var wifiPasswordModalRef
     
     function getWiFiSignalIcon(signalStrength) {
         switch (signalStrength) {
@@ -255,10 +255,10 @@ Column {
                             if (modelData.saved) {
                                 WifiService.connectToWifi(modelData.ssid);
                             } else if (modelData.secured) {
-                                if (wifiPasswordDialogRef) {
-                                    wifiPasswordDialogRef.wifiPasswordSSID = modelData.ssid;
-                                    wifiPasswordDialogRef.wifiPasswordInput = "";
-                                    wifiPasswordDialogRef.wifiPasswordDialogVisible = true;
+                                if (wifiPasswordModalRef) {
+                                    wifiPasswordModalRef.wifiPasswordSSID = modelData.ssid;
+                                    wifiPasswordModalRef.wifiPasswordInput = "";
+                                    wifiPasswordModalRef.wifiPasswordModalVisible = true;
                                 }
                             } else {
                                 WifiService.connectToWifi(modelData.ssid);

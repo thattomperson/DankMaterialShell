@@ -6,7 +6,7 @@ import qs.Services
 import qs.Widgets
 
 Rectangle {
-    id: cpuWidget
+    id: cpuMonitor
 
     property bool showPercentage: true
     property bool showIcon: true
@@ -24,7 +24,7 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
         onClicked: {
             ProcessMonitorService.setSortBy("cpu");
-            processListDropdown.toggle();
+            processListPopout.toggle();
         }
     }
 

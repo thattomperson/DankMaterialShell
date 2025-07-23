@@ -9,6 +9,7 @@ import Quickshell.Widgets
 import qs.Common
 import qs.Services
 import qs.Widgets
+import qs.Modules.ProcessList
 
 DankModal {
     id: processListModal

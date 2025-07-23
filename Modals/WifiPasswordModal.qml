@@ -7,11 +7,11 @@ import qs.Widgets
 DankModal {
     id: root
 
-    property bool wifiPasswordDialogVisible: false
+    property bool wifiPasswordModalVisible: false
     property string wifiPasswordSSID: ""
     property string wifiPasswordInput: ""
 
-    visible: wifiPasswordDialogVisible
+    visible: wifiPasswordModalVisible
     width: 420
     height: 230
     keyboardFocus: "ondemand"
@@ -21,7 +21,7 @@ DankModal {
 
     }
     onBackgroundClicked: {
-        wifiPasswordDialogVisible = false;
+        wifiPasswordModalVisible = false;
         wifiPasswordInput = "";
     }
 
@@ -31,7 +31,7 @@ DankModal {
             if (WifiService.passwordDialogShouldReopen && WifiService.connectingSSID !== "") {
                 wifiPasswordSSID = WifiService.connectingSSID;
                 wifiPasswordInput = "";
-                wifiPasswordDialogVisible = true;
+                wifiPasswordModalVisible = true;
                 WifiService.passwordDialogShouldReopen = false;
             }
         }
@@ -79,7 +79,7 @@ DankModal {
                         iconColor: Theme.surfaceText
                         hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
                         onClicked: {
-                            wifiPasswordDialogVisible = false;
+                            wifiPasswordModalVisible = false;
                             wifiPasswordInput = "";
                         }
                     }
@@ -112,7 +112,7 @@ DankModal {
                         }
                         onAccepted: {
                             WifiService.connectToWifiWithPassword(wifiPasswordSSID, passwordInput.text);
-                            wifiPasswordDialogVisible = false;
+                            wifiPasswordModalVisible = false;
                             wifiPasswordInput = "";
                             passwordInput.text = "";
                         }
@@ -212,7 +212,7 @@ DankModal {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                    wifiPasswordDialogVisible = false;
+                                    wifiPasswordModalVisible = false;
                                     wifiPasswordInput = "";
                                 }
                             }
@@ -246,7 +246,7 @@ DankModal {
                                 enabled: parent.enabled
                                 onClicked: {
                                     WifiService.connectToWifiWithPassword(wifiPasswordSSID, passwordInput.text);
-                                    wifiPasswordDialogVisible = false;
+                                    wifiPasswordModalVisible = false;
                                     wifiPasswordInput = "";
                                     passwordInput.text = "";
                                 }

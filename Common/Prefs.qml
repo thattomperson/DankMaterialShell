@@ -31,7 +31,7 @@ Singleton {
     property bool showWorkspaceIndex: false
     property bool showWorkspacePadding: false
     property string appLauncherViewMode: "list"
-    property string spotlightLauncherViewMode: "list"
+    property string spotlightModalViewMode: "list"
     property string networkPreference: "auto"
     property string iconTheme: "System Default"
     property var availableIconThemes: ["System Default"]
@@ -70,7 +70,7 @@ Singleton {
                 showWorkspaceIndex = settings.showWorkspaceIndex !== undefined ? settings.showWorkspaceIndex : false;
                 showWorkspacePadding = settings.showWorkspacePadding !== undefined ? settings.showWorkspacePadding : false;
                 appLauncherViewMode = settings.appLauncherViewMode !== undefined ? settings.appLauncherViewMode : "list";
-                spotlightLauncherViewMode = settings.spotlightLauncherViewMode !== undefined ? settings.spotlightLauncherViewMode : "list";
+                spotlightModalViewMode = settings.spotlightModalViewMode !== undefined ? settings.spotlightModalViewMode : "list";
                 networkPreference = settings.networkPreference !== undefined ? settings.networkPreference : "auto";
                 iconTheme = settings.iconTheme !== undefined ? settings.iconTheme : "System Default";
                 useOSLogo = settings.useOSLogo !== undefined ? settings.useOSLogo : false;
@@ -112,7 +112,7 @@ Singleton {
             "showWorkspaceIndex": showWorkspaceIndex,
             "showWorkspacePadding": showWorkspacePadding,
             "appLauncherViewMode": appLauncherViewMode,
-            "spotlightLauncherViewMode": spotlightLauncherViewMode,
+            "spotlightModalViewMode": spotlightModalViewMode,
             "networkPreference": networkPreference,
             "iconTheme": iconTheme,
             "useOSLogo": useOSLogo,
@@ -277,8 +277,8 @@ Singleton {
         saveSettings();
     }
 
-    function setSpotlightLauncherViewMode(mode) {
-        spotlightLauncherViewMode = mode;
+    function setSpotlightModalViewMode(mode) {
+        spotlightModalViewMode = mode;
         saveSettings();
     }
 

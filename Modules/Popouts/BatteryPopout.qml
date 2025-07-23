@@ -54,16 +54,18 @@ PanelWindow {
     }
 
     Rectangle {
-        width: Math.min(380, parent.width - Theme.spacingL * 2)
-        height: Math.min(450, parent.height - Theme.barHeight - Theme.spacingS * 2)
-        x: Math.max(Theme.spacingL, parent.width - width - Theme.spacingL)
+        readonly property real targetWidth: Math.min(380, Screen.width - Theme.spacingL * 2)
+        readonly property real targetHeight: Math.min(450, Screen.height - Theme.barHeight - Theme.spacingS * 2)
+        width: targetWidth
+        height: targetHeight
+        property real normalX: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
+        x: batteryPopupVisible ? normalX : normalX + Anims.slidePx
         y: Theme.barHeight + Theme.spacingS
         color: Theme.popupBackground()
         radius: Theme.cornerRadiusLarge
         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
         border.width: 1
         opacity: batteryPopupVisible ? 1 : 0
-        scale: batteryPopupVisible ? 1 : 0.85
 
         // Prevent click-through to background
         MouseArea {
@@ -352,8 +354,8 @@ PanelWindow {
                                 width: parent.width
                                 height: 50
                                 radius: Theme.cornerRadius
-                                color: profileArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : (batteryControlPopup.isActiveProfile(modelData) ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08))
-                                border.color: batteryControlPopup.isActiveProfile(modelData) ? Theme.primary : "transparent"
+                                color: profileArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : (batteryPopout.isActiveProfile(modelData) ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08))
+                                border.color: batteryPopout.isActiveProfile(modelData) ? Theme.primary : "transparent"
                                 border.width: 2
 
                                 Row {
@@ -365,7 +367,7 @@ PanelWindow {
                                     DankIcon {
                                         name: Theme.getPowerProfileIcon(modelData)
                                         size: Theme.iconSize
-                                        color: batteryControlPopup.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
+                                        color: batteryPopout.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
 
@@ -376,8 +378,8 @@ PanelWindow {
                                         Text {
                                             text: Theme.getPowerProfileLabel(modelData)
                                             font.pixelSize: Theme.fontSizeMedium
-                                            color: batteryControlPopup.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
-                                            font.weight: batteryControlPopup.isActiveProfile(modelData) ? Font.Medium : Font.Normal
+                                            color: batteryPopout.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
+                                            font.weight: batteryPopout.isActiveProfile(modelData) ? Font.Medium : Font.Normal
                                         }
 
                                         Text {
@@ -397,7 +399,7 @@ PanelWindow {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        batteryControlPopup.setProfile(modelData);
+                                        batteryPopout.setProfile(modelData);
                                     }
                                 }
 
@@ -461,18 +463,16 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
+                duration: Anims.durShort
+                easing.type: Easing.OutCubic
             }
-
         }
 
-        Behavior on scale {
+        Behavior on x {
             NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
+                duration: Anims.durMed
+                easing.type: Easing.OutCubic
             }
-
         }
 
     }

@@ -12,7 +12,7 @@ import qs.Widgets
 PanelWindow {
     // For recents, use the recent apps from Prefs and filter out non-existent ones
 
-    id: launcher
+    id: appDrawerPopout
 
     property bool isVisible: false
     // App management
@@ -125,9 +125,9 @@ PanelWindow {
                 Prefs.addRecentApp(selectedApp.desktopEntry);
                 selectedApp.desktopEntry.execute();
             } else {
-                launcher.launchApp(selectedApp.exec);
+                appDrawerPopout.launchApp(selectedApp.exec);
             }
-            launcher.hide();
+            appDrawerPopout.hide();
         }
     }
 
@@ -145,7 +145,7 @@ PanelWindow {
     }
 
     function show() {
-        launcher.isVisible = true;
+        appDrawerPopout.isVisible = true;
         searchField.enabled = true;
         searchDebounceTimer.stop(); // Stop any pending search
         updateFilteredModel();
@@ -153,14 +153,14 @@ PanelWindow {
 
     function hide() {
         searchField.enabled = false; // Disable before hiding to prevent Wayland warnings
-        launcher.isVisible = false;
+        appDrawerPopout.isVisible = false;
         searchDebounceTimer.stop(); // Stop any pending search
         searchField.text = "";
         showCategories = false;
     }
 
     function toggle() {
-        if (launcher.isVisible)
+        if (appDrawerPopout.isVisible)
             hide();
         else
             show();
@@ -207,13 +207,13 @@ PanelWindow {
     Rectangle {
         anchors.fill: parent
         color: Qt.rgba(0, 0, 0, 0.3)
-        opacity: launcher.isVisible ? 1 : 0
-        visible: launcher.isVisible
+        opacity: appDrawerPopout.isVisible ? 1 : 0
+        visible: appDrawerPopout.isVisible
 
         MouseArea {
             anchors.fill: parent
-            enabled: launcher.isVisible
-            onClicked: launcher.hide()
+            enabled: appDrawerPopout.isVisible
+            onClicked: appDrawerPopout.hide()
         }
 
         Behavior on opacity {
@@ -273,66 +273,15 @@ PanelWindow {
         height: 600
         color: Theme.popupBackground()
         radius: Theme.cornerRadiusXLarge
-        opacity: launcher.isVisible ? 1 : 0
-        // Animated entrance with spring effect
-        transform: [
-            Scale {
-                id: scaleTransform
+        opacity: appDrawerPopout.isVisible ? 1 : 0
+        x: appDrawerPopout.isVisible ? Theme.spacingL : Theme.spacingL - Anims.slidePx
+        y: Theme.barHeight + Theme.spacingXS
 
-                origin.x: 0
-                origin.y: 0
-                xScale: launcher.isVisible ? 1 : 0.92
-                yScale: launcher.isVisible ? 1 : 0.92
-
-                Behavior on xScale {
-                    NumberAnimation {
-                        duration: Theme.mediumDuration
-                        easing.type: Easing.OutBack
-                        easing.overshoot: 1.2
-                    }
-
-                }
-
-                Behavior on yScale {
-                    NumberAnimation {
-                        duration: Theme.mediumDuration
-                        easing.type: Easing.OutBack
-                        easing.overshoot: 1.2
-                    }
-
-                }
-
-            },
-            Translate {
-                id: translateTransform
-
-                x: launcher.isVisible ? 0 : -30
-                y: launcher.isVisible ? 0 : -15
-
-                Behavior on x {
-                    NumberAnimation {
-                        duration: Theme.mediumDuration
-                        easing.type: Theme.emphasizedEasing
-                    }
-
-                }
-
-                Behavior on y {
-                    NumberAnimation {
-                        duration: Theme.mediumDuration
-                        easing.type: Theme.emphasizedEasing
-                    }
-
-                }
-
+        Behavior on x {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.OutCubic
             }
-        ]
-
-        anchors {
-            top: parent.top
-            left: parent.left
-            topMargin: Theme.barHeight + Theme.spacingXS
-            leftMargin: Theme.spacingL
         }
 
         // Material 3 elevation with multiple layers
@@ -370,14 +319,14 @@ PanelWindow {
             anchors.fill: parent
             focus: true
             Component.onCompleted: {
-                if (launcher.isVisible)
+                if (appDrawerPopout.isVisible)
                     forceActiveFocus();
 
             }
             // Handle keyboard shortcuts
             Keys.onPressed: function(event) {
                 if (event.key === Qt.Key_Escape) {
-                    launcher.hide();
+                    appDrawerPopout.hide();
                     event.accepted = true;
                 } else if (event.key === Qt.Key_Down) {
                     selectNext();
@@ -452,7 +401,7 @@ PanelWindow {
                     leftIconFocusedColor: Theme.primary
                     showClearButton: true
                     font.pixelSize: Theme.fontSizeLarge
-                    enabled: launcher.isVisible
+                    enabled: appDrawerPopout.isVisible
                     placeholderText: "Search applications..."
                     onTextEdited: {
                         searchDebounceTimer.restart();
@@ -465,9 +414,9 @@ PanelWindow {
                                 Prefs.addRecentApp(firstApp.desktopEntry);
                                 firstApp.desktopEntry.execute();
                             } else {
-                                launcher.launchApp(firstApp.exec);
+                                appDrawerPopout.launchApp(firstApp.exec);
                             }
-                            launcher.hide();
+                            appDrawerPopout.hide();
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || (event.key === Qt.Key_Left && viewMode === "grid") || (event.key === Qt.Key_Right && viewMode === "grid") || ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
                             // Pass navigation keys and enter (when not searching) to main handler
@@ -477,13 +426,13 @@ PanelWindow {
 
                     Connections {
                         function onVisibleChanged() {
-                            if (launcher.visible)
+                            if (appDrawerPopout.visible)
                                 searchField.forceActiveFocus();
                             else
                                 searchField.clearFocus();
                         }
 
-                        target: launcher
+                        target: appDrawerPopout
                     }
 
                 }
@@ -621,9 +570,9 @@ PanelWindow {
                                 Prefs.addRecentApp(modelData.desktopEntry);
                                 modelData.desktopEntry.execute();
                             } else {
-                                launcher.launchApp(modelData.exec);
+                                appDrawerPopout.launchApp(modelData.exec);
                             }
-                            launcher.hide();
+                            appDrawerPopout.hide();
                         }
                         onItemHovered: function(index) {
                             selectedIndex = index;
@@ -646,9 +595,9 @@ PanelWindow {
                                 Prefs.addRecentApp(modelData.desktopEntry);
                                 modelData.desktopEntry.execute();
                             } else {
-                                launcher.launchApp(modelData.exec);
+                                appDrawerPopout.launchApp(modelData.exec);
                             }
-                            launcher.hide();
+                            appDrawerPopout.hide();
                         }
                         onItemHovered: function(index) {
                             selectedIndex = index;
@@ -768,10 +717,9 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
+                duration: Anims.durShort
+                easing.type: Easing.OutCubic
             }
-
         }
 
     }

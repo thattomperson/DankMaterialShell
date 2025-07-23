@@ -1,4 +1,3 @@
-import "../../Widgets"
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
@@ -10,6 +9,7 @@ import Quickshell.Widgets
 import qs.Common
 import qs.Services
 import qs.Widgets
+import qs.Modules.ControlCenter
 
 PanelWindow {
     id: root
@@ -48,86 +48,24 @@ PanelWindow {
     }
 
     Rectangle {
-        width: Math.min(600, Screen.width - Theme.spacingL * 2)
+        readonly property real targetWidth: Math.min(600, Screen.width - Theme.spacingL * 2)
+        width: targetWidth
         height: root.powerOptionsExpanded ? 570 : 500
-        x: Math.max(Theme.spacingL, Screen.width - width - Theme.spacingL)
         y: Theme.barHeight + Theme.spacingXS
         color: Theme.popupBackground()
         radius: Theme.cornerRadiusLarge
         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
         border.width: 1
         opacity: controlCenterVisible ? 1 : 0
-        // TopBar dropdown animation - optimized for performance
-        transform: [
-            Scale {
-                id: scaleTransform
+        property real normalX: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
+        x: controlCenterVisible ? normalX : normalX + Anims.slidePx
 
-                origin.x: 600 // Use fixed width since popup is max 600px wide
-                origin.y: 0
-                xScale: controlCenterVisible ? 1 : 0.95
-                yScale: controlCenterVisible ? 1 : 0.8
-            },
-            Translate {
-                id: translateTransform
-
-                x: controlCenterVisible ? 0 : 15 // Slide slightly left when hidden
-                y: controlCenterVisible ? 0 : -30
+        Behavior on x {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.OutCubic
             }
-        ]
-        // Single coordinated animation for better performance
-        states: [
-            State {
-                name: "visible"
-                when: controlCenterVisible
-
-                PropertyChanges {
-                    target: scaleTransform
-                    xScale: 1
-                    yScale: 1
-                }
-
-                PropertyChanges {
-                    target: translateTransform
-                    x: 0
-                    y: 0
-                }
-
-            },
-            State {
-                name: "hidden"
-                when: !controlCenterVisible
-
-                PropertyChanges {
-                    target: scaleTransform
-                    xScale: 0.95
-                    yScale: 0.8
-                }
-
-                PropertyChanges {
-                    target: translateTransform
-                    x: 15
-                    y: -30
-                }
-
-            }
-        ]
-        transitions: [
-            Transition {
-                from: "*"
-                to: "*"
-
-                ParallelAnimation {
-                    NumberAnimation {
-                        targets: [scaleTransform, translateTransform]
-                        properties: "xScale,yScale,x,y"
-                        duration: Theme.mediumDuration
-                        easing.type: Theme.emphasizedEasing
-                    }
-
-                }
-
-            }
-        ]
+        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -720,10 +658,9 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
+                duration: Anims.durShort
+                easing.type: Easing.OutCubic
             }
-
         }
 
     }

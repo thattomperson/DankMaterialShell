@@ -116,7 +116,7 @@ shell.qml           # Main entry point (minimal orchestration)
 
 4. **Modules/** - UI components
    - **Full-screen components**: AppLauncher, ClipboardHistoryModal, ControlCenter
-   - **Panel components**: TopBar, SystemTrayWidget, NotificationPopup
+   - **Panel components**: TopBar, SystemTray, NotificationPopup
    - **Layout components**: WorkspaceSwitcher
 
 5. **Widgets/** - Reusable UI controls
