@@ -10,15 +10,14 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 
-PanelWindow {
-    id: processListPopup
+DankModal {
+    id: processListModal
 
-    property bool isVisible: false
     property int currentTab: 0
     property var tabNames: ["Processes", "Performance", "System"]
 
     function show() {
-        processListPopup.isVisible = true;
+        processListModal.visible = true;
         ProcessMonitorService.updateSystemInfo();
         ProcessMonitorService.updateProcessList();
         SystemMonitorService.enableDetailedMonitoring(true);
@@ -27,82 +26,38 @@ PanelWindow {
     }
 
     function hide() {
-        processListPopup.isVisible = false;
+        processListModal.visible = false;
         SystemMonitorService.enableDetailedMonitoring(false);
     }
 
     function toggle() {
-        if (processListPopup.isVisible)
+        if (processListModal.visible)
             hide();
         else
             show();
     }
 
-    WlrLayershell.layer: WlrLayershell.Overlay
-    WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: isVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    WlrLayershell.namespace: "quickshell-processlist"
-    visible: isVisible
-    color: "transparent"
-    onIsVisibleChanged: {
-        ProcessMonitorService.enableMonitoring(isVisible);
+    width: 900
+    height: 680
+    visible: false
+    keyboardFocus: "exclusive"
+    backgroundColor: Theme.popupBackground()
+    cornerRadius: Theme.cornerRadiusXLarge
+    enableShadow: true
+    
+    onVisibleChanged: {
+        ProcessMonitorService.enableMonitoring(visible);
     }
 
-    anchors {
-        top: true
-        left: true
-        right: true
-        bottom: true
-    }
+    onBackgroundClicked: hide()
 
-    Rectangle {
-        anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.4)
-        opacity: processListPopup.isVisible ? 1 : 0
-        visible: processListPopup.isVisible
-
-        MouseArea {
-            anchors.fill: parent
-            enabled: processListPopup.isVisible
-            onClicked: processListPopup.hide()
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
-            }
-
-        }
-
-    }
-
-    Rectangle {
-        id: mainContainer
-
-        width: 900
-        height: 680
-        anchors.centerIn: parent
-        color: Theme.popupBackground()
-        radius: Theme.cornerRadiusXLarge
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
-        border.width: 1
-        layer.enabled: true
-        opacity: processListPopup.isVisible ? 1 : 0
-        scale: processListPopup.isVisible ? 1 : 0.96
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-            }
-        }
-
+    content: Component {
         Item {
             anchors.fill: parent
             focus: true
             Keys.onPressed: function(event) {
                 if (event.key === Qt.Key_Escape) {
-                    processListPopup.hide();
+                    processListModal.hide();
                     event.accepted = true;
                 } else if (event.key === Qt.Key_1) {
                     currentTab = 0;
@@ -315,34 +270,7 @@ PanelWindow {
                 }
 
             }
-
         }
-
-        layer.effect: MultiEffect {
-            shadowEnabled: true
-            shadowHorizontalOffset: 0
-            shadowVerticalOffset: 8
-            shadowBlur: 1
-            shadowColor: Qt.rgba(0, 0, 0, 0.3)
-            shadowOpacity: 0.3
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
-
-        }
-
     }
 
     Component {
@@ -370,17 +298,17 @@ PanelWindow {
 
     IpcHandler {
         function open() {
-            processListPopup.show();
+            processListModal.show();
             return "PROCESSLIST_OPEN_SUCCESS";
         }
 
         function close() {
-            processListPopup.hide();
+            processListModal.hide();
             return "PROCESSLIST_CLOSE_SUCCESS";
         }
 
         function toggle() {
-            processListPopup.toggle();
+            processListModal.toggle();
             return "PROCESSLIST_TOGGLE_SUCCESS";
         }
 

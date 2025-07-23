@@ -1,14 +1,13 @@
 import QtQuick
 import QtQuick.Controls
 import Quickshell
-import Quickshell.Wayland
-import Quickshell.Widgets
 import Quickshell.Io
+import Quickshell.Widgets
 import qs.Common
 import qs.Services
 import qs.Widgets
 
-PanelWindow {
+DankModal {
     id: root
 
     property bool networkInfoDialogVisible: false
@@ -16,12 +15,6 @@ PanelWindow {
     property var networkData: null
     property string networkDetails: ""
 
-    visible: networkInfoDialogVisible
-    WlrLayershell.layer: WlrLayershell.Overlay
-    WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: networkInfoDialogVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    color: "transparent"
-    
     function showNetworkInfo(ssid, data) {
         networkSSID = ssid;
         networkData = data;
@@ -36,43 +29,24 @@ PanelWindow {
         networkDetails = "";
     }
 
-    anchors {
-        top: true
-        left: true
-        right: true
-        bottom: true
+    visible: networkInfoDialogVisible
+    width: 600
+    height: 500
+    enableShadow: true
+    onBackgroundClicked: {
+        hideDialog();
+    }
+    onVisibleChanged: {
+        if (!visible) {
+            networkSSID = "";
+            networkData = null;
+            networkDetails = "";
+        }
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.5)
-        opacity: networkInfoDialogVisible ? 1 : 0
-
-        MouseArea {
+    content: Component {
+        Item {
             anchors.fill: parent
-            onClicked: {
-                root.hideDialog();
-            }
-        }
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.standardEasing
-            }
-        }
-    }
-
-    Rectangle {
-        width: Math.min(600, parent.width - Theme.spacingL * 2)
-        height: Math.min(500, parent.height - Theme.spacingL * 2)
-        anchors.centerIn: parent
-        color: Theme.surfaceContainer
-        radius: Theme.cornerRadiusLarge
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
-        border.width: 1
-        opacity: networkInfoDialogVisible ? 1 : 0
-        scale: networkInfoDialogVisible ? 1 : 0.9
 
         Column {
             anchors.fill: parent
@@ -101,6 +75,7 @@ PanelWindow {
                         width: parent.width
                         elide: Text.ElideRight
                     }
+
                 }
 
                 DankActionButton {
@@ -112,6 +87,7 @@ PanelWindow {
                         root.hideDialog();
                     }
                 }
+
             }
 
             // Network Details
@@ -128,6 +104,7 @@ PanelWindow {
 
                     Rectangle {
                         id: detailsRect
+
                         width: parent.width
                         height: Math.max(parent.parent.height, detailsText.contentHeight + Theme.spacingM * 2)
                         radius: Theme.cornerRadius
@@ -137,6 +114,7 @@ PanelWindow {
 
                         Text {
                             id: detailsText
+
                             anchors.fill: parent
                             anchors.margins: Theme.spacingM
                             text: WifiService.networkInfoDetails.replace(/\\n/g, '\n') || "No information available"
@@ -145,8 +123,11 @@ PanelWindow {
                             wrapMode: Text.WordWrap
                             lineHeight: 1.5
                         }
+
                     }
+
                 }
+
             }
 
             // Close Button
@@ -164,6 +145,7 @@ PanelWindow {
 
                     Text {
                         id: closeText
+
                         anchors.centerIn: parent
                         text: "Close"
                         font.pixelSize: Theme.fontSizeMedium
@@ -173,6 +155,7 @@ PanelWindow {
 
                     MouseArea {
                         id: closeArea
+
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
@@ -186,23 +169,15 @@ PanelWindow {
                             duration: Theme.shortDuration
                             easing.type: Theme.standardEasing
                         }
+
                     }
+
                 }
-            }
-        }
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
             }
-        }
 
-        Behavior on scale {
-            NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
-            }
+        }
         }
     }
+
 }

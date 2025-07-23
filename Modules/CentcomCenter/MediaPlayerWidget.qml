@@ -317,7 +317,10 @@ Rectangle {
                 MouseArea {
                     id: progressGlobalMouseArea
 
-                    anchors.fill: parent.parent.parent // Fill the entire media player widget
+                    x: 0
+                    y: 0
+                    width: mediaPlayerWidget.width
+                    height: mediaPlayerWidget.height
                     enabled: progressMouseArea.isSeeking
                     visible: false
                     preventStealing: true

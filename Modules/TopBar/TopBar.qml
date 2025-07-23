@@ -157,7 +157,7 @@ PanelWindow {
 
                 anchors.centerIn: parent
                 onClockClicked: {
-                    centerCommandCenter.calendarVisible = !centerCommandCenter.calendarVisible;
+                    centcomCenter.calendarVisible = !centcomCenter.calendarVisible;
                 }
             }
 
@@ -167,7 +167,7 @@ PanelWindow {
                 anchors.rightMargin: Theme.spacingS
                 visible: Prefs.showMusic && MprisController.activePlayer
                 onClicked: {
-                    centerCommandCenter.calendarVisible = !centerCommandCenter.calendarVisible;
+                    centcomCenter.calendarVisible = !centcomCenter.calendarVisible;
                 }
             }
 
@@ -179,7 +179,7 @@ PanelWindow {
                 anchors.leftMargin: Theme.spacingS
                 visible: Prefs.showWeather && WeatherService.weather.available && WeatherService.weather.temp > 0 && WeatherService.weather.tempF > 0
                 onClicked: {
-                    centerCommandCenter.calendarVisible = !centerCommandCenter.calendarVisible;
+                    centcomCenter.calendarVisible = !centcomCenter.calendarVisible;
                 }
             }
 
@@ -273,10 +273,10 @@ PanelWindow {
                     // Bluetooth devices are automatically updated via signals
 
                     anchors.verticalCenter: parent.verticalCenter
-                    isActive: controlCenterPopup.controlCenterVisible
+                    isActive: controlCenter.controlCenterVisible
                     onClicked: {
-                        controlCenterPopup.controlCenterVisible = !controlCenterPopup.controlCenterVisible;
-                        if (controlCenterPopup.controlCenterVisible) {
+                        controlCenter.controlCenterVisible = !controlCenter.controlCenterVisible;
+                        if (controlCenter.controlCenterVisible) {
                             if (NetworkService.wifiEnabled)
                                 WifiService.scanWifi();
 

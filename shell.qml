@@ -2,7 +2,7 @@
 
 import Quickshell
 import qs.Modules
-import qs.Modules.CenterCommandCenter
+import qs.Modules.CentcomCenter
 import qs.Modules.ControlCenter
 import qs.Modules.Settings
 import qs.Modules.TopBar
@@ -22,8 +22,8 @@ ShellRoot {
     }
 
     // Global popup windows
-    CenterCommandCenter {
-        id: centerCommandCenter
+    CentcomCenter {
+        id: centcomCenter
     }
 
     TrayMenuPopup {
@@ -38,8 +38,8 @@ ShellRoot {
         id: notificationPopup
     }
 
-    ControlCenterPopup {
-        id: controlCenterPopup
+    ControlCenter {
+        id: controlCenter
         onPowerActionRequested: (action, title, message) => {
             powerConfirmDialog.powerConfirmAction = action;
             powerConfirmDialog.powerConfirmTitle = title;
@@ -54,10 +54,6 @@ ShellRoot {
 
     NetworkInfoDialog {
         id: networkInfoDialog
-    }
-
-    InputDialog {
-        id: globalInputDialog
     }
 
     BatteryControlPopup {
@@ -76,13 +72,10 @@ ShellRoot {
         id: processListDropdown
     }
 
-    SettingsPopup {
-        id: settingsPopup
+    SettingsModal {
+        id: settingsModal
     }
 
-    GlobalDropdown {
-        id: globalDropdownWindow
-    }
 
     // Application and clipboard components
     AppLauncher {
@@ -93,8 +86,8 @@ ShellRoot {
         id: spotlightLauncher
     }
 
-    ProcessListPopup {
-        id: processListPopup
+    ProcessListModal {
+        id: processListModal
     }
 
     ClipboardHistory {

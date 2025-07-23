@@ -84,7 +84,7 @@ shell.qml           # Main entry point (minimal orchestration)
 ├── Modules/        # UI components
 │   ├── TopBar.qml
 │   ├── AppLauncher.qml
-│   ├── ControlCenterPopup.qml
+│   ├── ControlCenter.qml
 │   └── [18 total modules]
 └── Widgets/        # Reusable UI controls
     ├── DankIcon.qml
@@ -115,7 +115,7 @@ shell.qml           # Main entry point (minimal orchestration)
    - Services handle system commands, state management, and hardware integration
 
 4. **Modules/** - UI components
-   - **Full-screen components**: AppLauncher, ClipboardHistory, ControlCenterPopup
+   - **Full-screen components**: AppLauncher, ClipboardHistory, ControlCenter
    - **Panel components**: TopBar, SystemTrayWidget, NotificationPopup
    - **Layout components**: WorkspaceSwitcher
 
@@ -158,7 +158,7 @@ shell.qml           # Main entry point (minimal orchestration)
 
 ### Important Components
 
-- **ControlCenterPopup**: System controls (WiFi, Bluetooth, brightness, volume, night mode)
+- **ControlCenter**: System controls (WiFi, Bluetooth, brightness, volume, night mode)
 - **AppLauncher**: Full-featured app grid/list with 93+ applications, search, categories
 - **ClipboardHistory**: Complete clipboard management with cliphist integration
 - **TopBar**: Per-monitor panels with workspace switching, clock, system tray

@@ -1,4 +1,7 @@
 import QtQuick
+import QtQuick.Controls
+import Quickshell
+import Quickshell.Wayland
 import qs.Common
 import qs.Widgets
 
@@ -84,19 +87,110 @@ Rectangle {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: {
-                if (typeof globalDropdownWindow !== 'undefined') {
-                    // Get global position of the dropdown button
-                    var globalPos = dropdown.mapToGlobal(0, 0);
-                    globalDropdownWindow.showAt(root, globalPos.x, globalPos.y + dropdown.height + 4, root.options, root.currentValue);
-                    
-                    // Connect to value selection (with cleanup)
-                    globalDropdownWindow.valueSelected.connect(function(value) {
-                        root.currentValue = value;
-                        root.valueChanged(value);
-                    });
+            onPressed: (mouse) => {
+                mouse.accepted = true;
+                if (!dropdownMenu.visible) {
+                    dropdownMenu.updatePosition();
+                    dropdownMenu.visible = true;
+                } else {
+                    dropdownMenu.visible = false;
                 }
             }
+        }
+    }
+
+    // Integrated dropdown menu with full-screen overlay
+    PanelWindow {
+        id: dropdownMenu
+        
+        property int targetX: 0
+        property int targetY: 0
+        
+        visible: false
+        WlrLayershell.layer: WlrLayershell.Overlay
+        WlrLayershell.exclusiveZone: -1
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        
+        anchors {
+            top: true
+            left: true
+            right: true
+            bottom: true
+        }
+        color: "transparent"
+        
+        function updatePosition() {
+            var globalPos = dropdown.mapToGlobal(0, 0);
+            targetX = globalPos.x;
+            targetY = globalPos.y + dropdown.height + 4;
+        }
+        
+        // Background click interceptor (invisible)
+        MouseArea {
+            anchors.fill: parent
+            z: -1
+            onPressed: {
+                dropdownMenu.visible = false;
+            }
+        }
+        
+        // Dropdown menu content
+        Rectangle {
+            x: dropdownMenu.targetX
+            y: dropdownMenu.targetY
+            width: 180
+            height: Math.min(200, root.options.length * 36 + 16)
+            radius: Theme.cornerRadiusSmall
+            color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 1.0)
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
+            border.width: 1
+            
+            ScrollView {
+                anchors.fill: parent
+                anchors.margins: Theme.spacingS
+                clip: true
+                
+                ListView {
+                    model: root.options
+                    spacing: 2
+                    
+                    delegate: Rectangle {
+                        width: ListView.view.width
+                        height: 32
+                        radius: Theme.cornerRadiusSmall
+                        color: optionArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
+                        
+                        Text {
+                            anchors.left: parent.left
+                            anchors.leftMargin: Theme.spacingS
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: modelData
+                            font.pixelSize: Theme.fontSizeMedium
+                            color: root.currentValue === modelData ? Theme.primary : Theme.surfaceText
+                            font.weight: root.currentValue === modelData ? Font.Medium : Font.Normal
+                        }
+                        
+                        MouseArea {
+                            id: optionArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onPressed: {
+                                root.currentValue = modelData;
+                                root.valueChanged(modelData);
+                                dropdownMenu.visible = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Global keyboard handler for escape key
+    Keys.onEscapePressed: {
+        if (dropdownMenu.visible) {
+            dropdownMenu.visible = false;
         }
     }
 }

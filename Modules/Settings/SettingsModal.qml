@@ -4,18 +4,15 @@ import qs.Common
 import qs.Widgets
 
 DankModal {
-    id: settingsPopup
+    id: settingsModal
 
     property bool settingsVisible: false
 
-    signal closingPopup()
+    signal closingModal()
 
     onVisibleChanged: {
         if (!visible) {
-            closingPopup();
-            if (typeof globalDropdownWindow !== 'undefined') {
-                globalDropdownWindow.hide();
-            }
+            closingModal();
         }
     }
 
@@ -68,7 +65,7 @@ DankModal {
                     iconSize: Theme.iconSize - 4
                     iconColor: Theme.surfaceText
                     hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
-                    onClicked: settingsPopup.settingsVisible = false
+                    onClicked: settingsModal.settingsVisible = false
                 }
 
             }
@@ -140,8 +137,8 @@ DankModal {
     // Keyboard focus and shortcuts
     FocusScope {
         anchors.fill: parent
-        focus: settingsPopup.settingsVisible
-        Keys.onEscapePressed: settingsPopup.settingsVisible = false
+        focus: settingsModal.settingsVisible
+        Keys.onEscapePressed: settingsModal.settingsVisible = false
     }
 
 }

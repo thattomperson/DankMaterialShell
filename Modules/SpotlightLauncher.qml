@@ -242,24 +242,6 @@ DankModal {
         id: filteredModel
     }
 
-    Connections {
-        function onReadyChanged() {
-            if (AppSearchService.ready) {
-                var allCategories = AppSearchService.getAllCategories().filter((cat) => {
-                    return cat !== "Education" && cat !== "Science";
-                });
-                // Insert "Recents" after "All"
-                var result = ["All", "Recents"];
-                categories = result.concat(allCategories.filter((cat) => {
-                    return cat !== "All";
-                }));
-                if (spotlightOpen)
-                    updateFilteredApps();
-            }
-        }
-        target: AppSearchService
-    }
-
     content: Component {
         Item {
             anchors.fill: parent

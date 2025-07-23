@@ -364,7 +364,7 @@ PanelWindow {
                             hoverColor: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
                             onClicked: {
                                 controlCenterVisible = false;
-                                settingsPopup.settingsVisible = true;
+                                settingsModal.settingsVisible = true;
                             }
                         }
 

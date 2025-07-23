@@ -192,7 +192,10 @@ Item {
                             MouseArea {
                                 id: volumeGlobalMouseArea
 
-                                anchors.fill: parent.parent.parent.parent.parent // Fill the entire control center
+                                x: 0
+                                y: 0
+                                width: audioTab.width
+                                height: audioTab.height
                                 enabled: volumeMouseArea.isDragging
                                 visible: false
                                 preventStealing: true
@@ -514,7 +517,10 @@ Item {
                             MouseArea {
                                 id: micGlobalMouseArea
 
-                                anchors.fill: parent.parent.parent.parent.parent // Fill the entire control center
+                                x: 0
+                                y: 0
+                                width: audioTab.width
+                                height: audioTab.height
                                 enabled: micMouseArea.isDragging
                                 visible: false
                                 preventStealing: true
