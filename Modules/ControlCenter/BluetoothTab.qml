@@ -25,8 +25,8 @@ Item {
                 width: parent.width
                 height: 60
                 radius: Theme.cornerRadius
-                color: bluetoothToggle.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : (BluetoothService.enabled ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.12))
-                border.color: BluetoothService.enabled ? Theme.primary : "transparent"
+                color: bluetoothToggle.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : (BluetoothService.adapter && BluetoothService.adapter.enabled ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.12))
+                border.color: BluetoothService.adapter && BluetoothService.adapter.enabled ? Theme.primary : "transparent"
                 border.width: 2
 
                 Row {
@@ -38,7 +38,7 @@ Item {
                     DankIcon {
                         name: "bluetooth"
                         size: Theme.iconSizeLarge
-                        color: BluetoothService.enabled ? Theme.primary : Theme.surfaceText
+                        color: BluetoothService.adapter && BluetoothService.adapter.enabled ? Theme.primary : Theme.surfaceText
                         anchors.verticalCenter: parent.verticalCenter
                     }
 
@@ -49,12 +49,12 @@ Item {
                         Text {
                             text: "Bluetooth"
                             font.pixelSize: Theme.fontSizeLarge
-                            color: BluetoothService.enabled ? Theme.primary : Theme.surfaceText
+                            color: BluetoothService.adapter && BluetoothService.adapter.enabled ? Theme.primary : Theme.surfaceText
                             font.weight: Font.Medium
                         }
 
                         Text {
-                            text: BluetoothService.enabled ? "Enabled" : "Disabled"
+                            text: BluetoothService.adapter && BluetoothService.adapter.enabled ? "Enabled" : "Disabled"
                             font.pixelSize: Theme.fontSizeSmall
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                         }
@@ -68,10 +68,11 @@ Item {
 
                     anchors.fill: parent
                     hoverEnabled: true
-                    enabled: !BluetoothService.operationInProgress
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.BusyCursor
+                    cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        BluetoothService.toggleAdapter();
+                        if (BluetoothService.adapter) {
+                            BluetoothService.adapter.enabled = !BluetoothService.adapter.enabled;
+                        }
                     }
                 }
 
@@ -80,7 +81,7 @@ Item {
             Column {
                 width: parent.width
                 spacing: Theme.spacingM
-                visible: BluetoothService.enabled
+                visible: BluetoothService.adapter && BluetoothService.adapter.enabled
 
                 Text {
                     text: "Paired Devices"
@@ -90,7 +91,7 @@ Item {
                 }
 
                 Repeater {
-                    model: BluetoothService.devices ? BluetoothService.devices.values.filter((dev) => {
+                    model: BluetoothService.adapter && BluetoothService.adapter.devices ? BluetoothService.adapter.devices.values.filter((dev) => {
                         return dev && (dev.paired || dev.trusted);
                     }) : []
 
@@ -223,7 +224,7 @@ Item {
             Column {
                 width: parent.width
                 spacing: Theme.spacingM
-                visible: BluetoothService.enabled
+                visible: BluetoothService.adapter && BluetoothService.adapter.enabled
 
                 Row {
                     width: parent.width
@@ -255,7 +256,7 @@ Item {
                             spacing: Theme.spacingXS
 
                             DankIcon {
-                                name: BluetoothService.discovering ? "stop" : "bluetooth_searching"
+                                name: BluetoothService.adapter && BluetoothService.adapter.discovering ? "stop" : "bluetooth_searching"
                                 size: Theme.iconSize - 4
                                 color: Theme.primary
                                 anchors.verticalCenter: parent.verticalCenter
@@ -264,7 +265,7 @@ Item {
                             Text {
                                 id: scanText
 
-                                text: BluetoothService.discovering ? "Stop Scanning" : "Start Scanning"
+                                text: BluetoothService.adapter && BluetoothService.adapter.discovering ? "Stop Scanning" : "Start Scanning"
                                 font.pixelSize: Theme.fontSizeMedium
                                 color: Theme.primary
                                 font.weight: Font.Medium
@@ -278,10 +279,11 @@ Item {
 
                             anchors.fill: parent
                             hoverEnabled: true
-                            enabled: !BluetoothService.operationInProgress
-                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.BusyCursor
+                            cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                BluetoothService.toggleDiscovery();
+                                if (BluetoothService.adapter) {
+                                    BluetoothService.adapter.discovering = !BluetoothService.adapter.discovering;
+                                }
                             }
                         }
 
@@ -289,12 +291,56 @@ Item {
 
                 }
 
+                Rectangle {
+                    width: parent.width
+                    height: noteColumn.implicitHeight + Theme.spacingM * 2
+                    radius: Theme.cornerRadius
+                    color: Qt.rgba(Theme.warning.r, Theme.warning.g, Theme.warning.b, 0.08)
+                    border.color: Qt.rgba(Theme.warning.r, Theme.warning.g, Theme.warning.b, 0.2)
+                    border.width: 1
+
+                    Column {
+                        id: noteColumn
+                        anchors.fill: parent
+                        anchors.margins: Theme.spacingM
+                        spacing: Theme.spacingS
+
+                        Row {
+                            width: parent.width
+                            spacing: Theme.spacingS
+
+                            DankIcon {
+                                name: "info"
+                                size: Theme.iconSize - 2
+                                color: Theme.warning
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Text {
+                                text: "Pairing Limitation"
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.warning
+                                font.weight: Font.Medium
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                        }
+
+                        Text {
+                            text: "Quickshell does not support pairing devices that require pin or confirmation."
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.8)
+                            wrapMode: Text.WordWrap
+                            width: parent.width
+                        }
+                    }
+                }
+
                 Repeater {
                     model: {
-                        if (!BluetoothService.discovering || !BluetoothService.devices)
+                        if (!BluetoothService.adapter || !BluetoothService.adapter.discovering || !Bluetooth.devices)
                             return [];
                         
-                        var filtered = BluetoothService.devices.values.filter((dev) => {
+                        var filtered = Bluetooth.devices.values.filter((dev) => {
                             return dev && !dev.paired && !dev.pairing && !dev.blocked && (dev.signalStrength === undefined || dev.signalStrength > 0);
                         });
                         return BluetoothService.sortDevices(filtered);
@@ -494,10 +540,10 @@ Item {
                     width: parent.width
                     spacing: Theme.spacingM
                     visible: {
-                        if (!BluetoothService.discovering || !BluetoothService.devices)
+                        if (!BluetoothService.adapter || !BluetoothService.adapter.discovering || !Bluetooth.devices)
                             return false;
                         
-                        var availableCount = BluetoothService.devices.values.filter((dev) => {
+                        var availableCount = Bluetooth.devices.values.filter((dev) => {
                             return dev && !dev.paired && !dev.pairing && !dev.blocked && (dev.signalStrength === undefined || dev.signalStrength > 0);
                         }).length;
                         
@@ -548,14 +594,14 @@ Item {
                     font.pixelSize: Theme.fontSizeMedium
                     color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                     visible: {
-                        if (!BluetoothService.devices)
+                        if (!BluetoothService.adapter || !Bluetooth.devices)
                             return true;
                         
-                        var availableCount = BluetoothService.devices.values.filter((dev) => {
+                        var availableCount = Bluetooth.devices.values.filter((dev) => {
                             return dev && !dev.paired && !dev.pairing && !dev.blocked && (dev.signalStrength === undefined || dev.signalStrength > 0);
                         }).length;
                         
-                        return availableCount === 0 && !BluetoothService.discovering;
+                        return availableCount === 0 && !BluetoothService.adapter.discovering;
                     }
                     wrapMode: Text.WordWrap
                     width: parent.width

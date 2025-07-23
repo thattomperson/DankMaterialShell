@@ -11,8 +11,8 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
-import qs.Modules
 import qs.Widgets
+import qs.Modules
 
 PanelWindow {
     // Proxy objects for external connections

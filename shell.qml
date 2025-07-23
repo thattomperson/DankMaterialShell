@@ -6,6 +6,7 @@ import qs.Modules.CenterCommandCenter
 import qs.Modules.ControlCenter
 import qs.Modules.Settings
 import qs.Modules.TopBar
+import qs.Modules.ProcessList
 
 ShellRoot {
     id: root
@@ -51,10 +52,6 @@ ShellRoot {
         id: wifiPasswordDialog
     }
 
-    BluetoothPairingDialog {
-        id: bluetoothPairingDialog
-    }
-
     NetworkInfoDialog {
         id: networkInfoDialog
     }
@@ -96,8 +93,8 @@ ShellRoot {
         id: spotlightLauncher
     }
 
-    ProcessListWidget {
-        id: processListWidget
+    ProcessListPopup {
+        id: processListPopup
     }
 
     ClipboardHistory {

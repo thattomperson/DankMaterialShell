@@ -16,8 +16,8 @@ PanelWindow {
     property real height: 300
     
     // Screen-relative sizing helpers
-    readonly property real screenWidth: parent ? parent.width : width
-    readonly property real screenHeight: parent ? parent.height : height
+    readonly property real screenWidth: screen ? screen.width : 1920
+    readonly property real screenHeight: screen ? screen.height : 1080
 
     // Background behavior
     property bool showBackground: true
@@ -123,7 +123,7 @@ PanelWindow {
         anchors.centerIn: positioning === "center" ? parent : undefined
         x: {
             if (positioning === "top-right") {
-                return Math.max(Theme.spacingL, parent.width - width - Theme.spacingL)
+                return Math.max(Theme.spacingL, root.screenWidth - width - Theme.spacingL)
             } else if (positioning === "custom") {
                 return root.customPosition.x
             }

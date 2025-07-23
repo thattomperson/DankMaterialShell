@@ -8,15 +8,18 @@ import qs.Common
 IconImage {
     id: root
 
-    property color color: Theme.surfaceText
+    property string colorOverride: ""
+    property real brightnessOverride: 0.5
+    property real contrastOverride: 1.0
 
     smooth: true
     asynchronous: true
-    layer.enabled: true
+    layer.enabled: colorOverride !== ""
     layer.effect: MultiEffect {
         colorization: 1
-        colorizationColor: root.color
-        brightness: 0.5
+        colorizationColor: colorOverride
+        brightness: brightnessOverride
+        contrast: contrastOverride
     }
     Process {
         running: true

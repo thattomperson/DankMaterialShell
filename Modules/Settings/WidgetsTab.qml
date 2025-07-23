@@ -68,4 +68,106 @@ Column {
             return Prefs.setUseOSLogo(checked);
         }
     }
+
+    Column {
+        width: parent.width
+        spacing: Theme.spacingS
+        visible: Prefs.useOSLogo
+
+        Item {
+            width: parent.width
+            height: Theme.spacingS
+        }
+
+        Text {
+            text: "OS Logo Customization"
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.surfaceVariantText
+            font.weight: Font.Medium
+        }
+
+        Row {
+            width: parent.width
+            spacing: Theme.spacingM
+
+            Text {
+                text: "Color Override:"
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.surfaceText
+                anchors.verticalCenter: parent.verticalCenter
+                width: 90
+            }
+
+            DankTextField {
+                width: 120
+                height: 36
+                placeholderText: "#ffffff"
+                text: Prefs.osLogoColorOverride
+                maximumLength: 7
+                font.pixelSize: Theme.fontSizeMedium
+                topPadding: Theme.spacingS
+                bottomPadding: Theme.spacingS
+                onEditingFinished: {
+                    var color = text.trim();
+                    if (color === "" || /^#[0-9A-Fa-f]{6}$/.test(color)) {
+                        Prefs.setOSLogoColorOverride(color);
+                    } else {
+                        text = Prefs.osLogoColorOverride;
+                    }
+                }
+            }
+        }
+
+        Row {
+            width: parent.width
+            spacing: Theme.spacingM
+
+            Text {
+                text: "Brightness:"
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.surfaceText
+                anchors.verticalCenter: parent.verticalCenter
+                width: 90
+            }
+
+            DankSlider {
+                width: 120
+                height: 24
+                minimum: 0
+                maximum: 100
+                value: Math.round(Prefs.osLogoBrightness * 100)
+                unit: ""
+                showValue: false
+                onSliderValueChanged: (newValue) => {
+                    Prefs.setOSLogoBrightness(newValue / 100.0);
+                }
+            }
+        }
+
+        Row {
+            width: parent.width
+            spacing: Theme.spacingM
+
+            Text {
+                text: "Contrast:"
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.surfaceText
+                anchors.verticalCenter: parent.verticalCenter
+                width: 90
+            }
+
+            DankSlider {
+                width: 120
+                height: 24
+                minimum: 0
+                maximum: 200
+                value: Math.round(Prefs.osLogoContrast * 100)
+                unit: ""
+                showValue: false
+                onSliderValueChanged: (newValue) => {
+                    Prefs.setOSLogoContrast(newValue / 100.0);
+                }
+            }
+        }
+    }
 }

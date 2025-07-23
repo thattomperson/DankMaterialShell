@@ -21,6 +21,7 @@ Singleton {
     property bool nightModeEnabled: false
     property string profileImage: ""
     property string weatherLocationOverride: "New York, NY"
+    property bool weatherLocationOverrideEnabled: false
     property bool showFocusedWindow: true
     property bool showWeather: true
     property bool showMusic: true
@@ -36,6 +37,9 @@ Singleton {
     property var availableIconThemes: ["System Default"]
     property string systemDefaultIconTheme: "Adwaita"
     property bool useOSLogo: false
+    property string osLogoColorOverride: ""
+    property real osLogoBrightness: 0.5
+    property real osLogoContrast: 1.0
 
     function loadSettings() {
         parseSettings(settingsFile.text());
@@ -56,6 +60,7 @@ Singleton {
                 nightModeEnabled = settings.nightModeEnabled !== undefined ? settings.nightModeEnabled : false;
                 profileImage = settings.profileImage !== undefined ? settings.profileImage : "";
                 weatherLocationOverride = settings.weatherLocationOverride !== undefined ? settings.weatherLocationOverride : "New York, NY";
+                weatherLocationOverrideEnabled = settings.weatherLocationOverrideEnabled !== undefined ? settings.weatherLocationOverrideEnabled : false;
                 showFocusedWindow = settings.showFocusedWindow !== undefined ? settings.showFocusedWindow : true;
                 showWeather = settings.showWeather !== undefined ? settings.showWeather : true;
                 showMusic = settings.showMusic !== undefined ? settings.showMusic : true;
@@ -69,6 +74,9 @@ Singleton {
                 networkPreference = settings.networkPreference !== undefined ? settings.networkPreference : "auto";
                 iconTheme = settings.iconTheme !== undefined ? settings.iconTheme : "System Default";
                 useOSLogo = settings.useOSLogo !== undefined ? settings.useOSLogo : false;
+                osLogoColorOverride = settings.osLogoColorOverride !== undefined ? settings.osLogoColorOverride : "";
+                osLogoBrightness = settings.osLogoBrightness !== undefined ? settings.osLogoBrightness : 0.5;
+                osLogoContrast = settings.osLogoContrast !== undefined ? settings.osLogoContrast : 1.0;
                         applyStoredTheme();
                         detectAvailableIconThemes();
                         updateGtkIconTheme(iconTheme);
@@ -94,6 +102,7 @@ Singleton {
             "nightModeEnabled": nightModeEnabled,
             "profileImage": profileImage,
             "weatherLocationOverride": weatherLocationOverride,
+            "weatherLocationOverrideEnabled": weatherLocationOverrideEnabled,
             "showFocusedWindow": showFocusedWindow,
             "showWeather": showWeather,
             "showMusic": showMusic,
@@ -106,7 +115,10 @@ Singleton {
             "spotlightLauncherViewMode": spotlightLauncherViewMode,
             "networkPreference": networkPreference,
             "iconTheme": iconTheme,
-            "useOSLogo": useOSLogo
+            "useOSLogo": useOSLogo,
+            "osLogoColorOverride": osLogoColorOverride,
+            "osLogoBrightness": osLogoBrightness,
+            "osLogoContrast": osLogoContrast
         }, null, 2));
     }
 
@@ -276,6 +288,11 @@ Singleton {
         saveSettings();
     }
 
+    function setWeatherLocationOverrideEnabled(enabled) {
+        weatherLocationOverrideEnabled = enabled;
+        saveSettings();
+    }
+
     // Network preference setter
     function setNetworkPreference(preference) {
         networkPreference = preference;
@@ -383,6 +400,21 @@ gtk-application-prefer-dark-theme=true`;
 
     function setUseOSLogo(enabled) {
         useOSLogo = enabled;
+        saveSettings();
+    }
+
+    function setOSLogoColorOverride(color) {
+        osLogoColorOverride = color;
+        saveSettings();
+    }
+
+    function setOSLogoBrightness(brightness) {
+        osLogoBrightness = brightness;
+        saveSettings();
+    }
+
+    function setOSLogoContrast(contrast) {
+        osLogoContrast = contrast;
         saveSettings();
     }
 

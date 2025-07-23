@@ -20,7 +20,9 @@ Rectangle {
         anchors.centerIn: parent
         width: Theme.iconSize - 3
         height: Theme.iconSize - 3
-        color: Theme.surfaceText
+        colorOverride: Prefs.osLogoColorOverride
+        brightnessOverride: Prefs.osLogoBrightness
+        contrastOverride: Prefs.osLogoContrast
     }
 
     DankIcon {
