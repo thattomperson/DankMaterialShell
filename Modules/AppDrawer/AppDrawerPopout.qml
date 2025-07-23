@@ -8,153 +8,25 @@ import Quickshell.Widgets
 import qs.Common
 import qs.Services
 import qs.Widgets
+import qs.Modules.AppDrawer
 
 PanelWindow {
-    // For recents, use the recent apps from Prefs and filter out non-existent ones
-
     id: appDrawerPopout
 
     property bool isVisible: false
-    // App management
-    property var categories: AppSearchService.getAllCategories()
-    property string selectedCategory: "All"
-    property var recentApps: Prefs.recentlyUsedApps.map((recentApp) => {
-        var app = AppSearchService.getAppByExec(recentApp.exec);
-        return app && !app.noDisplay ? app : null;
-    }).filter((app) => {
-        return app !== null;
-    })
-    property var pinnedApps: ["firefox", "code", "terminal", "file-manager"]
     property bool showCategories: false
-    property string viewMode: Prefs.appLauncherViewMode // "list" or "grid"
-    property int selectedIndex: 0
 
-    function updateFilteredModel() {
-        filteredModel.clear();
-        selectedIndex = 0;
-        var apps = [];
-        var searchQuery = searchField ? searchField.text : "";
-        // Get apps based on category and search
-        if (searchQuery.length > 0) {
-            // Search across all apps or category
-            var baseApps = selectedCategory === "All" ? AppSearchService.applications : selectedCategory === "Recents" ? recentApps.map((recentApp) => {
-                return AppSearchService.getAppByExec(recentApp.exec);
-            }).filter((app) => {
-                return app !== null && !app.noDisplay;
-            }) : AppSearchService.getAppsInCategory(selectedCategory);
-            if (baseApps && baseApps.length > 0) {
-                var searchResults = AppSearchService.searchApplications(searchQuery);
-                apps = searchResults.filter((app) => {
-                    return baseApps.includes(app);
-                });
-            }
-        } else {
-            // Just category filter
-            if (selectedCategory === "Recents")
-                apps = recentApps.map((recentApp) => {
-                return AppSearchService.getAppByExec(recentApp.exec);
-            }).filter((app) => {
-                return app !== null && !app.noDisplay;
-            });
-            else
-                apps = AppSearchService.getAppsInCategory(selectedCategory) || [];
-        }
-        // Add to model with null checks
-        if (apps && apps.length > 0)
-            apps.forEach((app) => {
-            if (app)
-                filteredModel.append({
-                "name": app.name || "",
-                "exec": app.execString || "",
-                "icon": app.icon || "application-x-executable",
-                "comment": app.comment || "",
-                "categories": app.categories || [],
-                "desktopEntry": app
-            });
 
-        });
-
-    }
-
-    function selectNext() {
-        if (filteredModel.count > 0) {
-            if (viewMode === "grid") {
-                // Grid navigation: move by columns
-                var columnsCount = appGrid.columns || 4;
-                var newIndex = Math.min(selectedIndex + columnsCount, filteredModel.count - 1);
-                console.log("Grid navigation DOWN: from", selectedIndex, "to", newIndex, "columns:", columnsCount);
-                selectedIndex = newIndex;
-            } else {
-                // List navigation: next item
-                selectedIndex = (selectedIndex + 1) % filteredModel.count;
-            }
-        }
-    }
-
-    function selectPrevious() {
-        if (filteredModel.count > 0) {
-            if (viewMode === "grid") {
-                // Grid navigation: move by columns
-                var columnsCount = appGrid.columns || 4;
-                var newIndex = Math.max(selectedIndex - columnsCount, 0);
-                console.log("Grid navigation UP: from", selectedIndex, "to", newIndex, "columns:", columnsCount);
-                selectedIndex = newIndex;
-            } else {
-                // List navigation: previous item
-                selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : filteredModel.count - 1;
-            }
-        }
-    }
-
-    function selectNextInRow() {
-        if (filteredModel.count > 0 && viewMode === "grid")
-            selectedIndex = Math.min(selectedIndex + 1, filteredModel.count - 1);
-
-    }
-
-    function selectPreviousInRow() {
-        if (filteredModel.count > 0 && viewMode === "grid")
-            selectedIndex = Math.max(selectedIndex - 1, 0);
-
-    }
-
-    function launchSelected() {
-        if (filteredModel.count > 0 && selectedIndex >= 0 && selectedIndex < filteredModel.count) {
-            var selectedApp = filteredModel.get(selectedIndex);
-            if (selectedApp.desktopEntry) {
-                Prefs.addRecentApp(selectedApp.desktopEntry);
-                selectedApp.desktopEntry.execute();
-            } else {
-                appDrawerPopout.launchApp(selectedApp.exec);
-            }
-            appDrawerPopout.hide();
-        }
-    }
-
-    function launchApp(exec) {
-        // Try to find the desktop entry
-        var app = AppSearchService.getAppByExec(exec);
-        if (app) {
-            app.execute();
-        } else {
-            // Fallback to direct execution
-            var cleanExec = exec.replace(/%[fFuU]/g, "").trim();
-            console.log("Launching app directly:", cleanExec);
-            Quickshell.execDetached(["sh", "-c", cleanExec]);
-        }
-    }
 
     function show() {
         appDrawerPopout.isVisible = true;
         searchField.enabled = true;
-        searchDebounceTimer.stop(); // Stop any pending search
-        updateFilteredModel();
+        appLauncher.searchQuery = "";
     }
 
     function hide() {
         searchField.enabled = false; // Disable before hiding to prevent Wayland warnings
         appDrawerPopout.isVisible = false;
-        searchDebounceTimer.stop(); // Stop any pending search
         searchField.text = "";
         showCategories = false;
     }
@@ -173,14 +45,6 @@ PanelWindow {
     WlrLayershell.namespace: "quickshell-launcher"
     visible: isVisible
     color: "transparent"
-    Component.onCompleted: {
-        var allCategories = AppSearchService.getAllCategories();
-        // Insert "Recents" after "All"
-        categories = ["All", "Recents"].concat(allCategories.filter((cat) => {
-            return cat !== "All";
-        }));
-        updateFilteredModel();
-    }
 
     // Full screen overlay setup for proper focus
     anchors {
@@ -190,17 +54,15 @@ PanelWindow {
         bottom: true
     }
 
-    // Search debouncing
-    Timer {
-        id: searchDebounceTimer
-
-        interval: 50
-        repeat: false
-        onTriggered: updateFilteredModel()
-    }
-
-    ListModel {
-        id: filteredModel
+    // App launcher logic
+    AppLauncher {
+        id: appLauncher
+        
+        viewMode: Prefs.appLauncherViewMode
+        gridColumns: 4
+        
+        onAppLaunched: appDrawerPopout.hide()
+        onViewModeSelected: Prefs.setAppLauncherViewMode(mode)
     }
 
     // Background dim with click to close
@@ -329,19 +191,19 @@ PanelWindow {
                     appDrawerPopout.hide();
                     event.accepted = true;
                 } else if (event.key === Qt.Key_Down) {
-                    selectNext();
+                    appLauncher.selectNext();
                     event.accepted = true;
                 } else if (event.key === Qt.Key_Up) {
-                    selectPrevious();
+                    appLauncher.selectPrevious();
                     event.accepted = true;
-                } else if (event.key === Qt.Key_Right && viewMode === "grid") {
-                    selectNextInRow();
+                } else if (event.key === Qt.Key_Right && appLauncher.viewMode === "grid") {
+                    appLauncher.selectNextInRow();
                     event.accepted = true;
-                } else if (event.key === Qt.Key_Left && viewMode === "grid") {
-                    selectPreviousInRow();
+                } else if (event.key === Qt.Key_Left && appLauncher.viewMode === "grid") {
+                    appLauncher.selectPreviousInRow();
                     event.accepted = true;
                 } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                    launchSelected();
+                    appLauncher.launchSelected();
                     event.accepted = true;
                 } else if (event.text && event.text.length > 0 && event.text.match(/[a-zA-Z0-9\s]/)) {
                     // User started typing, focus search field and pass the character
@@ -378,7 +240,7 @@ PanelWindow {
                     // Quick stats
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: filteredModel.count + " apps"
+                        text: appLauncher.model.count + " apps"
                         font.pixelSize: Theme.fontSizeMedium
                         color: Theme.surfaceVariantText
                     }
@@ -404,21 +266,15 @@ PanelWindow {
                     enabled: appDrawerPopout.isVisible
                     placeholderText: "Search applications..."
                     onTextEdited: {
-                        searchDebounceTimer.restart();
+                        appLauncher.searchQuery = text;
                     }
                     Keys.onPressed: function(event) {
-                        if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && filteredModel.count && text.length > 0) {
+                        if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && appLauncher.model.count && text.length > 0) {
                             // Launch first app when typing in search field
-                            var firstApp = filteredModel.get(0);
-                            if (firstApp.desktopEntry) {
-                                Prefs.addRecentApp(firstApp.desktopEntry);
-                                firstApp.desktopEntry.execute();
-                            } else {
-                                appDrawerPopout.launchApp(firstApp.exec);
-                            }
-                            appDrawerPopout.hide();
+                            var firstApp = appLauncher.model.get(0);
+                            appLauncher.launchApp(firstApp);
                             event.accepted = true;
-                        } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || (event.key === Qt.Key_Left && viewMode === "grid") || (event.key === Qt.Key_Right && viewMode === "grid") || ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
+                        } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || (event.key === Qt.Key_Left && appLauncher.viewMode === "grid") || (event.key === Qt.Key_Right && appLauncher.viewMode === "grid") || ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
                             // Pass navigation keys and enter (when not searching) to main handler
                             event.accepted = false;
                         }
@@ -467,7 +323,7 @@ PanelWindow {
                             }
 
                             Text {
-                                text: selectedCategory
+                                text: appLauncher.selectedCategory
                                 font.pixelSize: Theme.fontSizeMedium
                                 color: Theme.surfaceText
                                 anchors.verticalCenter: parent.verticalCenter
@@ -510,12 +366,11 @@ PanelWindow {
                             circular: false
                             iconName: "view_list"
                             iconSize: 20
-                            iconColor: viewMode === "list" ? Theme.primary : Theme.surfaceText
-                            hoverColor: viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
-                            backgroundColor: viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+                            iconColor: appLauncher.viewMode === "list" ? Theme.primary : Theme.surfaceText
+                            hoverColor: appLauncher.viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
+                            backgroundColor: appLauncher.viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
                             onClicked: {
-                                viewMode = "list";
-                                Prefs.setAppLauncherViewMode("list");
+                                appLauncher.setViewMode("list");
                             }
                         }
 
@@ -525,12 +380,11 @@ PanelWindow {
                             circular: false
                             iconName: "grid_view"
                             iconSize: 20
-                            iconColor: viewMode === "grid" ? Theme.primary : Theme.surfaceText
-                            hoverColor: viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
-                            backgroundColor: viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+                            iconColor: appLauncher.viewMode === "grid" ? Theme.primary : Theme.surfaceText
+                            hoverColor: appLauncher.viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
+                            backgroundColor: appLauncher.viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
                             onClicked: {
-                                viewMode = "grid";
-                                Prefs.setAppLauncherViewMode("grid");
+                                appLauncher.setViewMode("grid");
                             }
                         }
 
@@ -558,24 +412,18 @@ PanelWindow {
                         id: appList
 
                         anchors.fill: parent
-                        visible: viewMode === "list"
-                        model: filteredModel
-                        currentIndex: selectedIndex
+                        visible: appLauncher.viewMode === "list"
+                        model: appLauncher.model
+                        currentIndex: appLauncher.selectedIndex
                         itemHeight: 72
                         iconSize: 56
                         showDescription: true
                         hoverUpdatesSelection: false
                         onItemClicked: function(index, modelData) {
-                            if (modelData.desktopEntry) {
-                                Prefs.addRecentApp(modelData.desktopEntry);
-                                modelData.desktopEntry.execute();
-                            } else {
-                                appDrawerPopout.launchApp(modelData.exec);
-                            }
-                            appDrawerPopout.hide();
+                            appLauncher.launchApp(modelData);
                         }
                         onItemHovered: function(index) {
-                            selectedIndex = index;
+                            appLauncher.selectedIndex = index;
                         }
                     }
 
@@ -584,23 +432,17 @@ PanelWindow {
                         id: appGrid
 
                         anchors.fill: parent
-                        visible: viewMode === "grid"
-                        model: filteredModel
+                        visible: appLauncher.viewMode === "grid"
+                        model: appLauncher.model
                         columns: 4
                         adaptiveColumns: false
-                        currentIndex: selectedIndex
+                        currentIndex: appLauncher.selectedIndex
                         hoverUpdatesSelection: false
                         onItemClicked: function(index, modelData) {
-                            if (modelData.desktopEntry) {
-                                Prefs.addRecentApp(modelData.desktopEntry);
-                                modelData.desktopEntry.execute();
-                            } else {
-                                appDrawerPopout.launchApp(modelData.exec);
-                            }
-                            appDrawerPopout.hide();
+                            appLauncher.launchApp(modelData);
                         }
                         onItemHovered: function(index) {
-                            selectedIndex = index;
+                            appLauncher.selectedIndex = index;
                         }
                     }
 
@@ -654,7 +496,7 @@ PanelWindow {
                             // Make mouse wheel scrolling more responsive
                             property real wheelStepSize: 60
 
-                            model: categories
+                            model: appLauncher.categories
                             spacing: 4
 
                             MouseArea {
@@ -686,8 +528,8 @@ PanelWindow {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: modelData
                                     font.pixelSize: Theme.fontSizeMedium
-                                    color: selectedCategory === modelData ? Theme.primary : Theme.surfaceText
-                                    font.weight: selectedCategory === modelData ? Font.Medium : Font.Normal
+                                    color: appLauncher.selectedCategory === modelData ? Theme.primary : Theme.surfaceText
+                                    font.weight: appLauncher.selectedCategory === modelData ? Font.Medium : Font.Normal
                                 }
 
                                 MouseArea {
@@ -697,9 +539,8 @@ PanelWindow {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        selectedCategory = modelData;
+                                        appLauncher.setCategory(modelData);
                                         showCategories = false;
-                                        updateFilteredModel();
                                     }
                                 }
 

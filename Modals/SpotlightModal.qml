@@ -6,43 +6,25 @@ import Quickshell.Io
 import qs.Common
 import qs.Services
 import qs.Widgets
+import qs.Modules.AppDrawer
 
 DankModal {
     id: spotlightModal
 
     property bool spotlightOpen: false
-    property var filteredApps: []
-    property int selectedIndex: 0
-    property int maxResults: 50
-    property var categories: {
-        var allCategories = AppSearchService.getAllCategories().filter((cat) => {
-            return cat !== "Education" && cat !== "Science";
-        });
-        // Insert "Recents" after "All"
-        var result = ["All", "Recents"];
-        return result.concat(allCategories.filter((cat) => {
-            return cat !== "All";
-        }));
-    }
-    property string selectedCategory: "All"
-    property string viewMode: Prefs.spotlightModalViewMode // "list" or "grid"
-    property int gridColumns: 4
 
     function show() {
         console.log("SpotlightModal: show() called");
         spotlightOpen = true;
         console.log("SpotlightModal: spotlightOpen set to", spotlightOpen);
-        searchDebounceTimer.stop(); // Stop any pending search
-        updateFilteredApps(); // Immediate update when showing
+        appLauncher.searchQuery = "";
     }
 
     function hide() {
         spotlightOpen = false;
-        searchDebounceTimer.stop(); // Stop any pending search
-        searchQuery = "";
-        selectedIndex = 0;
-        selectedCategory = "All";
-        updateFilteredApps();
+        appLauncher.searchQuery = "";
+        appLauncher.selectedIndex = 0;
+        appLauncher.setCategory("All");
     }
 
     function toggle() {
@@ -52,149 +34,8 @@ DankModal {
             show();
     }
 
-    property string searchQuery: ""
-    function updateFilteredApps() {
-        filteredApps = [];
-        selectedIndex = 0;
-        var apps = [];
-        if (searchQuery.length === 0) {
-            // Show apps from category
-            if (selectedCategory === "All") {
-                // For "All" category, show all available apps
-                apps = AppSearchService.applications || [];
-            } else if (selectedCategory === "Recents") {
-                // For "Recents" category, get recent apps from Prefs and filter out non-existent ones
-                var recentApps = Prefs.getRecentApps();
-                apps = recentApps.map((recentApp) => {
-                    return AppSearchService.getAppByExec(recentApp.exec);
-                }).filter((app) => {
-                    return app !== null && !app.noDisplay;
-                });
-            } else {
-                // For specific categories, limit results
-                var categoryApps = AppSearchService.getAppsInCategory(selectedCategory);
-                apps = categoryApps.slice(0, maxResults);
-            }
-        } else {
-            // Search with category filter
-            if (selectedCategory === "All") {
-                // For "All" category, search all apps without limit
-                apps = AppSearchService.searchApplications(searchQuery);
-            } else if (selectedCategory === "Recents") {
-                // For "Recents" category, search within recent apps
-                var recentApps = Prefs.getRecentApps();
-                var recentDesktopEntries = recentApps.map((recentApp) => {
-                    return AppSearchService.getAppByExec(recentApp.exec);
-                }).filter((app) => {
-                    return app !== null && !app.noDisplay;
-                });
-                if (recentDesktopEntries.length > 0) {
-                    var allSearchResults = AppSearchService.searchApplications(searchQuery);
-                    var recentNames = new Set(recentDesktopEntries.map((app) => {
-                        return app.name;
-                    }));
-                    // Filter search results to only include recent apps
-                    apps = allSearchResults.filter((searchApp) => {
-                        return recentNames.has(searchApp.name);
-                    });
-                } else {
-                    apps = [];
-                }
-            } else {
-                // For specific categories, filter search results by category
-                var categoryApps = AppSearchService.getAppsInCategory(selectedCategory);
-                if (categoryApps.length > 0) {
-                    var allSearchResults = AppSearchService.searchApplications(searchQuery);
-                    var categoryNames = new Set(categoryApps.map((app) => {
-                        return app.name;
-                    }));
-                    // Filter search results to only include apps from the selected category
-                    apps = allSearchResults.filter((searchApp) => {
-                        return categoryNames.has(searchApp.name);
-                    }).slice(0, maxResults);
-                } else {
-                    apps = [];
-                }
-            }
-        }
-        // Convert to our format - batch operations for better performance
-        filteredApps = apps.map((app) => {
-            return ({
-                "name": app.name,
-                "exec": app.execString || "",
-                "icon": app.icon || "application-x-executable",
-                "comment": app.comment || "",
-                "categories": app.categories || [],
-                "desktopEntry": app
-            });
-        });
-        // Clear and repopulate model efficiently
-        filteredModel.clear();
-        filteredApps.forEach((app) => {
-            return filteredModel.append(app);
-        });
-    }
 
-    function launchApp(app) {
-        Prefs.addRecentApp(app);
-        if (app.desktopEntry) {
-            app.desktopEntry.execute();
-        } else {
-            var cleanExec = app.exec.replace(/%[fFuU]/g, "").trim();
-            console.log("Spotlight: Launching app directly:", cleanExec);
-            Quickshell.execDetached(["sh", "-c", cleanExec]);
-        }
-        hide();
-    }
 
-    function selectNext() {
-        if (filteredModel.count > 0) {
-            if (viewMode === "grid") {
-                // Grid navigation: move DOWN by one row (gridColumns positions)
-                var columnsCount = gridColumns;
-                var newIndex = Math.min(selectedIndex + columnsCount, filteredModel.count - 1);
-                selectedIndex = newIndex;
-            } else {
-                // List navigation: next item
-                selectedIndex = (selectedIndex + 1) % filteredModel.count;
-            }
-        }
-    }
-
-    function selectPrevious() {
-        if (filteredModel.count > 0) {
-            if (viewMode === "grid") {
-                // Grid navigation: move UP by one row (gridColumns positions)
-                var columnsCount = gridColumns;
-                var newIndex = Math.max(selectedIndex - columnsCount, 0);
-                selectedIndex = newIndex;
-            } else {
-                // List navigation: previous item
-                selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : filteredModel.count - 1;
-            }
-        }
-    }
-
-    function selectNextInRow() {
-        if (filteredModel.count > 0 && viewMode === "grid") {
-            // Grid navigation: move RIGHT by one position
-            selectedIndex = Math.min(selectedIndex + 1, filteredModel.count - 1);
-        }
-    }
-
-    function selectPreviousInRow() {
-        if (filteredModel.count > 0 && viewMode === "grid") {
-            // Grid navigation: move LEFT by one position
-            selectedIndex = Math.max(selectedIndex - 1, 0);
-        }
-    }
-
-    function launchSelected() {
-        if (filteredModel.count > 0 && selectedIndex >= 0 && selectedIndex < filteredModel.count) {
-            var selectedApp = filteredModel.get(selectedIndex);
-            launchApp(selectedApp);
-        }
-    }
 
     // DankModal configuration
     visible: spotlightOpen
@@ -220,26 +61,17 @@ DankModal {
 
     Component.onCompleted: {
         console.log("SpotlightModal: Component.onCompleted called - component loaded successfully!");
-        var allCategories = AppSearchService.getAllCategories().filter((cat) => {
-            return cat !== "Education" && cat !== "Science";
-        });
-        // Insert "Recents" after "All"
-        var result = ["All", "Recents"];
-        categories = result.concat(allCategories.filter((cat) => {
-            return cat !== "All";
-        }));
     }
 
-    // Search debouncing
-    Timer {
-        id: searchDebounceTimer
-        interval: 50
-        repeat: false
-        onTriggered: updateFilteredApps()
-    }
-
-    ListModel {
-        id: filteredModel
+    // App launcher logic
+    AppLauncher {
+        id: appLauncher
+        
+        viewMode: Prefs.spotlightModalViewMode
+        gridColumns: 4
+        
+        onAppLaunched: hide()
+        onViewModeSelected: Prefs.setSpotlightModalViewMode(mode)
     }
 
     content: Component {
@@ -253,19 +85,19 @@ DankModal {
                     hide();
                     event.accepted = true;
                 } else if (event.key === Qt.Key_Down) {
-                    selectNext();
+                    appLauncher.selectNext();
                     event.accepted = true;
                 } else if (event.key === Qt.Key_Up) {
-                    selectPrevious();
+                    appLauncher.selectPrevious();
                     event.accepted = true;
-                } else if (event.key === Qt.Key_Right && viewMode === "grid") {
-                    selectNextInRow();
+                } else if (event.key === Qt.Key_Right && appLauncher.viewMode === "grid") {
+                    appLauncher.selectNextInRow();
                     event.accepted = true;
-                } else if (event.key === Qt.Key_Left && viewMode === "grid") {
-                    selectPreviousInRow();
+                } else if (event.key === Qt.Key_Left && appLauncher.viewMode === "grid") {
+                    appLauncher.selectPreviousInRow();
                     event.accepted = true;
                 } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                    launchSelected();
+                    appLauncher.launchSelected();
                     event.accepted = true;
                 } else if (event.text && event.text.length > 0 && event.text.match(/[a-zA-Z0-9\\s]/)) {
                     searchField.text = event.text;
@@ -280,99 +112,15 @@ DankModal {
             spacing: Theme.spacingM
             
 
-            // Combined row for categories and view mode toggle
-            Column {
+            // Category selector
+            CategorySelector {
                 width: parent.width
-                spacing: Theme.spacingM
-                visible: categories.length > 1 || filteredModel.count > 0
-
-                // Categories organized in 2 rows: 4 + 5
-                Column {
-                    width: parent.width
-                    spacing: Theme.spacingS
-
-                    // Top row: All, Development, Graphics, Internet (4 items)
-                    Row {
-                        property var topRowCategories: ["All", "Recents", "Development", "Graphics"]
-
-                        width: parent.width
-                        spacing: Theme.spacingS
-
-                        Repeater {
-                            model: parent.topRowCategories.filter((cat) => {
-                                return categories.includes(cat);
-                            })
-
-                            Rectangle {
-                                height: 36
-                                width: (parent.width - (parent.topRowCategories.length - 1) * Theme.spacingS) / parent.topRowCategories.length
-                                radius: Theme.cornerRadiusLarge
-                                color: selectedCategory === modelData ? Theme.primary : "transparent"
-                                border.color: selectedCategory === modelData ? "transparent" : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: modelData
-                                    color: selectedCategory === modelData ? Theme.surface : Theme.surfaceText
-                                    font.pixelSize: Theme.fontSizeMedium
-                                    font.weight: selectedCategory === modelData ? Font.Medium : Font.Normal
-                                    elide: Text.ElideRight
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        selectedCategory = modelData;
-                                        updateFilteredApps();
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Bottom row: Media, Office, Settings, System, Utilities (5 items)
-                    Row {
-                        property var bottomRowCategories: ["Internet", "Media", "Office", "Settings", "System"]
-
-                        width: parent.width
-                        spacing: Theme.spacingS
-
-                        Repeater {
-                            model: parent.bottomRowCategories.filter((cat) => {
-                                return categories.includes(cat);
-                            })
-
-                            Rectangle {
-                                height: 36
-                                width: (parent.width - (parent.bottomRowCategories.length - 1) * Theme.spacingS) / parent.bottomRowCategories.length
-                                radius: Theme.cornerRadiusLarge
-                                color: selectedCategory === modelData ? Theme.primary : "transparent"
-                                border.color: selectedCategory === modelData ? "transparent" : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: modelData
-                                    color: selectedCategory === modelData ? Theme.surface : Theme.surfaceText
-                                    font.pixelSize: Theme.fontSizeMedium
-                                    font.weight: selectedCategory === modelData ? Font.Medium : Font.Normal
-                                    elide: Text.ElideRight
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        selectedCategory = modelData;
-                                        updateFilteredApps();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                categories: appLauncher.categories
+                selectedCategory: appLauncher.selectedCategory
+                compact: false
+                visible: appLauncher.categories.length > 1 || appLauncher.model.count > 0
+                
+                onCategorySelected: appLauncher.setCategory(category)
             }
 
             // Search field with view toggle buttons
@@ -398,10 +146,9 @@ DankModal {
                     font.pixelSize: Theme.fontSizeLarge
                     enabled: spotlightOpen
                     placeholderText: "Search applications..."
-                    text: searchQuery
+                    text: appLauncher.searchQuery
                     onTextEdited: {
-                        searchQuery = text;
-                        searchDebounceTimer.restart();
+                        appLauncher.searchQuery = text;
                     }
 
                     Connections {
@@ -418,16 +165,16 @@ DankModal {
                         if (event.key === Qt.Key_Escape) {
                             hide();
                             event.accepted = true;
-                        } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && searchQuery.length > 0) {
+                        } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && appLauncher.searchQuery.length > 0) {
                             // Launch first app when typing in search field
-                            if (filteredApps.length > 0) {
-                                launchApp(filteredApps[0]);
+                            if (appLauncher.model.count > 0) {
+                                appLauncher.launchApp(appLauncher.model.get(0));
                             }
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || 
-                                   (event.key === Qt.Key_Left && viewMode === "grid") ||
-                                   (event.key === Qt.Key_Right && viewMode === "grid") ||
-                                   ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && searchQuery.length === 0)) {
+                                   (event.key === Qt.Key_Left && appLauncher.viewMode === "grid") ||
+                                   (event.key === Qt.Key_Right && appLauncher.viewMode === "grid") ||
+                                   ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && appLauncher.searchQuery.length === 0)) {
                             // Pass navigation keys and enter (when not searching) to main handler
                             event.accepted = false;
                         }
@@ -437,7 +184,7 @@ DankModal {
                 // View mode toggle buttons next to search bar
                 Row {
                     spacing: Theme.spacingXS
-                    visible: filteredModel.count > 0
+                    visible: appLauncher.model.count > 0
                     anchors.verticalCenter: parent.verticalCenter
 
                     // List view button
@@ -445,15 +192,15 @@ DankModal {
                         width: 36
                         height: 36
                         radius: Theme.cornerRadiusLarge
-                        color: viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : listViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
-                        border.color: viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : "transparent"
+                        color: appLauncher.viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : listViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
+                        border.color: appLauncher.viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : "transparent"
                         border.width: 1
 
                         DankIcon {
                             anchors.centerIn: parent
                             name: "view_list"
                             size: 18
-                            color: viewMode === "list" ? Theme.primary : Theme.surfaceText
+                            color: appLauncher.viewMode === "list" ? Theme.primary : Theme.surfaceText
                         }
 
                         MouseArea {
@@ -463,8 +210,7 @@ DankModal {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                viewMode = "list";
-                                Prefs.setSpotlightModalViewMode("list");
+                                appLauncher.setViewMode("list");
                             }
                         }
                     }
@@ -474,15 +220,15 @@ DankModal {
                         width: 36
                         height: 36
                         radius: Theme.cornerRadiusLarge
-                        color: viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : gridViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
-                        border.color: viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : "transparent"
+                        color: appLauncher.viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : gridViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
+                        border.color: appLauncher.viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : "transparent"
                         border.width: 1
 
                         DankIcon {
                             anchors.centerIn: parent
                             name: "grid_view"
                             size: 18
-                            color: viewMode === "grid" ? Theme.primary : Theme.surfaceText
+                            color: appLauncher.viewMode === "grid" ? Theme.primary : Theme.surfaceText
                         }
 
                         MouseArea {
@@ -492,8 +238,7 @@ DankModal {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                viewMode = "grid";
-                                Prefs.setSpotlightModalViewMode("grid");
+                                appLauncher.setViewMode("grid");
                             }
                         }
                     }
@@ -513,18 +258,18 @@ DankModal {
                     id: resultsList
 
                     anchors.fill: parent
-                    visible: viewMode === "list"
-                    model: filteredModel
-                    currentIndex: selectedIndex
+                    visible: appLauncher.viewMode === "list"
+                    model: appLauncher.model
+                    currentIndex: appLauncher.selectedIndex
                     itemHeight: 60
                     iconSize: 40
                     showDescription: true
                     hoverUpdatesSelection: false
                     onItemClicked: function(index, modelData) {
-                        launchApp(modelData);
+                        appLauncher.launchApp(modelData);
                     }
                     onItemHovered: function(index) {
-                        selectedIndex = index;
+                        appLauncher.selectedIndex = index;
                     }
                 }
 
@@ -533,21 +278,21 @@ DankModal {
                     id: resultsGrid
 
                     anchors.fill: parent
-                    visible: viewMode === "grid"
-                    model: filteredModel
+                    visible: appLauncher.viewMode === "grid"
+                    model: appLauncher.model
                     columns: 4
                     adaptiveColumns: false
                     minCellWidth: 120
                     maxCellWidth: 160
                     iconSizeRatio: 0.55
                     maxIconSize: 48
-                    currentIndex: selectedIndex
+                    currentIndex: appLauncher.selectedIndex
                     hoverUpdatesSelection: false
                     onItemClicked: function(index, modelData) {
-                        launchApp(modelData);
+                        appLauncher.launchApp(modelData);
                     }
                     onItemHovered: function(index) {
-                        selectedIndex = index;
+                        appLauncher.selectedIndex = index;
                     }
                 }
             }

@@ -194,11 +194,11 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: Prefs.showSystemTray
                     onMenuRequested: (menu, item, x, y) => {
-                        trayMenuPopup.currentTrayMenu = menu;
-                        trayMenuPopup.currentTrayItem = item;
-                        trayMenuPopup.trayMenuX = rightSection.x + rightSection.width - 400 - Theme.spacingL;
-                        trayMenuPopup.trayMenuY = Theme.barHeight - Theme.spacingXS;
-                        trayMenuPopup.showTrayMenu = true;
+                        systemTrayContextMenu.currentTrayMenu = menu;
+                        systemTrayContextMenu.currentTrayItem = item;
+                        systemTrayContextMenu.contextMenuX = rightSection.x + rightSection.width - 400 - Theme.spacingL;
+                        systemTrayContextMenu.contextMenuY = Theme.barHeight - Theme.spacingXS;
+                        systemTrayContextMenu.showContextMenu = true;
                         menu.menuVisible = true;
                     }
                 }

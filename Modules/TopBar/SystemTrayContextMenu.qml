@@ -8,13 +8,13 @@ import qs.Common
 PanelWindow {
     id: root
 
-    property bool showTrayMenu: false
-    property real trayMenuX: 0
-    property real trayMenuY: 0
+    property bool showContextMenu: false
+    property real contextMenuX: 0
+    property real contextMenuY: 0
     property var currentTrayMenu: null
     property var currentTrayItem: null
 
-    visible: showTrayMenu
+    visible: showContextMenu
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -30,8 +30,8 @@ PanelWindow {
     Rectangle {
         id: menuContainer
 
-        x: trayMenuX
-        y: trayMenuY
+        x: contextMenuX
+        y: contextMenuY
         width: Math.max(180, Math.min(300, menuList.maxTextWidth + Theme.spacingL * 2))
         height: Math.max(60, menuList.contentHeight + Theme.spacingS * 2)
         color: Theme.popupBackground()
@@ -39,8 +39,8 @@ PanelWindow {
         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
         border.width: 1
         // Material 3 animations
-        opacity: showTrayMenu ? 1 : 0
-        scale: showTrayMenu ? 1 : 0.85
+        opacity: showContextMenu ? 1 : 0
+        scale: showContextMenu ? 1 : 0.85
 
         // Material 3 drop shadow
         Rectangle {
@@ -139,7 +139,7 @@ PanelWindow {
                             if (modelData.triggered)
                                 modelData.triggered();
 
-                            showTrayMenu = false;
+                            showContextMenu = false;
                         }
                     }
 
@@ -180,7 +180,7 @@ PanelWindow {
         anchors.fill: parent
         z: -1
         onClicked: {
-            showTrayMenu = false;
+            showContextMenu = false;
         }
     }
 

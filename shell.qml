@@ -2,13 +2,13 @@
 
 import Quickshell
 import qs.Modules
+import qs.Modules.AppDrawer
 import qs.Modules.CentcomCenter
 import qs.Modules.ControlCenter
 import qs.Modules.Settings
 import qs.Modules.TopBar
 import qs.Modules.ProcessList
 import qs.Modules.ControlCenter.Network
-import qs.Modules.Popouts
 import qs.Modals
 
 ShellRoot {
@@ -29,8 +29,8 @@ ShellRoot {
         id: centcomPopout
     }
 
-    TrayMenuPopup {
-        id: trayMenuPopup
+    SystemTrayContextMenu {
+        id: systemTrayContextMenu
     }
 
     NotificationCenter {
@@ -63,8 +63,8 @@ ShellRoot {
         id: batteryPopout
     }
 
-    PowerMenuPopup {
-        id: powerMenuPopup
+    PowerMenu {
+        id: powerMenu
     }
 
     PowerConfirmModal {

@@ -97,6 +97,44 @@ PanelWindow {
             }
         }
 
+        // Only resize after animation is complete
+        onOpacityChanged: {
+            if (opacity === 1) {
+                // Animation finished, now we can safely resize
+                Qt.callLater(() => {
+                    height = calculateHeight();
+                });
+            }
+        }
+
+        Connections {
+            function onEventsByDateChanged() {
+                if (mainContainer.opacity === 1) {
+                    mainContainer.height = mainContainer.calculateHeight();
+                }
+            }
+
+            function onKhalAvailableChanged() {
+                if (mainContainer.opacity === 1) {
+                    mainContainer.height = mainContainer.calculateHeight();
+                }
+            }
+
+            target: CalendarService
+            enabled: CalendarService !== null
+        }
+
+        Connections {
+            function onSelectedDateEventsChanged() {
+                if (mainContainer.opacity === 1) {
+                    mainContainer.height = mainContainer.calculateHeight();
+                }
+            }
+
+            target: events
+            enabled: events !== null
+        }
+
         Rectangle {
             anchors.fill: parent
             color: Qt.rgba(Theme.surfaceTint.r, Theme.surfaceTint.g, Theme.surfaceTint.b, 0.04)
@@ -122,27 +160,6 @@ PanelWindow {
 
         }
 
-        Connections {
-            function onEventsByDateChanged() {
-                mainContainer.height = mainContainer.calculateHeight();
-            }
-
-            function onKhalAvailableChanged() {
-                mainContainer.height = mainContainer.calculateHeight();
-            }
-
-            target: CalendarService
-            enabled: CalendarService !== null
-        }
-
-        Connections {
-            function onSelectedDateEventsChanged() {
-                mainContainer.height = mainContainer.calculateHeight();
-            }
-
-            target: events
-            enabled: events !== null
-        }
 
 
         Column {
