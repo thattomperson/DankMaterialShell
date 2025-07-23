@@ -53,8 +53,6 @@ DankModal {
     }
 
     property string searchQuery: ""
-    property bool shouldFocusSearch: false
-    
     function updateFilteredApps() {
         filteredApps = [];
         selectedIndex = 0;
@@ -216,10 +214,6 @@ DankModal {
         }
     }
     
-    onOpened: {
-        shouldFocusSearch = true;
-    }
-
     onBackgroundClicked: {
         spotlightOpen = false;
     }
@@ -420,7 +414,6 @@ DankModal {
                     showClearButton: true
                     textColor: Theme.surfaceText
                     font.pixelSize: Theme.fontSizeLarge
-                    focus: false
                     enabled: spotlightOpen
                     placeholderText: "Search applications..."
                     text: searchQuery
@@ -428,15 +421,14 @@ DankModal {
                         searchQuery = text;
                         searchDebounceTimer.restart();
                     }
-                    
+
                     Connections {
                         target: spotlightLauncher
                         function onOpened() {
-                            if (shouldFocusSearch) {
-                                searchField.forceActiveFocus()
-                                searchField.selectAll()
-                                shouldFocusSearch = false
-                            }
+                            searchField.forceActiveFocus();
+                        }
+                        function onDialogClosed() {
+                            searchField.clearFocus();
                         }
                     }
                     

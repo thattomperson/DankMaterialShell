@@ -199,11 +199,14 @@ PanelWindow {
 
     // Keyboard handling
     FocusScope {
+        id: focusScope
         anchors.fill: parent
-        focus: visible && root.closeOnEscapeKey
-        Keys.onEscapePressed: {
+        visible: root.visible // Only active when the modal is visible
+
+        Keys.onEscapePressed: (event) => {
             if (root.closeOnEscapeKey) {
-                visible = false
+                root.visible = false;
+                event.accepted = true;
             }
         }
     }

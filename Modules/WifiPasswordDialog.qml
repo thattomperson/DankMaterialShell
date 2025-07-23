@@ -16,10 +16,6 @@ DankModal {
     height: 230
     keyboardFocus: "ondemand"
 
-    onOpened: {
-        passwordInput.forceActiveFocus()
-    }
-
     onVisibleChanged: {
         if (!visible) {
             wifiPasswordInput = "";
@@ -99,6 +95,16 @@ DankModal {
                     focusedBorderColor: "transparent"
                     onTextEdited: {
                         wifiPasswordInput = text;
+                    }
+
+                    Connections {
+                        target: root
+                        function onOpened() {
+                            passwordInput.forceActiveFocus();
+                        }
+                        function onDialogClosed() {
+                            passwordInput.clearFocus();
+                        }
                     }
                     onAccepted: {
                         WifiService.connectToWifiWithPassword(wifiPasswordSSID, passwordInput.text);

@@ -83,6 +83,10 @@ Rectangle {
         textInput.cut();
     }
 
+    function clearFocus() {
+        textInput.focus = false;
+    }
+
     // Default styling
     width: 200
     height: 48

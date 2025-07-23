@@ -15,7 +15,6 @@ DankModal {
     property var clipboardEntries: []
 
     property string searchText: ""
-    property bool shouldFocusSearch: false
 
     function updateFilteredModel() {
         filteredClipboardModel.clear();
@@ -118,13 +117,6 @@ DankModal {
     height: 550
     keyboardFocus: "ondemand"
 
-    onVisibleChanged: {
-        if (visible) {
-            refreshClipboard();
-            shouldFocusSearch = true;
-        }
-    }
-
     onBackgroundClicked: {
         hide();
     }
@@ -198,14 +190,14 @@ DankModal {
                     clipboardHistory.searchText = text;
                     updateFilteredModel();
                 }
-                
+
                 Connections {
                     target: clipboardHistory
                     function onOpened() {
-                        if (shouldFocusSearch) {
-                            searchField.forceActiveFocus()
-                            shouldFocusSearch = false
-                        }
+                        searchField.forceActiveFocus();
+                    }
+                    function onDialogClosed() {
+                        searchField.clearFocus();
                     }
                 }
             }

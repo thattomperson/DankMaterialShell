@@ -149,9 +149,6 @@ PanelWindow {
         searchField.enabled = true;
         searchDebounceTimer.stop(); // Stop any pending search
         updateFilteredModel();
-        Qt.callLater(function() {
-            searchField.forceActiveFocus();
-        });
     }
 
     function hide() {
@@ -460,6 +457,17 @@ PanelWindow {
                     placeholderText: "Search applications..."
                     onTextEdited: {
                         searchDebounceTimer.restart();
+                    }
+
+                    Connections {
+                        target: launcher
+                        function onVisibleChanged() {
+                            if (launcher.visible) {
+                                searchField.forceActiveFocus();
+                            } else {
+                                searchField.clearFocus();
+                            }
+                        }
                     }
                     Keys.onPressed: function(event) {
                         if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && filteredModel.count && text.length > 0) {
