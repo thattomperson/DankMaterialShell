@@ -16,7 +16,7 @@ PanelWindow {
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     color: "transparent"
     implicitWidth: 400
-    implicitHeight: Math.min(500, notificationsList.height + 32)
+    implicitHeight: Math.min(Screen.height * 0.60, Math.max(400, (notificationsList.contentHeight || 0) + 32))
 
     anchors {
         top: true
@@ -35,10 +35,17 @@ PanelWindow {
         anchors.rightMargin: 16
         anchors.bottomMargin: 16
         width: 380
-        height: Math.min(500 - 32, notificationsList.height + 32) // Match notification center height minus margins
+        height: Math.min(Screen.height * 0.60 - 32, Math.max(368, (notificationsList.contentHeight || 0) + 32))
         color: "transparent"
         radius: 12
         clip: true
+
+        Behavior on height {
+            NumberAnimation {
+                duration: Theme.shortDuration
+                easing.type: Theme.standardEasing
+            }
+        }
 
         ScrollView {
             anchors.fill: parent
@@ -71,7 +78,7 @@ PanelWindow {
                             if (expanded && modelData.count >= 1) {
                                 const baseHeight = (116 * modelData.count) + (12 * (modelData.count - 1));
                                 // Add extra bottom margin for View/Dismiss buttons when there are fewer than 3 messages
-                                const bottomMargin = modelData.count === 1 ? 70 : (modelData.count < 3 ? 50 : -25);
+                                const bottomMargin = modelData.count === 1 ? 70 : (modelData.count < 3 ? 50 : -28);
                                 return baseHeight + bottomMargin;
                             }
                             return 116;
@@ -369,7 +376,7 @@ PanelWindow {
                                 id: expandedColumn
 
                                 width: parent.width
-                                spacing: 8
+                                spacing: 10
 
                                 // Header with app name and count
                                 Item {
@@ -489,7 +496,7 @@ PanelWindow {
 
                                         Column {
                                             width: parent.width
-                                            spacing: 8
+                                            spacing: 16
 
                                             Repeater {
                                                 model: modelData.notifications
@@ -600,17 +607,20 @@ PanelWindow {
                                                             // Body text with expand capability
                                                             Text {
                                                                 id: bodyText
+                                                                property bool hasUrls: {
+                                                                    const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                                                    return urlRegex.test(modelData.body || "");
+                                                                }
 
                                                                 width: parent.width
                                                                 text: {
-                                                                    // Show up to 500 characters when expanded
-                                                                    // Show truncated version when collapsed
-
-                                                                    const body = modelData.body || "";
+                                                                    let bodyText = modelData.body || "";
                                                                     if (messageExpanded)
-                                                                        return body.length > 500 ? body.substring(0, 497) + "..." : body;
+                                                                        bodyText = bodyText.length > 500 ? bodyText.substring(0, 497) + "..." : bodyText;
                                                                     else
-                                                                        return body.length > 80 ? body.substring(0, 77) + "..." : body;
+                                                                        bodyText = bodyText.length > 80 ? bodyText.substring(0, 77) + "..." : bodyText;
+                                                                    const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                                                    return bodyText.replace(urlRegex, '<a href="$1" style="color: ' + Theme.primary + '; text-decoration: underline;">$1</a>');
                                                                 }
                                                                 color: Theme.surfaceVariantText
                                                                 font.pixelSize: Theme.fontSizeSmall
@@ -618,6 +628,10 @@ PanelWindow {
                                                                 maximumLineCount: messageExpanded ? -1 : 2
                                                                 wrapMode: Text.WordWrap
                                                                 visible: text.length > 0
+                                                                textFormat: Text.RichText
+                                                                onLinkActivated: function(link) {
+                                                                    Qt.openUrlExternally(link);
+                                                                }
                                                             }
 
                                                         }

@@ -16,7 +16,7 @@ PanelWindow {
 
     visible: notificationHistoryVisible
     implicitWidth: 400
-    implicitHeight: 500
+    implicitHeight: Math.min(Screen.height * 0.60, Math.max(580, (notificationsList.contentHeight || 0) + 140))
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -39,7 +39,7 @@ PanelWindow {
 
     Rectangle {
         width: 400
-        height: 500
+        height: Math.min(Screen.height * 0.60, Math.max(580, (notificationsList.contentHeight || 0) + 140))
         x: Screen.width - width - Theme.spacingL
         y: Theme.barHeight + Theme.spacingXS
         color: Theme.popupBackground()
@@ -211,14 +211,14 @@ PanelWindow {
             // Notification List
             ScrollView {
                 width: parent.width
-                height: parent.height - 120
+                height: parent.height - 140
                 clip: true
                 contentWidth: -1
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                 ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
                 ListView {
-                    // Quick reply height
+                    id: notificationsList
 
                     model: NotificationService.groupedNotifications
                     spacing: Theme.spacingL
@@ -306,7 +306,7 @@ PanelWindow {
                             if (expanded && modelData.count >= 1) {
                                 const baseHeight = (116 * modelData.count) + (12 * (modelData.count - 1));
                                 // Add extra bottom margin for expanded groups
-                                const bottomMargin = modelData.count === 1 ? 65 : (modelData.count < 3 ? 30 : -45);
+                                const bottomMargin = modelData.count === 1 ? 65 : (modelData.count <= 3 ? 30 : -30);
                                 return baseHeight + bottomMargin;
                             }
                             return 116;
@@ -595,7 +595,7 @@ PanelWindow {
                             anchors.bottomMargin: 14 // Reduced from Theme.spacingL (16px) by 10%
                             anchors.leftMargin: Theme.spacingL
                             anchors.rightMargin: Theme.spacingL
-                            spacing: 9 // Reduced from Theme.spacingM (12px) by 1/4
+                            spacing: -1 // Reduced by 10px from original 9px
                             visible: expanded
 
                             // 1st tier controls with app name - optimized spacing
@@ -703,7 +703,7 @@ PanelWindow {
                             // Individual notifications
                             Column {
                                 width: parent.width
-                                spacing: 5 // Reduced from Theme.spacingS (8px) by 1/3
+                                spacing: 16 // Increased margin between individual message cards
 
                                 Repeater {
                                     model: modelData.notifications.slice(0, 10)
@@ -816,16 +816,24 @@ PanelWindow {
                                                 Text {
                                                     id: bodyText
 
+                                                    property bool hasUrls: {
+                                                        const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                                        return urlRegex.test(modelData.body || "");
+                                                    }
+
                                                     width: parent.width
                                                     text: {
                                                         // Show up to 500 characters when expanded
                                                         // Show truncated version when collapsed
-
-                                                        const body = modelData.body || "";
+                                                        let bodyText = modelData.body || "";
                                                         if (messageExpanded)
-                                                            return body.length > 500 ? body.substring(0, 497) + "..." : body;
+                                                            bodyText = bodyText.length > 500 ? bodyText.substring(0, 497) + "..." : bodyText;
                                                         else
-                                                            return body.length > 80 ? body.substring(0, 77) + "..." : body;
+                                                            bodyText = bodyText.length > 80 ? bodyText.substring(0, 77) + "..." : bodyText;
+
+                                                        // Auto-detect and make URLs clickable
+                                                        const urlRegex = /(https?:\/\/[^\s]+)/g;
+                                                        return bodyText.replace(urlRegex, '<a href="$1" style="color: ' + Theme.primary + '; text-decoration: underline;">$1</a>');
                                                     }
                                                     color: Theme.surfaceVariantText
                                                     font.pixelSize: Theme.fontSizeSmall
@@ -833,6 +841,10 @@ PanelWindow {
                                                     maximumLineCount: messageExpanded ? -1 : 2
                                                     wrapMode: Text.WordWrap
                                                     visible: text.length > 0
+                                                    textFormat: Text.RichText
+                                                    onLinkActivated: function(link) {
+                                                        Qt.openUrlExternally(link);
+                                                    }
                                                 }
 
                                             }
@@ -1095,6 +1107,13 @@ PanelWindow {
 
             }
 
+        }
+
+        Behavior on height {
+            NumberAnimation {
+                duration: Theme.shortDuration
+                easing.type: Theme.standardEasing
+            }
         }
 
         Behavior on opacity {
