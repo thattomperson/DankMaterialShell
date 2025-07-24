@@ -10,6 +10,7 @@ import qs.Modules.ControlCenter
 import qs.Modules.Settings
 import qs.Modules.ProcessList
 import qs.Modules.ControlCenter.Network
+import qs.Modules.Lock
 import qs.Modals
 import qs.Services
 
@@ -17,6 +18,11 @@ ShellRoot {
     id: root
 
     WallpaperBackground {}
+    
+    Lock {
+        id: lock
+        anchors.fill: parent
+    }
     
     // Multi-monitor support using Variants
     Variants {
@@ -51,6 +57,9 @@ ShellRoot {
             powerConfirmModal.powerConfirmTitle = title;
             powerConfirmModal.powerConfirmMessage = message;
             powerConfirmModal.powerConfirmVisible = true;
+        }
+        onLockRequested: {
+            lock.activate();
         }
     }
 

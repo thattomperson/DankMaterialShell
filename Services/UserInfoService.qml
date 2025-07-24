@@ -26,7 +26,6 @@ Singleton {
     function refreshUserInfo() {
         getUserInfo();
         getUptime();
-        getProfilePicture();
     }
 
     Component.onCompleted: {

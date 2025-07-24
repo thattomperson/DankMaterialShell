@@ -19,6 +19,7 @@ PanelWindow {
     property bool powerOptionsExpanded: false
 
     signal powerActionRequested(string action, string title, string message)
+    signal lockRequested()
 
     visible: controlCenterVisible
     onVisibleChanged: {
@@ -231,12 +232,26 @@ PanelWindow {
 
                     }
 
-                    // Action Buttons - Power and Settings
+                    // Action Buttons - Lock, Power and Settings
                     Row {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.rightMargin: Theme.spacingL
                         spacing: Theme.spacingS
+
+                        // Lock Button
+                        DankActionButton {
+                            buttonSize: 40
+                            iconName: "lock"
+                            iconSize: Theme.iconSize - 2
+                            iconColor: Theme.surfaceText
+                            backgroundColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
+                            hoverColor: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
+                            onClicked: {
+                                controlCenterVisible = false;
+                                root.lockRequested();
+                            }
+                        }
 
                         // Power Button
                         Rectangle {
