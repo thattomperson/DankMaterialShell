@@ -95,12 +95,13 @@ DankModal {
         var lastSlash = path.lastIndexOf('/');
         if (lastSlash > 0) {
             var newPath = path.substring(0, lastSlash);
-            if (newPath.startsWith(homeDir)) {
-                currentPath = newPath;
-                saveLastPath(newPath);
-            } else {
+            // Don't go above home directory
+            if (newPath.length < homeDir.length) {
                 currentPath = homeDir;
                 saveLastPath(homeDir);
+            } else {
+                currentPath = newPath;
+                saveLastPath(newPath);
             }
         }
     }
@@ -184,9 +185,10 @@ DankModal {
                 }
 
                 StyledText {
-                    text: "Current folder: " + fileBrowserModal.currentPath
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.surfaceVariantText
+                    text: fileBrowserModal.currentPath.replace("file://", "")
+                    font.pixelSize: Theme.fontSizeMedium
+                    color: Theme.surfaceText
+                    font.weight: Font.Medium
                     width: parent.width - 40 - Theme.spacingS
                     elide: Text.ElideMiddle
                     anchors.verticalCenter: parent.verticalCenter
