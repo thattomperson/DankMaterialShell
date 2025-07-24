@@ -23,15 +23,14 @@ Item {
         running: true
         onExited: (exitCode) => {
             root.cavaAvailable = exitCode === 0;
-            if (root.cavaAvailable) {
+            if (root.cavaAvailable)
                 cavaProcess.running = Qt.binding(() => {
-                    return root.hasActiveMedia && root.activePlayer && root.activePlayer.playbackState === MprisPlaybackState.Playing;
-                });
-            } else {
+                return root.hasActiveMedia && root.activePlayer && root.activePlayer.playbackState === MprisPlaybackState.Playing;
+            });
+            else
                 fallbackTimer.running = Qt.binding(() => {
-                    return root.hasActiveMedia && root.activePlayer && root.activePlayer.playbackState === MprisPlaybackState.Playing;
-                });
-            }
+                return root.hasActiveMedia && root.activePlayer && root.activePlayer.playbackState === MprisPlaybackState.Playing;
+            });
         }
     }
 

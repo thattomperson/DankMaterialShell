@@ -110,6 +110,27 @@ PanelWindow {
         }
 
         Item {
+            id: topBarContent
+
+            readonly property int availableWidth: width
+            readonly property int leftSectionWidth: leftSection.width
+            readonly property int rightSectionWidth: rightSection.width
+            readonly property int clockWidth: clock.width
+            readonly property int mediaWidth: media.visible ? media.width : 0
+            readonly property int weatherWidth: weather.visible ? weather.width : 0
+            readonly property bool validLayout: availableWidth > 100 && leftSectionWidth > 0 && rightSectionWidth > 0
+            readonly property int clockLeftEdge: validLayout ? (availableWidth - clockWidth) / 2 : 0
+            readonly property int clockRightEdge: clockLeftEdge + clockWidth
+            readonly property int leftSectionRightEdge: leftSectionWidth
+            readonly property int mediaLeftEdge: clockLeftEdge - mediaWidth - Theme.spacingS
+            readonly property int rightSectionLeftEdge: availableWidth - rightSectionWidth
+            readonly property int leftToClockGap: validLayout ? Math.max(0, clockLeftEdge - leftSectionRightEdge) : 1000
+            readonly property int leftToMediaGap: (mediaWidth > 0 && validLayout) ? Math.max(0, mediaLeftEdge - leftSectionRightEdge) : leftToClockGap
+            readonly property int mediaToClockGap: mediaWidth > 0 ? Theme.spacingS : 0
+            readonly property int clockToRightGap: validLayout ? Math.max(0, rightSectionLeftEdge - clockRightEdge) : 1000
+            readonly property bool spacingTight: validLayout && (leftToMediaGap < 100 || clockToRightGap < 100)
+            readonly property bool overlapping: validLayout && (leftToMediaGap < 50 || clockToRightGap < 50)
+
             anchors.fill: parent
             anchors.leftMargin: Theme.spacingM
             anchors.rightMargin: Theme.spacingM
@@ -129,8 +150,9 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     isActive: appDrawerPopout ? appDrawerPopout.isVisible : false
                     onClicked: {
-                        if (appDrawerPopout) 
+                        if (appDrawerPopout)
                             appDrawerPopout.toggle();
+
                     }
                 }
 
@@ -140,8 +162,12 @@ PanelWindow {
                 }
 
                 FocusedApp {
+                    id: focusedApp
+
                     anchors.verticalCenter: parent.verticalCenter
                     visible: Prefs.showFocusedWindow
+                    compactMode: topBarContent.spacingTight
+                    availableWidth: topBarContent.leftToMediaGap
                 }
 
             }
@@ -150,16 +176,20 @@ PanelWindow {
                 id: clock
 
                 anchors.centerIn: parent
+                compactMode: topBarContent.overlapping
                 onClockClicked: {
                     centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                 }
             }
 
             Media {
+                id: media
+
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: clock.left
                 anchors.rightMargin: Theme.spacingS
                 visible: Prefs.showMusic && MprisController.activePlayer
+                compactMode: topBarContent.spacingTight || topBarContent.overlapping
                 onClicked: {
                     centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                 }
@@ -237,21 +267,31 @@ PanelWindow {
                 Loader {
                     anchors.verticalCenter: parent.verticalCenter
                     active: Prefs.showSystemResources
+
                     sourceComponent: Component {
                         CpuMonitor {
-                            toggleProcessList: () => processListPopout.toggle()
+                            toggleProcessList: () => {
+                                return processListPopout.toggle();
+                            }
                         }
+
                     }
+
                 }
 
                 Loader {
                     anchors.verticalCenter: parent.verticalCenter
                     active: Prefs.showSystemResources
+
                     sourceComponent: Component {
                         RamMonitor {
-                            toggleProcessList: () => processListPopout.toggle()
+                            toggleProcessList: () => {
+                                return processListPopout.toggle();
+                            }
                         }
+
                     }
+
                 }
 
                 NotificationCenterButton {

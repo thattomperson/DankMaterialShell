@@ -44,14 +44,17 @@ Rectangle {
                     anchors.fill: parent
                     radius: Theme.cornerRadiusSmall
                     color: trayItemArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
-                    
+
                     Behavior on color {
                         enabled: trayItemArea.containsMouse !== undefined
+
                         ColorAnimation {
                             duration: Theme.shortDuration
                             easing.type: Theme.standardEasing
                         }
+
                     }
+
                 }
 
                 Image {
@@ -66,23 +69,27 @@ Rectangle {
 
                 MouseArea {
                     id: trayItemArea
+
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: (mouse) => {
-                        if (!trayItem) return;
+                        if (!trayItem)
+                            return ;
 
                         if (mouse.button === Qt.LeftButton) {
                             if (!trayItem.onlyMenu)
                                 trayItem.activate();
+
                         } else if (mouse.button === Qt.RightButton) {
-                            if (trayItem && trayItem.hasMenu) {
+                            if (trayItem && trayItem.hasMenu)
                                 root.menuRequested(null, trayItem, mouse.x, mouse.y);
-                            }
+
                         }
                     }
                 }
+
             }
 
         }

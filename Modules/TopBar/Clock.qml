@@ -6,6 +6,7 @@ Rectangle {
     id: root
 
     property date currentDate: new Date()
+    property bool compactMode: false
 
     signal clockClicked()
 
@@ -36,6 +37,7 @@ Rectangle {
             font.pixelSize: Theme.fontSizeMedium
             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
             anchors.verticalCenter: parent.verticalCenter
+            visible: !compactMode
         }
 
         Text {
@@ -44,6 +46,7 @@ Rectangle {
             color: Theme.surfaceText
             font.weight: Font.Medium
             anchors.verticalCenter: parent.verticalCenter
+            visible: !compactMode
         }
 
     }
