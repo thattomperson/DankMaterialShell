@@ -671,6 +671,55 @@ PanelWindow {
                     visible: root.currentTab === "display"
                     spacing: Theme.spacingL
                     
+                    property var brightnessDebounceTimer: Timer {
+                        interval: BrightnessService.ddcAvailable ? 500 : 50
+                        repeat: false
+                        property int pendingValue: 0
+                        onTriggered: {
+                            BrightnessService.setBrightness(pendingValue);
+                        }
+                    }
+                    
+                    // Brightness Control
+                    Column {
+                        width: parent.width
+                        spacing: Theme.spacingS
+                        visible: BrightnessService.brightnessAvailable
+                        
+                        StyledText {
+                            text: "Brightness"
+                            font.pixelSize: Theme.fontSizeMedium
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
+                        }
+                        
+                        DankSlider {
+                            width: parent.width
+                            height: 24
+                            value: BrightnessService.brightnessLevel
+                            leftIcon: "brightness_low"
+                            rightIcon: "brightness_high"
+                            enabled: BrightnessService.brightnessAvailable
+                            showValue: true
+                            onSliderValueChanged: function(newValue) {
+                                parent.parent.brightnessDebounceTimer.pendingValue = newValue;
+                                parent.parent.brightnessDebounceTimer.restart();
+                            }
+                            onSliderDragFinished: function(finalValue) {
+                                parent.parent.brightnessDebounceTimer.stop();
+                                BrightnessService.setBrightness(finalValue);
+                            }
+                        }
+                        
+                        StyledText {
+                            text: "ddc changes can be slow to respond"
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceVariantText
+                            visible: BrightnessService.ddcAvailable && !BrightnessService.laptopBacklightAvailable
+                            anchors.horizontalCenter: parent.horizontalCenter
+                        }
+                    }
+                    
                     DankToggle {
                         width: parent.width
                         text: "Night Mode"

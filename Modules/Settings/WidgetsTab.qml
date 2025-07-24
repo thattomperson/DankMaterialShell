@@ -288,7 +288,7 @@ ScrollView {
                                 maximum: 100
                                 value: Math.round(Prefs.osLogoBrightness * 100)
                                 unit: ""
-                                showValue: false
+                                showValue: true
                                 onSliderValueChanged: (newValue) => {
                                     Prefs.setOSLogoBrightness(newValue / 100);
                                 }
@@ -313,7 +313,7 @@ ScrollView {
                                 maximum: 200
                                 value: Math.round(Prefs.osLogoContrast * 100)
                                 unit: ""
-                                showValue: false
+                                showValue: true
                                 onSliderValueChanged: (newValue) => {
                                     Prefs.setOSLogoContrast(newValue / 100);
                                 }

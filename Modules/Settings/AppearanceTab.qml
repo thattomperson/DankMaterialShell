@@ -145,7 +145,7 @@ ScrollView {
                         minimum: 0
                         maximum: 100
                         unit: ""
-                        showValue: false
+                        showValue: true
                         onSliderValueChanged: (newValue) => {
                             Prefs.setTopBarTransparency(newValue / 100);
                         }
@@ -170,7 +170,7 @@ ScrollView {
                         minimum: 0
                         maximum: 100
                         unit: ""
-                        showValue: false
+                        showValue: true
                         onSliderValueChanged: (newValue) => {
                             Prefs.setPopupTransparency(newValue / 100);
                         }
