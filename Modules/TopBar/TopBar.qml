@@ -113,23 +113,27 @@ PanelWindow {
             id: topBarContent
 
             readonly property int availableWidth: width
-            readonly property int leftSectionWidth: leftSection.width
+            // Use estimated fixed widths to break circular dependencies
+            readonly property int launcherButtonWidth: 40
+            readonly property int workspaceSwitcherWidth: 120  // Approximate
+            readonly property int focusedAppMaxWidth: focusedApp.visible ? (topBarContent.spacingTight ? 288 : 456) : 0
+            readonly property int estimatedLeftSectionWidth: launcherButtonWidth + workspaceSwitcherWidth + focusedAppMaxWidth + (Theme.spacingXS * 2)
             readonly property int rightSectionWidth: rightSection.width
             readonly property int clockWidth: clock.width
-            readonly property int mediaWidth: media.visible ? media.width : 0
+            readonly property int mediaMaxWidth: media.visible ? 280 : 0  // Normal max width
             readonly property int weatherWidth: weather.visible ? weather.width : 0
-            readonly property bool validLayout: availableWidth > 100 && leftSectionWidth > 0 && rightSectionWidth > 0
+            readonly property bool validLayout: availableWidth > 100 && estimatedLeftSectionWidth > 0 && rightSectionWidth > 0
             readonly property int clockLeftEdge: validLayout ? (availableWidth - clockWidth) / 2 : 0
             readonly property int clockRightEdge: clockLeftEdge + clockWidth
-            readonly property int leftSectionRightEdge: leftSectionWidth
-            readonly property int mediaLeftEdge: clockLeftEdge - mediaWidth - Theme.spacingS
+            readonly property int leftSectionRightEdge: estimatedLeftSectionWidth
+            readonly property int mediaLeftEdge: clockLeftEdge - mediaMaxWidth - Theme.spacingS
             readonly property int rightSectionLeftEdge: availableWidth - rightSectionWidth
             readonly property int leftToClockGap: validLayout ? Math.max(0, clockLeftEdge - leftSectionRightEdge) : 1000
-            readonly property int leftToMediaGap: (mediaWidth > 0 && validLayout) ? Math.max(0, mediaLeftEdge - leftSectionRightEdge) : leftToClockGap
-            readonly property int mediaToClockGap: mediaWidth > 0 ? Theme.spacingS : 0
+            readonly property int leftToMediaGap: (mediaMaxWidth > 0 && validLayout) ? Math.max(0, mediaLeftEdge - leftSectionRightEdge) : leftToClockGap
+            readonly property int mediaToClockGap: mediaMaxWidth > 0 ? Theme.spacingS : 0
             readonly property int clockToRightGap: validLayout ? Math.max(0, rightSectionLeftEdge - clockRightEdge) : 1000
-            readonly property bool spacingTight: validLayout && (leftToMediaGap < 100 || clockToRightGap < 100)
-            readonly property bool overlapping: validLayout && (leftToMediaGap < 50 || clockToRightGap < 50)
+            readonly property bool spacingTight: validLayout && (leftToMediaGap < 150 || clockToRightGap < 100)
+            readonly property bool overlapping: validLayout && (leftToMediaGap < 100 || clockToRightGap < 50)
 
             anchors.fill: parent
             anchors.leftMargin: Theme.spacingM
