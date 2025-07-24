@@ -17,6 +17,14 @@ Rectangle {
     radius: Theme.cornerRadius
     color: ramArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.08)
 
+    Component.onCompleted: {
+        SysMonitorService.addRef();
+    }
+
+    Component.onDestruction: {
+        SysMonitorService.removeRef();
+    }
+
     MouseArea {
         id: ramArea
 
@@ -24,7 +32,7 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            ProcessMonitorService.setSortBy("memory");
+            SysMonitorService.setSortBy("memory");
             if (root.toggleProcessList)
                 root.toggleProcessList();
         }
@@ -38,10 +46,10 @@ Rectangle {
             name: "developer_board"
             size: Theme.iconSize - 8
             color: {
-                if (SystemMonitorService.memoryUsage > 90)
+                if (SysMonitorService.memoryUsage > 90)
                     return Theme.error;
 
-                if (SystemMonitorService.memoryUsage > 75)
+                if (SysMonitorService.memoryUsage > 75)
                     return Theme.warning;
 
                 return Theme.surfaceText;
@@ -50,7 +58,7 @@ Rectangle {
         }
 
         Text {
-            text: (SystemMonitorService.memoryUsage || 0).toFixed(0) + "%"
+            text: (SysMonitorService.memoryUsage || 0).toFixed(0) + "%"
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
             color: Theme.surfaceText

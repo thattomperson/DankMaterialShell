@@ -39,7 +39,7 @@ PanelWindow {
     visible: isVisible
     
     Ref {
-        service: ProcessMonitorService
+        service: SysMonitorService
     }
     
     implicitWidth: 600

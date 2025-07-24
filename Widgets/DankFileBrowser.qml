@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtCore
@@ -28,6 +30,12 @@ DankModal {
         showFiles: true
         showDirs: true
         folder: currentPath ? "file://" + currentPath : "file://" + homeDir
+    }
+    
+    function isImageFile(fileName) {
+        if (!fileName) return false
+        var ext = fileName.toLowerCase().split('.').pop()
+        return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(ext)
     }
     
     function getLastPath() {
@@ -69,20 +77,13 @@ DankModal {
     
     onVisibleChanged: {
         if (visible) {
-            // Use last path or home directory when opening
             var startPath = getLastPath();
-            console.log("Opening file browser, setting path to:", startPath);
             currentPath = startPath;
         }
     }
     
     onCurrentPathChanged: {
-        console.log("Current path changed to:", currentPath);
-        console.log("Model count:", folderModel.count);
-        // Log first few files to debug
-        for (var i = 0; i < Math.min(3, folderModel.count); i++) {
-            console.log("File", i, ":", folderModel.get(i, "fileName"));
-        }
+        // Path changed, model will update automatically
     }
     
     function navigateUp() {
@@ -90,20 +91,16 @@ DankModal {
         
         // Don't go above home directory
         if (path === homeDir) {
-            console.log("Already at home directory, can't go up");
             return;
         }
         
         var lastSlash = path.lastIndexOf('/');
         if (lastSlash > 0) {
             var newPath = path.substring(0, lastSlash);
-            // Make sure we don't go above home (check if newPath starts with homeDir)
             if (newPath.startsWith(homeDir)) {
-                console.log("Navigating up from", path, "to", newPath);
                 currentPath = newPath;
                 saveLastPath(newPath);
             } else {
-                console.log("Would go above home directory, stopping at", homeDir);
                 currentPath = homeDir;
                 saveLastPath(homeDir);
             }
@@ -207,10 +204,18 @@ DankModal {
                     
                     cellWidth: 150
                     cellHeight: 130
+                    cacheBuffer: 260  // Only cache ~2 rows worth of items
                     
                     model: folderModel
 
                     delegate: StyledRect {
+                        id: delegateRoot
+                        
+                        required property bool fileIsDir
+                        required property string filePath 
+                        required property string fileName
+                        required property url fileURL
+                        
                         width: 140
                         height: 120
                         radius: Theme.cornerRadius
@@ -228,26 +233,34 @@ DankModal {
                                 height: 60
                                 anchors.horizontalCenter: parent.horizontalCenter
 
-                                Image {
+                                CachingImage {
                                     anchors.fill: parent
-                                    source: !model.fileIsDir ? model.fileURL : ""
+                                    imagePath: !delegateRoot.fileIsDir ? delegateRoot.filePath : ""
                                     fillMode: Image.PreserveAspectCrop
-                                    visible: !model.fileIsDir
-                                    asynchronous: true
+                                    visible: !delegateRoot.fileIsDir && isImageFile(delegateRoot.fileName)
+                                    maxCacheSize: 80
+                                }
+                                
+                                DankIcon {
+                                    anchors.centerIn: parent
+                                    name: "description"
+                                    size: Theme.iconSizeLarge
+                                    color: Theme.primary
+                                    visible: !delegateRoot.fileIsDir && !isImageFile(delegateRoot.fileName)
                                 }
 
                                 DankIcon {
                                     anchors.centerIn: parent
-                                    name: model.fileIsDir ? "folder" : "description"
+                                    name: "folder"
                                     size: Theme.iconSizeLarge
                                     color: Theme.primary
-                                    visible: model.fileIsDir
+                                    visible: delegateRoot.fileIsDir
                                 }
                             }
 
                             // File name
                             StyledText {
-                                text: model.fileName || ""
+                                text: delegateRoot.fileName || ""
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.surfaceText
                                 width: 120
@@ -266,10 +279,10 @@ DankModal {
                             cursorShape: Qt.PointingHandCursor
 
                             onClicked: {
-                                if (model.fileIsDir) {
-                                    navigateTo(model.filePath);
+                                if (delegateRoot.fileIsDir) {
+                                    navigateTo(delegateRoot.filePath);
                                 } else {
-                                    fileSelected(model.filePath);
+                                    fileSelected(delegateRoot.filePath);
                                 }
                             }
                         }

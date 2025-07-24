@@ -27,12 +27,15 @@ Item {
 
         StateLayer {
             visible: toggle.text
+            disabled: !toggle.enabled
             stateColor: Theme.primary
             cornerRadius: parent.radius
             onClicked: {
-                toggle.checked = !toggle.checked;
-                toggle.clicked();
-                toggle.toggled(toggle.checked);
+                if (toggle.enabled) {
+                    toggle.checked = !toggle.checked;
+                    toggle.clicked();
+                    toggle.toggled(toggle.checked);
+                }
             }
         }
 
@@ -57,6 +60,7 @@ Item {
                 text: toggle.text
                 font.pixelSize: Appearance.fontSize.normal
                 font.weight: Font.Medium
+                opacity: toggle.enabled ? 1 : 0.4
             }
 
             StyledText {
@@ -81,8 +85,8 @@ Item {
         anchors.rightMargin: toggle.text ? Theme.spacingM : 0
         anchors.verticalCenter: parent.verticalCenter
         radius: height / 2
-        color: toggle.checked ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-        opacity: toggle.toggling ? 0.6 : 1
+        color: (toggle.checked && toggle.enabled) ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+        opacity: toggle.toggling ? 0.6 : (toggle.enabled ? 1 : 0.4)
 
         StyledRect {
             id: toggleHandle
@@ -92,7 +96,7 @@ Item {
             radius: 10
             color: Theme.surface
             anchors.verticalCenter: parent.verticalCenter
-            x: toggle.checked ? parent.width - width - 2 : 2
+            x: (toggle.checked && toggle.enabled) ? parent.width - width - 2 : 2
 
             StyledRect {
                 anchors.centerIn: parent
@@ -121,9 +125,11 @@ Item {
             stateColor: Theme.primary
             cornerRadius: parent.radius
             onClicked: {
-                toggle.checked = !toggle.checked;
-                toggle.clicked();
-                toggle.toggled(toggle.checked);
+                if (toggle.enabled) {
+                    toggle.checked = !toggle.checked;
+                    toggle.clicked();
+                    toggle.toggled(toggle.checked);
+                }
             }
         }
 

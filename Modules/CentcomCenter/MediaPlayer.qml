@@ -140,6 +140,7 @@ Rectangle {
                             }
                             fillMode: Image.PreserveAspectCrop
                             smooth: true
+                            cache: true
                         }
 
                         Rectangle {

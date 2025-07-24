@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Effects
 import Quickshell
 import qs.Common
+import qs.Services
 import qs.Widgets
 
 Column {
@@ -36,12 +37,13 @@ Column {
                 border.color: Theme.outline
                 border.width: 1
 
-                Image {
+                CachingImage {
                     anchors.fill: parent
                     anchors.margins: 1
-                    source: Prefs.wallpaperPath ? "file://" + Prefs.wallpaperPath : ""
+                    imagePath: Prefs.wallpaperPath || ""
                     fillMode: Image.PreserveAspectCrop
                     visible: Prefs.wallpaperPath !== ""
+                    maxCacheSize: 120
                     layer.enabled: true
                     layer.effect: MultiEffect {
                         maskEnabled: true
@@ -204,13 +206,24 @@ Column {
             DankToggle {
                 id: toggle
                 anchors.verticalCenter: parent.verticalCenter
-                checked: Prefs.wallpaperDynamicTheming
-                onCheckedChanged: {
-                    if (activeFocus) {
-                        Prefs.setWallpaperDynamicTheming(checked);
+                checked: Theme.isDynamicTheme
+                enabled: ToastService.wallpaperErrorStatus !== "matugen_missing"
+                onToggled: (toggled) => {
+                    if (toggled) {
+                        Theme.switchTheme(10, true)
+                    } else {
+                        Theme.switchTheme(0)
                     }
                 }
             }
+        }
+        
+        StyledText {
+            text: "matugen not detected"
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.error
+            visible: ToastService.wallpaperErrorStatus === "matugen_missing"
+            width: parent.width
         }
     }
 
@@ -218,7 +231,7 @@ Column {
         id: wallpaperBrowserLoader
         active: false
         
-        FileBrowser {
+        DankFileBrowser {
             id: wallpaperBrowser
             browserTitle: "Select Wallpaper"
             browserIcon: "wallpaper"

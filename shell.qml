@@ -11,6 +11,7 @@ import qs.Modules.Settings
 import qs.Modules.ProcessList
 import qs.Modules.ControlCenter.Network
 import qs.Modals
+import qs.Services
 
 ShellRoot {
     id: root
@@ -90,6 +91,10 @@ ShellRoot {
         id: spotlightModal
     }
 
+    ClipboardHistoryModal {
+        id: clipboardHistoryModalPopup
+    }
+
     LazyLoader {
         id: processListModalLoader
         active: false
@@ -125,8 +130,8 @@ ShellRoot {
         target: "processlist"
     }
 
-    Toast {
-        id: toastWidget
-    }
+    // Toast {
+    //     id: toastWidget
+    // }
 
 }

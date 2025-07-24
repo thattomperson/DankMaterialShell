@@ -22,30 +22,43 @@ Rectangle {
         Repeater {
             model: SystemTray.items
 
-            delegate: Rectangle {
+            delegate: Item {
                 property var trayItem: modelData
+                property string iconSource: {
+                    let icon = trayItem && trayItem.icon;
+                    if (typeof icon === 'string' || icon instanceof String) {
+                        if (icon.includes("?path=")) {
+                            const [name, path] = icon.split("?path=");
+                            const fileName = name.substring(name.lastIndexOf("/") + 1);
+                            return `file://${path}/${fileName}`;
+                        }
+                        return icon;
+                    }
+                    return "";
+                }
 
                 width: 24
                 height: 24
-                radius: Theme.cornerRadiusSmall
-                color: trayItemArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: Theme.cornerRadiusSmall
+                    color: trayItemArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+                    
+                    Behavior on color {
+                        enabled: trayItemArea.containsMouse !== undefined
+                        ColorAnimation {
+                            duration: Theme.shortDuration
+                            easing.type: Theme.standardEasing
+                        }
+                    }
+                }
 
                 Image {
                     anchors.centerIn: parent
                     width: 18
                     height: 18
-                    source: {
-                        let icon = trayItem && trayItem.icon;
-                        if (typeof icon === 'string' || icon instanceof String) {
-                            if (icon.includes("?path=")) {
-                                const [name, path] = icon.split("?path=");
-                                const fileName = name.substring(name.lastIndexOf("/") + 1);
-                                return `file://${path}/${fileName}`;
-                            }
-                            return icon;
-                        }
-                        return ""; // Return empty string if icon is not a string
-                    }
+                    source: parent.iconSource
                     asynchronous: true
                     smooth: true
                     fillMode: Image.PreserveAspectFit
@@ -53,51 +66,23 @@ Rectangle {
 
                 MouseArea {
                     id: trayItemArea
-
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: (mouse) => {
-                        if (!trayItem)
-                            return ;
+                        if (!trayItem) return;
 
                         if (mouse.button === Qt.LeftButton) {
                             if (!trayItem.onlyMenu)
                                 trayItem.activate();
-
                         } else if (mouse.button === Qt.RightButton) {
-                            if (trayItem && trayItem.hasMenu)
-                                customTrayMenu.showMenu(mouse.x, mouse.y);
-
+                            if (trayItem && trayItem.hasMenu) {
+                                root.menuRequested(null, trayItem, mouse.x, mouse.y);
+                            }
                         }
                     }
                 }
-
-                QtObject {
-                    id: customTrayMenu
-
-                    property bool menuVisible: false
-
-                    function showMenu(x, y) {
-                        root.menuRequested(customTrayMenu, trayItem, x, y);
-                        menuVisible = true;
-                    }
-
-                    function hideMenu() {
-                        menuVisible = false;
-                    }
-
-                }
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Theme.shortDuration
-                        easing.type: Theme.standardEasing
-                    }
-
-                }
-
             }
 
         }

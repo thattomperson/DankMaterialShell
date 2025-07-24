@@ -270,7 +270,13 @@ Column {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    Theme.switchTheme(10, true);
+                    if (ToastService.wallpaperErrorStatus === "matugen_missing") {
+                        ToastService.showError("matugen not found - install matugen package for dynamic theming");
+                    } else if (ToastService.wallpaperErrorStatus === "error") {
+                        ToastService.showError("Wallpaper processing failed - check wallpaper path");
+                    } else {
+                        Theme.switchTheme(10, true);
+                    }
                 }
             }
 

@@ -19,14 +19,11 @@ DankModal {
 
     function show() {
         processListModal.visible = true;
-        SystemMonitorService.enableDetailedMonitoring(true);
-        SystemMonitorService.updateSystemInfo();
         UserInfoService.getUptime();
     }
 
     function hide() {
         processListModal.visible = false;
-        SystemMonitorService.enableDetailedMonitoring(false);
         // Close any open context menus
         if (processContextMenu.visible) {
             processContextMenu.close();
@@ -49,7 +46,7 @@ DankModal {
     enableShadow: true
     
     Ref {
-        service: ProcessMonitorService
+        service: SysMonitorService
     }
     
 
@@ -100,7 +97,7 @@ DankModal {
 
                     StyledText {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: ProcessMonitorService.processes.length + " processes"
+                        text: SysMonitorService.processes.length + " processes"
                         font.pixelSize: Theme.fontSizeMedium
                         color: Theme.surfaceVariantText
                         width: Math.min(implicitWidth, 120)
@@ -221,6 +218,7 @@ DankModal {
                         id: processesTab
 
                         anchors.fill: parent
+                        active: currentTab === 0
                         visible: currentTab === 0
                         opacity: currentTab === 0 ? 1 : 0
                         sourceComponent: processesTabComponent
@@ -239,6 +237,7 @@ DankModal {
                         id: performanceTab
 
                         anchors.fill: parent
+                        active: currentTab === 1
                         visible: currentTab === 1
                         opacity: currentTab === 1 ? 1 : 0
                         sourceComponent: performanceTabComponent
@@ -257,6 +256,7 @@ DankModal {
                         id: systemTab
 
                         anchors.fill: parent
+                        active: currentTab === 2
                         visible: currentTab === 2
                         opacity: currentTab === 2 ? 1 : 0
                         sourceComponent: systemTabComponent

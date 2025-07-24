@@ -24,12 +24,10 @@ Item {
         onExited: (exitCode) => {
             root.cavaAvailable = exitCode === 0;
             if (root.cavaAvailable) {
-                console.log("cava found - enabling real audio visualization");
                 cavaProcess.running = Qt.binding(() => {
                     return root.hasActiveMedia && root.activePlayer && root.activePlayer.playbackState === MprisPlaybackState.Playing;
                 });
             } else {
-                console.log("cava not found - using fallback animation");
                 fallbackTimer.running = Qt.binding(() => {
                     return root.hasActiveMedia && root.activePlayer && root.activePlayer.playbackState === MprisPlaybackState.Playing;
                 });

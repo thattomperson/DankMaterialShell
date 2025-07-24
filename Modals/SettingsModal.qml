@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import qs.Common
@@ -76,95 +78,90 @@ DankModal {
 
             }
 
-            // Settings sections
-            ScrollView {
-                id: settingsScrollView
-
+            // Tabbed Settings
+            Column {
                 width: parent.width
                 height: parent.height - 50
-                clip: true
-                ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-
-                Column {
-                    id: settingsColumn
-
-                    width: settingsScrollView.width - 20
-                    spacing: Theme.spacingL
-                    bottomPadding: Theme.spacingL
-
-                    // Profile Settings
-                    SettingsSection {
-                        title: "Profile"
-                        iconName: "person"
-
-                        content: ProfileTab {
-                        }
-
-                    }
-
-                    // Wallpaper Settings
-                    SettingsSection {
-                        title: "Wallpaper"
-                        iconName: "wallpaper"
-
-                        content: WallpaperTab {
-                        }
-
-                    }
-
-                    // Clock Settings
-                    SettingsSection {
-                        title: "Clock & Time"
-                        iconName: "schedule"
-
-                        content: ClockTab {
-                        }
-
-                    }
-
-                    // Weather Settings
-                    SettingsSection {
-                        title: "Weather"
-                        iconName: "wb_sunny"
-
-                        content: WeatherTab {
-                        }
-
-                    }
-
-                    // Widget Visibility Settings
-                    SettingsSection {
-                        title: "Top Bar Widgets"
-                        iconName: "widgets"
-
-                        content: WidgetsTab {
-                        }
-
-                    }
-
-                    // Workspace Settings
-                    SettingsSection {
-                        title: "Workspaces"
-                        iconName: "tab"
-
-                        content: WorkspaceTab {
-                        }
-
-                    }
-
-                    // Display Settings
-                    SettingsSection {
-                        title: "Display & Appearance"
-                        iconName: "palette"
-
-                        content: DisplayTab {
-                        }
-
-                    }
-
+                spacing: 0
+                
+                DankTabBar {
+                    id: settingsTabBar
+                    
+                    width: parent.width
+                    
+                    model: [
+                        { text: "Personalization", icon: "person" },
+                        { text: "Time & Weather", icon: "schedule" },
+                        { text: "Widgets", icon: "widgets" },
+                        { text: "Appearance", icon: "palette" }
+                    ]
                 }
-
+                
+                Item {
+                    width: parent.width
+                    height: parent.height - settingsTabBar.height
+                    
+                    // Personalization Tab
+                    Loader {
+                        anchors.fill: parent
+                        active: settingsTabBar.currentIndex === 0
+                        visible: active
+                        asynchronous: true
+                        sourceComponent: Component {
+                            PersonalizationTab {}
+                        }
+                    }
+                    
+                    // Time & Weather Tab
+                    Loader {
+                        anchors.fill: parent
+                        active: settingsTabBar.currentIndex === 1
+                        visible: active
+                        asynchronous: true
+                        sourceComponent: Component {
+                            Column {
+                                spacing: Theme.spacingL
+                                topPadding: Theme.spacingM
+                                
+                                ClockTab {
+                                    width: parent.width
+                                }
+                                
+                                Rectangle {
+                                    width: parent.width
+                                    height: Theme.spacingL
+                                    color: "transparent"
+                                }
+                                
+                                WeatherTab {
+                                    width: parent.width
+                                }
+                            }
+                        }
+                    }
+                    
+                    // System Tab
+                    Loader {
+                        anchors.fill: parent
+                        active: settingsTabBar.currentIndex === 2
+                        visible: active
+                        asynchronous: true
+                        sourceComponent: Component {
+                            SystemTab {}
+                        }
+                    }
+                    
+                    // Appearance Tab
+                    Loader {
+                        anchors.fill: parent
+                        active: settingsTabBar.currentIndex === 3
+                        visible: active
+                        asynchronous: true
+                        sourceComponent: Component {
+                            AppearanceTab {}
+                        }
+                    }
+                }
             }
 
         }

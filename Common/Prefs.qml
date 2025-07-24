@@ -41,7 +41,6 @@ Singleton {
     property real osLogoBrightness: 0.5
     property real osLogoContrast: 1.0
     property string wallpaperPath: ""
-    property string wallpaperDirectory: StandardPaths.writableLocation(StandardPaths.PicturesLocation) + "/Wallpapers"
     property bool wallpaperDynamicTheming: true
     property string wallpaperLastPath: ""
     property string profileLastPath: ""
@@ -83,7 +82,6 @@ Singleton {
                 osLogoBrightness = settings.osLogoBrightness !== undefined ? settings.osLogoBrightness : 0.5;
                 osLogoContrast = settings.osLogoContrast !== undefined ? settings.osLogoContrast : 1.0;
                 wallpaperPath = settings.wallpaperPath !== undefined ? settings.wallpaperPath : "";
-                wallpaperDirectory = settings.wallpaperDirectory !== undefined ? settings.wallpaperDirectory : StandardPaths.writableLocation(StandardPaths.PicturesLocation) + "/Wallpapers";
                 wallpaperDynamicTheming = settings.wallpaperDynamicTheming !== undefined ? settings.wallpaperDynamicTheming : true;
                 wallpaperLastPath = settings.wallpaperLastPath !== undefined ? settings.wallpaperLastPath : "";
                 profileLastPath = settings.profileLastPath !== undefined ? settings.profileLastPath : "";
@@ -130,7 +128,6 @@ Singleton {
             "osLogoBrightness": osLogoBrightness,
             "osLogoContrast": osLogoContrast,
             "wallpaperPath": wallpaperPath,
-            "wallpaperDirectory": wallpaperDirectory,
             "wallpaperDynamicTheming": wallpaperDynamicTheming,
             "wallpaperLastPath": wallpaperLastPath,
             "profileLastPath": profileLastPath
@@ -439,14 +436,8 @@ gtk-application-prefer-dark-theme=true`;
         
         // Trigger dynamic theming if enabled
         if (wallpaperDynamicTheming && path && typeof Theme !== "undefined") {
-            console.log("Wallpaper changed, triggering dynamic theme extraction");
             Theme.switchTheme(themeIndex, true, true);
         }
-    }
-
-    function setWallpaperDirectory(directory) {
-        wallpaperDirectory = directory;
-        saveSettings();
     }
 
     function setWallpaperDynamicTheming(enabled) {
@@ -455,7 +446,6 @@ gtk-application-prefer-dark-theme=true`;
         
         // If enabled and we have a wallpaper, trigger dynamic theming
         if (enabled && wallpaperPath && typeof Theme !== "undefined") {
-            console.log("Dynamic theming enabled, triggering theme extraction");
             Theme.switchTheme(themeIndex, true, true);
         }
     }
@@ -471,11 +461,7 @@ gtk-application-prefer-dark-theme=true`;
     }
 
     Component.onCompleted: loadSettings()
-    onShowSystemResourcesChanged: {
-        if (typeof SystemMonitorService !== 'undefined')
-            SystemMonitorService.enableTopBarMonitoring(showSystemResources);
-
-    }
+    
 
     FileView {
         id: settingsFile
@@ -529,7 +515,7 @@ gtk-application-prefer-dark-theme=true`;
         id: qtThemeProcess
         running: false
         onExited: (exitCode) => {
-            console.log("Qt theme reload signal sent, exit code:", exitCode);
+            // Qt theme reload signal sent
         }
     }
     
@@ -587,5 +573,31 @@ gtk-application-prefer-dark-theme=true`;
         }
     }
 
+    IpcHandler {
+        target: "wallpaper"
 
+        function get(): string {
+            return root.wallpaperPath || ""
+        }
+
+        function set(path: string): string {
+            if (!path) {
+                return "ERROR: No path provided"
+            }
+            
+            var absolutePath = path.startsWith("/") ? path : StandardPaths.writableLocation(StandardPaths.HomeLocation) + "/" + path
+            
+            try {
+                root.setWallpaper(absolutePath)
+                return "SUCCESS: Wallpaper set to " + absolutePath
+            } catch (e) {
+                return "ERROR: Failed to set wallpaper: " + e.toString()
+            }
+        }
+
+        function clear(): string {
+            root.setWallpaper("")
+            return "SUCCESS: Wallpaper cleared"
+        }
+    }
 }

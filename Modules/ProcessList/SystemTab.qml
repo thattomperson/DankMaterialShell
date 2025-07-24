@@ -10,6 +10,14 @@ ScrollView {
     ScrollBar.vertical.policy: ScrollBar.AsNeeded
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
+    Component.onCompleted: {
+        SysMonitorService.addRef();
+    }
+
+    Component.onDestruction: {
+        SysMonitorService.removeRef();
+    }
+
     Column {
         width: parent.width
         spacing: Theme.spacingM
@@ -44,26 +52,26 @@ ScrollView {
                         spacing: Theme.spacingS
 
                         Text {
-                            text: SystemMonitorService.hostname
+                            text: SysMonitorService.hostname
                             font.pixelSize: Theme.fontSizeXLarge
                             font.weight: Font.Light
                             color: Theme.surfaceText
                         }
 
                         Text {
-                            text: SystemMonitorService.distribution + " • " + SystemMonitorService.architecture + " • " + SystemMonitorService.kernelVersion
+                            text: SysMonitorService.distribution + " • " + SysMonitorService.architecture + " • " + SysMonitorService.kernelVersion
                             font.pixelSize: Theme.fontSizeMedium
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                         }
 
                         Text {
-                            text: "Up " + UserInfoService.uptime + " • Boot: " + SystemMonitorService.bootTime
+                            text: "Up " + UserInfoService.uptime + " • Boot: " + SysMonitorService.bootTime
                             font.pixelSize: Theme.fontSizeSmall
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.6)
                         }
 
                         Text {
-                            text: "Load: " + SystemMonitorService.loadAverage + " • " + SystemMonitorService.processCount + " processes, " + SystemMonitorService.threadCount + " threads"
+                            text: "Load: " + SysMonitorService.loadAverage + " • " + SysMonitorService.processCount + " processes, " + SysMonitorService.threadCount + " threads"
                             font.pixelSize: Theme.fontSizeSmall
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.6)
                         }
@@ -87,7 +95,7 @@ ScrollView {
                         spacing: Theme.spacingS
 
                         Text {
-                            text: SystemMonitorService.cpuModel
+                            text: SysMonitorService.cpuModel
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Medium
                             color: Theme.surfaceText
@@ -96,7 +104,7 @@ ScrollView {
                         }
 
                         Text {
-                            text: SystemMonitorService.motherboard
+                            text: SysMonitorService.motherboard
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Medium
                             color: Theme.surfaceText
@@ -111,7 +119,7 @@ ScrollView {
                         spacing: Theme.spacingS
 
                         Text {
-                            text: SystemMonitorService.formatMemory(SystemMonitorService.totalMemory) + " Memory"
+                            text: SysMonitorService.formatMemory(SysMonitorService.totalMemoryMB) + " Memory"
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Medium
                             color: Theme.surfaceText
@@ -120,7 +128,7 @@ ScrollView {
                         }
 
                         Text {
-                            text: "BIOS " + SystemMonitorService.biosVersion
+                            text: "BIOS " + SysMonitorService.biosVersion
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Medium
                             color: Theme.surfaceText
@@ -173,13 +181,6 @@ ScrollView {
 
                 }
 
-                Text {
-                    text: "I/O Scheduler: " + SystemMonitorService.scheduler
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.surfaceText
-                    width: parent.width
-                    elide: Text.ElideRight
-                }
 
                 Column {
                     width: parent.width
@@ -249,7 +250,7 @@ ScrollView {
                         Repeater {
                             id: diskMountRepeater
 
-                            model: SystemMonitorService.diskMounts
+                            model: SysMonitorService.diskMounts
 
                             Rectangle {
                                 width: parent.width

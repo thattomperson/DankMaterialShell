@@ -43,21 +43,21 @@ Column {
                     visible: parent.hasImage
                 }
 
-                Image {
+                CachingImage {
                     id: avatarImageSource
 
-                    source: {
+                    imagePath: {
                         if (Prefs.profileImage === "")
                             return "";
 
                         if (Prefs.profileImage.startsWith("/"))
-                            return "file://" + Prefs.profileImage;
+                            return Prefs.profileImage;
 
                         return Prefs.profileImage;
                     }
                     smooth: true
                     asynchronous: true
-                    mipmap: true
+                    maxCacheSize: 80
                     cache: true
                     visible: false
                 }
@@ -223,7 +223,7 @@ Column {
         id: profileBrowserLoader
         active: false
         
-        FileBrowser {
+        DankFileBrowser {
             id: profileBrowser
             browserTitle: "Select Profile Image"
             browserIcon: "person"

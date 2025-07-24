@@ -7,6 +7,18 @@ Column {
     anchors.fill: parent
     spacing: Theme.spacingM
 
+    Component.onCompleted: {
+        SysMonitorService.addRef();
+        SysMonitorService.addRef();
+        // Trigger immediate updates for both services
+        SysMonitorService.updateSystemStats();
+    }
+
+    Component.onDestruction: {
+        SysMonitorService.removeRef();
+        SysMonitorService.removeRef();
+    }
+
     function formatNetworkSpeed(bytesPerSec) {
         if (bytesPerSec < 1024)
             return bytesPerSec.toFixed(0) + " B/s";
@@ -61,7 +73,7 @@ Column {
                     anchors.verticalCenter: parent.verticalCenter
 
                     Text {
-                        text: ProcessMonitorService.totalCpuUsage.toFixed(1) + "%"
+                        text: SysMonitorService.totalCpuUsage.toFixed(1) + "%"
                         font.pixelSize: Theme.fontSizeSmall
                         font.weight: Font.Bold
                         color: Theme.primary
@@ -76,7 +88,7 @@ Column {
                 }
 
                 Text {
-                    text: ProcessMonitorService.cpuCount + " cores"
+                    text: SysMonitorService.cpuCount + " cores"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                     anchors.verticalCenter: parent.verticalCenter
@@ -96,7 +108,7 @@ Column {
                     spacing: 6
 
                     Repeater {
-                        model: ProcessMonitorService.perCoreCpuUsage.length
+                        model: SysMonitorService.perCoreCpuUsage.length
 
                         Row {
                             width: parent.width
@@ -119,11 +131,11 @@ Column {
                                 anchors.verticalCenter: parent.verticalCenter
 
                                 Rectangle {
-                                    width: parent.width * Math.min(1, ProcessMonitorService.perCoreCpuUsage[index] / 100)
+                                    width: parent.width * Math.min(1, SysMonitorService.perCoreCpuUsage[index] / 100)
                                     height: parent.height
                                     radius: parent.radius
                                     color: {
-                                        const usage = ProcessMonitorService.perCoreCpuUsage[index];
+                                        const usage = SysMonitorService.perCoreCpuUsage[index];
                                         if (usage > 80)
                                             return Theme.error;
 
@@ -145,7 +157,7 @@ Column {
                             }
 
                             Text {
-                                text: ProcessMonitorService.perCoreCpuUsage[index] ? ProcessMonitorService.perCoreCpuUsage[index].toFixed(0) + "%" : "0%"
+                                text: SysMonitorService.perCoreCpuUsage[index] ? SysMonitorService.perCoreCpuUsage[index].toFixed(0) + "%" : "0%"
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.Medium
                                 color: Theme.surfaceText
@@ -191,7 +203,7 @@ Column {
                 }
 
                 Text {
-                    text: ProcessMonitorService.formatSystemMemory(ProcessMonitorService.usedMemoryKB) + " / " + ProcessMonitorService.formatSystemMemory(ProcessMonitorService.totalMemoryKB)
+                    text: SysMonitorService.formatSystemMemory(SysMonitorService.usedMemoryKB) + " / " + SysMonitorService.formatSystemMemory(SysMonitorService.totalMemoryKB)
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                 }
@@ -215,11 +227,11 @@ Column {
                     color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
 
                     Rectangle {
-                        width: ProcessMonitorService.totalMemoryKB > 0 ? parent.width * (ProcessMonitorService.usedMemoryKB / ProcessMonitorService.totalMemoryKB) : 0
+                        width: SysMonitorService.totalMemoryKB > 0 ? parent.width * (SysMonitorService.usedMemoryKB / SysMonitorService.totalMemoryKB) : 0
                         height: parent.height
                         radius: parent.radius
                         color: {
-                            const usage = ProcessMonitorService.totalMemoryKB > 0 ? (ProcessMonitorService.usedMemoryKB / ProcessMonitorService.totalMemoryKB) : 0;
+                            const usage = SysMonitorService.totalMemoryKB > 0 ? (SysMonitorService.usedMemoryKB / SysMonitorService.totalMemoryKB) : 0;
                             if (usage > 0.9)
                                 return Theme.error;
 
@@ -241,7 +253,7 @@ Column {
                 }
 
                 Text {
-                    text: ProcessMonitorService.totalMemoryKB > 0 ? ((ProcessMonitorService.usedMemoryKB / ProcessMonitorService.totalMemoryKB) * 100).toFixed(1) + "% used" : "No data"
+                    text: SysMonitorService.totalMemoryKB > 0 ? ((SysMonitorService.usedMemoryKB / SysMonitorService.totalMemoryKB) * 100).toFixed(1) + "% used" : "No data"
                     font.pixelSize: Theme.fontSizeSmall
                     font.weight: Font.Bold
                     color: Theme.surfaceText
@@ -266,8 +278,8 @@ Column {
                 }
 
                 Text {
-                    text: ProcessMonitorService.totalSwapKB > 0 ? 
-                        ProcessMonitorService.formatSystemMemory(ProcessMonitorService.usedSwapKB) + " / " + ProcessMonitorService.formatSystemMemory(ProcessMonitorService.totalSwapKB) :
+                    text: SysMonitorService.totalSwapKB > 0 ? 
+                        SysMonitorService.formatSystemMemory(SysMonitorService.usedSwapKB) + " / " + SysMonitorService.formatSystemMemory(SysMonitorService.totalSwapKB) :
                         "No swap configured"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
@@ -292,12 +304,12 @@ Column {
                     color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
 
                     Rectangle {
-                        width: ProcessMonitorService.totalSwapKB > 0 ? parent.width * (ProcessMonitorService.usedSwapKB / ProcessMonitorService.totalSwapKB) : 0
+                        width: SysMonitorService.totalSwapKB > 0 ? parent.width * (SysMonitorService.usedSwapKB / SysMonitorService.totalSwapKB) : 0
                         height: parent.height
                         radius: parent.radius
                         color: {
-                            if (!ProcessMonitorService.totalSwapKB) return Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3);
-                            const usage = ProcessMonitorService.usedSwapKB / ProcessMonitorService.totalSwapKB;
+                            if (!SysMonitorService.totalSwapKB) return Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3);
+                            const usage = SysMonitorService.usedSwapKB / SysMonitorService.totalSwapKB;
                             if (usage > 0.9) return Theme.error;
                             if (usage > 0.7) return Theme.warning; 
                             return Theme.info;
@@ -312,7 +324,7 @@ Column {
                 }
 
                 Text {
-                    text: ProcessMonitorService.totalSwapKB > 0 ? ((ProcessMonitorService.usedSwapKB / ProcessMonitorService.totalSwapKB) * 100).toFixed(1) + "% used" : "Not available"
+                    text: SysMonitorService.totalSwapKB > 0 ? ((SysMonitorService.usedSwapKB / SysMonitorService.totalSwapKB) * 100).toFixed(1) + "% used" : "Not available"
                     font.pixelSize: Theme.fontSizeSmall
                     font.weight: Font.Bold
                     color: Theme.surfaceText
@@ -363,7 +375,7 @@ Column {
                         }
 
                         Text {
-                            text: formatNetworkSpeed(ProcessMonitorService.networkRxRate)
+                            text: SysMonitorService.networkRxRate > 0 ? formatNetworkSpeed(SysMonitorService.networkRxRate) : "0 B/s"
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Bold
                             color: Theme.surfaceText
@@ -381,7 +393,7 @@ Column {
                         }
 
                         Text {
-                            text: formatNetworkSpeed(ProcessMonitorService.networkTxRate)
+                            text: SysMonitorService.networkTxRate > 0 ? formatNetworkSpeed(SysMonitorService.networkTxRate) : "0 B/s"
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Bold
                             color: Theme.surfaceText
@@ -429,7 +441,7 @@ Column {
                         }
 
                         Text {
-                            text: formatDiskSpeed(ProcessMonitorService.diskReadRate)
+                            text: formatDiskSpeed(SysMonitorService.diskReadRate)
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Bold
                             color: Theme.surfaceText
@@ -447,7 +459,7 @@ Column {
                         }
 
                         Text {
-                            text: formatDiskSpeed(ProcessMonitorService.diskWriteRate)
+                            text: formatDiskSpeed(SysMonitorService.diskWriteRate)
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Bold
                             color: Theme.surfaceText

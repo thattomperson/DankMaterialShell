@@ -234,16 +234,24 @@ PanelWindow {
 
                 }
 
-                CpuMonitor {
+                Loader {
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: Prefs.showSystemResources
-                    toggleProcessList: () => processListPopout.toggle()
+                    active: Prefs.showSystemResources
+                    sourceComponent: Component {
+                        CpuMonitor {
+                            toggleProcessList: () => processListPopout.toggle()
+                        }
+                    }
                 }
 
-                RamMonitor {
+                Loader {
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: Prefs.showSystemResources
-                    toggleProcessList: () => processListPopout.toggle()
+                    active: Prefs.showSystemResources
+                    sourceComponent: Component {
+                        RamMonitor {
+                            toggleProcessList: () => processListPopout.toggle()
+                        }
+                    }
                 }
 
                 NotificationCenterButton {

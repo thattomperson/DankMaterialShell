@@ -73,7 +73,6 @@ qs -c DankMaterialShell ipc call <target> <function>
 | processlist | toggle | Toggle process list (task manager) |
 | wallpaper | set \<path\> | Set wallpaper to image path and refresh theme (if auto theme enabled) |
 | wallpaper | get | Get current wallpaper path |
-| wallpaper | list | List available wallpapers |
 
 ## (Optional) Setup Calendar events (Google, Microsoft, other Caldev, etc.)
 

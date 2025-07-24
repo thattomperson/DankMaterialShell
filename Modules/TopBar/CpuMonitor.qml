@@ -17,6 +17,14 @@ Rectangle {
     radius: Theme.cornerRadius
     color: cpuArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.08)
 
+    Component.onCompleted: {
+        SysMonitorService.addRef();
+    }
+
+    Component.onDestruction: {
+        SysMonitorService.removeRef();
+    }
+
     MouseArea {
         id: cpuArea
 
@@ -24,7 +32,7 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            ProcessMonitorService.setSortBy("cpu");
+            SysMonitorService.setSortBy("cpu");
             if (root.toggleProcessList)
                 root.toggleProcessList();
         }
@@ -38,10 +46,10 @@ Rectangle {
             name: "memory"
             size: Theme.iconSize - 8
             color: {
-                if (SystemMonitorService.cpuUsage > 80)
+                if (SysMonitorService.cpuUsage > 80)
                     return Theme.error;
 
-                if (SystemMonitorService.cpuUsage > 60)
+                if (SysMonitorService.cpuUsage > 60)
                     return Theme.warning;
 
                 return Theme.surfaceText;
@@ -50,7 +58,7 @@ Rectangle {
         }
 
         Text {
-            text: (SystemMonitorService.cpuUsage || 0).toFixed(0) + "%"
+            text: (SysMonitorService.cpuUsage || 0).toFixed(0) + "%"
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
             color: Theme.surfaceText
