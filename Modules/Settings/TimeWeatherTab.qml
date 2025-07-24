@@ -141,7 +141,7 @@ ScrollView {
                     }
                     
                     StyledText {
-                        text: "Examples: \"New York\", \"Tokyo\", \"44511\""
+                        text: "Examples: \"New York\", \"Tokyo\", \"90210\""
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         wrapMode: Text.WordWrap

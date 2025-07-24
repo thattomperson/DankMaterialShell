@@ -24,14 +24,16 @@ PanelWindow {
             Qt.callLater(() => {
                 // This ensures opacity changes after window is visible
                 internalVisible = true // Force re-trigger if needed
+                // Ensure events are loaded for current display month
+                calendarGrid.loadEventsForMonth()
             })
         } else {
             internalVisible = false
         }
     }
     onVisibleChanged: {
-        if (visible && CalendarService)
-            CalendarService.loadCurrentMonth();
+        if (visible && calendarGrid)
+            calendarGrid.loadEventsForMonth();
     }
     
     implicitWidth: 480
