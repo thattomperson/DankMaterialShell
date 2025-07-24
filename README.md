@@ -30,53 +30,22 @@ paru -S quickshell-git
 | matugen | Allows dynamic themes based on wallpaper | Just can choose from preconfigured themes instead of dynamic colors |
 | ddcutil (or brightnessctl) | Allows controlling brightness of monitors | No Brightness |
 | wl-clipboard | Unlocks copy functionality of certain elements, such as process PIDs | No copy |
-| swaybg | Wallpaper | Just one wallpaper solution, others will work just not with `set-wallpaper.sh` below |
 
 ```bash
 # Arch
-paru -S ttf-material-symbols-variable-git matugen cliphist cava wl-clipboard ddcutil swaybg
+paru -S ttf-material-symbols-variable-git matugen cliphist cava wl-clipboard ddcutil
 ```
 
-**Note on networking:** 
+**Note on networking:** This shell requires NetworkManager for WiFi functionality.
 
-3. Configure SwayBG (If Desired)
-
-```
-# Install wallpaper script
-sudo cp ./scripts/set-wallpaper.sh /usr/local/bin/set-wallpaper.sh
-sudo chmod +x /usr/local/bin/set-wallpaper.sh
-
-# Arch
-pacman -S swaybg
-
-# Create service
-echo '[Unit]
-PartOf=graphical-session.target
-After=graphical-session.target
-Requisite=graphical-session.target
-
-[Service]
-ExecStart=/usr/bin/swaybg -m fill -i "%h/quickshell/current_wallpaper"
-Restart=on-failure
-
-[Install]
-WantedBy=graphical-session.target' > ~/.config/systemd/user/swaybg.service
-
-# Set a wallpaper
-set-wallpaper.sh /path/to/image.jpg
-
-# Enable service
-systemctl --user enable --now swaybg.service
-```
-
-4. Install DankMaterialShell
+3. Install DankMaterialShell
 
 ```
 mkdir -p ~/.config/quickshell
 git clone https://github.com/bbedward/DankMaterialShell.git ~/.config/quickshell/DankMaterialShell
 ```
 
-5. Enable
+4. Enable
 
 ```
 qs -c DankMaterialShell
@@ -102,7 +71,9 @@ qs -c DankMaterialShell ipc call <target> <function>
 | spotlight | toggle | Toggle spotlight (app launcher) |
 | clipboard | toggle | Toggle clipboard history view |
 | processlist | toggle | Toggle process list (task manager) |
-| wallpaper | refresh | Refresh theme (refreshes theme after wallpaper change) |
+| wallpaper | set \<path\> | Set wallpaper to image path and refresh theme (if auto theme enabled) |
+| wallpaper | get | Get current wallpaper path |
+| wallpaper | list | List available wallpapers |
 
 ## (Optional) Setup Calendar events (Google, Microsoft, other Caldev, etc.)
 

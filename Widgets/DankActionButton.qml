@@ -2,7 +2,7 @@ import QtQuick
 import qs.Common
 import qs.Widgets
 
-Rectangle {
+StyledRect {
     id: root
 
     property string iconName: ""
@@ -18,7 +18,7 @@ Rectangle {
     width: buttonSize
     height: buttonSize
     radius: circular ? buttonSize / 2 : Theme.cornerRadius
-    color: mouseArea.containsMouse ? hoverColor : backgroundColor
+    color: backgroundColor
 
     DankIcon {
         anchors.centerIn: parent
@@ -27,21 +27,10 @@ Rectangle {
         color: root.iconColor
     }
 
-    MouseArea {
-        id: mouseArea
-
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
+    StateLayer {
+        stateColor: Theme.primary
+        cornerRadius: root.radius
         onClicked: root.clicked()
-    }
-
-    Behavior on color {
-        ColorAnimation {
-            duration: Theme.shortDuration
-            easing.type: Theme.standardEasing
-        }
-
     }
 
 }

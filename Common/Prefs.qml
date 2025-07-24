@@ -40,6 +40,11 @@ Singleton {
     property string osLogoColorOverride: ""
     property real osLogoBrightness: 0.5
     property real osLogoContrast: 1.0
+    property string wallpaperPath: ""
+    property string wallpaperDirectory: StandardPaths.writableLocation(StandardPaths.PicturesLocation) + "/Wallpapers"
+    property bool wallpaperDynamicTheming: true
+    property string wallpaperLastPath: ""
+    property string profileLastPath: ""
 
     function loadSettings() {
         parseSettings(settingsFile.text());
@@ -77,6 +82,11 @@ Singleton {
                 osLogoColorOverride = settings.osLogoColorOverride !== undefined ? settings.osLogoColorOverride : "";
                 osLogoBrightness = settings.osLogoBrightness !== undefined ? settings.osLogoBrightness : 0.5;
                 osLogoContrast = settings.osLogoContrast !== undefined ? settings.osLogoContrast : 1.0;
+                wallpaperPath = settings.wallpaperPath !== undefined ? settings.wallpaperPath : "";
+                wallpaperDirectory = settings.wallpaperDirectory !== undefined ? settings.wallpaperDirectory : StandardPaths.writableLocation(StandardPaths.PicturesLocation) + "/Wallpapers";
+                wallpaperDynamicTheming = settings.wallpaperDynamicTheming !== undefined ? settings.wallpaperDynamicTheming : true;
+                wallpaperLastPath = settings.wallpaperLastPath !== undefined ? settings.wallpaperLastPath : "";
+                profileLastPath = settings.profileLastPath !== undefined ? settings.profileLastPath : "";
                         applyStoredTheme();
                         detectAvailableIconThemes();
                         updateGtkIconTheme(iconTheme);
@@ -118,7 +128,12 @@ Singleton {
             "useOSLogo": useOSLogo,
             "osLogoColorOverride": osLogoColorOverride,
             "osLogoBrightness": osLogoBrightness,
-            "osLogoContrast": osLogoContrast
+            "osLogoContrast": osLogoContrast,
+            "wallpaperPath": wallpaperPath,
+            "wallpaperDirectory": wallpaperDirectory,
+            "wallpaperDynamicTheming": wallpaperDynamicTheming,
+            "wallpaperLastPath": wallpaperLastPath,
+            "profileLastPath": profileLastPath
         }, null, 2));
     }
 
@@ -418,6 +433,43 @@ gtk-application-prefer-dark-theme=true`;
         saveSettings();
     }
 
+    function setWallpaperPath(path) {
+        wallpaperPath = path;
+        saveSettings();
+        
+        // Trigger dynamic theming if enabled
+        if (wallpaperDynamicTheming && path && typeof Theme !== "undefined") {
+            console.log("Wallpaper changed, triggering dynamic theme extraction");
+            Theme.switchTheme(themeIndex, true, true);
+        }
+    }
+
+    function setWallpaperDirectory(directory) {
+        wallpaperDirectory = directory;
+        saveSettings();
+    }
+
+    function setWallpaperDynamicTheming(enabled) {
+        wallpaperDynamicTheming = enabled;
+        saveSettings();
+        
+        // If enabled and we have a wallpaper, trigger dynamic theming
+        if (enabled && wallpaperPath && typeof Theme !== "undefined") {
+            console.log("Dynamic theming enabled, triggering theme extraction");
+            Theme.switchTheme(themeIndex, true, true);
+        }
+    }
+
+    function setWallpaper(imagePath) {
+        wallpaperPath = imagePath;
+        saveSettings();
+        
+        // Trigger color extraction if dynamic theming is enabled
+        if (wallpaperDynamicTheming && typeof Colors !== "undefined") {
+            Colors.extractColors();
+        }
+    }
+
     Component.onCompleted: loadSettings()
     onShowSystemResourcesChanged: {
         if (typeof SystemMonitorService !== 'undefined')
@@ -534,5 +586,6 @@ gtk-application-prefer-dark-theme=true`;
             }
         }
     }
+
 
 }

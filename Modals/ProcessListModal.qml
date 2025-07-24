@@ -85,7 +85,7 @@ DankModal {
                     height: 40
                     spacing: Theme.spacingM
 
-                    Text {
+                    StyledText {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "System Monitor"
                         font.pixelSize: Theme.fontSizeLarge + 4
@@ -98,7 +98,7 @@ DankModal {
                         height: 1
                     }
 
-                    Text {
+                    StyledText {
                         anchors.verticalCenter: parent.verticalCenter
                         text: ProcessMonitorService.processes.length + " processes"
                         font.pixelSize: Theme.fontSizeMedium
@@ -163,7 +163,7 @@ DankModal {
 
                                     }
 
-                                    Text {
+                                    StyledText {
                                         text: modelData
                                         font.pixelSize: Theme.fontSizeLarge
                                         font.weight: currentTab === index ? Font.Bold : Font.Medium
@@ -294,29 +294,8 @@ DankModal {
         SystemTab {}
     }
 
-    
-
     ProcessContextMenu {
         id: processContextMenu
-    }
-
-    IpcHandler {
-        function open() {
-            processListModal.show();
-            return "PROCESSLIST_OPEN_SUCCESS";
-        }
-
-        function close() {
-            processListModal.hide();
-            return "PROCESSLIST_CLOSE_SUCCESS";
-        }
-
-        function toggle() {
-            processListModal.toggle();
-            return "PROCESSLIST_TOGGLE_SUCCESS";
-        }
-
-        target: "processlist"
     }
 
 }

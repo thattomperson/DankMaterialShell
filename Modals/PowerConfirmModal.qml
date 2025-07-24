@@ -66,7 +66,7 @@ DankModal {
                 spacing: Theme.spacingM
 
                 // Title
-                Text {
+                StyledText {
                     text: powerConfirmTitle
                     font.pixelSize: Theme.fontSizeLarge
                     color: {
@@ -85,7 +85,7 @@ DankModal {
                 }
 
                 // Message
-                Text {
+                StyledText {
                     text: powerConfirmMessage
                     font.pixelSize: Theme.fontSizeMedium
                     color: Theme.surfaceText
@@ -110,7 +110,7 @@ DankModal {
                         radius: Theme.cornerRadius
                         color: cancelButton.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
 
-                        Text {
+                        StyledText {
                             text: "Cancel"
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceText
@@ -152,7 +152,7 @@ DankModal {
                             return confirmButton.containsMouse ? Qt.rgba(baseColor.r, baseColor.g, baseColor.b, 0.9) : baseColor;
                         }
 
-                        Text {
+                        StyledText {
                             text: "Confirm"
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.primaryText

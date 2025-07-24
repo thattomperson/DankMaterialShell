@@ -61,14 +61,14 @@ DankModal {
                     width: parent.width - 40
                     spacing: Theme.spacingXS
 
-                    Text {
+                    StyledText {
                         text: "Network Information"
                         font.pixelSize: Theme.fontSizeLarge
                         color: Theme.surfaceText
                         font.weight: Font.Medium
                     }
 
-                    Text {
+                    StyledText {
                         text: "Details for \"" + networkSSID + "\""
                         font.pixelSize: Theme.fontSizeMedium
                         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
@@ -112,7 +112,7 @@ DankModal {
                         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
                         border.width: 1
 
-                        Text {
+                        StyledText {
                             id: detailsText
 
                             anchors.fill: parent
@@ -143,7 +143,7 @@ DankModal {
                     radius: Theme.cornerRadius
                     color: closeArea.containsMouse ? Qt.darker(Theme.primary, 1.1) : Theme.primary
 
-                    Text {
+                    StyledText {
                         id: closeText
 
                         anchors.centerIn: parent

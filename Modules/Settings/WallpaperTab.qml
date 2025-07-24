@@ -1,128 +1,82 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Effects
 import Quickshell
 import qs.Common
 import qs.Widgets
 
 Column {
+    id: wallpaperTab
+
     width: parent.width
     spacing: Theme.spacingM
 
-    // Profile Image Preview and Input
+    // Current Wallpaper Section
     Column {
         width: parent.width
-        spacing: Theme.spacingM
+        spacing: Theme.spacingS
 
         StyledText {
-            text: "Profile Image"
+            text: "Current Wallpaper"
             font.pixelSize: Theme.fontSizeLarge
             font.weight: Font.Medium
             color: Theme.surfaceText
         }
 
-        // Profile Image Preview with circular crop
         Row {
             width: parent.width
             spacing: Theme.spacingM
 
-            // Circular profile image preview
-            Item {
-                id: avatarContainer
-
-                property bool hasImage: avatarImageSource.status === Image.Ready
-
-                width: 54
-                height: 54
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: width / 2
-                    color: "transparent"
-                    border.color: Theme.primary
-                    border.width: 1
-                    visible: parent.hasImage
-                }
+            // Wallpaper Preview
+            StyledRect {
+                width: 120
+                height: 67
+                radius: Theme.cornerRadius
+                color: Theme.surfaceVariant
+                border.color: Theme.outline
+                border.width: 1
 
                 Image {
-                    id: avatarImageSource
-
-                    source: {
-                        if (Prefs.profileImage === "")
-                            return "";
-
-                        if (Prefs.profileImage.startsWith("/"))
-                            return "file://" + Prefs.profileImage;
-
-                        return Prefs.profileImage;
-                    }
-                    smooth: true
-                    asynchronous: true
-                    mipmap: true
-                    cache: true
-                    visible: false
-                }
-
-                MultiEffect {
                     anchors.fill: parent
-                    anchors.margins: 5
-                    source: avatarImageSource
-                    maskEnabled: true
-                    maskSource: settingsCircularMask
-                    visible: avatarContainer.hasImage
-                    maskThresholdMin: 0.5
-                    maskSpreadAtMin: 1
-                }
-
-                Item {
-                    id: settingsCircularMask
-
-                    width: 54 - 10
-                    height: 54 - 10
+                    anchors.margins: 1
+                    source: Prefs.wallpaperPath ? "file://" + Prefs.wallpaperPath : ""
+                    fillMode: Image.PreserveAspectCrop
+                    visible: Prefs.wallpaperPath !== ""
                     layer.enabled: true
-                    layer.smooth: true
-                    visible: false
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: width / 2
-                        color: "black"
-                        antialiasing: true
+                    layer.effect: MultiEffect {
+                        maskEnabled: true
+                        maskSource: mask
+                        maskThresholdMin: 0.5
+                        maskSpreadAtMin: 1.0
                     }
-
                 }
-
+                
                 Rectangle {
+                    id: mask
                     anchors.fill: parent
-                    radius: width / 2
-                    color: Theme.primary
-                    visible: !parent.hasImage
-
-                    DankIcon {
-                        anchors.centerIn: parent
-                        name: "person"
-                        size: Theme.iconSize + 8
-                        color: Theme.primaryText
-                    }
-
+                    anchors.margins: 1
+                    radius: Theme.cornerRadius - 1
+                    color: "black"
+                    visible: false
+                    layer.enabled: true
                 }
 
                 DankIcon {
                     anchors.centerIn: parent
-                    name: "warning"
-                    size: Theme.iconSize + 8
-                    color: Theme.primaryText
-                    visible: Prefs.profileImage !== "" && avatarImageSource.status === Image.Error
+                    name: "image"
+                    size: Theme.iconSizeLarge
+                    color: Theme.surfaceVariantText
+                    visible: Prefs.wallpaperPath === ""
                 }
-
             }
 
             Column {
-                width: parent.width - 54 - Theme.spacingM
+                width: parent.width - 120 - Theme.spacingM
                 spacing: Theme.spacingS
                 anchors.verticalCenter: parent.verticalCenter
 
                 StyledText {
-                    text: Prefs.profileImage ? Prefs.profileImage.split('/').pop() : "No profile image selected"
+                    text: Prefs.wallpaperPath ? Prefs.wallpaperPath.split('/').pop() : "No wallpaper selected"
                     font.pixelSize: Theme.fontSizeMedium
                     color: Theme.surfaceText
                     elide: Text.ElideMiddle
@@ -130,15 +84,14 @@ Column {
                 }
 
                 StyledText {
-                    text: Prefs.profileImage ? Prefs.profileImage : ""
+                    text: Prefs.wallpaperPath ? Prefs.wallpaperPath : ""
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                     elide: Text.ElideMiddle
                     width: parent.width
-                    visible: Prefs.profileImage !== ""
+                    visible: Prefs.wallpaperPath !== ""
                 }
             }
-
         }
 
         Row {
@@ -174,8 +127,8 @@ Column {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        profileBrowserLoader.active = true;
-                        profileBrowser.visible = true;
+                        wallpaperBrowserLoader.active = true;
+                        wallpaperBrowser.visible = true;
                     }
                 }
             }
@@ -185,7 +138,7 @@ Column {
                 height: 32
                 radius: Theme.cornerRadius
                 color: Theme.surfaceVariant
-                opacity: Prefs.profileImage !== "" ? 1.0 : 0.5
+                opacity: Prefs.wallpaperPath !== "" ? 1.0 : 0.5
                 
                 Row {
                     anchors.centerIn: parent
@@ -208,34 +161,75 @@ Column {
                 
                 MouseArea {
                     anchors.fill: parent
-                    enabled: Prefs.profileImage !== ""
+                    enabled: Prefs.wallpaperPath !== ""
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: {
-                        Prefs.setProfileImage("");
+                        Prefs.setWallpaperPath("");
                     }
                 }
             }
+        }
+    }
 
+
+    // Dynamic Theming Section
+    Column {
+        width: parent.width
+        spacing: Theme.spacingS
+
+        Row {
+            width: parent.width
+            spacing: Theme.spacingM
+
+            Column {
+                width: parent.width - toggle.width - Theme.spacingM
+                spacing: Theme.spacingXS
+
+                StyledText {
+                    text: "Dynamic Theming"
+                    font.pixelSize: Theme.fontSizeLarge
+                    font.weight: Font.Medium
+                    color: Theme.surfaceText
+                }
+
+                StyledText {
+                    text: "Automatically extract colors from wallpaper"
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceVariantText
+                    wrapMode: Text.WordWrap
+                    width: parent.width
+                }
+            }
+
+            DankToggle {
+                id: toggle
+                anchors.verticalCenter: parent.verticalCenter
+                checked: Prefs.wallpaperDynamicTheming
+                onCheckedChanged: {
+                    if (activeFocus) {
+                        Prefs.setWallpaperDynamicTheming(checked);
+                    }
+                }
+            }
         }
     }
 
     LazyLoader {
-        id: profileBrowserLoader
+        id: wallpaperBrowserLoader
         active: false
         
         FileBrowser {
-            id: profileBrowser
-            browserTitle: "Select Profile Image"
-            browserIcon: "person"
-            browserType: "profile"
+            id: wallpaperBrowser
+            browserTitle: "Select Wallpaper"
+            browserIcon: "wallpaper"
+            browserType: "wallpaper"
             fileExtensions: ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"]
             onFileSelected: (path) => {
-                Prefs.setProfileImage(path);
+                Prefs.setWallpaperPath(path);
                 visible = false;
             }
         }
     }
     
-    property alias profileBrowser: profileBrowserLoader.item
-
+    property alias wallpaperBrowser: wallpaperBrowserLoader.item
 }

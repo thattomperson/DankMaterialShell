@@ -602,19 +602,5 @@ Singleton {
         console.log("Theme initialized, waiting for Prefs to load settings and apply theme");
     }
 
-    // Wallpaper IPC handler
-    IpcHandler {
-        function refresh() {
-            console.log("Wallpaper IPC: refresh() called");
-            // Trigger color extraction if using dynamic theme
-            if (typeof Theme !== "undefined" && Theme.isDynamicTheme) {
-                console.log("Triggering color extraction due to wallpaper IPC");
-                Colors.extractColors();
-            }
-            return "WALLPAPER_REFRESH_SUCCESS";
-        }
-
-        target: "wallpaper"
-    }
 
 }

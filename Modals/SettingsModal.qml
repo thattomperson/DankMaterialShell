@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import qs.Common
-import qs.Widgets
 import qs.Modules.Settings
+import qs.Widgets
 
 DankModal {
     id: settingsModal
@@ -51,7 +51,7 @@ DankModal {
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
-                Text {
+                StyledText {
                     text: "Settings"
                     font.pixelSize: Theme.fontSizeXLarge
                     color: Theme.surfaceText
@@ -99,6 +99,16 @@ DankModal {
                         iconName: "person"
 
                         content: ProfileTab {
+                        }
+
+                    }
+
+                    // Wallpaper Settings
+                    SettingsSection {
+                        title: "Wallpaper"
+                        iconName: "wallpaper"
+
+                        content: WallpaperTab {
                         }
 
                     }

@@ -14,15 +14,11 @@ import qs.Services
 import qs.Widgets
 
 PanelWindow {
-    // Proxy objects for external connections
-
     id: root
 
     property var modelData
     property string screenName: modelData.name
-    // Transparency property for the top bar background
     property real backgroundTransparency: Prefs.topBarTransparency
-    // Notification properties
     readonly property int notificationCount: NotificationService.notifications.length
 
     screen: modelData
@@ -55,7 +51,6 @@ PanelWindow {
         right: true
     }
 
-    // Floating panel container with margins
     Item {
         anchors.fill: parent
         anchors.margins: 2
@@ -132,9 +127,10 @@ PanelWindow {
 
                 LauncherButton {
                     anchors.verticalCenter: parent.verticalCenter
-                    isActive: appDrawerPopout.isVisible
+                    isActive: appDrawerPopout ? appDrawerPopout.isVisible : false
                     onClicked: {
-                        appDrawerPopout.toggle();
+                        if (appDrawerPopout) 
+                            appDrawerPopout.toggle();
                     }
                 }
 
@@ -238,15 +234,16 @@ PanelWindow {
 
                 }
 
-                // System Monitor Widgets
                 CpuMonitor {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: Prefs.showSystemResources
+                    toggleProcessList: () => processListPopout.toggle()
                 }
 
                 RamMonitor {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: Prefs.showSystemResources
+                    toggleProcessList: () => processListPopout.toggle()
                 }
 
                 NotificationCenterButton {
@@ -258,7 +255,6 @@ PanelWindow {
                     }
                 }
 
-                // Battery Widget
                 Battery {
                     anchors.verticalCenter: parent.verticalCenter
                     batteryPopupVisible: batteryPopout.batteryPopupVisible
@@ -268,8 +264,6 @@ PanelWindow {
                 }
 
                 ControlCenterButton {
-                    // Bluetooth devices are automatically updated via signals
-
                     anchors.verticalCenter: parent.verticalCenter
                     isActive: controlCenterPopout.controlCenterVisible
                     onClicked: {

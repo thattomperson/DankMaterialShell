@@ -6,10 +6,11 @@ import qs.Services
 import qs.Widgets
 
 Rectangle {
-    id: ramMonitor
+    id: root
 
     property bool showPercentage: true
     property bool showIcon: true
+    property var toggleProcessList
 
     width: 55
     height: 30
@@ -24,7 +25,8 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
         onClicked: {
             ProcessMonitorService.setSortBy("memory");
-            processListPopout.toggle();
+            if (root.toggleProcessList)
+                root.toggleProcessList();
         }
     }
 
@@ -32,9 +34,8 @@ Rectangle {
         anchors.centerIn: parent
         spacing: 3
 
-        // RAM icon
         DankIcon {
-            name: "developer_board" // Material Design CPU/processor icon (swapped from CPU widget)
+            name: "developer_board"
             size: Theme.iconSize - 8
             color: {
                 if (SystemMonitorService.memoryUsage > 90)
@@ -48,7 +49,6 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        // Percentage text
         Text {
             text: (SystemMonitorService.memoryUsage || 0).toFixed(0) + "%"
             font.pixelSize: Theme.fontSizeSmall

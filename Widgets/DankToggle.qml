@@ -1,5 +1,6 @@
 import QtQuick
 import qs.Common
+import qs.Widgets
 
 Item {
     id: toggle
@@ -16,13 +17,25 @@ Item {
     width: text ? parent.width : 48
     height: text ? 60 : 24
 
-    Rectangle {
+    StyledRect {
         id: background
 
         anchors.fill: parent
         radius: toggle.text ? Theme.cornerRadius : 0
-        color: toggle.text ? (toggleArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)) : "transparent"
+        color: toggle.text ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
         visible: toggle.text
+
+        StateLayer {
+            visible: toggle.text
+            stateColor: Theme.primary
+            cornerRadius: parent.radius
+            onClicked: {
+                toggle.checked = !toggle.checked;
+                toggle.clicked();
+                toggle.toggled(toggle.checked);
+            }
+        }
+
     }
 
     Row {
@@ -40,16 +53,15 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             spacing: Theme.spacingXS
 
-            Text {
+            StyledText {
                 text: toggle.text
-                font.pixelSize: Theme.fontSizeMedium
-                color: Theme.surfaceText
+                font.pixelSize: Appearance.fontSize.normal
                 font.weight: Font.Medium
             }
 
-            Text {
+            StyledText {
                 text: toggle.description
-                font.pixelSize: Theme.fontSizeSmall
+                font.pixelSize: Appearance.fontSize.small
                 color: Theme.surfaceVariantText
                 wrapMode: Text.WordWrap
                 width: Math.min(implicitWidth, toggle.width - 120)
@@ -60,7 +72,7 @@ Item {
 
     }
 
-    Rectangle {
+    StyledRect {
         id: toggleTrack
 
         width: toggle.text ? 48 : parent.width
@@ -72,7 +84,7 @@ Item {
         color: toggle.checked ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
         opacity: toggle.toggling ? 0.6 : 1
 
-        Rectangle {
+        StyledRect {
             id: toggleHandle
 
             width: 20
@@ -82,7 +94,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             x: toggle.checked ? parent.width - width - 2 : 2
 
-            Rectangle {
+            StyledRect {
                 anchors.centerIn: parent
                 width: parent.width + 2
                 height: parent.height + 2
@@ -95,28 +107,26 @@ Item {
 
             Behavior on x {
                 NumberAnimation {
-                    duration: Theme.shortDuration
-                    easing.type: Theme.emphasizedEasing
+                    duration: Appearance.anim.durations.normal
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Appearance.anim.curves.emphasizedDecel
                 }
 
             }
 
         }
 
-    }
-
-    MouseArea {
-        id: toggleArea
-
-        anchors.fill: toggle.text ? toggle : toggleTrack
-        hoverEnabled: true
-        cursorShape: toggle.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-        enabled: toggle.enabled
-        onClicked: {
-            toggle.checked = !toggle.checked;
-            toggle.clicked();
-            toggle.toggled(toggle.checked);
+        StateLayer {
+            disabled: !toggle.enabled
+            stateColor: Theme.primary
+            cornerRadius: parent.radius
+            onClicked: {
+                toggle.checked = !toggle.checked;
+                toggle.clicked();
+                toggle.toggled(toggle.checked);
+            }
         }
+
     }
 
 }

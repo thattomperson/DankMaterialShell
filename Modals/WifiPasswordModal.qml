@@ -56,14 +56,14 @@ DankModal {
                         width: parent.width - 40
                         spacing: Theme.spacingXS
 
-                        Text {
+                        StyledText {
                             text: "Connect to Wi-Fi"
                             font.pixelSize: Theme.fontSizeLarge
                             color: Theme.surfaceText
                             font.weight: Font.Medium
                         }
 
-                        Text {
+                        StyledText {
                             text: "Enter password for \"" + wifiPasswordSSID + "\""
                             font.pixelSize: Theme.fontSizeMedium
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
@@ -168,7 +168,7 @@ DankModal {
 
                     }
 
-                    Text {
+                    StyledText {
                         text: "Show password"
                         font.pixelSize: Theme.fontSizeMedium
                         color: Theme.surfaceText
@@ -195,7 +195,7 @@ DankModal {
                             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                             border.width: 1
 
-                            Text {
+                            StyledText {
                                 id: cancelText
 
                                 anchors.centerIn: parent
@@ -227,7 +227,7 @@ DankModal {
                             enabled: passwordInput.text.length > 0
                             opacity: enabled ? 1 : 0.5
 
-                            Text {
+                            StyledText {
                                 id: connectText
 
                                 anchors.centerIn: parent

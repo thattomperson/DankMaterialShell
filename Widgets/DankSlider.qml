@@ -25,7 +25,7 @@ Item {
         spacing: Theme.spacingM
 
         // Value display
-        Text {
+        StyledText {
             text: slider.value + slider.unit
             font.pixelSize: Theme.fontSizeMedium
             color: slider.enabled ? Theme.surfaceText : Theme.surfaceVariantText
@@ -49,7 +49,7 @@ Item {
             }
 
             // Slider track
-            Rectangle {
+            StyledRect {
                 id: sliderTrack
 
                 property int leftIconWidth: slider.leftIcon.length > 0 ? Theme.iconSize : 0
@@ -62,7 +62,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
 
                 // Fill
-                Rectangle {
+                StyledRect {
                     id: sliderFill
 
                     width: parent.width * ((slider.value - slider.minimum) / (slider.maximum - slider.minimum))
@@ -72,8 +72,8 @@ Item {
 
                     Behavior on width {
                         NumberAnimation {
-                            duration: 150
-                            easing.type: Easing.OutCubic
+                            duration: Theme.shortDuration
+                            easing.type: Theme.standardEasing
                         }
 
                     }
@@ -81,7 +81,7 @@ Item {
                 }
 
                 // Draggable handle
-                Rectangle {
+                StyledRect {
                     id: sliderHandle
 
                     width: 18
@@ -95,7 +95,7 @@ Item {
                     scale: sliderMouseArea.containsMouse || sliderMouseArea.pressed ? 1.2 : 1
 
                     // Handle glow effect when active
-                    Rectangle {
+                    StyledRect {
                         anchors.centerIn: parent
                         width: parent.width + 4
                         height: parent.height + 4
@@ -104,19 +104,12 @@ Item {
                         border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3)
                         border.width: 2
                         visible: sliderMouseArea.containsMouse && slider.enabled
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 150
-                            }
-
-                        }
-
                     }
 
                     Behavior on scale {
                         NumberAnimation {
-                            duration: 150
+                            duration: Theme.shortDuration
+                            easing.type: Theme.standardEasing
                         }
 
                     }

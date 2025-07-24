@@ -1,12 +1,13 @@
 //@ pragma UseQApplication
 
 import Quickshell
+import Quickshell.Io
 import qs.Modules
+import qs.Modules.TopBar
 import qs.Modules.AppDrawer
 import qs.Modules.CentcomCenter
 import qs.Modules.ControlCenter
 import qs.Modules.Settings
-import qs.Modules.TopBar
 import qs.Modules.ProcessList
 import qs.Modules.ControlCenter.Network
 import qs.Modals
@@ -14,6 +15,8 @@ import qs.Modals
 ShellRoot {
     id: root
 
+    WallpaperBackground {}
+    
     // Multi-monitor support using Variants
     Variants {
         model: Quickshell.screens
@@ -21,13 +24,12 @@ ShellRoot {
         delegate: TopBar {
             modelData: item
         }
-
     }
 
-    // Global popup windows
     CentcomPopout {
         id: centcomPopout
     }
+
 
     SystemTrayContextMenu {
         id: systemTrayContextMenu
@@ -79,7 +81,6 @@ ShellRoot {
         id: settingsModal
     }
 
-
     // Application and clipboard components
     AppDrawerPopout {
         id: appDrawerPopout
@@ -89,12 +90,39 @@ ShellRoot {
         id: spotlightModal
     }
 
-    ProcessListModal {
-        id: processListModal
+    LazyLoader {
+        id: processListModalLoader
+        active: false
+        
+        ProcessListModal {
+            id: processListModal
+        }
     }
+    IpcHandler {
+        function open() {
+            processListModalLoader.active = true;
+            if (processListModalLoader.item) {
+                processListModalLoader.item.show();
+            }
+            return "PROCESSLIST_OPEN_SUCCESS";
+        }
 
-    ClipboardHistoryModal {
-        id: clipboardHistoryModalPopup
+        function close() {
+            if (processListModalLoader.item) {
+                processListModalLoader.item.hide();
+            }
+            return "PROCESSLIST_CLOSE_SUCCESS";
+        }
+
+        function toggle() {
+            processListModalLoader.active = true;
+            if (processListModalLoader.item) {
+                processListModalLoader.item.toggle();
+            }
+            return "PROCESSLIST_TOGGLE_SUCCESS";
+        }
+
+        target: "processlist"
     }
 
     Toast {

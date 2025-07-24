@@ -143,7 +143,7 @@ DankModal {
                     width: parent.width - Theme.spacingM * 2
                     spacing: Theme.spacingM
 
-                    Text {
+                    StyledText {
                         text: "Clear All History?"
                         font.pixelSize: Theme.fontSizeLarge
                         color: Theme.surfaceText
@@ -151,7 +151,7 @@ DankModal {
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
 
-                    Text {
+                    StyledText {
                         text: "This will permanently delete all clipboard history."
                         font.pixelSize: Theme.fontSizeMedium
                         color: Theme.surfaceVariantText
@@ -171,7 +171,7 @@ DankModal {
                             radius: Theme.cornerRadius
                             color: cancelClearButton.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
 
-                            Text {
+                            StyledText {
                                 text: "Cancel"
                                 font.pixelSize: Theme.fontSizeMedium
                                 color: Theme.surfaceText
@@ -196,7 +196,7 @@ DankModal {
                             radius: Theme.cornerRadius
                             color: confirmClearButton.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.9) : Theme.error
 
-                            Text {
+                            StyledText {
                                 text: "Clear All"
                                 font.pixelSize: Theme.fontSizeMedium
                                 color: Theme.primaryText
@@ -353,7 +353,7 @@ DankModal {
                         anchors.verticalCenter: parent.verticalCenter
                     }
 
-                    Text {
+                    StyledText {
                         text: `Clipboard History (${totalCount})`
                         font.pixelSize: Theme.fontSizeLarge
                         color: Theme.surfaceText
@@ -439,7 +439,7 @@ DankModal {
                         model: filteredClipboardModel
                         spacing: Theme.spacingXS
 
-                        Text {
+                        StyledText {
                             text: "No clipboard entries found"
                             anchors.centerIn: parent
                             font.pixelSize: Theme.fontSizeMedium
@@ -473,7 +473,7 @@ DankModal {
                                     color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
                                     anchors.verticalCenter: parent.verticalCenter
 
-                                    Text {
+                                    StyledText {
                                         anchors.centerIn: parent
                                         text: entryIndex.toString()
                                         font.pixelSize: Theme.fontSizeSmall
@@ -509,7 +509,7 @@ DankModal {
                                         width: parent.width - Theme.iconSize - Theme.spacingM
                                         spacing: Theme.spacingXS
 
-                                        Text {
+                                        StyledText {
                                             text: {
                                                 switch (entryType) {
                                                 case "image":
@@ -527,7 +527,7 @@ DankModal {
                                             elide: Text.ElideRight
                                         }
 
-                                        Text {
+                                        StyledText {
                                             id: contentText
 
                                             text: entryPreview

@@ -57,3 +57,8 @@ UNUSED
 
 CLAUDE-activeContext.md
 CLAUDE-temp.md
+
+# Auto-generated theme files
+*.generated.*
+niri-colors.generated.kdl
+ghostty-colors.generated.conf
