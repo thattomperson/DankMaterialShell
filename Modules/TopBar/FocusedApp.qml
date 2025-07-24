@@ -9,7 +9,7 @@ Rectangle {
     property int availableWidth: 400
     readonly property int baseWidth: contentRow.implicitWidth + Theme.spacingS * 2
     readonly property int maxNormalWidth: 456
-    readonly property int maxCompactWidth: 200
+    readonly property int maxCompactWidth: 288
 
     width: compactMode ? Math.min(baseWidth, maxCompactWidth) : Math.min(baseWidth, maxNormalWidth)
     height: 30
@@ -55,8 +55,8 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideRight
             maximumLineCount: 1
-            width: Math.min(implicitWidth, compactMode ? 60 : 250)
-            visible: !compactMode || text.length < 15
+            width: Math.min(implicitWidth, compactMode ? 180 : 250)
+            visible: text.length > 0
         }
 
     }
