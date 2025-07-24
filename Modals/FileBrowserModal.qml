@@ -7,10 +7,8 @@ import Qt.labs.folderlistmodel
 import Quickshell.Io
 import qs.Common
 import qs.Widgets
-import qs.Modals
-
 DankModal {
-    id: fileBrowser
+    id: fileBrowserModal
 
     signal fileSelected(string path)
 
@@ -119,36 +117,40 @@ DankModal {
             spacing: Theme.spacingS
 
             // Header
-            Row {
+            Item {
                 width: parent.width
-                spacing: Theme.spacingM
+                height: 40
 
-                DankIcon {
-                    name: browserIcon
-                    size: Theme.iconSizeLarge
-                    color: Theme.primary
+                Row {
+                    spacing: Theme.spacingM
                     anchors.verticalCenter: parent.verticalCenter
+
+                    DankIcon {
+                        name: browserIcon
+                        size: Theme.iconSizeLarge
+                        color: Theme.primary
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    StyledText {
+                        text: browserTitle
+                        font.pixelSize: Theme.fontSizeXLarge
+                        color: Theme.surfaceText
+                        font.weight: Font.Medium
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
                 }
 
-                StyledText {
-                    text: browserTitle
-                    font.pixelSize: Theme.fontSizeXLarge
-                    color: Theme.surfaceText
-                    font.weight: Font.Medium
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-
-                Item {
-                    width: parent.width - 200
-                    height: 1
-                }
-
-                // Close button
+                // Close button positioned at right
                 DankActionButton {
+                    circular: false
                     iconName: "close"
-                    iconSize: Theme.iconSizeSmall
+                    iconSize: Theme.iconSize - 4
                     iconColor: Theme.surfaceText
-                    onClicked: fileBrowser.visible = false
+                    hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                    onClicked: fileBrowserModal.visible = false
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
                 }
             }
 
@@ -182,7 +184,7 @@ DankModal {
                 }
 
                 StyledText {
-                    text: "Current folder: " + fileBrowser.currentPath
+                    text: "Current folder: " + fileBrowserModal.currentPath
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                     width: parent.width - 40 - Theme.spacingS

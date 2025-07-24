@@ -665,10 +665,32 @@ PanelWindow {
                 }
 
                 // Display Tab
-                DisplayTab {
+                Column {
                     anchors.fill: parent
                     anchors.margins: Theme.spacingM
                     visible: root.currentTab === "display"
+                    spacing: Theme.spacingL
+                    
+                    DankToggle {
+                        width: parent.width
+                        text: "Night Mode"
+                        description: "Apply warm color temperature to reduce eye strain"
+                        checked: Prefs.nightModeEnabled
+                        onToggled: (checked) => {
+                            Prefs.setNightModeEnabled(checked);
+                        }
+                    }
+                    
+                    DankToggle {
+                        width: parent.width
+                        text: "Light Mode"
+                        description: "Use light theme instead of dark theme"
+                        checked: Prefs.isLightMode
+                        onToggled: (checked) => {
+                            Prefs.setLightMode(checked);
+                            Theme.isLightMode = checked;
+                        }
+                    }
                 }
 
                 Behavior on height {

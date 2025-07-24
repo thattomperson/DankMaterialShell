@@ -23,7 +23,6 @@ DankModal {
     width: 650
     height: 750
     keyboardFocus: "ondemand"
-    enableShadow: true
     onBackgroundClicked: {
         settingsVisible = false;
     }
@@ -101,64 +100,54 @@ DankModal {
                     width: parent.width
                     height: parent.height - settingsTabBar.height
                     
-                    // Personalization Tab
-                    Loader {
+                    // Content container with proper padding
+                    Rectangle {
                         anchors.fill: parent
-                        active: settingsTabBar.currentIndex === 0
-                        visible: active
-                        asynchronous: true
-                        sourceComponent: Component {
-                            PersonalizationTab {}
-                        }
-                    }
-                    
-                    // Time & Weather Tab
-                    Loader {
-                        anchors.fill: parent
-                        active: settingsTabBar.currentIndex === 1
-                        visible: active
-                        asynchronous: true
-                        sourceComponent: Component {
-                            Column {
-                                spacing: Theme.spacingL
-                                topPadding: Theme.spacingM
-                                
-                                ClockTab {
-                                    width: parent.width
-                                }
-                                
-                                Rectangle {
-                                    width: parent.width
-                                    height: Theme.spacingL
-                                    color: "transparent"
-                                }
-                                
-                                WeatherTab {
-                                    width: parent.width
-                                }
+                        anchors.margins: Theme.spacingL
+                        color: "transparent"
+                        
+                        // Personalization Tab
+                        Loader {
+                            anchors.fill: parent
+                            active: settingsTabBar.currentIndex === 0
+                            visible: active
+                            asynchronous: true
+                            sourceComponent: Component {
+                                PersonalizationTab {}
                             }
                         }
-                    }
-                    
-                    // System Tab
-                    Loader {
-                        anchors.fill: parent
-                        active: settingsTabBar.currentIndex === 2
-                        visible: active
-                        asynchronous: true
-                        sourceComponent: Component {
-                            SystemTab {}
+                        
+                        // Time & Weather Tab
+                        Loader {
+                            anchors.fill: parent
+                            active: settingsTabBar.currentIndex === 1
+                            visible: active
+                            asynchronous: true
+                            sourceComponent: Component {
+                                TimeWeatherTab {}
+                            }
                         }
-                    }
-                    
-                    // Appearance Tab
-                    Loader {
-                        anchors.fill: parent
-                        active: settingsTabBar.currentIndex === 3
-                        visible: active
-                        asynchronous: true
-                        sourceComponent: Component {
-                            AppearanceTab {}
+                        
+                        // System Tab
+                        Loader {
+                            anchors.fill: parent
+                            active: settingsTabBar.currentIndex === 2
+                            visible: active
+                            asynchronous: true
+                            sourceComponent: Component {
+                                WidgetsTab {}
+                            }
+                        }
+                        
+                        // Appearance Tab
+                        Loader {
+                            anchors.fill: parent
+                            active: settingsTabBar.currentIndex === 3
+                            visible: active
+                            asynchronous: true
+                            sourceComponent: Component {
+                                AppearanceTab {}
+                            }
                         }
                     }
                 }

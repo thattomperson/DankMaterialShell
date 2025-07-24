@@ -77,31 +77,31 @@ DankModal {
                 anchors.margins: Theme.spacingXL
                 spacing: Theme.spacingL
 
-                Row {
+                RowLayout {
                     Layout.fillWidth: true
                     height: 40
-                    spacing: Theme.spacingM
 
                     StyledText {
-                        anchors.verticalCenter: parent.verticalCenter
                         text: "System Monitor"
                         font.pixelSize: Theme.fontSizeLarge + 4
                         font.weight: Font.Bold
                         color: Theme.surfaceText
+                        Layout.alignment: Qt.AlignVCenter
                     }
 
                     Item {
-                        width: parent.width - 280
-                        height: 1
+                        Layout.fillWidth: true // Spacer to push close button to the right
                     }
 
-                    StyledText {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: SysMonitorService.processes.length + " processes"
-                        font.pixelSize: Theme.fontSizeMedium
-                        color: Theme.surfaceVariantText
-                        width: Math.min(implicitWidth, 120)
-                        elide: Text.ElideRight
+                    // Close button
+                    DankActionButton {
+                        circular: false
+                        iconName: "close"
+                        iconSize: Theme.iconSize - 4
+                        iconColor: Theme.surfaceText
+                        hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                        onClicked: processListModal.hide()
+                        Layout.alignment: Qt.AlignVCenter
                     }
 
                 }
