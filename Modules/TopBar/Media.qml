@@ -9,6 +9,58 @@ Rectangle {
 
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
     readonly property bool playerAvailable: activePlayer !== null
+    
+    // Screen detection for responsive design (same logic as FocusedApp)
+    readonly property bool isSmallScreen: {
+        // Walk up the parent chain to find the TopBar PanelWindow
+        let current = root.parent
+        while (current && !current.screen) {
+            current = current.parent
+        }
+        
+        if (!current || !current.screen) {
+            return true  // Default to small if we can't detect
+        }
+        
+        const s = current.screen
+        
+        // Multi-method detection for laptop/small screens:
+        
+        // Method 1: Check screen name for laptop indicators
+        const screenName = (s.name || "").toLowerCase()
+        if (screenName.includes("edp") || screenName.includes("lvds")) {
+            return true
+        }
+        
+        // Method 2: Check pixel density if available
+        try {
+            if (s.pixelDensity && s.pixelDensity > 1.5) {
+                return true
+            }
+        } catch (e) { /* ignore */ }
+        
+        // Method 3: Check device pixel ratio if available
+        try {
+            if (s.devicePixelRatio && s.devicePixelRatio > 1.25) {
+                return true
+            }
+        } catch (e) { /* ignore */ }
+        
+        // Method 4: Resolution-based fallback for smaller displays
+        if (s.width <= 1920 && s.height <= 1200) {
+            return true
+        }
+        
+        // Method 5: Check for high-res laptop displays
+        if ((s.width === 2400 && s.height === 1600) || 
+            (s.width === 2560 && s.height === 1600) ||
+            (s.width === 2880 && s.height === 1800)) {
+            return true
+        }
+        
+        return false  // Default to large screen
+    }
+    
     readonly property int contentWidth: Math.min(280, mediaRow.implicitWidth + Theme.spacingS * 2)
 
     signal clicked()
@@ -93,6 +145,7 @@ Rectangle {
 
                 anchors.verticalCenter: parent.verticalCenter
                 width: 140
+                visible: !root.isSmallScreen  // Hide title text on small screens
                 text: {
                     if (!activePlayer || !activePlayer.trackTitle)
                         return "";
