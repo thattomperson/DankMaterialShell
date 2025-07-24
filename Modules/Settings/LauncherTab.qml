@@ -34,30 +34,9 @@ ScrollView {
                 anchors.margins: Theme.spacingL
                 spacing: Theme.spacingM
 
-                Row {
-                    width: parent.width
-                    spacing: Theme.spacingM
-
-                    DankIcon {
-                        name: "apps"
-                        size: Theme.iconSize
-                        color: Theme.primary
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    StyledText {
-                        text: "App Launcher"
-                        font.pixelSize: Theme.fontSizeLarge
-                        font.weight: Font.Medium
-                        color: Theme.surfaceText
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                }
-
                 DankToggle {
                     width: parent.width
-                    text: "Use OS Logo for App Launcher"
+                    text: "Use OS Logo"
                     description: "Display operating system logo instead of apps icon"
                     checked: Prefs.useOSLogo
                     onToggled: (checked) => {
@@ -65,111 +44,93 @@ ScrollView {
                     }
                 }
 
-                StyledRect {
-                    width: parent.width
-                    height: logoCustomization.implicitHeight + Theme.spacingM * 2
-                    radius: Theme.cornerRadius
-                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
-                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
-                    border.width: 1
+                Row {
+                    width: parent.width - Theme.spacingL
+                    spacing: Theme.spacingL
                     visible: Prefs.useOSLogo
                     opacity: visible ? 1 : 0
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.spacingL
 
                     Column {
-                        id: logoCustomization
-
-                        anchors.fill: parent
-                        anchors.margins: Theme.spacingM
-                        spacing: Theme.spacingM
+                        width: 120
+                        spacing: Theme.spacingS
 
                         StyledText {
-                            text: "OS Logo Customization"
-                            font.pixelSize: Theme.fontSizeMedium
+                            text: "Color Override"
+                            font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceText
                             font.weight: Font.Medium
                         }
 
-                        Column {
-                            width: parent.width
-                            spacing: Theme.spacingS
-
-                            StyledText {
-                                text: "Color Override"
-                                font.pixelSize: Theme.fontSizeSmall
-                                color: Theme.surfaceText
-                                font.weight: Font.Medium
+                        DankTextField {
+                            width: 100
+                            height: 28
+                            placeholderText: "#ffffff"
+                            text: Prefs.osLogoColorOverride
+                            maximumLength: 7
+                            font.pixelSize: Theme.fontSizeSmall
+                            topPadding: Theme.spacingXS
+                            bottomPadding: Theme.spacingXS
+                            onEditingFinished: {
+                                var color = text.trim();
+                                if (color === "" || /^#[0-9A-Fa-f]{6}$/.test(color))
+                                    Prefs.setOSLogoColorOverride(color);
+                                else
+                                    text = Prefs.osLogoColorOverride;
                             }
-
-                            DankTextField {
-                                width: 160
-                                height: 36
-                                placeholderText: "#ffffff"
-                                text: Prefs.osLogoColorOverride
-                                maximumLength: 7
-                                font.pixelSize: Theme.fontSizeMedium
-                                topPadding: Theme.spacingS
-                                bottomPadding: Theme.spacingS
-                                onEditingFinished: {
-                                    var color = text.trim();
-                                    if (color === "" || /^#[0-9A-Fa-f]{6}$/.test(color))
-                                        Prefs.setOSLogoColorOverride(color);
-                                    else
-                                        text = Prefs.osLogoColorOverride;
-                                }
-                            }
-
                         }
 
-                        Column {
-                            width: parent.width
-                            spacing: Theme.spacingS
+                    }
 
-                            StyledText {
-                                text: "Brightness"
-                                font.pixelSize: Theme.fontSizeSmall
-                                color: Theme.surfaceText
-                                font.weight: Font.Medium
-                            }
+                    Column {
+                        width: 120
+                        spacing: Theme.spacingS
 
-                            DankSlider {
-                                width: parent.width
-                                height: 24
-                                minimum: 0
-                                maximum: 100
-                                value: Math.round(Prefs.osLogoBrightness * 100)
-                                unit: ""
-                                showValue: true
-                                onSliderValueChanged: (newValue) => {
-                                    Prefs.setOSLogoBrightness(newValue / 100);
-                                }
-                            }
-
+                        StyledText {
+                            text: "Brightness"
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
                         }
 
-                        Column {
-                            width: parent.width
-                            spacing: Theme.spacingS
-
-                            StyledText {
-                                text: "Contrast"
-                                font.pixelSize: Theme.fontSizeSmall
-                                color: Theme.surfaceText
-                                font.weight: Font.Medium
+                        DankSlider {
+                            width: 100
+                            height: 20
+                            minimum: 0
+                            maximum: 100
+                            value: Math.round(Prefs.osLogoBrightness * 100)
+                            unit: "%"
+                            showValue: true
+                            onSliderValueChanged: (newValue) => {
+                                Prefs.setOSLogoBrightness(newValue / 100);
                             }
+                        }
 
-                            DankSlider {
-                                width: parent.width
-                                height: 24
-                                minimum: 0
-                                maximum: 200
-                                value: Math.round(Prefs.osLogoContrast * 100)
-                                unit: ""
-                                showValue: true
-                                onSliderValueChanged: (newValue) => {
-                                    Prefs.setOSLogoContrast(newValue / 100);
-                                }
+                    }
+
+                    Column {
+                        width: 120
+                        spacing: Theme.spacingS
+
+                        StyledText {
+                            text: "Contrast"
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
+                        }
+
+                        DankSlider {
+                            width: 100
+                            height: 20
+                            minimum: 0
+                            maximum: 200
+                            value: Math.round(Prefs.osLogoContrast * 100)
+                            unit: "%"
+                            showValue: true
+                            onSliderValueChanged: (newValue) => {
+                                Prefs.setOSLogoContrast(newValue / 100);
                             }
-
                         }
 
                     }
@@ -269,7 +230,7 @@ ScrollView {
 
                 StyledText {
                     width: parent.width
-                    text: "Apps are ordered by usage frequency, then alphabetically."
+                    text: "Apps are ordered by usage frequency, then last used, then alphabetically."
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                     wrapMode: Text.WordWrap
