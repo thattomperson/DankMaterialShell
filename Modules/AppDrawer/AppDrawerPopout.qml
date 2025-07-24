@@ -145,6 +145,7 @@ PanelWindow {
 
             // Content with focus management
             Item {
+                id: keyHandler
                 anchors.fill: parent
                 focus: true
                 Component.onCompleted: {
@@ -172,10 +173,10 @@ PanelWindow {
                     } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                         appLauncher.launchSelected();
                         event.accepted = true;
-                    } else if (event.text && event.text.length > 0 && event.text.match(/[a-zA-Z0-9\\s]/)) {
+                    } else if (!searchField.activeFocus && event.text && event.text.length > 0 && event.text.match(/[a-zA-Z0-9\\s]/)) {
                         // User started typing, focus search field and pass the character
                         searchField.forceActiveFocus();
-                        searchField.text = event.text;
+                        searchField.insertText(event.text);
                         event.accepted = true;
                     }
                 }
@@ -233,17 +234,21 @@ PanelWindow {
                         font.pixelSize: Theme.fontSizeLarge
                         enabled: appDrawerPopout.isVisible
                         placeholderText: "Search applications..."
+                        ignoreLeftRightKeys: true
+                        keyForwardTargets: [keyHandler]
                         onTextEdited: {
                             appLauncher.searchQuery = text;
                         }
                         Keys.onPressed: function(event) {
-                            if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && appLauncher.model.count && text.length > 0) {
-                                // Launch first app when typing in search field
-                                var firstApp = appLauncher.model.get(0);
-                                appLauncher.launchApp(firstApp);
+                            if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length > 0) {
+                                if (appLauncher.keyboardNavigationActive && appLauncher.model.count > 0) {
+                                    appLauncher.launchSelected();
+                                } else if (appLauncher.model.count > 0) {
+                                    var firstApp = appLauncher.model.get(0);
+                                    appLauncher.launchApp(firstApp);
+                                }
                                 event.accepted = true;
-                            } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || (event.key === Qt.Key_Left && appLauncher.viewMode === "grid") || (event.key === Qt.Key_Right && appLauncher.viewMode === "grid") || ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
-                                // Pass navigation keys and enter (when not searching) to main handler
+                            } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || event.key === Qt.Key_Left || event.key === Qt.Key_Right || ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
                                 event.accepted = false;
                             }
                         }

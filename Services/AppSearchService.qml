@@ -119,7 +119,6 @@ Singleton {
     // Category icon mappings
     property var categoryIcons: ({
         "All": "apps",
-        "Recents": "history",
         "Media": "music_video",
         "Development": "code",
         "Games": "sports_esports",

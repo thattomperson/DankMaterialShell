@@ -20,7 +20,7 @@ DankModal {
     }
     // DankModal configuration
     visible: settingsVisible
-    width: 650
+    width: 750
     height: 750
     keyboardFocus: "ondemand"
     onBackgroundClicked: {
@@ -92,6 +92,7 @@ DankModal {
                         { text: "Personalization", icon: "person" },
                         { text: "Time & Weather", icon: "schedule" },
                         { text: "Widgets", icon: "widgets" },
+                        { text: "Launcher", icon: "apps" },
                         { text: "Appearance", icon: "palette" }
                     ]
                 }
@@ -128,7 +129,7 @@ DankModal {
                             }
                         }
                         
-                        // System Tab
+                        // Widgets Tab
                         Loader {
                             anchors.fill: parent
                             active: settingsTabBar.currentIndex === 2
@@ -139,10 +140,21 @@ DankModal {
                             }
                         }
                         
-                        // Appearance Tab
+                        // Launcher Tab
                         Loader {
                             anchors.fill: parent
                             active: settingsTabBar.currentIndex === 3
+                            visible: active
+                            asynchronous: true
+                            sourceComponent: Component {
+                                LauncherTab {}
+                            }
+                        }
+                        
+                        // Appearance Tab
+                        Loader {
+                            anchors.fill: parent
+                            active: settingsTabBar.currentIndex === 4
                             visible: active
                             asynchronous: true
                             sourceComponent: Component {

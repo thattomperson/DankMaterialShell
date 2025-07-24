@@ -15,7 +15,7 @@ Singleton {
     property bool isLightMode: false
     property real topBarTransparency: 0.75
     property real popupTransparency: 0.92
-    property var recentlyUsedApps: []
+    property var appUsageRanking: {}
     property bool use24HourClock: true
     property bool useFahrenheit: false
     property bool nightModeEnabled: false
@@ -58,7 +58,7 @@ Singleton {
                 isLightMode = settings.isLightMode !== undefined ? settings.isLightMode : false;
                 topBarTransparency = settings.topBarTransparency !== undefined ? (settings.topBarTransparency > 1 ? settings.topBarTransparency / 100 : settings.topBarTransparency) : 0.75;
                 popupTransparency = settings.popupTransparency !== undefined ? (settings.popupTransparency > 1 ? settings.popupTransparency / 100 : settings.popupTransparency) : 0.92;
-                recentlyUsedApps = settings.recentlyUsedApps || [];
+                appUsageRanking = settings.appUsageRanking || {};
                 use24HourClock = settings.use24HourClock !== undefined ? settings.use24HourClock : true;
                 useFahrenheit = settings.useFahrenheit !== undefined ? settings.useFahrenheit : false;
                 nightModeEnabled = settings.nightModeEnabled !== undefined ? settings.nightModeEnabled : false;
@@ -104,7 +104,7 @@ Singleton {
             "isLightMode": isLightMode,
             "topBarTransparency": topBarTransparency,
             "popupTransparency": popupTransparency,
-            "recentlyUsedApps": recentlyUsedApps,
+            "appUsageRanking": appUsageRanking,
             "use24HourClock": use24HourClock,
             "useFahrenheit": useFahrenheit,
             "nightModeEnabled": nightModeEnabled,
@@ -179,56 +179,77 @@ Singleton {
         saveSettings();
     }
 
-    function addRecentApp(app) {
+    function addAppUsage(app) {
         if (!app)
-            return ;
+            return;
 
-        var execProp = app.execString || app.exec || "";
-        if (!execProp)
-            return ;
+        var appId = app.id || (app.execString || app.exec || "");
+        if (!appId)
+            return;
 
-        var existingIndex = -1;
-        for (var i = 0; i < recentlyUsedApps.length; i++) {
-            if (recentlyUsedApps[i].exec === execProp) {
-                existingIndex = i;
-                break;
-            }
-        }
-        if (existingIndex >= 0) {
-            // App exists, increment usage count
-            recentlyUsedApps[existingIndex].usageCount = (recentlyUsedApps[existingIndex].usageCount || 1) + 1;
-            recentlyUsedApps[existingIndex].lastUsed = Date.now();
+        var currentRanking = Object.assign({}, appUsageRanking);
+        
+        if (currentRanking[appId]) {
+            currentRanking[appId].usageCount = (currentRanking[appId].usageCount || 1) + 1;
+            currentRanking[appId].lastUsed = Date.now();
+            currentRanking[appId].icon = app.icon || currentRanking[appId].icon || "application-x-executable";
+            currentRanking[appId].name = app.name || currentRanking[appId].name || "";
         } else {
-            // New app, create entry
-            var appData = {
+            currentRanking[appId] = {
                 "name": app.name || "",
-                "exec": execProp,
+                "exec": app.execString || app.exec || "",
                 "icon": app.icon || "application-x-executable",
                 "comment": app.comment || "",
                 "usageCount": 1,
                 "lastUsed": Date.now()
             };
-            recentlyUsedApps.push(appData);
         }
-        // Sort by usage count (descending), then alphabetically by name
-        var sortedApps = recentlyUsedApps.sort(function(a, b) {
-            if (a.usageCount !== b.usageCount)
-                return b.usageCount - a.usageCount;
-
-            // Higher usage count first
-            return a.name.localeCompare(b.name);
-        });
-        // Limit to 10 apps
-        if (sortedApps.length > 10)
-            sortedApps = sortedApps.slice(0, 10);
-
-        // Reassign to trigger property change signal
-        recentlyUsedApps = sortedApps;
+        
+        appUsageRanking = currentRanking;
         saveSettings();
     }
 
-    function getRecentApps() {
-        return recentlyUsedApps;
+    function getAppUsageRanking() {
+        return appUsageRanking;
+    }
+
+    function getRankedApps() {
+        var apps = [];
+        for (var appId in appUsageRanking) {
+            var appData = appUsageRanking[appId];
+            apps.push({
+                id: appId,
+                name: appData.name,
+                exec: appData.exec,
+                icon: appData.icon,
+                comment: appData.comment,
+                usageCount: appData.usageCount,
+                lastUsed: appData.lastUsed
+            });
+        }
+        
+        return apps.sort(function(a, b) {
+            if (a.usageCount !== b.usageCount)
+                return b.usageCount - a.usageCount;
+            return a.name.localeCompare(b.name);
+        });
+    }
+
+    function cleanupAppUsageRanking(availableAppIds) {
+        var currentRanking = Object.assign({}, appUsageRanking);
+        var hasChanges = false;
+        
+        for (var appId in currentRanking) {
+            if (availableAppIds.indexOf(appId) === -1) {
+                delete currentRanking[appId];
+                hasChanges = true;
+            }
+        }
+        
+        if (hasChanges) {
+            appUsageRanking = currentRanking;
+            saveSettings();
+        }
     }
 
     // New preference setters

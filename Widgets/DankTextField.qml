@@ -39,6 +39,10 @@ Rectangle {
     property real topPadding: Theme.spacingM
     property real bottomPadding: Theme.spacingM
 
+    // Behavior control
+    property bool ignoreLeftRightKeys: false
+    property var keyForwardTargets: []
+    
     // Signals
     signal textEdited()
     signal editingFinished()
@@ -83,6 +87,10 @@ Rectangle {
         textInput.cut();
     }
 
+    function insertText(str) {
+        textInput.insert(textInput.cursorPosition, str);
+    }
+
     function clearFocus() {
         textInput.focus = false;
     }
@@ -119,12 +127,26 @@ Rectangle {
         font.pixelSize: Theme.fontSizeMedium
         color: Theme.surfaceText
         verticalAlignment: TextInput.AlignVCenter
-        selectByMouse: true
+        selectByMouse: !root.ignoreLeftRightKeys
         clip: true
         onTextChanged: root.textEdited()
         onEditingFinished: root.editingFinished()
         onAccepted: root.accepted()
         onActiveFocusChanged: root.focusStateChanged(activeFocus)
+        
+        Keys.forwardTo: root.ignoreLeftRightKeys ? root.keyForwardTargets : []
+        
+        Keys.onLeftPressed: function(event) {
+            if (root.ignoreLeftRightKeys) {
+                event.accepted = true;
+            }
+        }
+        
+        Keys.onRightPressed: function(event) {
+            if (root.ignoreLeftRightKeys) {
+                event.accepted = true;
+            }
+        }
 
         MouseArea {
             anchors.fill: parent

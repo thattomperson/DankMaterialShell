@@ -58,9 +58,9 @@ Item {
         width: parent.width
         spacing: Theme.spacingS
 
-        // Top row: All, Recents, Development, Graphics (4 items)
+        // Top row: All, Development, Graphics, Games (4 items)
         Row {
-            property var topRowCategories: ["All", "Recents", "Development", "Graphics"]
+            property var topRowCategories: ["All", "Development", "Graphics", "Games"]
 
             width: parent.width
             spacing: Theme.spacingS

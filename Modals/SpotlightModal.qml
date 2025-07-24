@@ -93,6 +93,7 @@ DankModal {
 
     content: Component {
         Item {
+            id: spotlightKeyHandler
             anchors.fill: parent
             focus: true
             // Handle keyboard shortcuts
@@ -115,9 +116,9 @@ DankModal {
                 } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                     appLauncher.launchSelected();
                     event.accepted = true;
-                } else if (event.text && event.text.length > 0 && event.text.match(/[a-zA-Z0-9\\s]/)) {
-                    searchField.text = event.text;
+                } else if (!searchField.activeFocus && event.text && event.text.length > 0 && event.text.match(/[a-zA-Z0-9\\s]/)) {
                     searchField.forceActiveFocus();
+                    searchField.insertText(event.text);
                     event.accepted = true;
                 }
             }
@@ -162,6 +163,8 @@ DankModal {
                         font.pixelSize: Theme.fontSizeLarge
                         enabled: spotlightOpen
                         placeholderText: "Search applications..."
+                        ignoreLeftRightKeys: true
+                        keyForwardTargets: [spotlightKeyHandler]
                         text: appLauncher.searchQuery
                         onTextEdited: {
                             appLauncher.searchQuery = text;
@@ -170,14 +173,14 @@ DankModal {
                             if (event.key === Qt.Key_Escape) {
                                 hide();
                                 event.accepted = true;
-                            } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && appLauncher.searchQuery.length > 0) {
-                                // Launch first app when typing in search field
-                                if (appLauncher.model.count > 0)
+                            } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length > 0) {
+                                if (appLauncher.keyboardNavigationActive && appLauncher.model.count > 0) {
+                                    appLauncher.launchSelected();
+                                } else if (appLauncher.model.count > 0) {
                                     appLauncher.launchApp(appLauncher.model.get(0));
-
+                                }
                                 event.accepted = true;
-                            } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || (event.key === Qt.Key_Left && appLauncher.viewMode === "grid") || (event.key === Qt.Key_Right && appLauncher.viewMode === "grid") || ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && appLauncher.searchQuery.length === 0)) {
-                                // Pass navigation keys and enter (when not searching) to main handler
+                            } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || event.key === Qt.Key_Left || event.key === Qt.Key_Right || ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
                                 event.accepted = false;
                             }
                         }

@@ -550,8 +550,8 @@ DankModal {
                                 anchors.right: parent.right
                                 anchors.rightMargin: Theme.spacingM
                                 anchors.verticalCenter: parent.verticalCenter
-                                iconName: "dangerous"
-                                iconSize: Theme.iconSize - 4
+                                iconName: "close"
+                                iconSize: Theme.iconSize - 6
                                 iconColor: Theme.error
                                 hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
                                 onClicked: {

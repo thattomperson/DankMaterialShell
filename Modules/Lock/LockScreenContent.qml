@@ -598,13 +598,13 @@ Item {
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.margins: Theme.spacingL
-            width: Math.min(600, parent.width - Theme.spacingXL * 2)
+            width: Math.min(parent.width - Theme.spacingXL * 2, implicitWidth)
             text: randomFact
             font.pixelSize: Theme.fontSizeSmall
             color: "white"
             opacity: 0.8
             horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.WordWrap
+            wrapMode: Text.NoWrap
             visible: randomFact !== ""
         }
     }

@@ -24,7 +24,7 @@ Item {
         var allCategories = AppSearchService.getAllCategories().filter(cat => {
             return cat !== "Education" && cat !== "Science";
         });
-        var result = ["All", "Recents"];
+        var result = ["All"];
         return result.concat(allCategories.filter(cat => {
             return cat !== "All";
         }));
@@ -33,13 +33,8 @@ Item {
     // Category icons (computed from AppSearchService)
     property var categoryIcons: categories.map(category => AppSearchService.getCategoryIcon(category))
 
-    // Recent apps helper
-    property var recentApps: Prefs.recentlyUsedApps.map(recentApp => {
-        var app = AppSearchService.getAppByExec(recentApp.exec);
-        return app && !app.noDisplay ? app : null;
-    }).filter(app => {
-        return app !== null;
-    })
+    // App usage ranking helper
+    property var appUsageRanking: Prefs.appUsageRanking
 
     // Signals
     signal appLaunched(var app)
@@ -70,10 +65,12 @@ Item {
         }
     }
     onSelectedCategoryChanged: updateFilteredModel()
+    onAppUsageRankingChanged: updateFilteredModel()
 
     function updateFilteredModel() {
         filteredModel.clear();
         selectedIndex = 0;
+        keyboardNavigationActive = false;
 
         var apps = [];
 
@@ -81,8 +78,6 @@ Item {
             // Show apps from category
             if (selectedCategory === "All") {
                 apps = AppSearchService.applications || [];
-            } else if (selectedCategory === "Recents") {
-                apps = recentApps;
             } else {
                 var categoryApps = AppSearchService.getAppsInCategory(selectedCategory);
                 apps = categoryApps.slice(0, maxResults);
@@ -91,16 +86,6 @@ Item {
             // Search with category filter
             if (selectedCategory === "All") {
                 apps = AppSearchService.searchApplications(searchQuery);
-            } else if (selectedCategory === "Recents") {
-                if (recentApps.length > 0) {
-                    var allSearchResults = AppSearchService.searchApplications(searchQuery);
-                    var recentNames = new Set(recentApps.map(app => app.name));
-                    apps = allSearchResults.filter(searchApp => {
-                        return recentNames.has(searchApp.name);
-                    });
-                } else {
-                    apps = [];
-                }
             } else {
                 var categoryApps = AppSearchService.getAppsInCategory(selectedCategory);
                 if (categoryApps.length > 0) {
@@ -114,6 +99,21 @@ Item {
                 }
             }
         }
+        
+        // Sort apps by usage ranking, then alphabetically
+        apps = apps.sort(function(a, b) {
+            var aId = a.id || (a.execString || a.exec || "");
+            var bId = b.id || (b.execString || b.exec || "");
+            
+            var aUsage = appUsageRanking[aId] ? appUsageRanking[aId].usageCount : 0;
+            var bUsage = appUsageRanking[bId] ? appUsageRanking[bId].usageCount : 0;
+            
+            if (aUsage !== bUsage) {
+                return bUsage - aUsage; // Higher usage first
+            }
+            
+            return (a.name || "").localeCompare(b.name || ""); // Alphabetical fallback
+        });
 
         // Convert to model format and populate
         apps.forEach(app => {
@@ -178,16 +178,14 @@ Item {
     }
 
     function launchApp(appData) {
-        if (appData.desktopEntry) {
-            Prefs.addRecentApp(appData.desktopEntry);
-            appData.desktopEntry.execute();
-        } else {
-            // Fallback to direct execution
-            var cleanExec = appData.exec.replace(/%[fFuU]/g, "").trim();
-            console.log("AppLauncher: Launching app directly:", cleanExec);
-            Quickshell.execDetached(["sh", "-c", cleanExec]);
+        if (!appData) {
+            console.warn("AppLauncher: No app data provided");
+            return;
         }
+        
+        appData.desktopEntry.execute();
         appLaunched(appData);
+        Prefs.addAppUsage(appData.desktopEntry);
     }
 
     // Category management
