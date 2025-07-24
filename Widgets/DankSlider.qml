@@ -58,7 +58,9 @@ Item {
                         duration: Theme.shortDuration
                         easing.type: Theme.standardEasing
                     }
+
                 }
+
             }
 
             StyledRect {
@@ -85,15 +87,9 @@ Item {
                     visible: sliderMouseArea.containsMouse && slider.enabled
                 }
 
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: Theme.shortDuration
-                        easing.type: Theme.standardEasing
-                    }
-                }
-                
                 StyledRect {
                     id: valueTooltip
+
                     width: tooltipText.contentWidth + Theme.spacingS * 2
                     height: tooltipText.contentHeight + Theme.spacingXS * 2
                     radius: Theme.cornerRadiusSmall
@@ -105,9 +101,10 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     visible: (sliderMouseArea.containsMouse && slider.showValue) || (slider.isDragging && slider.showValue)
                     opacity: visible ? 1 : 0
-                    
+
                     Text {
                         id: tooltipText
+
                         text: slider.value + slider.unit
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceText
@@ -115,14 +112,25 @@ Item {
                         anchors.centerIn: parent
                         font.hintingPreference: Font.PreferFullHinting
                     }
-                    
+
                     Behavior on opacity {
                         NumberAnimation {
                             duration: Theme.shortDuration
                             easing.type: Theme.standardEasing
                         }
+
                     }
+
                 }
+
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: Theme.shortDuration
+                        easing.type: Theme.standardEasing
+                    }
+
+                }
+
             }
 
             Item {
@@ -201,7 +209,9 @@ Item {
                         }
                     }
                 }
+
             }
+
         }
 
         DankIcon {
@@ -211,6 +221,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             visible: slider.rightIcon.length > 0
         }
+
     }
 
 }

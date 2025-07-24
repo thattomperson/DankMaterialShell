@@ -296,18 +296,26 @@ ScrollView {
 
                                     StyledText {
                                         text: {
-                                            if (!modelData.lastUsed) return "Never used";
+                                            if (!modelData.lastUsed)
+                                                return "Never used";
+
                                             var date = new Date(modelData.lastUsed);
                                             var now = new Date();
                                             var diffMs = now - date;
                                             var diffMins = Math.floor(diffMs / (1000 * 60));
                                             var diffHours = Math.floor(diffMs / (1000 * 60 * 60));
                                             var diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                                            
-                                            if (diffMins < 1) return "Last launched just now";
-                                            if (diffMins < 60) return "Last launched " + diffMins + " minute" + (diffMins === 1 ? "" : "s") + " ago";
-                                            if (diffHours < 24) return "Last launched " + diffHours + " hour" + (diffHours === 1 ? "" : "s") + " ago";
-                                            if (diffDays < 7) return "Last launched " + diffDays + " day" + (diffDays === 1 ? "" : "s") + " ago";
+                                            if (diffMins < 1)
+                                                return "Last launched just now";
+
+                                            if (diffMins < 60)
+                                                return "Last launched " + diffMins + " minute" + (diffMins === 1 ? "" : "s") + " ago";
+
+                                            if (diffHours < 24)
+                                                return "Last launched " + diffHours + " hour" + (diffHours === 1 ? "" : "s") + " ago";
+
+                                            if (diffDays < 7)
+                                                return "Last launched " + diffDays + " day" + (diffDays === 1 ? "" : "s") + " ago";
 
                                             return "Last launched " + date.toLocaleDateString();
                                         }
@@ -329,7 +337,8 @@ ScrollView {
                                 iconColor: Theme.error
                                 hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
                                 onClicked: {
-                                    var currentRanking = Object.assign({}, Prefs.appUsageRanking);
+                                    var currentRanking = Object.assign({
+                                    }, Prefs.appUsageRanking);
                                     delete currentRanking[modelData.id];
                                     Prefs.appUsageRanking = currentRanking;
                                     Prefs.saveSettings();

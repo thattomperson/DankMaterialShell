@@ -16,6 +16,11 @@ Column {
 
     width: parent.width
     spacing: expanded ? Theme.spacingM : 0
+    Component.onCompleted: {
+        if (!collapsible)
+            expanded = true;
+
+    }
 
     // Section header
     MouseArea {
@@ -23,7 +28,12 @@ Column {
         height: headerRow.height
         enabled: collapsible
         hoverEnabled: collapsible
-        
+        onClicked: {
+            if (collapsible)
+                expanded = !expanded;
+
+        }
+
         Rectangle {
             anchors.fill: parent
             color: parent.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
@@ -32,7 +42,7 @@ Column {
 
         Row {
             id: headerRow
-            
+
             width: parent.width
             spacing: Theme.spacingS
             topPadding: Theme.spacingS
@@ -43,14 +53,16 @@ Column {
                 size: Theme.iconSize - 2
                 color: Theme.primary
                 anchors.verticalCenter: parent.verticalCenter
-                
+
                 Behavior on rotation {
                     NumberAnimation {
                         duration: Appearance.anim.durations.fast
                         easing.type: Easing.BezierSpline
                         easing.bezierCurve: Appearance.anim.curves.standard
                     }
+
                 }
+
             }
 
             DankIcon {
@@ -68,13 +80,9 @@ Column {
                 font.weight: Font.Medium
                 anchors.verticalCenter: parent.verticalCenter
             }
+
         }
-        
-        onClicked: {
-            if (collapsible) {
-                expanded = !expanded
-            }
-        }
+
     }
 
     // Divider
@@ -93,21 +101,17 @@ Column {
         active: lazyLoad ? expanded || !collapsible : true
         visible: expanded || !collapsible
         asynchronous: true
-        
+        opacity: visible ? 1 : 0
+
         Behavior on opacity {
             NumberAnimation {
                 duration: Appearance.anim.durations.normal
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Appearance.anim.curves.standard
             }
+
         }
-        
-        opacity: visible ? 1 : 0
+
     }
 
-    Component.onCompleted: {
-        if (!collapsible) {
-            expanded = true
-        }
-    }
 }

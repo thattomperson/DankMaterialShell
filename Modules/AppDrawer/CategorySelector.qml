@@ -48,8 +48,11 @@ Item {
                         categorySelected(modelData);
                     }
                 }
+
             }
+
         }
+
     }
 
     // Two-row layout (for SpotlightModal organized style)
@@ -66,7 +69,7 @@ Item {
             spacing: Theme.spacingS
 
             Repeater {
-                model: parent.topRowCategories.filter(cat => {
+                model: parent.topRowCategories.filter((cat) => {
                     return categories.includes(cat);
                 })
 
@@ -95,8 +98,11 @@ Item {
                             categorySelected(modelData);
                         }
                     }
+
                 }
+
             }
+
         }
 
         // Bottom row: Internet, Media, Office, Settings, System (5 items)
@@ -107,7 +113,7 @@ Item {
             spacing: Theme.spacingS
 
             Repeater {
-                model: parent.bottomRowCategories.filter(cat => {
+                model: parent.bottomRowCategories.filter((cat) => {
                     return categories.includes(cat);
                 })
 
@@ -136,8 +142,13 @@ Item {
                             categorySelected(modelData);
                         }
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

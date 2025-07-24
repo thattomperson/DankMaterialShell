@@ -16,7 +16,7 @@ PanelWindow {
 
     visible: notificationHistoryVisible
     implicitWidth: 400
-    implicitHeight: Math.min(Screen.height * 0.60, Math.max(580, (notificationsList.contentHeight || 0) + 140))
+    implicitHeight: Math.min(Screen.height * 0.6, Math.max(580, (notificationsList.contentHeight || 0) + 140))
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -39,7 +39,7 @@ PanelWindow {
 
     Rectangle {
         width: 400
-        height: Math.min(Screen.height * 0.60, Math.max(580, (notificationsList.contentHeight || 0) + 140))
+        height: Math.min(Screen.height * 0.6, Math.max(580, (notificationsList.contentHeight || 0) + 140))
         x: Screen.width - width - Theme.spacingL
         y: Theme.barHeight + Theme.spacingXS
         color: Theme.popupBackground()
@@ -710,7 +710,6 @@ PanelWindow {
 
                                     delegate: Rectangle {
                                         required property var modelData
-
                                         readonly property bool messageExpanded: NotificationService.expandedMessages[modelData.notification.id] || false
 
                                         width: parent.width
@@ -726,7 +725,7 @@ PanelWindow {
 
                                             Rectangle {
                                                 id: messageIcon
-                                                
+
                                                 readonly property bool hasNotificationImage: modelData.image && modelData.image !== ""
 
                                                 width: 32
@@ -830,7 +829,6 @@ PanelWindow {
                                                             bodyText = bodyText.length > 500 ? bodyText.substring(0, 497) + "..." : bodyText;
                                                         else
                                                             bodyText = bodyText.length > 80 ? bodyText.substring(0, 77) + "..." : bodyText;
-
                                                         // Auto-detect and make URLs clickable
                                                         const urlRegex = /(https?:\/\/[^\s]+)/g;
                                                         return bodyText.replace(urlRegex, '<a href="$1" style="color: ' + Theme.primary + '; text-decoration: underline;">$1</a>');
@@ -915,7 +913,6 @@ PanelWindow {
                                                 }
 
                                             }
-
 
                                         }
 
@@ -1114,6 +1111,7 @@ PanelWindow {
                 duration: Theme.shortDuration
                 easing.type: Theme.standardEasing
             }
+
         }
 
         Behavior on opacity {

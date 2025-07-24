@@ -18,11 +18,10 @@ Rectangle {
     height: 60
     radius: Theme.cornerRadius
     color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
-
     onVisibleChanged: {
-        if (!visible && dropdownMenu.visible) {
+        if (!visible && dropdownMenu.visible)
             dropdownMenu.close();
-        }
+
     }
 
     Column {
@@ -48,6 +47,7 @@ Rectangle {
             wrapMode: Text.WordWrap
             width: parent.width
         }
+
     }
 
     Rectangle {
@@ -69,7 +69,6 @@ Rectangle {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-
             onClicked: {
                 if (dropdownMenu.visible) {
                     dropdownMenu.close();
@@ -85,6 +84,7 @@ Rectangle {
         // Use a Row for the left-aligned content (icon + text)
         Row {
             id: contentRow
+
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             anchors.leftMargin: Theme.spacingM
@@ -108,11 +108,13 @@ Rectangle {
                 width: dropdown.width - contentRow.x - expandIcon.width - Theme.spacingM - Theme.spacingS
                 elide: Text.ElideRight
             }
+
         }
 
         // Anchor the expand icon to the right, outside of the Row
         DankIcon {
             id: expandIcon
+
             name: "expand_more"
             size: 20
             color: Theme.surfaceVariantText
@@ -120,18 +122,21 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             anchors.rightMargin: Theme.spacingS
         }
+
     }
 
     Popup {
         id: dropdownMenu
+
         parent: Overlay.overlay
-        
         width: 180
         height: Math.min(200, root.options.length * 36 + 16)
-        
         padding: 0
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
-        background: Rectangle { color: "transparent" }
+
+        background: Rectangle {
+            color: "transparent"
+        }
 
         contentItem: Rectangle {
             color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 1)
@@ -159,14 +164,14 @@ Rectangle {
                             anchors.leftMargin: Theme.spacingS
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: Theme.spacingS
-                            
+
                             DankIcon {
                                 name: root.optionIcons.length > index ? root.optionIcons[index] : ""
                                 size: 18
                                 color: root.currentValue === modelData ? Theme.primary : Theme.surfaceVariantText
                                 visible: name !== ""
                             }
-                            
+
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData
@@ -174,10 +179,12 @@ Rectangle {
                                 color: root.currentValue === modelData ? Theme.primary : Theme.surfaceText
                                 font.weight: root.currentValue === modelData ? Font.Medium : Font.Normal
                             }
+
                         }
 
                         MouseArea {
                             id: optionArea
+
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
@@ -187,9 +194,15 @@ Rectangle {
                                 dropdownMenu.close();
                             }
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

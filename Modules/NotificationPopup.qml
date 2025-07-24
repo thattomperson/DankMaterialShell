@@ -16,7 +16,7 @@ PanelWindow {
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     color: "transparent"
     implicitWidth: 400
-    implicitHeight: Math.min(Screen.height * 0.60, Math.max(400, (notificationsList.contentHeight || 0) + 32))
+    implicitHeight: Math.min(Screen.height * 0.6, Math.max(400, (notificationsList.contentHeight || 0) + 32))
 
     anchors {
         top: true
@@ -35,17 +35,10 @@ PanelWindow {
         anchors.rightMargin: 16
         anchors.bottomMargin: 16
         width: 380
-        height: Math.min(Screen.height * 0.60 - 32, Math.max(368, (notificationsList.contentHeight || 0) + 32))
+        height: Math.min(Screen.height * 0.6 - 32, Math.max(368, (notificationsList.contentHeight || 0) + 32))
         color: "transparent"
         radius: 12
         clip: true
-
-        Behavior on height {
-            NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
-            }
-        }
 
         ScrollView {
             anchors.fill: parent
@@ -607,6 +600,7 @@ PanelWindow {
                                                             // Body text with expand capability
                                                             Text {
                                                                 id: bodyText
+
                                                                 property bool hasUrls: {
                                                                     const urlRegex = /(https?:\/\/[^\s]+)/g;
                                                                     return urlRegex.test(modelData.body || "");
@@ -904,6 +898,14 @@ PanelWindow {
 
                 }
 
+            }
+
+        }
+
+        Behavior on height {
+            NumberAnimation {
+                duration: Theme.shortDuration
+                easing.type: Theme.standardEasing
             }
 
         }

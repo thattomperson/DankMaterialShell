@@ -139,8 +139,7 @@ ShellRoot {
         target: "processlist"
     }
 
-    // Toast {
-    //     id: toastWidget
-    // }
-
+    Toast {
+        id: toastWidget
+    }
 }

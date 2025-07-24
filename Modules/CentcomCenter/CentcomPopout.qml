@@ -6,8 +6,8 @@ import Quickshell.Services.Mpris
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
-import qs.Services
 import qs.Modules.CentcomCenter
+import qs.Services
 
 PanelWindow {
     id: root
@@ -17,25 +17,25 @@ PanelWindow {
     property bool internalVisible: false
 
     visible: internalVisible
-    
     onCalendarVisibleChanged: {
         if (calendarVisible) {
-            internalVisible = true
+            internalVisible = true;
             Qt.callLater(() => {
                 // This ensures opacity changes after window is visible
-                internalVisible = true // Force re-trigger if needed
+                internalVisible = true;
+                // Force re-trigger if needed
                 // Ensure events are loaded for current display month
-                calendarGrid.loadEventsForMonth()
-            })
+                calendarGrid.loadEventsForMonth();
+            });
         } else {
-            internalVisible = false
+            internalVisible = false;
         }
     }
     onVisibleChanged: {
         if (visible && calendarGrid)
             calendarGrid.loadEventsForMonth();
+
     }
-    
     implicitWidth: 480
     implicitHeight: 600
     WlrLayershell.layer: WlrLayershell.Overlay
@@ -52,6 +52,8 @@ PanelWindow {
 
     Rectangle {
         id: mainContainer
+
+        readonly property real targetWidth: Math.min(Screen.width * 0.9, 600)
 
         function calculateWidth() {
             let baseWidth = 320;
@@ -80,7 +82,6 @@ PanelWindow {
             return Math.min(contentHeight, parent.height * 0.9);
         }
 
-        readonly property real targetWidth: Math.min(Screen.width * 0.9, 600)
         width: targetWidth
         height: calculateHeight()
         color: Theme.surfaceContainer
@@ -92,44 +93,27 @@ PanelWindow {
         scale: calendarVisible ? 1 : 0.9
         x: (Screen.width - targetWidth) / 2
         y: Theme.barHeight + 4
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Anims.durMed
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Anims.emphasized
-            }
-        }
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: Anims.durMed
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Anims.emphasized
-            }
-        }
-
         // Only resize after animation is complete
         onOpacityChanged: {
-            if (opacity === 1) {
+            if (opacity === 1)
                 // Animation finished, now we can safely resize
                 Qt.callLater(() => {
                     height = calculateHeight();
                 });
-            }
+
         }
 
         Connections {
             function onEventsByDateChanged() {
-                if (mainContainer.opacity === 1) {
+                if (mainContainer.opacity === 1)
                     mainContainer.height = mainContainer.calculateHeight();
-                }
+
             }
 
             function onKhalAvailableChanged() {
-                if (mainContainer.opacity === 1) {
+                if (mainContainer.opacity === 1)
                     mainContainer.height = mainContainer.calculateHeight();
-                }
+
             }
 
             target: CalendarService
@@ -138,9 +122,9 @@ PanelWindow {
 
         Connections {
             function onSelectedDateEventsChanged() {
-                if (mainContainer.opacity === 1) {
+                if (mainContainer.opacity === 1)
                     mainContainer.height = mainContainer.calculateHeight();
-                }
+
             }
 
             target: events
@@ -171,8 +155,6 @@ PanelWindow {
             }
 
         }
-
-
 
         Column {
             anchors.fill: parent
@@ -236,6 +218,24 @@ PanelWindow {
 
         }
 
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
+            }
+
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
+            }
+
+        }
+
         layer.effect: MultiEffect {
             shadowEnabled: true
             shadowHorizontalOffset: 0
@@ -244,8 +244,6 @@ PanelWindow {
             shadowColor: Qt.rgba(0, 0, 0, 0.15)
             shadowOpacity: 0.15
         }
-
-
 
     }
 
@@ -256,10 +254,9 @@ PanelWindow {
         onClicked: function(mouse) {
             // Only close if click is outside the main container
             var localPos = mapToItem(mainContainer, mouse.x, mouse.y);
-            if (localPos.x < 0 || localPos.x > mainContainer.width || 
-                localPos.y < 0 || localPos.y > mainContainer.height) {
+            if (localPos.x < 0 || localPos.x > mainContainer.width || localPos.y < 0 || localPos.y > mainContainer.height)
                 calendarVisible = false;
-            }
+
         }
     }
 

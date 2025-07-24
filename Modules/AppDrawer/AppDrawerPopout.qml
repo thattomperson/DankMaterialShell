@@ -6,9 +6,9 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
+import qs.Modules.AppDrawer
 import qs.Services
 import qs.Widgets
-import qs.Modules.AppDrawer
 
 PanelWindow {
     id: appDrawerPopout
@@ -50,10 +50,9 @@ PanelWindow {
     // App launcher logic
     AppLauncher {
         id: appLauncher
-        
+
         viewMode: Prefs.appLauncherViewMode
         gridColumns: 4
-        
         onAppLaunched: appDrawerPopout.hide()
         onViewModeSelected: function(mode) {
             Prefs.setAppLauncherViewMode(mode);
@@ -67,48 +66,48 @@ PanelWindow {
         onClicked: function(mouse) {
             // Only close if click is outside the launcher panel
             var localPos = mapToItem(launcherLoader, mouse.x, mouse.y);
-            if (localPos.x < 0 || localPos.x > launcherLoader.width || 
-                localPos.y < 0 || localPos.y > launcherLoader.height) {
+            if (localPos.x < 0 || localPos.x > launcherLoader.width || localPos.y < 0 || localPos.y > launcherLoader.height)
                 appDrawerPopout.hide();
-            }
+
         }
     }
 
     // Main launcher panel with asynchronous loading
     Loader {
         id: launcherLoader
+
         asynchronous: true
         active: appDrawerPopout.isVisible
-        
         width: 520
         height: 600
         x: Theme.spacingL
         y: Theme.barHeight + Theme.spacingXS
-        
         opacity: appDrawerPopout.isVisible ? 1 : 0
         scale: appDrawerPopout.isVisible ? 1 : 0.9
-        
+
         Behavior on opacity {
             NumberAnimation {
                 duration: Anims.durMed
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Anims.emphasized
             }
+
         }
-        
+
         Behavior on scale {
             NumberAnimation {
                 duration: Anims.durMed
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: Anims.emphasized
             }
+
         }
-        
+
         sourceComponent: Rectangle {
             id: launcherPanel
+
             color: Theme.popupBackground()
             radius: Theme.cornerRadiusXLarge
-            
             // Remove layer rendering for better performance
             antialiasing: true
             smooth: true
@@ -146,13 +145,14 @@ PanelWindow {
             // Content with focus management
             Item {
                 id: keyHandler
+
                 anchors.fill: parent
                 focus: true
                 Component.onCompleted: {
                     if (appDrawerPopout.isVisible)
                         forceActiveFocus();
+
                 }
-                
                 // Handle keyboard shortcuts
                 Keys.onPressed: function(event) {
                     if (event.key === Qt.Key_Escape) {
@@ -214,6 +214,7 @@ PanelWindow {
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceVariantText
                         }
+
                     }
 
                     // Enhanced search field
@@ -252,26 +253,25 @@ PanelWindow {
                                 event.accepted = false;
                             }
                         }
-
                         Component.onCompleted: {
-                            if (appDrawerPopout.isVisible) {
+                            if (appDrawerPopout.isVisible)
                                 searchField.forceActiveFocus();
-                            }
+
                         }
 
                         Connections {
                             function onIsVisibleChanged() {
-                                if (appDrawerPopout.isVisible) {
+                                if (appDrawerPopout.isVisible)
                                     Qt.callLater(function() {
                                         searchField.forceActiveFocus();
                                     });
-                                } else {
+                                else
                                     searchField.clearFocus();
-                                }
                             }
 
                             target: appDrawerPopout
                         }
+
                     }
 
                     // Category filter and view mode controls
@@ -285,7 +285,7 @@ PanelWindow {
                         Item {
                             width: 200
                             height: 36
-                            
+
                             DankDropdown {
                                 anchors.fill: parent
                                 text: ""
@@ -296,6 +296,7 @@ PanelWindow {
                                     appLauncher.setCategory(value);
                                 }
                             }
+
                         }
 
                         Item {
@@ -335,7 +336,9 @@ PanelWindow {
                                     appLauncher.setViewMode("grid");
                                 }
                             }
+
                         }
+
                     }
 
                     // App grid/list container
@@ -399,10 +402,15 @@ PanelWindow {
                                 appLauncher.keyboardNavigationActive = false;
                             }
                         }
+
                     }
 
                 }
+
             }
+
         }
+
     }
+
 }

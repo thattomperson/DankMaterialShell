@@ -5,18 +5,19 @@ import qs.Widgets
 
 ScrollView {
     id: widgetsTab
-    
+
     contentWidth: availableWidth
     contentHeight: column.implicitHeight + Theme.spacingXL
     clip: true
-    
+
     Column {
         id: column
+
         width: parent.width
         spacing: Theme.spacingXL
         topPadding: Theme.spacingL
         bottomPadding: Theme.spacingXL
-        
+
         // Top Bar Widgets Section
         StyledRect {
             width: parent.width
@@ -25,24 +26,25 @@ ScrollView {
             color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
             border.width: 1
-            
+
             Column {
                 id: topBarSection
+
                 anchors.fill: parent
                 anchors.margins: Theme.spacingL
                 spacing: Theme.spacingM
-                
+
                 Row {
                     width: parent.width
                     spacing: Theme.spacingM
-                    
+
                     DankIcon {
                         name: "widgets"
                         size: Theme.iconSize
                         color: Theme.primary
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                    
+
                     StyledText {
                         text: "Top Bar Widgets"
                         font.pixelSize: Theme.fontSizeLarge
@@ -50,8 +52,9 @@ ScrollView {
                         color: Theme.surfaceText
                         anchors.verticalCenter: parent.verticalCenter
                     }
+
                 }
-                
+
                 DankToggle {
                     width: parent.width
                     text: "Focused Window"
@@ -61,7 +64,7 @@ ScrollView {
                         return Prefs.setShowFocusedWindow(checked);
                     }
                 }
-                
+
                 DankToggle {
                     width: parent.width
                     text: "Weather Widget"
@@ -71,7 +74,7 @@ ScrollView {
                         return Prefs.setShowWeather(checked);
                     }
                 }
-                
+
                 DankToggle {
                     width: parent.width
                     text: "Media Controls"
@@ -81,7 +84,7 @@ ScrollView {
                         return Prefs.setShowMusic(checked);
                     }
                 }
-                
+
                 DankToggle {
                     width: parent.width
                     text: "Clipboard Button"
@@ -91,7 +94,7 @@ ScrollView {
                         return Prefs.setShowClipboard(checked);
                     }
                 }
-                
+
                 DankToggle {
                     width: parent.width
                     text: "System Resources"
@@ -101,7 +104,7 @@ ScrollView {
                         return Prefs.setShowSystemResources(checked);
                     }
                 }
-                
+
                 DankToggle {
                     width: parent.width
                     text: "System Tray"
@@ -111,9 +114,11 @@ ScrollView {
                         return Prefs.setShowSystemTray(checked);
                     }
                 }
+
             }
+
         }
-        
+
         // Workspace Section
         StyledRect {
             width: parent.width
@@ -122,24 +127,25 @@ ScrollView {
             color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
             border.width: 1
-            
+
             Column {
                 id: workspaceSection
+
                 anchors.fill: parent
                 anchors.margins: Theme.spacingL
                 spacing: Theme.spacingM
-                
+
                 Row {
                     width: parent.width
                     spacing: Theme.spacingM
-                    
+
                     DankIcon {
                         name: "view_module"
                         size: Theme.iconSize
                         color: Theme.primary
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                    
+
                     StyledText {
                         text: "Workspace Settings"
                         font.pixelSize: Theme.fontSizeLarge
@@ -147,8 +153,9 @@ ScrollView {
                         color: Theme.surfaceText
                         anchors.verticalCenter: parent.verticalCenter
                     }
+
                 }
-                
+
                 DankToggle {
                     width: parent.width
                     text: "Workspace Index Numbers"
@@ -158,7 +165,7 @@ ScrollView {
                         return Prefs.setShowWorkspaceIndex(checked);
                     }
                 }
-                
+
                 DankToggle {
                     width: parent.width
                     text: "Workspace Padding"
@@ -168,7 +175,11 @@ ScrollView {
                         return Prefs.setShowWorkspacePadding(checked);
                     }
                 }
+
             }
+
         }
+
     }
+
 }

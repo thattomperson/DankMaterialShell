@@ -38,11 +38,10 @@ Rectangle {
     readonly property real rightPadding: Theme.spacingM + (showClearButton && text.length > 0 ? 24 + Theme.spacingM : 0)
     property real topPadding: Theme.spacingM
     property real bottomPadding: Theme.spacingM
-
     // Behavior control
     property bool ignoreLeftRightKeys: false
     property var keyForwardTargets: []
-    
+
     // Signals
     signal textEdited()
     signal editingFinished()
@@ -133,19 +132,16 @@ Rectangle {
         onEditingFinished: root.editingFinished()
         onAccepted: root.accepted()
         onActiveFocusChanged: root.focusStateChanged(activeFocus)
-        
         Keys.forwardTo: root.ignoreLeftRightKeys ? root.keyForwardTargets : []
-        
         Keys.onLeftPressed: function(event) {
-            if (root.ignoreLeftRightKeys) {
+            if (root.ignoreLeftRightKeys)
                 event.accepted = true;
-            }
+
         }
-        
         Keys.onRightPressed: function(event) {
-            if (root.ignoreLeftRightKeys) {
+            if (root.ignoreLeftRightKeys)
                 event.accepted = true;
-            }
+
         }
 
         MouseArea {

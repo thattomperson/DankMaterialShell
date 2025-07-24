@@ -18,62 +18,35 @@ Item {
     property bool debounceSearch: true
     property int debounceInterval: 50
     property bool keyboardNavigationActive: false
-
     // Categories (computed from AppSearchService)
     property var categories: {
-        var allCategories = AppSearchService.getAllCategories().filter(cat => {
+        var allCategories = AppSearchService.getAllCategories().filter((cat) => {
             return cat !== "Education" && cat !== "Science";
         });
         var result = ["All"];
-        return result.concat(allCategories.filter(cat => {
+        return result.concat(allCategories.filter((cat) => {
             return cat !== "All";
         }));
     }
-    
     // Category icons (computed from AppSearchService)
-    property var categoryIcons: categories.map(category => AppSearchService.getCategoryIcon(category))
-
+    property var categoryIcons: categories.map((category) => {
+        return AppSearchService.getCategoryIcon(category);
+    })
     // App usage ranking helper
     property var appUsageRanking: Prefs.appUsageRanking
+    // Internal model
+    property alias model: filteredModel
 
     // Signals
     signal appLaunched(var app)
     signal categorySelected(string category)
     signal viewModeSelected(string mode)
 
-    // Internal model
-    property alias model: filteredModel
-
-    ListModel {
-        id: filteredModel
-    }
-
-    // Search debouncing
-    Timer {
-        id: searchDebounceTimer
-        interval: root.debounceInterval
-        repeat: false
-        onTriggered: updateFilteredModel()
-    }
-
-    // Watch for changes
-    onSearchQueryChanged: {
-        if (debounceSearch) {
-            searchDebounceTimer.restart();
-        } else {
-            updateFilteredModel();
-        }
-    }
-    onSelectedCategoryChanged: updateFilteredModel()
-    onAppUsageRankingChanged: updateFilteredModel()
-
     function updateFilteredModel() {
         filteredModel.clear();
         selectedIndex = 0;
         keyboardNavigationActive = false;
-
         var apps = [];
-
         if (searchQuery.length === 0) {
             // Show apps from category
             if (selectedCategory === "All") {
@@ -90,8 +63,10 @@ Item {
                 var categoryApps = AppSearchService.getAppsInCategory(selectedCategory);
                 if (categoryApps.length > 0) {
                     var allSearchResults = AppSearchService.searchApplications(searchQuery);
-                    var categoryNames = new Set(categoryApps.map(app => app.name));
-                    apps = allSearchResults.filter(searchApp => {
+                    var categoryNames = new Set(categoryApps.map((app) => {
+                        return app.name;
+                    }));
+                    apps = allSearchResults.filter((searchApp) => {
                         return categoryNames.has(searchApp.name);
                     }).slice(0, maxResults);
                 } else {
@@ -99,25 +74,20 @@ Item {
                 }
             }
         }
-        
         // Sort apps by usage ranking, then alphabetically
         apps = apps.sort(function(a, b) {
             var aId = a.id || (a.execString || a.exec || "");
             var bId = b.id || (b.execString || b.exec || "");
-            
             var aUsage = appUsageRanking[aId] ? appUsageRanking[aId].usageCount : 0;
             var bUsage = appUsageRanking[bId] ? appUsageRanking[bId].usageCount : 0;
-            
-            if (aUsage !== bUsage) {
+            if (aUsage !== bUsage)
                 return bUsage - aUsage; // Higher usage first
-            }
-            
+
             return (a.name || "").localeCompare(b.name || ""); // Alphabetical fallback
         });
-
         // Convert to model format and populate
-        apps.forEach(app => {
-            if (app) {
+        apps.forEach((app) => {
+            if (app)
                 filteredModel.append({
                     "name": app.name || "",
                     "exec": app.execString || "",
@@ -126,7 +96,7 @@ Item {
                     "categories": app.categories || [],
                     "desktopEntry": app
                 });
-            }
+
         });
     }
 
@@ -180,9 +150,8 @@ Item {
     function launchApp(appData) {
         if (!appData) {
             console.warn("AppLauncher: No app data provided");
-            return;
+            return ;
         }
-        
         appData.desktopEntry.execute();
         appLaunched(appData);
         Prefs.addAppUsage(appData.desktopEntry);
@@ -200,8 +169,31 @@ Item {
         viewModeSelected(mode);
     }
 
+    // Watch for changes
+    onSearchQueryChanged: {
+        if (debounceSearch)
+            searchDebounceTimer.restart();
+        else
+            updateFilteredModel();
+    }
+    onSelectedCategoryChanged: updateFilteredModel()
+    onAppUsageRankingChanged: updateFilteredModel()
     // Initialize
     Component.onCompleted: {
         updateFilteredModel();
     }
+
+    ListModel {
+        id: filteredModel
+    }
+
+    // Search debouncing
+    Timer {
+        id: searchDebounceTimer
+
+        interval: root.debounceInterval
+        repeat: false
+        onTriggered: updateFilteredModel()
+    }
+
 }

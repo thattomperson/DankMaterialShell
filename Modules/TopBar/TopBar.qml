@@ -115,12 +115,12 @@ PanelWindow {
             readonly property int availableWidth: width
             // Use estimated fixed widths to break circular dependencies
             readonly property int launcherButtonWidth: 40
-            readonly property int workspaceSwitcherWidth: 120  // Approximate
+            readonly property int workspaceSwitcherWidth: 120 // Approximate
             readonly property int focusedAppMaxWidth: focusedApp.visible ? 456 : 0
             readonly property int estimatedLeftSectionWidth: launcherButtonWidth + workspaceSwitcherWidth + focusedAppMaxWidth + (Theme.spacingXS * 2)
             readonly property int rightSectionWidth: rightSection.width
             readonly property int clockWidth: clock.width
-            readonly property int mediaMaxWidth: media.visible ? 280 : 0  // Normal max width
+            readonly property int mediaMaxWidth: media.visible ? 280 : 0 // Normal max width
             readonly property int weatherWidth: weather.visible ? weather.width : 0
             readonly property bool validLayout: availableWidth > 100 && estimatedLeftSectionWidth > 0 && rightSectionWidth > 0
             readonly property int clockLeftEdge: (availableWidth - clockWidth) / 2
