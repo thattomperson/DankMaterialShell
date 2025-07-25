@@ -1,5 +1,6 @@
 //@ pragma UseQApplication
 
+import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.Modules
@@ -42,6 +43,7 @@ ShellRoot {
     SystemTrayContextMenu {
         id: systemTrayContextMenu
     }
+
 
     NotificationCenterPopout {
         id: notificationCenter

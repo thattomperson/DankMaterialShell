@@ -10,7 +10,7 @@ import qs.Widgets
 Column {
     id: root
     
-    property real volumeLevel: (AudioService.sink && AudioService.sink.audio && AudioService.sink.audio.volume * 100) || 0
+    property real volumeLevel: Math.min(100, (AudioService.sink && AudioService.sink.audio && AudioService.sink.audio.volume * 100) || 0)
     property bool volumeMuted: (AudioService.sink && AudioService.sink.audio && AudioService.sink.audio.muted) || false
     
     width: parent.width
@@ -93,6 +93,37 @@ Column {
                             duration: 150
                         }
                     }
+
+                    Rectangle {
+                        id: volumeTooltip
+                        width: tooltipText.contentWidth + Theme.spacingS * 2
+                        height: tooltipText.contentHeight + Theme.spacingXS * 2
+                        radius: Theme.cornerRadiusSmall
+                        color: Theme.surfaceContainer
+                        border.color: Theme.outline
+                        border.width: 1
+                        anchors.bottom: parent.top
+                        anchors.bottomMargin: Theme.spacingS
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        visible: (volumeMouseArea.containsMouse && !root.volumeMuted) || volumeMouseArea.isDragging
+                        opacity: visible ? 1 : 0
+                        
+                        Text {
+                            id: tooltipText
+                            text: Math.round(root.volumeLevel) + "%"
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
+                            anchors.centerIn: parent
+                        }
+                        
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: Theme.shortDuration
+                                easing.type: Theme.standardEasing
+                            }
+                        }
+                    }
                 }
             }
 
@@ -108,7 +139,7 @@ Column {
                 onPressed: (mouse) => {
                     isDragging = true;
                     let ratio = Math.max(0, Math.min(1, mouse.x / volumeSliderTrack.width));
-                    let newVolume = Math.round(ratio * 100);
+                    let newVolume = Math.max(0, Math.min(100, Math.round(ratio * 100)));
                     if (AudioService.sink && AudioService.sink.audio) {
                         AudioService.sink.audio.muted = false;
                         AudioService.sink.audio.volume = newVolume / 100;
@@ -120,7 +151,7 @@ Column {
                 onPositionChanged: (mouse) => {
                     if (pressed && isDragging) {
                         let ratio = Math.max(0, Math.min(1, mouse.x / volumeSliderTrack.width));
-                        let newVolume = Math.round(ratio * 100);
+                        let newVolume = Math.max(0, Math.min(100, Math.round(ratio * 100)));
                         if (AudioService.sink && AudioService.sink.audio) {
                             AudioService.sink.audio.muted = false;
                             AudioService.sink.audio.volume = newVolume / 100;
@@ -129,7 +160,7 @@ Column {
                 }
                 onClicked: (mouse) => {
                     let ratio = Math.max(0, Math.min(1, mouse.x / volumeSliderTrack.width));
-                    let newVolume = Math.round(ratio * 100);
+                    let newVolume = Math.max(0, Math.min(100, Math.round(ratio * 100)));
                     if (AudioService.sink && AudioService.sink.audio) {
                         AudioService.sink.audio.muted = false;
                         AudioService.sink.audio.volume = newVolume / 100;
@@ -151,7 +182,7 @@ Column {
                     if (volumeMouseArea.isDragging) {
                         let globalPos = mapToItem(volumeSliderTrack, mouse.x, mouse.y);
                         let ratio = Math.max(0, Math.min(1, globalPos.x / volumeSliderTrack.width));
-                        let newVolume = Math.round(ratio * 100);
+                        let newVolume = Math.max(0, Math.min(100, Math.round(ratio * 100)));
                         if (AudioService.sink && AudioService.sink.audio) {
                             AudioService.sink.audio.muted = false;
                             AudioService.sink.audio.volume = newVolume / 100;

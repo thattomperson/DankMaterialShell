@@ -10,7 +10,7 @@ import qs.Widgets
 Column {
     id: root
     
-    property real micLevel: (AudioService.source && AudioService.source.audio && AudioService.source.audio.volume * 100) || 0
+    property real micLevel: Math.min(100, (AudioService.source && AudioService.source.audio && AudioService.source.audio.volume * 100) || 0)
     property bool micMuted: (AudioService.source && AudioService.source.audio && AudioService.source.audio.muted) || false
     
     width: parent.width
@@ -93,6 +93,37 @@ Column {
                             duration: 150
                         }
                     }
+
+                    Rectangle {
+                        id: micTooltip
+                        width: tooltipText.contentWidth + Theme.spacingS * 2
+                        height: tooltipText.contentHeight + Theme.spacingXS * 2
+                        radius: Theme.cornerRadiusSmall
+                        color: Theme.surfaceContainer
+                        border.color: Theme.outline
+                        border.width: 1
+                        anchors.bottom: parent.top
+                        anchors.bottomMargin: Theme.spacingS
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        visible: (micMouseArea.containsMouse && !root.micMuted) || micMouseArea.isDragging
+                        opacity: visible ? 1 : 0
+                        
+                        Text {
+                            id: tooltipText
+                            text: Math.round(root.micLevel) + "%"
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
+                            anchors.centerIn: parent
+                        }
+                        
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: Theme.shortDuration
+                                easing.type: Theme.standardEasing
+                            }
+                        }
+                    }
                 }
             }
 
@@ -120,7 +151,7 @@ Column {
                 onPositionChanged: (mouse) => {
                     if (pressed && isDragging) {
                         let ratio = Math.max(0, Math.min(1, mouse.x / micSliderTrack.width));
-                        let newMicLevel = Math.round(ratio * 100);
+                        let newMicLevel = Math.max(0, Math.min(100, Math.round(ratio * 100)));
                         if (AudioService.source && AudioService.source.audio) {
                             AudioService.source.audio.muted = false;
                             AudioService.source.audio.volume = newMicLevel / 100;
@@ -151,7 +182,7 @@ Column {
                     if (micMouseArea.isDragging) {
                         let globalPos = mapToItem(micSliderTrack, mouse.x, mouse.y);
                         let ratio = Math.max(0, Math.min(1, globalPos.x / micSliderTrack.width));
-                        let newMicLevel = Math.round(ratio * 100);
+                        let newMicLevel = Math.max(0, Math.min(100, Math.round(ratio * 100)));
                         if (AudioService.source && AudioService.source.audio) {
                             AudioService.source.audio.muted = false;
                             AudioService.source.audio.volume = newMicLevel / 100;
