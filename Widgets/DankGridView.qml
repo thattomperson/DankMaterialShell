@@ -69,8 +69,8 @@ ScrollView {
             width: grid.cellWidth - cellPadding
             height: grid.cellHeight - cellPadding
             radius: Theme.cornerRadiusLarge
-            color: currentIndex === index ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : mouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
-            border.color: currentIndex === index ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            color: currentIndex === index ? Theme.primaryPressed : mouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
+            border.color: currentIndex === index ? Theme.primarySelected : Theme.outlineMedium
             border.width: currentIndex === index ? 2 : 1
 
             Column {
@@ -97,10 +97,10 @@ ScrollView {
                     Rectangle {
                         anchors.fill: parent
                         visible: !iconImg.visible
-                        color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1)
+                        color: Theme.surfaceLight
                         radius: Theme.cornerRadiusLarge
                         border.width: 1
-                        border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
+                        border.color: Theme.primarySelected
 
                         Text {
                             anchors.centerIn: parent

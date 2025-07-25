@@ -29,7 +29,7 @@ Rectangle {
     width: Math.max(80, controlIndicators.implicitWidth + Theme.spacingS * 2)
     height: 30
     radius: Theme.cornerRadius
-    color: controlCenterArea.containsMouse || root.isActive ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.08)
+    color: controlCenterArea.containsMouse || root.isActive ? Theme.primaryPressed : Theme.secondaryHover
 
     Row {
         id: controlIndicators
@@ -48,7 +48,7 @@ Rectangle {
                     return "wifi_off";
             }
             size: Theme.iconSize - 8
-            color: NetworkService.networkStatus !== "disconnected" ? Theme.primary : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
+            color: NetworkService.networkStatus !== "disconnected" ? Theme.primary : Theme.outlineButton
             anchors.verticalCenter: parent.verticalCenter
             visible: true
         }
@@ -57,7 +57,7 @@ Rectangle {
         DankIcon {
             name: "bluetooth"
             size: Theme.iconSize - 8
-            color: BluetoothService.enabled ? Theme.primary : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
+            color: BluetoothService.enabled ? Theme.primary : Theme.outlineButton
             anchors.verticalCenter: parent.verticalCenter
             visible: BluetoothService.available && BluetoothService.enabled
         }

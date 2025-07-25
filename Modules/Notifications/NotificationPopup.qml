@@ -338,12 +338,8 @@ PanelWindow {
                                     buttonSize: 20
                                     z: 15
                                     onClicked: {
-                                        if (modelData.latestNotification.notification.transient) {
-                                            NotificationService.dismissGroup(modelData.key);
-                                        } else {
-                                            for (const notif of modelData.notifications) {
-                                                notif.popup = false;
-                                            }
+                                        for (const notif of modelData.notifications) {
+                                            notif.popup = false;
                                         }
                                     }
                                 }
@@ -424,12 +420,8 @@ PanelWindow {
                                                 buttonSize: 20
                                                 z: 15
                                                 onClicked: {
-                                                    if (modelData.latestNotification.notification.transient) {
-                                                        NotificationService.dismissGroup(modelData.key);
-                                                    } else {
-                                                        for (const notif of modelData.notifications) {
-                                                            notif.popup = false;
-                                                        }
+                                                    for (const notif of modelData.notifications) {
+                                                        notif.popup = false;
                                                     }
                                                 }
                                             }
@@ -667,12 +659,8 @@ PanelWindow {
 
                             }
                             onClicked: {
-                                if (modelData.latestNotification.notification.transient) {
-                                    NotificationService.dismissGroup(modelData.key);
-                                } else {
-                                    for (const notif of modelData.notifications) {
-                                        notif.popup = false;
-                                    }
+                                for (const notif of modelData.notifications) {
+                                    notif.popup = false;
                                 }
                             }
                         }

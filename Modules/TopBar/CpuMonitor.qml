@@ -15,7 +15,7 @@ Rectangle {
     width: 55
     height: 30
     radius: Theme.cornerRadius
-    color: cpuArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.08)
+    color: cpuArea.containsMouse ? Theme.primaryPressed : Theme.secondaryHover
     Component.onCompleted: {
         SysMonitorService.addRef();
     }

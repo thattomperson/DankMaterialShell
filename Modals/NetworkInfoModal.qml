@@ -71,7 +71,7 @@ DankModal {
                     StyledText {
                         text: "Details for \"" + networkSSID + "\""
                         font.pixelSize: Theme.fontSizeMedium
-                        color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                        color: Theme.surfaceTextMedium
                         width: parent.width
                         elide: Text.ElideRight
                     }
@@ -82,7 +82,7 @@ DankModal {
                     iconName: "close"
                     iconSize: Theme.iconSize - 4
                     iconColor: Theme.surfaceText
-                    hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                    hoverColor: Theme.errorHover
                     onClicked: {
                         root.hideDialog();
                     }
@@ -108,8 +108,8 @@ DankModal {
                         width: parent.width
                         height: Math.max(parent.parent.height, detailsText.contentHeight + Theme.spacingM * 2)
                         radius: Theme.cornerRadius
-                        color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
-                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
+                        color: Theme.surfaceHover
+                        border.color: Theme.outlineStrong
                         border.width: 1
 
                         StyledText {

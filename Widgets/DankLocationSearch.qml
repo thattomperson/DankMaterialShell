@@ -144,7 +144,7 @@ Item {
             placeholderText: root.placeholderText
             text: root.currentLocation
             backgroundColor: Theme.surfaceVariant
-            normalBorderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
+            normalBorderColor: Theme.primarySelected
             focusedBorderColor: Theme.primary
             onTextEdited: {
                 if (root._internalChange)
@@ -226,7 +226,7 @@ Item {
         y: searchInputField.height
         radius: Theme.cornerRadius
         color: Theme.popupBackground()
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
+        border.color: Theme.primarySelected
         border.width: 1
         visible: locationInput.getActiveFocus() && locationInput.text.length > 2 && (searchResultsModel.count > 0 || root.isLoading)
 
@@ -262,7 +262,7 @@ Item {
                     width: searchResultsList.width
                     height: 36
                     radius: Theme.cornerRadius
-                    color: resultMouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
+                    color: resultMouseArea.containsMouse ? Theme.surfaceLight : "transparent"
 
                     Row {
                         anchors.fill: parent

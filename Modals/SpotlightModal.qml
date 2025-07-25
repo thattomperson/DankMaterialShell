@@ -41,7 +41,7 @@ DankModal {
     keyboardFocus: "ondemand"
     backgroundColor: Theme.popupBackground()
     cornerRadius: Theme.cornerRadiusXLarge
-    borderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+    borderColor: Theme.outlineMedium
     borderWidth: 1
     enableShadow: true
     onVisibleChanged: {
@@ -132,8 +132,8 @@ DankModal {
                     width: parent.width
                     height: categorySelector.height + Theme.spacingM * 2
                     radius: Theme.cornerRadiusLarge
-                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
-                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+                    color: Theme.surfaceVariantAlpha
+                    border.color: Theme.outlineMedium
                     border.width: 1
                     visible: appLauncher.categories.length > 1 || appLauncher.model.count > 0
 
@@ -162,7 +162,7 @@ DankModal {
                         height: 56
                         cornerRadius: Theme.cornerRadiusLarge
                         backgroundColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.7)
-                        normalBorderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+                        normalBorderColor: Theme.outlineMedium
                         focusedBorderColor: Theme.primary
                         leftIconName: "search"
                         leftIconSize: Theme.iconSize
@@ -220,8 +220,8 @@ DankModal {
                             width: 36
                             height: 36
                             radius: Theme.cornerRadiusLarge
-                            color: appLauncher.viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : listViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
-                            border.color: appLauncher.viewMode === "list" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : "transparent"
+                            color: appLauncher.viewMode === "list" ? Theme.primaryHover : listViewArea.containsMouse ? Theme.surfaceHover : "transparent"
+                            border.color: appLauncher.viewMode === "list" ? Theme.primarySelected : "transparent"
                             border.width: 1
 
                             DankIcon {
@@ -249,8 +249,8 @@ DankModal {
                             width: 36
                             height: 36
                             radius: Theme.cornerRadiusLarge
-                            color: appLauncher.viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : gridViewArea.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
-                            border.color: appLauncher.viewMode === "grid" ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : "transparent"
+                            color: appLauncher.viewMode === "grid" ? Theme.primaryHover : gridViewArea.containsMouse ? Theme.surfaceHover : "transparent"
+                            border.color: appLauncher.viewMode === "grid" ? Theme.primarySelected : "transparent"
                             border.width: 1
 
                             DankIcon {
@@ -283,8 +283,8 @@ DankModal {
                     width: parent.width
                     height: parent.height - y
                     radius: Theme.cornerRadiusLarge
-                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
-                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                    color: Theme.surfaceLight
+                    border.color: Theme.outlineLight
                     border.width: 1
 
                     DankListView {

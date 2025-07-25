@@ -71,7 +71,7 @@ DankModal {
                     iconName: "close"
                     iconSize: Theme.iconSize - 4
                     iconColor: Theme.surfaceText
-                    hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                    hoverColor: Theme.errorHover
                     onClicked: settingsModal.settingsVisible = false
                 }
 

@@ -34,7 +34,7 @@ Item {
                 width: tabBar.equalWidthTabs ? (tabBar.width - tabBar.spacing * (tabCount - 1)) / tabCount : contentRow.implicitWidth + Theme.spacingM * 2
                 height: tabBar.tabHeight
                 radius: Theme.cornerRadiusSmall
-                color: isActive ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : tabArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
+                color: isActive ? Theme.primaryPressed : tabArea.containsMouse ? Theme.primaryHoverLight : "transparent"
 
                 Row {
                     id: contentRow

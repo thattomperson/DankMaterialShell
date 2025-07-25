@@ -10,7 +10,8 @@ Singleton {
     id: root
 
     readonly property list<NotifWrapper> notifications: []
-    readonly property list<NotifWrapper> popups: notifications.filter(n => n.popup)
+    readonly property list<NotifWrapper> allWrappers: []
+    readonly property list<NotifWrapper> popups: allWrappers.filter(n => n.popup)
     
     // Android 16-style grouped notifications
     readonly property var groupedNotifications: getGroupedNotifications()
@@ -38,23 +39,29 @@ Singleton {
         inlineReplySupported: true
 
         onNotification: notif => {
-            
+            console.log("=== RAW NOTIFICATION DATA ===");
+            console.log("appName:", notif.appName);
+            console.log("summary:", notif.summary);
+            console.log("body:", notif.body);
+            console.log("appIcon:", notif.appIcon);
+            console.log("image:", notif.image);
+            console.log("urgency:", notif.urgency);
+            console.log("hasInlineReply:", notif.hasInlineReply);
+            console.log("=============================");            
             
             notif.tracked = true;
 
             const wrapper = notifComponent.createObject(root, {
-                popup: !notif.transient, // Transient notifications show as popups but don't persist
+                popup: true, // Always show as popup initially
                 notification: notif
             });
 
             if (wrapper) {
                 const groupKey = getGroupKey(wrapper);
                 
-                // Only add to notifications list if not transient
-                if (!notif.transient) {
-                    root.notifications.push(wrapper);
-                    addToPersistentStorage(wrapper);
-                }
+                root.allWrappers.push(wrapper);
+                root.notifications.push(wrapper);
+                addToPersistentStorage(wrapper);
             }
         }
     }
@@ -65,7 +72,16 @@ Singleton {
         property bool popup: false
         
         Component.onCompleted: {
-            popup = !root.popupsDisabled && !notification.transient;
+            popup = !root.popupsDisabled;
+        }
+        
+        readonly property Timer timer: Timer {
+            interval: 5000
+            repeat: false
+            running: wrapper.popup
+            onTriggered: {
+                wrapper.popup = false;
+            }
         }
         readonly property date time: new Date()
         readonly property string timeStr: {
@@ -113,23 +129,24 @@ Singleton {
             target: wrapper.notification.Retainable
 
             function onDropped(): void {
-                const index = root.notifications.indexOf(wrapper);
-                if (index !== -1) {
-                    // Get the group key before removing the notification
+                const notifIndex = root.notifications.indexOf(wrapper);
+                const allIndex = root.allWrappers.indexOf(wrapper);
+                
+                if (allIndex !== -1) {
+                    root.allWrappers.splice(allIndex, 1);
+                }
+                
+                if (notifIndex !== -1) {
                     const groupKey = getGroupKey(wrapper);
-                    root.notifications.splice(index, 1);
+                    root.notifications.splice(notifIndex, 1);
                     
-                    // Check if this group now has no notifications left or only 1 left
                     const remainingInGroup = root.notifications.filter(n => getGroupKey(n) === groupKey);
                     if (remainingInGroup.length === 0) {
-                        // Immediately clear expansion state for empty group
                         clearGroupExpansionState(groupKey);
                     } else if (remainingInGroup.length === 1) {
-                        // Collapse groups that only have 1 notification left
                         clearGroupExpansionState(groupKey);
                     }
                     
-                    // Clean up all expansion states
                     cleanupExpansionStates();
                 }
             }
@@ -168,7 +185,7 @@ Singleton {
     function disablePopups(disable) {
         popupsDisabled = disable;
         if (disable) {
-            for (const notif of root.notifications) {
+            for (const notif of root.allWrappers) {
                 notif.popup = false;
             }
         }
@@ -270,6 +287,12 @@ Singleton {
         if (group) {
             for (const notif of group.notifications) {
                 notif.notification.dismiss();
+            }
+        } else {
+            for (const notif of allWrappers) {
+                if (getGroupKey(notif) === groupKey) {
+                    notif.notification.dismiss();
+                }
             }
         }
     }

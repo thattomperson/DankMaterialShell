@@ -56,7 +56,7 @@ Rectangle {
     width: Prefs.showWorkspacePadding ? Math.max(120, workspaceRow.implicitWidth + Theme.spacingL * 2) : workspaceRow.implicitWidth + Theme.spacingL * 2
     height: 30
     radius: Theme.cornerRadiusLarge
-    color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
+    color: Theme.surfaceTextHover
     visible: NiriService.niriAvailable
 
     Connections {
@@ -108,7 +108,7 @@ Rectangle {
                 width: isActive ? Theme.spacingXL + Theme.spacingM : Theme.spacingL + Theme.spacingXS
                 height: Theme.spacingL
                 radius: height / 2
-                color: isActive ? Theme.primary : isPlaceholder ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.06) : isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.5) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3)
+                color: isActive ? Theme.primary : isPlaceholder ? Theme.surfaceTextLight : isHovered ? Theme.outlineButton : Theme.surfaceTextAlpha
 
                 MouseArea {
                     id: mouseArea
@@ -129,7 +129,7 @@ Rectangle {
                     visible: Prefs.showWorkspaceIndex
                     anchors.centerIn: parent
                     text: isPlaceholder ? sequentialNumber : sequentialNumber
-                    color: isPlaceholder ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3) : Theme.surfaceText
+                    color: isPlaceholder ? Theme.surfaceTextAlpha : Theme.surfaceText
                     font.pixelSize: Theme.fontSizeMedium
                     font.bold: isActive && !isPlaceholder
                 }

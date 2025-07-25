@@ -13,7 +13,7 @@ Rectangle {
     width: clockRow.implicitWidth + Theme.spacingS * 2
     height: 30
     radius: Theme.cornerRadius
-    color: clockMouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
+    color: clockMouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
     Component.onCompleted: {
         root.currentDate = systemClock.date;
     }
@@ -35,7 +35,7 @@ Rectangle {
         Text {
             text: "•"
             font.pixelSize: Theme.fontSizeMedium
-            color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
+            color: Theme.outlineButton
             anchors.verticalCenter: parent.verticalCenter
             visible: !compactMode
         }

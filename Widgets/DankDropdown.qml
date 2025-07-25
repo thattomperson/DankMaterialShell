@@ -17,7 +17,7 @@ Rectangle {
     width: parent.width
     height: 60
     radius: Theme.cornerRadius
-    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
+    color: Theme.surfaceHover
     onVisibleChanged: {
         if (!visible && dropdownMenu.visible)
             dropdownMenu.close();
@@ -59,8 +59,8 @@ Rectangle {
         anchors.rightMargin: Theme.spacingM
         anchors.verticalCenter: parent.verticalCenter
         radius: Theme.cornerRadiusSmall
-        color: dropdownArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Theme.contentBackground()
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+        color: dropdownArea.containsMouse ? Theme.primaryHover : Theme.contentBackground()
+        border.color: Theme.surfaceVariantAlpha
         border.width: 1
 
         MouseArea {
@@ -141,7 +141,7 @@ Rectangle {
 
         contentItem: Rectangle {
             color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 1)
-            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
+            border.color: Theme.primarySelected
             border.width: 1
             radius: Theme.cornerRadiusSmall
 
@@ -158,7 +158,7 @@ Rectangle {
                         width: ListView.view.width
                         height: 32
                         radius: Theme.cornerRadiusSmall
-                        color: optionArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
+                        color: optionArea.containsMouse ? Theme.primaryHoverLight : "transparent"
 
                         Row {
                             anchors.left: parent.left

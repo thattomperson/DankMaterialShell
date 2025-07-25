@@ -358,6 +358,50 @@ Singleton {
     property color warning: "#FF9800"
     property color info: "#2196F3"
     property color error: "#F2B8B5"
+    
+    // Common alpha color variants for consistency
+    // Primary colors with alpha
+    property color primaryHover: Qt.rgba(primary.r, primary.g, primary.b, 0.12)
+    property color primaryHoverLight: Qt.rgba(primary.r, primary.g, primary.b, 0.08)
+    property color primaryPressed: Qt.rgba(primary.r, primary.g, primary.b, 0.16)
+    property color primarySelected: Qt.rgba(primary.r, primary.g, primary.b, 0.3)
+    property color primaryBackground: Qt.rgba(primary.r, primary.g, primary.b, 0.04)
+    
+    // Secondary colors with alpha
+    property color secondaryHover: Qt.rgba(secondary.r, secondary.g, secondary.b, 0.08)
+    
+    // Surface colors with alpha
+    property color surfaceHover: Qt.rgba(surfaceVariant.r, surfaceVariant.g, surfaceVariant.b, 0.08)
+    property color surfacePressed: Qt.rgba(surfaceVariant.r, surfaceVariant.g, surfaceVariant.b, 0.12)
+    property color surfaceSelected: Qt.rgba(surfaceVariant.r, surfaceVariant.g, surfaceVariant.b, 0.15)
+    property color surfaceLight: Qt.rgba(surfaceVariant.r, surfaceVariant.g, surfaceVariant.b, 0.1)
+    property color surfaceVariantAlpha: Qt.rgba(surfaceVariant.r, surfaceVariant.g, surfaceVariant.b, 0.2)
+    property color surfaceTextHover: Qt.rgba(surfaceText.r, surfaceText.g, surfaceText.b, 0.08)
+    property color surfaceTextPressed: Qt.rgba(surfaceText.r, surfaceText.g, surfaceText.b, 0.12)
+    property color surfaceTextAlpha: Qt.rgba(surfaceText.r, surfaceText.g, surfaceText.b, 0.3)
+    property color surfaceTextLight: Qt.rgba(surfaceText.r, surfaceText.g, surfaceText.b, 0.06)
+    property color surfaceTextMedium: Qt.rgba(surfaceText.r, surfaceText.g, surfaceText.b, 0.7)
+    
+    // Outline colors with alpha
+    property color outlineLight: Qt.rgba(outline.r, outline.g, outline.b, 0.05)
+    property color outlineMedium: Qt.rgba(outline.r, outline.g, outline.b, 0.08)
+    property color outlineStrong: Qt.rgba(outline.r, outline.g, outline.b, 0.12)
+    property color outlineSelected: Qt.rgba(outline.r, outline.g, outline.b, 0.2)
+    property color outlineHeavy: Qt.rgba(outline.r, outline.g, outline.b, 0.3)
+    property color outlineButton: Qt.rgba(outline.r, outline.g, outline.b, 0.5)
+    
+    // Error colors with alpha
+    property color errorHover: Qt.rgba(error.r, error.g, error.b, 0.12)
+    property color errorPressed: Qt.rgba(error.r, error.g, error.b, 0.9)
+    
+    // Warning colors with alpha
+    property color warningHover: Qt.rgba(warning.r, warning.g, warning.b, 0.12)
+    
+    // Shadow colors
+    property color shadowLight: Qt.rgba(0, 0, 0, 0.05)
+    property color shadowMedium: Qt.rgba(0, 0, 0, 0.08)
+    property color shadowDark: Qt.rgba(0, 0, 0, 0.1)
+    property color shadowStrong: Qt.rgba(0, 0, 0, 0.3)
     property int shortDuration: 150
     property int mediumDuration: 300
     property int longDuration: 500

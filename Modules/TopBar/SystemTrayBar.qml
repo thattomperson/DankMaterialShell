@@ -10,7 +10,7 @@ Rectangle {
     width: Math.max(40, systemTrayRow.implicitWidth + Theme.spacingS * 2)
     height: 30
     radius: Theme.cornerRadius
-    color: Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.08)
+    color: Theme.secondaryHover
     visible: systemTrayRow.children.length > 0
 
     Row {
@@ -43,7 +43,7 @@ Rectangle {
                 Rectangle {
                     anchors.fill: parent
                     radius: Theme.cornerRadiusSmall
-                    color: trayItemArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+                    color: trayItemArea.containsMouse ? Theme.primaryHover : "transparent"
 
                     Behavior on color {
                         enabled: trayItemArea.containsMouse !== undefined

@@ -34,7 +34,7 @@ PanelWindow {
     property var animationEasing: Theme.emphasizedEasing
     // Styling
     property color backgroundColor: Theme.surfaceContainer
-    property color borderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+    property color borderColor: Theme.outlineMedium
     property real borderWidth: 1
     property real cornerRadius: Theme.cornerRadiusLarge
     property bool enableShadow: false
@@ -201,7 +201,7 @@ PanelWindow {
             shadowHorizontalOffset: 0
             shadowVerticalOffset: 8
             shadowBlur: 1
-            shadowColor: Qt.rgba(0, 0, 0, 0.3)
+            shadowColor: Theme.shadowStrong
             shadowOpacity: 0.3
         }
 

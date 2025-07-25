@@ -13,7 +13,7 @@ Rectangle {
     width: 40
     height: 30
     radius: Theme.cornerRadius
-    color: launcherArea.containsMouse || isActive ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
+    color: launcherArea.containsMouse || isActive ? Theme.surfaceTextPressed : Theme.surfaceTextHover
 
     SystemLogo {
         visible: Prefs.useOSLogo

@@ -108,7 +108,7 @@ DankModal {
                         width: 120
                         height: 40
                         radius: Theme.cornerRadius
-                        color: cancelButton.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+                        color: cancelButton.containsMouse ? Theme.surfaceTextPressed : Theme.surfaceVariantAlpha
 
                         StyledText {
                             text: "Cancel"

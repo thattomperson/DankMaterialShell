@@ -42,7 +42,7 @@ Item {
             width: parent.width - (leftIconWidth + rightIconWidth + (slider.leftIcon.length > 0 ? Theme.spacingM : 0) + (slider.rightIcon.length > 0 ? Theme.spacingM : 0))
             height: 6
             radius: 3
-            color: slider.enabled ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
+            color: slider.enabled ? Theme.surfaceVariantAlpha : Theme.surfaceLight
             anchors.verticalCenter: parent.verticalCenter
 
             StyledRect {
@@ -82,7 +82,7 @@ Item {
                     height: parent.height + 4
                     radius: width / 2
                     color: "transparent"
-                    border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3)
+                    border.color: Theme.primarySelected
                     border.width: 2
                     visible: sliderMouseArea.containsMouse && slider.enabled
                 }

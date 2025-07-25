@@ -22,7 +22,7 @@ Item {
 
         anchors.fill: parent
         radius: toggle.text ? Theme.cornerRadius : 0
-        color: toggle.text ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08) : "transparent"
+        color: toggle.text ? Theme.surfaceHover : "transparent"
         visible: toggle.text
 
         StateLayer {
@@ -85,7 +85,7 @@ Item {
         anchors.rightMargin: toggle.text ? Theme.spacingM : 0
         anchors.verticalCenter: parent.verticalCenter
         radius: height / 2
-        color: (toggle.checked && toggle.enabled) ? Theme.primary : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+        color: (toggle.checked && toggle.enabled) ? Theme.primary : Theme.surfaceVariantAlpha
         opacity: toggle.toggling ? 0.6 : (toggle.enabled ? 1 : 0.4)
 
         StyledRect {

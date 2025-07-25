@@ -18,7 +18,7 @@ Rectangle {
 
     height: 30
     radius: Theme.cornerRadius
-    color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
+    color: Theme.surfaceTextHover
     states: [
         State {
             name: "shown"
@@ -144,7 +144,7 @@ Rectangle {
                 height: 20
                 radius: 10
                 anchors.verticalCenter: parent.verticalCenter
-                color: prevArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+                color: prevArea.containsMouse ? Theme.primaryHover : "transparent"
                 visible: root.playerAvailable
                 opacity: (activePlayer && activePlayer.canGoPrevious) ? 1 : 0.3
 
@@ -175,7 +175,7 @@ Rectangle {
                 height: 24
                 radius: 12
                 anchors.verticalCenter: parent.verticalCenter
-                color: activePlayer && activePlayer.playbackState === 1 ? Theme.primary : Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
+                color: activePlayer && activePlayer.playbackState === 1 ? Theme.primary : Theme.primaryHover
                 visible: root.playerAvailable
                 opacity: activePlayer ? 1 : 0.3
 
@@ -204,7 +204,7 @@ Rectangle {
                 height: 20
                 radius: 10
                 anchors.verticalCenter: parent.verticalCenter
-                color: nextArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+                color: nextArea.containsMouse ? Theme.primaryHover : "transparent"
                 visible: playerAvailable
                 opacity: (activePlayer && activePlayer.canGoNext) ? 1 : 0.3
 

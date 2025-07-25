@@ -28,8 +28,8 @@ StyledRect {
     // Custom properties
     property color backgroundColor: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.9)
     property color focusedBorderColor: Theme.primary
-    property color normalBorderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
-    property color placeholderColor: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
+    property color normalBorderColor: Theme.outlineStrong
+    property color placeholderColor: Theme.outlineButton
     property int borderWidth: 1
     property int focusedBorderWidth: 2
     property real cornerRadius: Theme.cornerRadius
@@ -160,7 +160,7 @@ StyledRect {
         width: 24
         height: 24
         radius: 12
-        color: clearArea.containsMouse ? Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12) : "transparent"
+        color: clearArea.containsMouse ? Theme.outlineStrong : "transparent"
         anchors.right: parent.right
         anchors.rightMargin: Theme.spacingM
         anchors.verticalCenter: parent.verticalCenter

@@ -67,6 +67,8 @@ sleep 0.5
 notify-send -h string:desktop-entry:org.gnome.Nautilus -i folder-downloads "Files" "document.pdf downloaded"
 sleep 2
 
+# notify-send --hint=boolean:resident:true "Resident Test" "Click an action - I should stay visible!" --action="Test Action" --action="Close Me"
+
 echo ""
 echo "✅ Notification tests completed!"
 echo ""

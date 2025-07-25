@@ -14,7 +14,7 @@ Rectangle {
     width: compactMode ? Math.min(baseWidth, maxCompactWidth) : Math.min(baseWidth, maxNormalWidth)
     height: 30
     radius: Theme.cornerRadius
-    color: mouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08)
+    color: mouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
     clip: true
     visible: FocusedWindowService.niriAvailable && (FocusedWindowService.focusedAppName || FocusedWindowService.focusedWindowTitle)
 
@@ -40,7 +40,7 @@ Rectangle {
         Text {
             text: "•"
             font.pixelSize: Theme.fontSizeMedium
-            color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
+            color: Theme.outlineButton
             anchors.verticalCenter: parent.verticalCenter
             visible: appText.text && titleText.text
         }

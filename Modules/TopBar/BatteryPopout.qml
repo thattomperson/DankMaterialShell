@@ -95,7 +95,7 @@ PanelWindow {
         sourceComponent: Rectangle {
             color: Theme.popupBackground()
             radius: Theme.cornerRadiusLarge
-            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            border.color: Theme.outlineMedium
             border.width: 1
             
             // Material 3 elevation with multiple layers
@@ -114,7 +114,7 @@ PanelWindow {
                 anchors.margins: -2
                 color: "transparent"
                 radius: parent.radius + 2
-                border.color: Qt.rgba(0, 0, 0, 0.08)
+                border.color: Theme.shadowMedium
                 border.width: 1
                 z: -2
             }
@@ -122,7 +122,7 @@ PanelWindow {
             Rectangle {
                 anchors.fill: parent
                 color: "transparent"
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
+                border.color: Theme.outlineStrong
                 border.width: 1
                 radius: parent.radius
                 z: -1
@@ -161,7 +161,7 @@ PanelWindow {
                             width: 32
                             height: 32
                             radius: 16
-                            color: closeBatteryArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
+                            color: closeBatteryArea.containsMouse ? Theme.errorHover : "transparent"
 
                             DankIcon {
                                 anchors.centerIn: parent
@@ -188,7 +188,7 @@ PanelWindow {
                         height: 80
                         radius: Theme.cornerRadiusLarge
                         color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.4)
-                        border.color: BatteryService.isCharging ? Theme.primary : (BatteryService.isLowBattery ? Theme.error : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08))
+                        border.color: BatteryService.isCharging ? Theme.primary : (BatteryService.isLowBattery ? Theme.error : Theme.outlineMedium)
                         border.width: BatteryService.isCharging || BatteryService.isLowBattery ? 2 : 1
                         visible: BatteryService.batteryAvailable
 
@@ -262,7 +262,7 @@ PanelWindow {
                                         return "";
                                     }
                                     font.pixelSize: Theme.fontSizeSmall
-                                    color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                                    color: Theme.surfaceTextMedium
                                     visible: text.length > 0
                                 }
 
@@ -278,7 +278,7 @@ PanelWindow {
                         height: 80
                         radius: Theme.cornerRadiusLarge
                         color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.4)
-                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+                        border.color: Theme.outlineMedium
                         border.width: 1
                         visible: !BatteryService.batteryAvailable
 
@@ -307,7 +307,7 @@ PanelWindow {
                                 Text {
                                     text: "Power profile management is available"
                                     font.pixelSize: Theme.fontSizeMedium
-                                    color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                                    color: Theme.surfaceTextMedium
                                 }
 
                             }
@@ -341,7 +341,7 @@ PanelWindow {
                                 Text {
                                     text: "Health"
                                     font.pixelSize: Theme.fontSizeSmall
-                                    color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                                    color: Theme.surfaceTextMedium
                                     font.weight: Font.Medium
                                 }
 
@@ -367,7 +367,7 @@ PanelWindow {
                                 Text {
                                     text: "Capacity"
                                     font.pixelSize: Theme.fontSizeSmall
-                                    color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                                    color: Theme.surfaceTextMedium
                                     font.weight: Font.Medium
                                 }
 
@@ -407,8 +407,8 @@ PanelWindow {
                                     width: parent.width
                                     height: 50
                                     radius: Theme.cornerRadiusLarge
-                                    color: profileArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : (root.isActiveProfile(modelData) ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1))
-                                    border.color: root.isActiveProfile(modelData) ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                                    color: profileArea.containsMouse ? Theme.primaryHoverLight : (root.isActiveProfile(modelData) ? Theme.primaryPressed : Theme.surfaceLight)
+                                    border.color: root.isActiveProfile(modelData) ? Theme.primary : Theme.outlineLight
                                     border.width: root.isActiveProfile(modelData) ? 2 : 1
 
                                     Row {
@@ -438,7 +438,7 @@ PanelWindow {
                                             Text {
                                                 text: Theme.getPowerProfileDescription(modelData)
                                                 font.pixelSize: Theme.fontSizeSmall
-                                                color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                                                color: Theme.surfaceTextMedium
                                             }
 
                                         }
@@ -469,8 +469,8 @@ PanelWindow {
                         width: parent.width
                         height: 60
                         radius: Theme.cornerRadiusLarge
-                        color: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
-                        border.color: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.3)
+                        color: Theme.errorHover
+                        border.color: Theme.primarySelected
                         border.width: 1
                         visible: (typeof PowerProfiles !== "undefined") && PowerProfiles.degradationReason !== PerformanceDegradationReason.None
 

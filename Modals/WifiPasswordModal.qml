@@ -66,7 +66,7 @@ DankModal {
                         StyledText {
                             text: "Enter password for \"" + wifiPasswordSSID + "\""
                             font.pixelSize: Theme.fontSizeMedium
-                            color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                            color: Theme.surfaceTextMedium
                             width: parent.width
                             elide: Text.ElideRight
                         }
@@ -77,7 +77,7 @@ DankModal {
                         iconName: "close"
                         iconSize: Theme.iconSize - 4
                         iconColor: Theme.surfaceText
-                        hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                        hoverColor: Theme.errorHover
                         onClicked: {
                             wifiPasswordModalVisible = false;
                             wifiPasswordInput = "";
@@ -91,8 +91,8 @@ DankModal {
                     width: parent.width
                     height: 50
                     radius: Theme.cornerRadius
-                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
-                    border.color: passwordInput.activeFocus ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
+                    color: Theme.surfaceHover
+                    border.color: passwordInput.activeFocus ? Theme.primary : Theme.outlineStrong
                     border.width: passwordInput.activeFocus ? 2 : 1
 
                     DankTextField {
@@ -146,7 +146,7 @@ DankModal {
                         height: 20
                         radius: 4
                         color: checked ? Theme.primary : "transparent"
-                        border.color: checked ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.5)
+                        border.color: checked ? Theme.primary : Theme.outlineButton
                         border.width: 2
 
                         DankIcon {
@@ -191,8 +191,8 @@ DankModal {
                             width: Math.max(70, cancelText.contentWidth + Theme.spacingM * 2)
                             height: 36
                             radius: Theme.cornerRadius
-                            color: cancelArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
-                            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                            color: cancelArea.containsMouse ? Theme.surfaceTextHover : "transparent"
+                            border.color: Theme.surfaceVariantAlpha
                             border.width: 1
 
                             StyledText {

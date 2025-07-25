@@ -14,7 +14,7 @@ Rectangle {
     width: BatteryService.batteryAvailable ? 70 : 40
     height: 30
     radius: Theme.cornerRadius
-    color: batteryArea.containsMouse || batteryPopupVisible ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.08)
+    color: batteryArea.containsMouse || batteryPopupVisible ? Theme.primaryPressed : Theme.secondaryHover
     visible: true
 
     Row {
@@ -99,7 +99,7 @@ Rectangle {
         height: tooltipText.contentHeight + Theme.spacingS * 2
         radius: Theme.cornerRadius
         color: Theme.surfaceContainer
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+        border.color: Theme.surfaceVariantAlpha
         border.width: 1
         visible: batteryArea.containsMouse && !batteryPopupVisible
         anchors.bottom: parent.top

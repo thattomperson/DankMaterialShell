@@ -68,7 +68,7 @@ PanelWindow {
             Rectangle {
                 anchors.fill: parent
                 color: "transparent"
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+                border.color: Theme.outlineMedium
                 border.width: 1
                 radius: parent.radius
             }
@@ -236,7 +236,7 @@ PanelWindow {
                     width: 40
                     height: 30
                     radius: Theme.cornerRadius
-                    color: clipboardArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.08)
+                    color: clipboardArea.containsMouse ? Theme.primaryHover : Theme.secondaryHover
                     anchors.verticalCenter: parent.verticalCenter
                     visible: Prefs.showClipboard
 

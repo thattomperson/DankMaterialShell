@@ -98,7 +98,7 @@ DankModal {
                         iconName: "close"
                         iconSize: Theme.iconSize - 4
                         iconColor: Theme.surfaceText
-                        hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                        hoverColor: Theme.errorHover
                         onClicked: processListModal.hide()
                         Layout.alignment: Qt.AlignVCenter
                     }
@@ -107,9 +107,9 @@ DankModal {
                 Rectangle {
                     Layout.fillWidth: true
                     height: 52
-                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.15)
+                    color: Theme.surfaceSelected
                     radius: Theme.cornerRadiusLarge
-                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.06)
+                    border.color: Theme.outlineLight
                     border.width: 1
 
                     Row {
@@ -124,7 +124,7 @@ DankModal {
                                 width: (parent.width - (tabNames.length - 1) * 2) / tabNames.length
                                 height: 44
                                 radius: Theme.cornerRadiusLarge
-                                color: currentTab === index ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : (tabMouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent")
+                                color: currentTab === index ? Theme.primaryPressed : (tabMouseArea.containsMouse ? Theme.primaryHoverLight : "transparent")
                                 border.color: currentTab === index ? Theme.primary : "transparent"
                                 border.width: currentTab === index ? 1 : 0
 
@@ -212,8 +212,8 @@ DankModal {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     radius: Theme.cornerRadiusLarge
-                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
-                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                    color: Theme.surfaceLight
+                    border.color: Theme.outlineLight
                     border.width: 1
 
                     Loader {

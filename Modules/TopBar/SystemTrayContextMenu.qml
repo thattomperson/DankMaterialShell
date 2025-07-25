@@ -36,7 +36,7 @@ PanelWindow {
         height: Math.max(60, menuList.contentHeight + Theme.spacingS * 2)
         color: Theme.popupBackground()
         radius: Theme.cornerRadiusLarge
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+        border.color: Theme.outlineMedium
         border.width: 1
         // Material 3 animations
         opacity: showContextMenu ? 1 : 0
@@ -98,7 +98,7 @@ PanelWindow {
                     width: ListView.view.width
                     height: modelData.isSeparator ? 5 : 28
                     radius: modelData.isSeparator ? 0 : Theme.cornerRadiusSmall
-                    color: modelData.isSeparator ? "transparent" : (menuItemArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent")
+                    color: modelData.isSeparator ? "transparent" : (menuItemArea.containsMouse ? Theme.primaryHover : "transparent")
 
                     // Separator line
                     Rectangle {
@@ -106,7 +106,7 @@ PanelWindow {
                         anchors.centerIn: parent
                         width: parent.width - Theme.spacingS * 2
                         height: 1
-                        color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                        color: Theme.surfaceVariantAlpha
                     }
 
                     // Menu item content

@@ -58,8 +58,8 @@ ScrollView {
             width: list.width
             height: itemHeight
             radius: Theme.cornerRadiusLarge
-            color: ListView.isCurrentItem ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : mouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
-            border.color: ListView.isCurrentItem ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            color: ListView.isCurrentItem ? Theme.primaryPressed : mouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
+            border.color: ListView.isCurrentItem ? Theme.primarySelected : Theme.outlineMedium
             border.width: ListView.isCurrentItem ? 2 : 1
 
             Row {
@@ -85,10 +85,10 @@ ScrollView {
                     Rectangle {
                         anchors.fill: parent
                         visible: !iconImg.visible
-                        color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1)
+                        color: Theme.surfaceLight
                         radius: Theme.cornerRadiusLarge
                         border.width: 1
-                        border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
+                        border.color: Theme.primarySelected
 
                         Text {
                             anchors.centerIn: parent

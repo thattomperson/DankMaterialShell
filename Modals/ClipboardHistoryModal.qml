@@ -121,7 +121,7 @@ DankModal {
     keyboardFocus: "ondemand"
     backgroundColor: Theme.popupBackground()
     cornerRadius: Theme.cornerRadiusLarge
-    borderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+    borderColor: Theme.outlineMedium
     borderWidth: 1
     enableShadow: true 
     onBackgroundClicked: {
@@ -175,7 +175,7 @@ DankModal {
                             width: 100
                             height: 40
                             radius: Theme.cornerRadius
-                            color: cancelClearButton.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+                            color: cancelClearButton.containsMouse ? Theme.surfaceTextPressed : Theme.surfaceVariantAlpha
 
                             StyledText {
                                 text: "Cancel"
@@ -200,7 +200,7 @@ DankModal {
                             width: 100
                             height: 40
                             radius: Theme.cornerRadius
-                            color: confirmClearButton.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.9) : Theme.error
+                            color: confirmClearButton.containsMouse ? Theme.errorPressed : Theme.error
 
                             StyledText {
                                 text: "Clear All"
@@ -375,7 +375,7 @@ DankModal {
                         iconName: "delete_sweep"
                         iconSize: Theme.iconSize
                         iconColor: Theme.error
-                        hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                        hoverColor: Theme.errorHover
                         onClicked: {
                             showClearConfirmation = true;
                         }
@@ -385,7 +385,7 @@ DankModal {
                         iconName: "close"
                         iconSize: Theme.iconSize - 4
                         iconColor: Theme.surfaceText
-                        hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                        hoverColor: Theme.errorHover
                         onClicked: hide()
                     }
                 }
@@ -420,8 +420,8 @@ DankModal {
                 width: parent.width
                 height: parent.height - 110
                 radius: Theme.cornerRadiusLarge
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                color: Theme.surfaceLight
+                border.color: Theme.outlineLight
                 border.width: 1
                 clip: true
 
@@ -455,8 +455,8 @@ DankModal {
                             width: clipboardListView.width
                             height: Math.max(60, contentText.contentHeight + Theme.spacingL)
                             radius: Theme.cornerRadius
-                            color: mouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.04)
-                            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
+                            color: mouseArea.containsMouse ? Theme.primaryHover : Theme.primaryBackground
+                            border.color: Theme.outlineStrong
                             border.width: 1
 
                             Row {
@@ -470,7 +470,7 @@ DankModal {
                                     width: 24
                                     height: 24
                                     radius: 12
-                                    color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
+                                    color: Theme.primarySelected
                                     anchors.verticalCenter: parent.verticalCenter
 
                                     StyledText {
@@ -553,7 +553,7 @@ DankModal {
                                 iconName: "close"
                                 iconSize: Theme.iconSize - 6
                                 iconColor: Theme.error
-                                hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+                                hoverColor: Theme.errorHover
                                 onClicked: {
                                     console.log("Delete clicked for entry:", model.entry);
                                     deleteEntry(model.entry);
