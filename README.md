@@ -94,8 +94,6 @@ qs -c DankMaterialShell ipc call <target> <function>
 | lock | lock | none | Activate lockscreen |
 | lock | demo | none | Show lockscreen in demo mode |
 | lock | isLocked | none | Returns whether screen is currently locked |
-| picker | open | none | Open area picker/screenshot tool |
-| picker | openFreeze | none | Open area picker in freeze mode |
 
 ## Media Controls
 
@@ -108,7 +106,6 @@ qs -c DankMaterialShell ipc call <target> <function>
 | mpris | previous | none | Skip to previous track on active player |
 | mpris | next | none | Skip to next track on active player |
 | mpris | stop | none | Stop media playback on active player |
-| mpris | getActive | prop (string) | Get specified property from active player |
 
 ## System Services
 
@@ -118,8 +115,6 @@ qs -c DankMaterialShell ipc call <target> <function>
 | wallpaper | set | path (string) | Set wallpaper to image path and refresh theme |
 | wallpaper | clear | none | Clear current wallpaper |
 | notifs | clear | none | Clear all notifications |
-| drawers | toggle | drawer (string) | Toggle visibility of specified drawer/panel |
-| drawers | list | none | Get list of available drawers |
 
 
 ## (Optional) Setup Calendar events (Google, Microsoft, other Caldev, etc.)
