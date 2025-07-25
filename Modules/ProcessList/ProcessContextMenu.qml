@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import Quickshell
 import Quickshell.Io
 import qs.Common
 import qs.Services
@@ -96,8 +97,7 @@ Popup {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         if (processContextMenu.processData) {
-                            copyPidProcess.command = ["wl-copy", processContextMenu.processData.pid.toString()];
-                            copyPidProcess.running = true;
+                            Quickshell.execDetached(["wl-copy", processContextMenu.processData.pid.toString()]);
                         }
                         processContextMenu.close();
                     }
@@ -128,8 +128,7 @@ Popup {
                     onClicked: {
                         if (processContextMenu.processData) {
                             let processName = processContextMenu.processData.displayName || processContextMenu.processData.command;
-                            copyNameProcess.command = ["wl-copy", processName];
-                            copyNameProcess.running = true;
+                            Quickshell.execDetached(["wl-copy", processName]);
                         }
                         processContextMenu.close();
                     }
@@ -155,7 +154,7 @@ Popup {
                 height: 28
                 radius: Theme.cornerRadiusSmall
                 color: killArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
-                enabled: processContextMenu.processData && processContextMenu.processData.pid > 1000
+                enabled: processContextMenu.processData
                 opacity: enabled ? 1 : 0.5
 
                 Text {
@@ -176,8 +175,7 @@ Popup {
                     enabled: parent.enabled
                     onClicked: {
                         if (processContextMenu.processData) {
-                            killProcess.command = ["kill", processContextMenu.processData.pid.toString()];
-                            killProcess.running = true;
+                            Quickshell.execDetached(["kill", processContextMenu.processData.pid.toString()]);
                         }
                         processContextMenu.close();
                     }
@@ -210,8 +208,7 @@ Popup {
                     enabled: parent.enabled
                     onClicked: {
                         if (processContextMenu.processData) {
-                            forceKillProcess.command = ["kill", "-9", processContextMenu.processData.pid.toString()];
-                            forceKillProcess.running = true;
+                            Quickshell.execDetached(["kill", "-9", processContextMenu.processData.pid.toString()]);
                         }
                         processContextMenu.close();
                     }
@@ -219,25 +216,4 @@ Popup {
             }
         }
     }
-
-    Process {
-        id: copyPidProcess
-        running: false
-    }
-
-    Process {
-        id: copyNameProcess
-        running: false
-    }
-
-    Process {
-        id: killProcess
-        running: false
-    }
-
-    Process {
-        id: forceKillProcess
-        running: false
-    }
-    
 }
