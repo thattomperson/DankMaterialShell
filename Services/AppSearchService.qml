@@ -10,9 +10,7 @@ import "../Common/fuzzysort.js" as Fuzzy
 Singleton {
     id: root
     
-    property list<DesktopEntry> applications: Array.from(DesktopEntries.applications.values)
-        .filter(app => !app.noDisplay)
-        .sort((a, b) => a.name.localeCompare(b.name))
+    property var applications: DesktopEntries.applications.values
     
     property var applicationsByName: {
         var byName = {}

@@ -178,6 +178,11 @@ Item {
     }
     onSelectedCategoryChanged: updateFilteredModel()
     onAppUsageRankingChanged: updateFilteredModel()
+    
+    // Watch AppSearchService.applications changes via property binding
+    property var _watchApplications: AppSearchService.applications
+    on_WatchApplicationsChanged: updateFilteredModel()
+    
     // Initialize
     Component.onCompleted: {
         updateFilteredModel();
