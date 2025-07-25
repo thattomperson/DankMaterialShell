@@ -584,90 +584,94 @@ PanelWindow {
 
                 }
 
-                // Tab buttons
-                DankTabBar {
+                Rectangle {
                     width: parent.width
-                    tabHeight: 40
-                    currentIndex: {
-                        let tabs = ["network", "audio"];
-                        if (BluetoothService.available)
-                            tabs.push("bluetooth");
+                    height: tabBar.height + Theme.spacingM * 2
+                    radius: Theme.cornerRadiusLarge
+                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.15)
+                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.06)
+                    border.width: 1
 
-                        tabs.push("display");
-                        return tabs.indexOf(root.currentTab);
-                    }
-                    model: {
-                        let tabs = [{
-                            "text": "Network",
-                            "icon": "wifi",
-                            "id": "network"
-                        }];
-                        // Always show audio
-                        tabs.push({
-                            "text": "Audio",
-                            "icon": "volume_up",
-                            "id": "audio"
-                        });
-                        // Show Bluetooth only if available
-                        if (BluetoothService.available)
+                    DankTabBar {
+                        id: tabBar
+                        anchors.centerIn: parent
+                        width: parent.width - Theme.spacingM * 2
+                        tabHeight: 40
+                        currentIndex: {
+                            let tabs = ["network", "audio"];
+                            if (BluetoothService.available)
+                                tabs.push("bluetooth");
+
+                            tabs.push("display");
+                            return tabs.indexOf(root.currentTab);
+                        }
+                        model: {
+                            let tabs = [{
+                                "text": "Network",
+                                "icon": "wifi",
+                                "id": "network"
+                            }];
                             tabs.push({
-                            "text": "Bluetooth",
-                            "icon": "bluetooth",
-                            "id": "bluetooth"
-                        });
+                                "text": "Audio",
+                                "icon": "volume_up",
+                                "id": "audio"
+                            });
+                            if (BluetoothService.available)
+                                tabs.push({
+                                "text": "Bluetooth",
+                                "icon": "bluetooth",
+                                "id": "bluetooth"
+                            });
 
-                        // Always show display
-                        tabs.push({
-                            "text": "Display",
-                            "icon": "brightness_6",
-                            "id": "display"
-                        });
-                        return tabs;
-                    }
-                    onTabClicked: function(index) {
-                        let tabs = ["network", "audio"];
-                        if (BluetoothService.available)
-                            tabs.push("bluetooth");
+                            tabs.push({
+                                "text": "Display",
+                                "icon": "brightness_6",
+                                "id": "display"
+                            });
+                            return tabs;
+                        }
+                        onTabClicked: function(index) {
+                            let tabs = ["network", "audio"];
+                            if (BluetoothService.available)
+                                tabs.push("bluetooth");
 
-                        tabs.push("display");
-                        root.currentTab = tabs[index];
+                            tabs.push("display");
+                            root.currentTab = tabs[index];
+                        }
                     }
                 }
 
             }
 
-            // Tab content area
             Rectangle {
                 width: parent.width
                 Layout.fillHeight: true
-                radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.1)
+                radius: Theme.cornerRadiusLarge
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                border.width: 1
 
-                // Network Tab
                 NetworkTab {
                     anchors.fill: parent
-                    anchors.margins: Theme.spacingM
+                    anchors.margins: Theme.spacingS
                     visible: root.currentTab === "network"
                 }
 
-                // Audio Tab
                 AudioTab {
                     anchors.fill: parent
-                    anchors.margins: Theme.spacingM
+                    anchors.margins: Theme.spacingS
                     visible: root.currentTab === "audio"
                 }
 
-                // Bluetooth Tab
                 BluetoothTab {
                     anchors.fill: parent
-                    anchors.margins: Theme.spacingM
+                    anchors.margins: Theme.spacingS
                     visible: BluetoothService.available && root.currentTab === "bluetooth"
                 }
 
-                // Display Tab
                 Column {
                     anchors.fill: parent
-                    anchors.margins: Theme.spacingM
+                    anchors.margins: Theme.spacingS
                     visible: root.currentTab === "display"
                     spacing: Theme.spacingL
                     

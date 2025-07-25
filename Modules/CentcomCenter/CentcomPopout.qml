@@ -78,6 +78,9 @@ PanelWindow {
                 let hasEvents = events.selectedDateEvents && events.selectedDateEvents.length > 0;
                 let eventsHeight = hasEvents ? Math.min(300, 80 + events.selectedDateEvents.length * 60) : 120;
                 contentHeight += eventsHeight;
+            } else {
+                // When no khal, reduce bottom margin to match top
+                contentHeight -= Theme.spacingM;
             }
             return Math.min(contentHeight, parent.height * 0.9);
         }
@@ -161,61 +164,62 @@ PanelWindow {
             anchors.margins: Theme.spacingM
             spacing: Theme.spacingM
 
-            // Main row with widgets and calendar
+            // Main row with widgets and calendar - improved spacing and proportions
             Row {
                 width: parent.width
                 height: {
-                    let widgetHeight = 160; // Media widget always present
-                    widgetHeight += 140 + Theme.spacingM; // Weather widget always present
-                    let calendarHeight = 300;
+                    let widgetHeight = 160; // Media widget
+                    widgetHeight += 140 + Theme.spacingM; // Weather widget with spacing
+                    let calendarHeight = 300; // Calendar
                     return Math.max(widgetHeight, calendarHeight);
                 }
                 spacing: Theme.spacingM
 
-                // Left section for widgets
+                // Left section for widgets - improved visual hierarchy
                 Column {
                     id: leftWidgets
 
-                    property bool hasAnyWidgets: true // Always show media widget and weather widget
+                    property bool hasAnyWidgets: true
 
-                    width: hasAnyWidgets ? parent.width * 0.45 : 0
+                    width: hasAnyWidgets ? parent.width * 0.42 : 0 // Slightly narrower for better proportions
                     height: childrenRect.height
                     spacing: Theme.spacingM
                     visible: hasAnyWidgets
                     anchors.top: parent.top
 
                     MediaPlayer {
-                        visible: true // Always visible - shows placeholder when no media
                         width: parent.width
                         height: 160
                     }
 
                     Weather {
-                        visible: true // Always visible - shows placeholder when no weather
                         width: parent.width
                         height: 140
                     }
-
                 }
 
-                // Right section for calendar
-                CalendarGrid {
-                    id: calendarGrid
-
-                    width: leftWidgets.hasAnyWidgets ? parent.width * 0.55 - Theme.spacingL : parent.width
+                // Right section for calendar - enhanced container
+                Rectangle {
+                    width: leftWidgets.hasAnyWidgets ? parent.width * 0.55 - Theme.spacingM : parent.width
                     height: parent.height
-                }
+                    radius: Theme.cornerRadiusLarge
+                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
+                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+                    border.width: 1
 
+                    CalendarGrid {
+                        id: calendarGrid
+                        anchors.fill: parent
+                        anchors.margins: Theme.spacingS
+                    }
+                }
             }
 
-            // Full-width events widget below
             Events {
                 id: events
-
                 width: parent.width
                 selectedDate: calendarGrid.selectedDate
             }
-
         }
 
         Behavior on opacity {

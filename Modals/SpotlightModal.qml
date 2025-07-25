@@ -125,18 +125,28 @@ DankModal {
 
             Column {
                 anchors.fill: parent
-                anchors.margins: Theme.spacingM
-                spacing: Theme.spacingM
+                anchors.margins: Theme.spacingL
+                spacing: Theme.spacingL
 
-                // Category selector
-                CategorySelector {
+                Rectangle {
                     width: parent.width
-                    categories: appLauncher.categories
-                    selectedCategory: appLauncher.selectedCategory
-                    compact: false
+                    height: categorySelector.height + Theme.spacingM * 2
+                    radius: Theme.cornerRadiusLarge
+                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
+                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+                    border.width: 1
                     visible: appLauncher.categories.length > 1 || appLauncher.model.count > 0
-                    onCategorySelected: (category) => {
-                        return appLauncher.setCategory(category);
+
+                    CategorySelector {
+                        id: categorySelector
+                        anchors.centerIn: parent
+                        width: parent.width - Theme.spacingM * 2
+                        categories: appLauncher.categories
+                        selectedCategory: appLauncher.selectedCategory
+                        compact: false
+                        onCategorySelected: (category) => {
+                            return appLauncher.setCategory(category);
+                        }
                     }
                 }
 
@@ -267,19 +277,21 @@ DankModal {
 
                 }
 
-                // Results container
                 Rectangle {
                     id: resultsContainer
 
                     width: parent.width
-                    height: parent.height - y // Use remaining space
-                    color: "transparent"
+                    height: parent.height - y
+                    radius: Theme.cornerRadiusLarge
+                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
+                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                    border.width: 1
 
-                    // List view
                     DankListView {
                         id: resultsList
 
                         anchors.fill: parent
+                        anchors.margins: Theme.spacingS
                         visible: appLauncher.viewMode === "list"
                         model: appLauncher.model
                         currentIndex: appLauncher.selectedIndex
@@ -299,11 +311,11 @@ DankModal {
                         }
                     }
 
-                    // Grid view
                     DankGridView {
                         id: resultsGrid
 
                         anchors.fill: parent
+                        anchors.margins: Theme.spacingS
                         visible: appLauncher.viewMode === "grid"
                         model: appLauncher.model
                         columns: 4

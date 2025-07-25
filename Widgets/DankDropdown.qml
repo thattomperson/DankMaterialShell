@@ -132,7 +132,8 @@ Rectangle {
         width: 180
         height: Math.min(200, root.options.length * 36 + 16)
         padding: 0
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+        modal: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
         background: Rectangle {
             color: "transparent"

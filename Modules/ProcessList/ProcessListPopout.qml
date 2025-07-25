@@ -116,22 +116,36 @@ PanelWindow {
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: Theme.spacingL
-                spacing: Theme.spacingM
+                spacing: Theme.spacingL
 
-                SystemOverview {
+                Rectangle {
                     Layout.fillWidth: true
+                    height: systemOverview.height + Theme.spacingM * 2
+                    radius: Theme.cornerRadiusLarge
+                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
+                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+                    border.width: 1
+
+                    SystemOverview {
+                        id: systemOverview
+                        anchors.centerIn: parent
+                        width: parent.width - Theme.spacingM * 2
+                    }
                 }
 
                 Rectangle {
-                    width: parent.width
-                    height: 1
-                    color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
-                }
-
-                ProcessListView {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    contextMenu: processContextMenu
+                    radius: Theme.cornerRadiusLarge
+                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
+                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                    border.width: 1
+
+                    ProcessListView {
+                        anchors.fill: parent
+                        anchors.margins: Theme.spacingS
+                        contextMenu: processContextMenu
+                    }
                 }
             }
         }

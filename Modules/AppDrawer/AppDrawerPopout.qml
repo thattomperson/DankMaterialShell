@@ -182,18 +182,16 @@ PanelWindow {
                 }
 
                 Column {
-                    width: parent.width - Theme.spacingXL * 2
-                    height: parent.height - Theme.spacingXL * 2
-                    x: Theme.spacingXL
-                    y: Theme.spacingXL
+                    width: parent.width - Theme.spacingL * 2
+                    height: parent.height - Theme.spacingL * 2
+                    x: Theme.spacingL
+                    y: Theme.spacingL
                     spacing: Theme.spacingL
 
-                    // Header section
                     Row {
                         width: parent.width
                         height: 40
 
-                        // App launcher title
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Applications"
@@ -207,7 +205,6 @@ PanelWindow {
                             height: 1
                         }
 
-                        // Quick stats
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text: appLauncher.model.count + " apps"
@@ -274,14 +271,12 @@ PanelWindow {
 
                     }
 
-                    // Category filter and view mode controls
                     Row {
                         width: parent.width
                         height: 40
                         spacing: Theme.spacingM
                         visible: searchField.text.length === 0
 
-                        // Category filter using DankDropdown
                         Item {
                             width: 200
                             height: 36
@@ -304,12 +299,10 @@ PanelWindow {
                             height: 1
                         }
 
-                        // View mode toggle
                         Row {
                             spacing: 4
                             anchors.verticalCenter: parent.verticalCenter
 
-                            // List view button
                             DankActionButton {
                                 buttonSize: 36
                                 circular: false
@@ -323,7 +316,6 @@ PanelWindow {
                                 }
                             }
 
-                            // Grid view button
                             DankActionButton {
                                 buttonSize: 36
                                 circular: false
@@ -341,26 +333,26 @@ PanelWindow {
 
                     }
 
-                    // App grid/list container
+                    // App grid/list container with enhanced styling
                     Rectangle {
                         width: parent.width
                         height: {
-                            // Calculate more precise remaining height
                             let usedHeight = 40 + Theme.spacingL;
-                            // Header
                             usedHeight += 52 + Theme.spacingL;
-                            // Search container
                             usedHeight += (searchField.text.length === 0 ? 40 + Theme.spacingL : 0);
-                            // Category/controls when visible
                             return parent.height - usedHeight;
                         }
-                        color: "transparent"
+                        radius: Theme.cornerRadiusLarge
+                        color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
+                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                        border.width: 1
 
                         // List view
                         DankListView {
                             id: appList
 
                             anchors.fill: parent
+                            anchors.margins: Theme.spacingS
                             visible: appLauncher.viewMode === "list"
                             model: appLauncher.model
                             currentIndex: appLauncher.selectedIndex
@@ -385,6 +377,7 @@ PanelWindow {
                             id: appGrid
 
                             anchors.fill: parent
+                            anchors.margins: Theme.spacingS
                             visible: appLauncher.viewMode === "grid"
                             model: appLauncher.model
                             columns: 4

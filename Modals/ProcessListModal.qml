@@ -74,7 +74,7 @@ DankModal {
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: Theme.spacingXL
+                anchors.margins: Theme.spacingL
                 spacing: Theme.spacingL
 
                 RowLayout {
@@ -90,10 +90,9 @@ DankModal {
                     }
 
                     Item {
-                        Layout.fillWidth: true // Spacer to push close button to the right
+                        Layout.fillWidth: true
                     }
 
-                    // Close button
                     DankActionButton {
                         circular: false
                         iconName: "close"
@@ -103,13 +102,12 @@ DankModal {
                         onClicked: processListModal.hide()
                         Layout.alignment: Qt.AlignVCenter
                     }
-
                 }
 
                 Rectangle {
                     Layout.fillWidth: true
                     height: 52
-                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.04)
+                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.15)
                     radius: Theme.cornerRadiusLarge
                     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.06)
                     border.width: 1
@@ -210,14 +208,19 @@ DankModal {
 
                 }
 
-                Item {
+                Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    radius: Theme.cornerRadiusLarge
+                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
+                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                    border.width: 1
 
                     Loader {
                         id: processesTab
 
                         anchors.fill: parent
+                        anchors.margins: Theme.spacingS
                         active: currentTab === 0
                         visible: currentTab === 0
                         opacity: currentTab === 0 ? 1 : 0
@@ -228,15 +231,14 @@ DankModal {
                                 duration: Theme.mediumDuration
                                 easing.type: Theme.emphasizedEasing
                             }
-
                         }
-
                     }
 
                     Loader {
                         id: performanceTab
 
                         anchors.fill: parent
+                        anchors.margins: Theme.spacingS
                         active: currentTab === 1
                         visible: currentTab === 1
                         opacity: currentTab === 1 ? 1 : 0
@@ -247,15 +249,14 @@ DankModal {
                                 duration: Theme.mediumDuration
                                 easing.type: Theme.emphasizedEasing
                             }
-
                         }
-
                     }
 
                     Loader {
                         id: systemTab
 
                         anchors.fill: parent
+                        anchors.margins: Theme.spacingS
                         active: currentTab === 2
                         visible: currentTab === 2
                         opacity: currentTab === 2 ? 1 : 0
@@ -266,11 +267,8 @@ DankModal {
                                 duration: Theme.mediumDuration
                                 easing.type: Theme.emphasizedEasing
                             }
-
                         }
-
                     }
-
                 }
 
             }

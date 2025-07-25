@@ -97,6 +97,37 @@ PanelWindow {
             radius: Theme.cornerRadiusLarge
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
             border.width: 1
+            
+            // Material 3 elevation with multiple layers
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: -3
+                color: "transparent"
+                radius: parent.radius + 3
+                border.color: Qt.rgba(0, 0, 0, 0.05)
+                border.width: 1
+                z: -3
+            }
+            
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: -2
+                color: "transparent"
+                radius: parent.radius + 2
+                border.color: Qt.rgba(0, 0, 0, 0.08)
+                border.width: 1
+                z: -2
+            }
+            
+            Rectangle {
+                anchors.fill: parent
+                color: "transparent"
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
+                border.width: 1
+                radius: parent.radius
+                z: -1
+            }
+            
             // Remove layer rendering for better performance
             antialiasing: true
             smooth: true
@@ -110,7 +141,6 @@ PanelWindow {
                     width: parent.width
                     spacing: Theme.spacingL
 
-                    // Header
                     Row {
                         width: parent.width
 
@@ -150,17 +180,15 @@ PanelWindow {
                                     batteryPopupVisible = false;
                                 }
                             }
-
                         }
-
                     }
 
                     Rectangle {
                         width: parent.width
                         height: 80
-                        radius: Theme.cornerRadius
-                        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
-                        border.color: BatteryService.isCharging ? Theme.primary : (BatteryService.isLowBattery ? Theme.error : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12))
+                        radius: Theme.cornerRadiusLarge
+                        color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.4)
+                        border.color: BatteryService.isCharging ? Theme.primary : (BatteryService.isLowBattery ? Theme.error : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08))
                         border.width: BatteryService.isCharging || BatteryService.isLowBattery ? 2 : 1
                         visible: BatteryService.batteryAvailable
 
@@ -248,9 +276,9 @@ PanelWindow {
                     Rectangle {
                         width: parent.width
                         height: 80
-                        radius: Theme.cornerRadius
-                        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5)
-                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
+                        radius: Theme.cornerRadiusLarge
+                        color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.4)
+                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
                         border.width: 1
                         visible: !BatteryService.batteryAvailable
 
@@ -378,10 +406,10 @@ PanelWindow {
                                 Rectangle {
                                     width: parent.width
                                     height: 50
-                                    radius: Theme.cornerRadius
-                                    color: profileArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : (batteryPopout.isActiveProfile(modelData) ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08))
-                                    border.color: batteryPopout.isActiveProfile(modelData) ? Theme.primary : "transparent"
-                                    border.width: 2
+                                    radius: Theme.cornerRadiusLarge
+                                    color: profileArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : (root.isActiveProfile(modelData) ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1))
+                                    border.color: root.isActiveProfile(modelData) ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                                    border.width: root.isActiveProfile(modelData) ? 2 : 1
 
                                     Row {
                                         anchors.left: parent.left
@@ -392,7 +420,7 @@ PanelWindow {
                                         DankIcon {
                                             name: Theme.getPowerProfileIcon(modelData)
                                             size: Theme.iconSize
-                                            color: batteryPopout.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
+                                            color: root.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
                                             anchors.verticalCenter: parent.verticalCenter
                                         }
 
@@ -403,8 +431,8 @@ PanelWindow {
                                             Text {
                                                 text: Theme.getPowerProfileLabel(modelData)
                                                 font.pixelSize: Theme.fontSizeMedium
-                                                color: batteryPopout.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
-                                                font.weight: batteryPopout.isActiveProfile(modelData) ? Font.Medium : Font.Normal
+                                                color: root.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
+                                                font.weight: root.isActiveProfile(modelData) ? Font.Medium : Font.Normal
                                             }
 
                                             Text {
@@ -424,7 +452,7 @@ PanelWindow {
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            batteryPopout.setProfile(modelData);
+                                            root.setProfile(modelData);
                                         }
                                     }
 
@@ -440,10 +468,10 @@ PanelWindow {
                     Rectangle {
                         width: parent.width
                         height: 60
-                        radius: Theme.cornerRadius
+                        radius: Theme.cornerRadiusLarge
                         color: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
-                        border.color: Theme.error
-                        border.width: 2
+                        border.color: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.3)
+                        border.width: 1
                         visible: (typeof PowerProfiles !== "undefined") && PowerProfiles.degradationReason !== PerformanceDegradationReason.None
 
                         Row {

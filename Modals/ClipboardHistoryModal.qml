@@ -118,6 +118,11 @@ DankModal {
     width: 650
     height: 550
     keyboardFocus: "ondemand"
+    backgroundColor: Theme.popupBackground()
+    cornerRadius: Theme.cornerRadiusLarge
+    borderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+    borderWidth: 1
+    enableShadow: true 
     onBackgroundClicked: {
         hide();
     }
@@ -332,14 +337,12 @@ DankModal {
     content: Component {
         Column {
             anchors.fill: parent
-            anchors.margins: Theme.spacingM
-            spacing: Theme.spacingS
+            anchors.margins: Theme.spacingL
+            spacing: Theme.spacingL
 
-            // Header with search
-            Rectangle {
+            Row {
                 width: parent.width
                 height: 40
-                color: "transparent"
 
                 Row {
                     anchors.left: parent.left
@@ -360,7 +363,6 @@ DankModal {
                         font.weight: Font.Medium
                         anchors.verticalCenter: parent.verticalCenter
                     }
-
                 }
 
                 Row {
@@ -385,12 +387,9 @@ DankModal {
                         hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
                         onClicked: hide()
                     }
-
                 }
-
             }
 
-            // Search field
             DankTextField {
                 id: searchField
 
@@ -414,15 +413,15 @@ DankModal {
 
                     target: clipboardHistoryModal
                 }
-
             }
 
-            // Clipboard entries list
             Rectangle {
                 width: parent.width
                 height: parent.height - 110
-                radius: Theme.cornerRadius
+                radius: Theme.cornerRadiusLarge
                 color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                border.width: 1
                 clip: true
 
                 ScrollView {

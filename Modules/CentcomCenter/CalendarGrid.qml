@@ -177,74 +177,79 @@ Column {
 
                 width: parent.width / 7
                 height: parent.height / 6
-                color: isSelected ? Theme.primary : isToday ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : dayArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
-                radius: Theme.cornerRadiusSmall
-
-                Text {
-                    anchors.centerIn: parent
-                    text: dayDate.getDate()
-                    font.pixelSize: Theme.fontSizeMedium
-                    color: isSelected ? Theme.surface : isToday ? Theme.primary : isCurrentMonth ? Theme.surfaceText : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.4)
-                    font.weight: isToday || isSelected ? Font.Medium : Font.Normal
-                }
-
-                // Event indicator - full-width elegant bar
+                color: "transparent"
+                clip: true
+                
                 Rectangle {
-                    // Use a lighter tint of primary for selected state
+                    anchors.centerIn: parent
+                    width: parent.width - 4
+                    height: parent.height - 4
+                    color: isSelected ? Theme.primary : isToday ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : dayArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
+                    radius: Theme.cornerRadiusSmall
+                    clip: true
 
-                    id: eventIndicator
-
-                    anchors.bottom: parent.bottom
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.margins: 2
-                    height: 3
-                    radius: 1.5
-                    visible: CalendarService && CalendarService.khalAvailable && CalendarService.hasEventsForDate(dayDate)
-                    // Dynamic color based on state with opacity
-                    color: {
-                        if (isSelected)
-                            return Qt.lighter(Theme.primary, 1.3);
-                        else if (isToday)
-                            return Theme.primary;
-                        else
-                            return Theme.primary;
+                    Text {
+                        anchors.centerIn: parent
+                        text: dayDate.getDate()
+                        font.pixelSize: Theme.fontSizeMedium
+                        color: isSelected ? Theme.surface : isToday ? Theme.primary : isCurrentMonth ? Theme.surfaceText : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.4)
+                        font.weight: isToday || isSelected ? Font.Medium : Font.Normal
                     }
-                    opacity: {
-                        if (isSelected)
-                            return 0.9;
-                        else if (isToday)
-                            return 0.8;
-                        else
-                            return 0.6;
-                    }
-                    // Subtle animation on hover
-                    scale: dayArea.containsMouse ? 1.05 : 1
 
-                    Behavior on scale {
-                        NumberAnimation {
-                            duration: Theme.shortDuration
-                            easing.type: Theme.standardEasing
+                    // Event indicator - bottom fill effect
+                    Rectangle {
+                        id: eventIndicator
+
+                        anchors.fill: parent
+                        radius: parent.radius
+                        visible: CalendarService && CalendarService.khalAvailable && CalendarService.hasEventsForDate(dayDate)
+                        
+                        gradient: Gradient {
+                            GradientStop { 
+                                position: 0.89
+                                color: "transparent" 
+                            }
+                            GradientStop { 
+                                position: 0.9
+                                color: {
+                                    if (isSelected)
+                                        return Qt.lighter(Theme.primary, 1.3);
+                                    else if (isToday)
+                                        return Theme.primary;
+                                    else
+                                        return Theme.primary;
+                                }
+                            }
+                            GradientStop { 
+                                position: 1.0
+                                color: {
+                                    if (isSelected)
+                                        return Qt.lighter(Theme.primary, 1.3);
+                                    else if (isToday)
+                                        return Theme.primary;
+                                    else
+                                        return Theme.primary;
+                                }
+                            }
+                        }
+                        
+                        opacity: {
+                            if (isSelected)
+                                return 0.9;
+                            else if (isToday)
+                                return 0.8;
+                            else
+                                return 0.6;
+                        }
+
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: Theme.shortDuration
+                                easing.type: Theme.standardEasing
+                            }
                         }
 
                     }
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.shortDuration
-                            easing.type: Theme.standardEasing
-                        }
-
-                    }
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: Theme.shortDuration
-                            easing.type: Theme.standardEasing
-                        }
-
-                    }
-
                 }
 
                 MouseArea {

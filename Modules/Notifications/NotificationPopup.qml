@@ -76,11 +76,41 @@ PanelWindow {
                             }
                             return 116;
                         }
-                        radius: 12
+                        radius: Theme.cornerRadiusLarge
                         color: Theme.popupBackground()
                         border.color: modelData.latestNotification.urgency === 2 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
                         border.width: modelData.latestNotification.urgency === 2 ? 2 : 1
                         clip: true
+                        
+                        // Material 3 elevation with multiple layers
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: -3
+                            color: "transparent"
+                            radius: parent.radius + 3
+                            border.color: Qt.rgba(0, 0, 0, 0.05)
+                            border.width: 1
+                            z: -3
+                        }
+                        
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: -2
+                            color: "transparent"
+                            radius: parent.radius + 2
+                            border.color: Qt.rgba(0, 0, 0, 0.08)
+                            border.width: 1
+                            z: -2
+                        }
+                        
+                        Rectangle {
+                            anchors.fill: parent
+                            color: "transparent"
+                            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
+                            border.width: 1
+                            radius: parent.radius
+                            z: -1
+                        }
                         onCurrentLatestNotificationChanged: {
                             if (isPopup && !cardHoverArea.containsMouse)
                                 dismissTimer.restart();
@@ -477,9 +507,9 @@ PanelWindow {
                                 Rectangle {
                                     width: parent.width
                                     height: Math.min(400, modelData.notifications.length * 90) // Fixed height constraint for inner scroll
-                                    radius: 8
-                                    color: "transparent"
-                                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.1)
+                                    radius: Theme.cornerRadiusLarge
+                                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
+                                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
                                     border.width: 1
                                     clip: true
 
@@ -500,10 +530,10 @@ PanelWindow {
 
                                                     width: parent.width
                                                     height: messageExpanded ? Math.min(120, 50 + (bodyText.contentHeight || 0)) : 80
-                                                    radius: 8
-                                                    color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.3)
-                                                    border.color: "transparent"
-                                                    border.width: 0
+                                                    radius: Theme.cornerRadiusLarge
+                                                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
+                                                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+                                                    border.width: 1
 
                                                     Item {
                                                         anchors.fill: parent
