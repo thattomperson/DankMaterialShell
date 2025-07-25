@@ -129,7 +129,6 @@ Item {
 
     }
 
-    // Search input field
     Item {
         id: searchInputField
 
@@ -174,7 +173,6 @@ Item {
             }
         }
 
-        // Status icon overlay
         DankIcon {
             name: {
                 if (root.isLoading)
@@ -218,8 +216,7 @@ Item {
 
     }
 
-    // Search results dropdown
-    Rectangle {
+    StyledRect {
         id: searchDropdown
 
         property bool hovered: false
@@ -261,7 +258,7 @@ Item {
                 model: searchResultsModel
                 spacing: 2
 
-                delegate: Rectangle {
+                delegate: StyledRect {
                     width: searchResultsList.width
                     height: 36
                     radius: Theme.cornerRadius
@@ -312,7 +309,6 @@ Item {
 
             }
 
-            // Show message when no results
             Text {
                 anchors.centerIn: parent
                 text: root.isLoading ? "Searching..." : "No locations found"

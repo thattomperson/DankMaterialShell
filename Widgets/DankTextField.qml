@@ -3,7 +3,7 @@ import QtQuick.Controls
 import qs.Common
 import qs.Widgets
 
-Rectangle {
+StyledRect {
     id: root
 
     property alias text: textInput.text
@@ -154,7 +154,7 @@ Rectangle {
     }
 
     // Clear button
-    Rectangle {
+    StyledRect {
         id: clearButton
 
         width: 24
