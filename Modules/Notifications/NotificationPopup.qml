@@ -60,7 +60,6 @@ PanelWindow {
                         readonly property bool isPopup: modelData.latestNotification.popup
                         readonly property int expireTimeout: modelData.latestNotification.notification.expireTimeout
                         property string stableGroupKey: ""
-                        // Watch for changes to latest notification (new message joins group)
                         property var currentLatestNotification: modelData.latestNotification
 
                         Component.onCompleted: {
@@ -70,7 +69,6 @@ PanelWindow {
                         height: {
                             if (expanded && modelData.count >= 1) {
                                 const baseHeight = (116 * modelData.count) + (12 * (modelData.count - 1));
-                                // Add extra bottom margin for View/Dismiss buttons when there are fewer than 3 messages
                                 const bottomMargin = modelData.count === 1 ? 70 : (modelData.count < 3 ? 50 : -28);
                                 return baseHeight + bottomMargin;
                             }
@@ -81,8 +79,12 @@ PanelWindow {
                         border.color: modelData.latestNotification.urgency === 2 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
                         border.width: modelData.latestNotification.urgency === 2 ? 2 : 1
                         clip: true
-                        
-                        // Material 3 elevation with multiple layers
+                        onCurrentLatestNotificationChanged: {
+                            if (isPopup && !cardHoverArea.containsMouse)
+                                dismissTimer.restart();
+
+                        }
+
                         Rectangle {
                             anchors.fill: parent
                             anchors.margins: -3
@@ -92,7 +94,7 @@ PanelWindow {
                             border.width: 1
                             z: -3
                         }
-                        
+
                         Rectangle {
                             anchors.fill: parent
                             anchors.margins: -2
@@ -102,7 +104,7 @@ PanelWindow {
                             border.width: 1
                             z: -2
                         }
-                        
+
                         Rectangle {
                             anchors.fill: parent
                             color: "transparent"
@@ -111,24 +113,35 @@ PanelWindow {
                             radius: parent.radius
                             z: -1
                         }
-                        onCurrentLatestNotificationChanged: {
-                            if (isPopup && !cardHoverArea.containsMouse)
-                                dismissTimer.restart();
-
-                        }
 
                         Rectangle {
-                            width: 4
-                            height: parent.height - 16
-                            anchors.left: parent.left
-                            anchors.leftMargin: 2
-                            anchors.verticalCenter: parent.verticalCenter
-                            radius: 2
-                            color: Theme.primary
+                            anchors.fill: parent
+                            radius: parent.radius
                             visible: modelData.latestNotification.urgency === 2
+                            opacity: 1
+
+                            gradient: Gradient {
+                                orientation: Gradient.Horizontal
+
+                                GradientStop {
+                                    position: 0
+                                    color: Theme.primary
+                                }
+
+                                GradientStop {
+                                    position: 0.02
+                                    color: Theme.primary
+                                }
+
+                                GradientStop {
+                                    position: 0.021
+                                    color: "transparent"
+                                }
+
+                            }
+
                         }
 
-                        // Collapsed view - show only latest notification
                         Item {
                             id: collapsedContent
 
@@ -160,11 +173,9 @@ PanelWindow {
                                     anchors.fill: parent
                                     anchors.margins: 2
                                     source: {
-                                        // Priority 1: Use notification image if available
                                         if (parent.hasNotificationImage)
                                             return modelData.latestNotification.cleanImage;
 
-                                        // Priority 2: Use appIcon - handle URLs directly, use iconPath for icon names
                                         if (modelData.latestNotification.appIcon) {
                                             const appIcon = modelData.latestNotification.appIcon;
                                             if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://"))
@@ -272,9 +283,7 @@ PanelWindow {
                                             }
 
                                             text: {
-                                                // Auto-detect and make URLs clickable, with truncation for popups
                                                 let bodyText = modelData.latestNotification.body;
-                                                // Truncate to 108 characters max for popup notifications
                                                 if (bodyText.length > 105)
                                                     bodyText = bodyText.substring(0, 102) + "...";
 
@@ -307,89 +316,42 @@ PanelWindow {
                                 anchors.rightMargin: 0
                                 anchors.top: parent.top
                                 anchors.topMargin: 0
-                                width: modelData.count > 1 ? 40 : 20 // Dynamic width: 40px for expand+close, 20px for close only
+                                width: modelData.count > 1 ? 40 : 20
                                 height: 24
 
-                                // Expand button - always takes up space but only visible when needed
-                                Rectangle {
-                                    id: collapsedExpandButton
-
+                                DankActionButton {
                                     anchors.left: parent.left
                                     anchors.top: parent.top
-                                    width: 20
-                                    height: 20
-                                    radius: 10
-                                    color: expandArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
                                     visible: modelData.count > 1
-
-                                    DankIcon {
-                                        anchors.centerIn: parent
-                                        name: expanded ? "expand_less" : "expand_more"
-                                        size: 14
-                                        color: Theme.surfaceText
-                                    }
-
-                                    MouseArea {
-                                        id: expandArea
-
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: NotificationService.toggleGroupExpansion(modelData.key)
-                                    }
-
+                                    iconName: expanded ? "expand_less" : "expand_more"
+                                    iconSize: 14
+                                    buttonSize: 20
+                                    z: 15
+                                    onClicked: NotificationService.toggleGroupExpansion(modelData.key)
                                 }
 
-                                // Close button - always positioned at the right edge
-                                Rectangle {
-                                    id: closeButton
-
-                                    property bool isHovered: false
-
+                                DankActionButton {
                                     anchors.right: parent.right
                                     anchors.top: parent.top
-                                    width: 20
-                                    height: 20
-                                    radius: 10
-                                    color: isHovered ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
-                                    z: 10
-
-                                    DankIcon {
-                                        id: closeIcon
-
-                                        name: "close"
-                                        size: 14
-                                        color: closeButton.isHovered ? Theme.primary : Theme.surfaceText
-                                        anchors.centerIn: parent
-                                    }
-
-                                    MouseArea {
-                                        id: dismissArea
-
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        z: 11
-                                        onEntered: {
-                                            closeButton.isHovered = true;
-                                            dismissTimer.stop();
+                                    iconName: "close"
+                                    iconSize: 14
+                                    buttonSize: 20
+                                    z: 15
+                                    onClicked: {
+                                        if (modelData.latestNotification.notification.transient) {
+                                            NotificationService.dismissGroup(modelData.key);
+                                        } else {
+                                            for (const notif of modelData.notifications) {
+                                                notif.popup = false;
+                                            }
                                         }
-                                        onExited: {
-                                            closeButton.isHovered = false;
-                                            if (modelData.latestNotification.popup && !cardHoverArea.containsMouse)
-                                                dismissTimer.restart();
-
-                                        }
-                                        onClicked: NotificationService.dismissGroup(modelData.key)
                                     }
-
                                 }
 
                             }
 
                         }
 
-                        // Expanded view - show all notifications in group
                         Item {
                             anchors.fill: parent
                             anchors.margins: 16
@@ -401,7 +363,6 @@ PanelWindow {
                                 width: parent.width
                                 spacing: 10
 
-                                // Header with app name and count
                                 Item {
                                     width: parent.width
                                     height: 32
@@ -449,52 +410,28 @@ PanelWindow {
                                             anchors.fill: parent
                                             spacing: 8
 
-                                            Rectangle {
-                                                width: 20
-                                                height: 20
-                                                radius: 10
-                                                color: expandedExpandArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
-
-                                                DankIcon {
-                                                    anchors.centerIn: parent
-                                                    name: "expand_less"
-                                                    size: 14
-                                                    color: Theme.surfaceText
-                                                }
-
-                                                MouseArea {
-                                                    id: expandedExpandArea
-
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: NotificationService.toggleGroupExpansion(modelData.key)
-                                                }
-
+                                            DankActionButton {
+                                                iconName: "expand_less"
+                                                iconSize: 14
+                                                buttonSize: 20
+                                                z: 15
+                                                onClicked: NotificationService.toggleGroupExpansion(modelData.key)
                                             }
 
-                                            Rectangle {
-                                                width: 20
-                                                height: 20
-                                                radius: 10
-                                                color: expandedCloseArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
-
-                                                DankIcon {
-                                                    anchors.centerIn: parent
-                                                    name: "close"
-                                                    size: 14
-                                                    color: expandedCloseArea.containsMouse ? Theme.primary : Theme.surfaceText
+                                            DankActionButton {
+                                                iconName: "close"
+                                                iconSize: 14
+                                                buttonSize: 20
+                                                z: 15
+                                                onClicked: {
+                                                    if (modelData.latestNotification.notification.transient) {
+                                                        NotificationService.dismissGroup(modelData.key);
+                                                    } else {
+                                                        for (const notif of modelData.notifications) {
+                                                            notif.popup = false;
+                                                        }
+                                                    }
                                                 }
-
-                                                MouseArea {
-                                                    id: expandedCloseArea
-
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: NotificationService.dismissGroup(modelData.key)
-                                                }
-
                                             }
 
                                         }
@@ -503,7 +440,6 @@ PanelWindow {
 
                                 }
 
-                                // Scrollable list of individual notifications
                                 Rectangle {
                                     width: parent.width
                                     height: Math.min(400, modelData.notifications.length * 90) // Fixed height constraint for inner scroll
@@ -669,56 +605,22 @@ PanelWindow {
                                                             spacing: 4
 
                                                             // Expand/collapse button for individual message
-                                                            Rectangle {
-                                                                id: expandButton
-
-                                                                width: 20
-                                                                height: 20
-                                                                radius: 10
-                                                                color: expandMessageArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
+                                                            DankActionButton {
                                                                 visible: (modelData.body || "").length > 80
-
-                                                                DankIcon {
-                                                                    anchors.centerIn: parent
-                                                                    name: messageExpanded ? "expand_less" : "expand_more"
-                                                                    size: 12
-                                                                    color: Theme.surfaceText
-                                                                }
-
-                                                                MouseArea {
-                                                                    id: expandMessageArea
-
-                                                                    anchors.fill: parent
-                                                                    hoverEnabled: true
-                                                                    cursorShape: Qt.PointingHandCursor
-                                                                    onClicked: NotificationService.toggleMessageExpansion(modelData.notification.id)
-                                                                }
-
+                                                                iconName: messageExpanded ? "expand_less" : "expand_more"
+                                                                iconSize: 12
+                                                                buttonSize: 20
+                                                                z: 15
+                                                                onClicked: NotificationService.toggleMessageExpansion(modelData.notification.id)
                                                             }
 
                                                             // Close button for individual message
-                                                            Rectangle {
-                                                                width: 20
-                                                                height: 20
-                                                                radius: 10
-                                                                color: closeMessageArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.08) : "transparent"
-
-                                                                DankIcon {
-                                                                    anchors.centerIn: parent
-                                                                    name: "close"
-                                                                    size: 12
-                                                                    color: closeMessageArea.containsMouse ? Theme.primary : Theme.surfaceText
-                                                                }
-
-                                                                MouseArea {
-                                                                    id: closeMessageArea
-
-                                                                    anchors.fill: parent
-                                                                    hoverEnabled: true
-                                                                    cursorShape: Qt.PointingHandCursor
-                                                                    onClicked: NotificationService.dismissNotification(modelData)
-                                                                }
-
+                                                            DankActionButton {
+                                                                iconName: "close"
+                                                                iconSize: 12
+                                                                buttonSize: 20
+                                                                z: 15
+                                                                onClicked: NotificationService.dismissNotification(modelData)
                                                             }
 
                                                         }
@@ -747,13 +649,13 @@ PanelWindow {
 
                         }
 
-                        // Main hover area for persistence
+                        // Main hover area for persistence and click handling
                         MouseArea {
                             id: cardHoverArea
 
                             anchors.fill: parent
                             hoverEnabled: true
-                            acceptedButtons: Qt.NoButton
+                            acceptedButtons: Qt.LeftButton
                             propagateComposedEvents: true
                             z: 0
                             onEntered: {
@@ -764,71 +666,72 @@ PanelWindow {
                                     dismissTimer.restart();
 
                             }
+                            onClicked: {
+                                if (modelData.latestNotification.notification.transient) {
+                                    NotificationService.dismissGroup(modelData.key);
+                                } else {
+                                    for (const notif of modelData.notifications) {
+                                        notif.popup = false;
+                                    }
+                                }
+                            }
                         }
 
-                        // View button positioned at bottom-right of notification card
-                        Rectangle {
-                            id: viewButton
-
-                            property bool isHovered: false
-
+                        // Action buttons positioned at bottom-left of notification card
+                        Row {
                             anchors.right: dismissButton.left
-                            anchors.rightMargin: 4
+                            anchors.rightMargin: 8
                             anchors.bottom: parent.bottom
                             anchors.bottomMargin: 8
-                            width: viewText.width + 16
-                            height: viewText.height + 8
-                            radius: 6
-                            color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
+                            spacing: 4
                             z: 10
 
-                            Text {
-                                id: viewText
+                            Repeater {
+                                model: modelData.latestNotification.actions || []
 
-                                text: "View"
-                                color: viewButton.isHovered ? Theme.primary : Theme.surfaceVariantText
-                                font.pixelSize: Theme.fontSizeSmall
-                                font.weight: Font.Medium
-                                anchors.centerIn: parent
-                            }
+                                Rectangle {
+                                    property bool isHovered: false
 
-                            MouseArea {
-                                id: viewArea
+                                    width: Math.min(actionText.contentWidth + 12, 70)
+                                    height: 24
+                                    radius: 4
+                                    color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
 
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                z: 11
-                                onEntered: {
-                                    viewButton.isHovered = true;
-                                    dismissTimer.stop();
-                                }
-                                onExited: {
-                                    viewButton.isHovered = false;
-                                    if (modelData.latestNotification.popup && !cardHoverArea.containsMouse)
-                                        dismissTimer.restart();
+                                    Text {
+                                        id: actionText
 
-                                }
-                                onClicked: {
-                                    // Handle navigation to source message
-                                    if (modelData.latestNotification.actions) {
-                                        for (const action of modelData.latestNotification.actions) {
-                                            if (action.text && action.text.toLowerCase() === "view") {
-                                                if (action.invoke) {
-                                                    action.invoke();
-                                                    return ;
-                                                }
-                                            }
+                                        text: modelData.text || ""
+                                        color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
+                                        font.pixelSize: Theme.fontSizeSmall
+                                        font.weight: Font.Medium
+                                        anchors.centerIn: parent
+                                        elide: Text.ElideRight
+                                        width: Math.min(contentWidth, parent.width - 8)
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onEntered: {
+                                            parent.isHovered = true;
+                                            dismissTimer.stop();
                                         }
-                                        // If no View action, try the first available action
-                                        if (modelData.latestNotification.actions.length > 0) {
-                                            const firstAction = modelData.latestNotification.actions[0];
-                                            if (firstAction.invoke)
-                                                firstAction.invoke();
+                                        onExited: {
+                                            parent.isHovered = false;
+                                            if (modelData.latestNotification.popup && !cardHoverArea.containsMouse)
+                                                dismissTimer.restart();
+
+                                        }
+                                        onClicked: {
+                                            if (modelData && modelData.invoke)
+                                                modelData.invoke();
 
                                         }
                                     }
+
                                 }
+
                             }
 
                         }
@@ -877,12 +780,7 @@ PanelWindow {
 
                                 }
                                 onClicked: {
-                                    // Move to notification center (don't close)
-                                    const groupKey = stableGroupKey || modelData.key;
-                                    console.log("Manually hiding notification group from popup:", groupKey);
-                                    modelData.latestNotification.popup = false;
-                                    // Clear expansion state when manually hiding from popup
-                                    NotificationService.clearGroupExpansionState(groupKey);
+                                    NotificationService.dismissGroup(modelData.key);
                                 }
                             }
 
@@ -896,7 +794,6 @@ PanelWindow {
                             onTriggered: {
                                 // Move to notification center (don't dismiss completely)
                                 const groupKey = stableGroupKey || modelData.key;
-                                console.log("Auto-hiding notification group from popup:", groupKey);
                                 modelData.latestNotification.popup = false;
                                 // Clear expansion state when hiding from popup
                                 NotificationService.clearGroupExpansionState(groupKey);

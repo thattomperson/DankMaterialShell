@@ -7,7 +7,7 @@ MouseArea {
 
     property bool disabled: false
     property color stateColor: Theme.surfaceText
-    property real cornerRadius: parent?.radius ?? Appearance.rounding.normal
+    property real cornerRadius: parent?.radius ?? Theme.cornerRadius
 
     anchors.fill: parent
     cursorShape: disabled ? undefined : Qt.PointingHandCursor

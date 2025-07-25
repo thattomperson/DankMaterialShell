@@ -14,8 +14,11 @@ PanelWindow {
     property bool notificationHistoryVisible: false
 
     visible: notificationHistoryVisible
+    onNotificationHistoryVisibleChanged: {
+        NotificationService.disablePopups(notificationHistoryVisible);
+    }
     implicitWidth: 400
-    implicitHeight: Math.min(Screen.height * 0.6, Math.max(580, 720))
+    implicitHeight: Math.min(Screen.height * 0.8, 400)
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -36,8 +39,22 @@ PanelWindow {
     }
 
     Rectangle {
+        id: mainRect
+
+        function calculateHeight() {
+            let baseHeight = Theme.spacingL * 2;
+            baseHeight += notificationHeader.height;
+            baseHeight += Theme.spacingM;
+            let listHeight = notificationList.listContentHeight;
+            if (NotificationService.groupedNotifications.length === 0)
+                listHeight = 200;
+
+            baseHeight += Math.min(listHeight, 600);
+            return Math.max(300, baseHeight);
+        }
+
         width: 400
-        height: Math.min(Screen.height * 0.6, Math.max(580, 720))
+        height: calculateHeight()
         x: Screen.width - width - Theme.spacingL
         y: Theme.barHeight + Theme.spacingXS
         color: Theme.popupBackground()
@@ -45,103 +62,7 @@ PanelWindow {
         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
         border.width: 1
         opacity: notificationHistoryVisible ? 1 : 0
-        
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: -3
-            color: "transparent"
-            radius: parent.radius + 3
-            border.color: Qt.rgba(0, 0, 0, 0.05)
-            border.width: 1
-            z: -3
-        }
-        
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: -2
-            color: "transparent"
-            radius: parent.radius + 2
-            border.color: Qt.rgba(0, 0, 0, 0.08)
-            border.width: 1
-            z: -2
-        }
-        
-        Rectangle {
-            anchors.fill: parent
-            color: "transparent"
-            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
-            border.width: 1
-            radius: parent.radius
-            z: -1
-        }
-
-        transform: [
-            Scale {
-                id: scaleTransform
-
-                origin.x: 400
-                origin.y: 0
-                xScale: notificationHistoryVisible ? 1 : 0.95
-                yScale: notificationHistoryVisible ? 1 : 0.8
-            },
-            Translate {
-                id: translateTransform
-
-                x: notificationHistoryVisible ? 0 : 15
-                y: notificationHistoryVisible ? 0 : -30
-            }
-        ]
-
-        states: [
-            State {
-                name: "visible"
-                when: notificationHistoryVisible
-
-                PropertyChanges {
-                    target: scaleTransform
-                    xScale: 1
-                    yScale: 1
-                }
-
-                PropertyChanges {
-                    target: translateTransform
-                    x: 0
-                    y: 0
-                }
-            },
-            State {
-                name: "hidden"
-                when: !notificationHistoryVisible
-
-                PropertyChanges {
-                    target: scaleTransform
-                    xScale: 0.95
-                    yScale: 0.8
-                }
-
-                PropertyChanges {
-                    target: translateTransform
-                    x: 15
-                    y: -30
-                }
-            }
-        ]
-
-        transitions: [
-            Transition {
-                from: "*"
-                to: "*"
-
-                ParallelAnimation {
-                    NumberAnimation {
-                        targets: [scaleTransform, translateTransform]
-                        properties: "xScale,yScale,x,y"
-                        duration: Theme.mediumDuration
-                        easing.type: Theme.emphasizedEasing
-                    }
-                }
-            }
-        ]
+        scale: notificationHistoryVisible ? 1 : 0.9
 
         MouseArea {
             anchors.fill: parent
@@ -150,27 +71,71 @@ PanelWindow {
         }
 
         Column {
+            id: contentColumn
+
             anchors.fill: parent
             anchors.margins: Theme.spacingL
             spacing: Theme.spacingM
 
-            NotificationHeader {}
-            
-            NotificationList {}
+            NotificationHeader {
+                id: notificationHeader
+            }
+
+            NotificationList {
+                id: notificationList
+
+                width: parent.width
+                height: parent.height - notificationHeader.height - contentColumn.spacing
+            }
+
+        }
+
+        Connections {
+            function onNotificationsChanged() {
+                mainRect.height = mainRect.calculateHeight();
+            }
+
+            function onGroupedNotificationsChanged() {
+                mainRect.height = mainRect.calculateHeight();
+            }
+
+            function onExpandedGroupsChanged() {
+                mainRect.height = mainRect.calculateHeight();
+            }
+
+            function onExpandedMessagesChanged() {
+                mainRect.height = mainRect.calculateHeight();
+            }
+
+            target: NotificationService
         }
 
         Behavior on height {
             NumberAnimation {
-                duration: Theme.shortDuration
-                easing.type: Theme.standardEasing
+                duration: Theme.mediumDuration
+                easing.type: Theme.emphasizedEasing
             }
+
         }
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Theme.mediumDuration
-                easing.type: Theme.emphasizedEasing
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
             }
+
         }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
+            }
+
+        }
+
     }
+
 }

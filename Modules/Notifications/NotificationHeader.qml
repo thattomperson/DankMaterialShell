@@ -6,7 +6,7 @@ import qs.Widgets
 
 Item {
     id: root
-    
+
     width: parent.width
     height: 32
 
@@ -48,11 +48,12 @@ Item {
                 font.weight: Font.Medium
                 anchors.verticalCenter: parent.verticalCenter
             }
+
         }
 
         MouseArea {
             id: clearArea
-            
+
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
@@ -64,6 +65,7 @@ Item {
                 duration: Theme.shortDuration
                 easing.type: Theme.standardEasing
             }
+
         }
 
         Behavior on border.color {
@@ -71,6 +73,9 @@ Item {
                 duration: Theme.shortDuration
                 easing.type: Theme.standardEasing
             }
+
         }
+
     }
+
 }

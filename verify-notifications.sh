@@ -18,40 +18,34 @@ fi
 
 # Test 1: Basic notifications
 echo "📱 Test 1: Basic notifications"
-notify-send -i preferences-desktop "Test App" "Basic notification message"
+notify-send -h string:desktop-entry:org.gnome.Settings -i preferences-desktop "Settings" "Basic notification message"
 sleep 2
 
-# Test 2: Media notifications (should replace each other)
-echo "🎵 Test 2: Media notifications (replacement behavior)"
-notify-send -i audio-x-generic "Spotify" "Now Playing: Song 1 - Artist A"
-sleep 2
-notify-send -i audio-x-generic "Spotify" "Now Playing: Song 2 - Artist B"
-sleep 2
-
-# Test 3: System notifications (grouped by category)
-echo "🔋 Test 3: System notifications (grouped by category)"
-notify-send -i battery "UPower" "Battery Low: 15% remaining"
+# Test 2: Media notifications (should group under Spotify)
+echo "🎵 Test 2: Media notifications (grouping)"
+notify-send -h string:desktop-entry:spotify -i audio-x-generic "Spotify" "Now Playing: Song 1 - Artist A"
 sleep 1
-notify-send -i network-wired "NetworkManager" "Network Connected: WiFi connected"
+notify-send -h string:desktop-entry:spotify -i audio-x-generic "Spotify" "Now Playing: Song 2 - Artist B"
 sleep 1
-notify-send -i system-software-update "System" "Updates Available: 5 packages can be updated"
+notify-send -h string:desktop-entry:spotify -i audio-x-generic "Spotify" "Now Playing: Song 3 - Artist C"
 sleep 2
 
-# Test 4: Conversation notifications (should group and auto-expand)
-echo "💬 Test 4: Conversation notifications (grouping)"
-if command -v discord &> /dev/null; then
-    notify-send -i discord "Discord" "#general: User1 says Hello everyone!"
-    sleep 1
-    notify-send -i discord "Discord" "#general: User2 says Hey there!"
-    sleep 1
-    notify-send -i discord "Discord" "john_doe: Private message from John"
-else
-    notify-send -i internet-chat "Discord" "#general: User1 says Hello everyone!"
-    sleep 1
-    notify-send -i internet-chat "Discord" "#general: User2 says Hey there!"
-    sleep 1
-    notify-send -i internet-chat "Discord" "john_doe: Private message from John"
-fi
+# Test 3: System notifications (separate groups)
+echo "🔋 Test 3: System notifications (separate apps)"
+notify-send -h string:desktop-entry:org.gnome.PowerStats -i battery "Power Manager" "Battery Low: 15% remaining"
+sleep 1
+notify-send -h string:desktop-entry:org.gnome.NetworkDisplays -i network-wired "Network Manager" "WiFi Connected: HomeNetwork"
+sleep 1
+notify-send -h string:desktop-entry:org.gnome.Software -i system-software-update "Software" "5 updates available"
+sleep 2
+
+# Test 4: Chat notifications (should group under Discord)
+echo "💬 Test 4: Chat notifications (grouping)"
+notify-send -h string:desktop-entry:discord -i internet-chat "Discord" "#general: User1 says Hello everyone!"
+sleep 1
+notify-send -h string:desktop-entry:discord -i internet-chat "Discord" "#general: User2 says Hey there!"
+sleep 1
+notify-send -h string:desktop-entry:discord -i internet-chat "Discord" "john_doe: Private message from John"
 sleep 2
 
 # Test 5: Urgent notifications
@@ -61,16 +55,16 @@ sleep 2
 
 # Test 6: Notifications with actions (simulated)
 echo "⚡ Test 6: Action buttons"
-notify-send -i system-upgrade "System Update" "Updates available - Click to install or remind later"
+notify-send -h string:desktop-entry:org.gnome.Software -i system-upgrade "Software" "Updates available - Click to install or remind later"
 sleep 2
 
-# Test 7: Multiple apps generating notifications
-echo "📊 Test 7: Multiple apps"
-notify-send -i mail-message-new "Email" "You have 3 new emails"
+# Test 7: Multiple different apps
+echo "📊 Test 7: Multiple different apps"
+notify-send -h string:desktop-entry:thunderbird -i mail-message-new "Thunderbird" "You have 3 new emails"
 sleep 0.5
-notify-send -i office-calendar "Calendar" "Daily standup in 5 minutes"
+notify-send -h string:desktop-entry:org.gnome.Calendar -i office-calendar "Calendar" "Daily standup in 5 minutes"
 sleep 0.5
-notify-send -i folder-downloads "File Manager" "document.pdf downloaded"
+notify-send -h string:desktop-entry:org.gnome.Nautilus -i folder-downloads "Files" "document.pdf downloaded"
 sleep 2
 
 echo ""
