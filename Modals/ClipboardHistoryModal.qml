@@ -72,6 +72,7 @@ DankModal {
         copyProcess.running = true;
         console.log("ClipboardHistoryModal: Entry copied, showing toast");
         ToastService.showInfo("Copied to clipboard");
+        clipboardHistoryModal.hide();
     }
 
     function deleteEntry(entry) {
