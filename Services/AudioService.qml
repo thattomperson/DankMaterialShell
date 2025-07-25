@@ -128,19 +128,27 @@ Singleton {
         target: "audio"
 
         function setvolume(percentage: string): string {
-            return root.setVolume(parseInt(percentage));
+            const result = root.setVolume(parseInt(percentage));
+            root.volumeChanged();
+            return result;
         }
 
         function increment(step: string): string {
-            return root.incrementVolume(parseInt(step || "5"));
+            const result = root.incrementVolume(parseInt(step || "5"));
+            root.volumeChanged();
+            return result;
         }
 
         function decrement(step: string): string {
-            return root.decrementVolume(parseInt(step || "5"));
+            const result = root.decrementVolume(parseInt(step || "5"));
+            root.volumeChanged();
+            return result;
         }
 
         function mute(): string {
-            return root.toggleMute();
+            const result = root.toggleMute();
+            root.volumeChanged();
+            return result;
         }
 
         function setmic(percentage: string): string {

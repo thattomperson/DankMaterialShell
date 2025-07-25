@@ -66,16 +66,60 @@ IPC Events are events that can be triggered with `qs` cli.
 qs -c DankMaterialShell ipc call <target> <function>
 ```
 
-| Target | Function | Description |
-|--------|----------|-------------|
-| spotlight | toggle | Toggle spotlight (app launcher) |
-| clipboard | toggle | Toggle clipboard history view |
-| processlist | toggle | Toggle process list (task manager) |
-| wallpaper | set \<path\> | Set wallpaper to image path and refresh theme (if auto theme enabled) |
-| wallpaper | get | Get current wallpaper path |
-| lock | lock | Triggers lockscreen |
-| lock | demo | Triggers lockscreen demo mode |
-| lock | isLocked | Whether we're locked or not |
+## System Controls
+
+| Target | Function | Parameters | Description |
+|--------|----------|------------|-------------|
+| audio | setvolume | percentage (string) | Set audio volume to specific percentage (0-100) |
+| audio | increment | step (string, default: "5") | Increase volume by step percentage |
+| audio | decrement | step (string, default: "5") | Decrease volume by step percentage |
+| audio | mute | none | Toggle audio mute |
+| audio | setmic | percentage (string) | Set microphone volume to specific percentage |
+| audio | micmute | none | Toggle microphone mute |
+| audio | status | none | Get current audio status (output/input levels and mute states) |
+
+## Application Controls
+
+| Target | Function | Parameters | Description |
+|--------|----------|------------|-------------|
+| spotlight | open | none | Open spotlight (app launcher) |
+| spotlight | close | none | Close spotlight (app launcher) |
+| spotlight | toggle | none | Toggle spotlight (app launcher) |
+| clipboard | open | none | Open clipboard history view |
+| clipboard | close | none | Close clipboard history view |
+| clipboard | toggle | none | Toggle clipboard history view |
+| processlist | open | none | Open process list (task manager) |  
+| processlist | close | none | Close process list (task manager) |
+| processlist | toggle | none | Toggle process list (task manager) |
+| lock | lock | none | Activate lockscreen |
+| lock | demo | none | Show lockscreen in demo mode |
+| lock | isLocked | none | Returns whether screen is currently locked |
+| picker | open | none | Open area picker/screenshot tool |
+| picker | openFreeze | none | Open area picker in freeze mode |
+
+## Media Controls
+
+| Target | Function | Parameters | Description |
+|--------|----------|------------|-------------|
+| mpris | list | none | Get list of available media players |
+| mpris | play | none | Start media playback on active player |
+| mpris | pause | none | Pause media playback on active player |
+| mpris | playPause | none | Toggle play/pause state on active player |
+| mpris | previous | none | Skip to previous track on active player |
+| mpris | next | none | Skip to next track on active player |
+| mpris | stop | none | Stop media playback on active player |
+| mpris | getActive | prop (string) | Get specified property from active player |
+
+## System Services
+
+| Target | Function | Parameters | Description |
+|--------|----------|------------|-------------|
+| wallpaper | get | none | Get current wallpaper path |
+| wallpaper | set | path (string) | Set wallpaper to image path and refresh theme |
+| wallpaper | clear | none | Clear current wallpaper |
+| notifs | clear | none | Clear all notifications |
+| drawers | toggle | drawer (string) | Toggle visibility of specified drawer/panel |
+| drawers | list | none | Get list of available drawers |
 
 
 ## (Optional) Setup Calendar events (Google, Microsoft, other Caldev, etc.)

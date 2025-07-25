@@ -145,4 +145,8 @@ ShellRoot {
     Toast {
         id: toastWidget
     }
+
+    VolumePopup {
+        id: volumePopup
+    }
 }

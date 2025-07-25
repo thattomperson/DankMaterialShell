@@ -23,7 +23,6 @@ Column {
         id: volumeSlider
         
         width: parent.width
-        value: Math.round(root.volumeLevel)
         minimum: 0
         maximum: 100
         leftIcon: root.volumeMuted ? "volume_off" : "volume_down"
@@ -32,16 +31,18 @@ Column {
         showValue: true
         unit: "%"
         
-        onSliderValueChanged: (newValue) => {
-            if (AudioService.sink && AudioService.sink.audio) {
-                AudioService.sink.audio.muted = false;
-                AudioService.sink.audio.volume = newValue / 100;
+        Connections {
+            target: AudioService.sink && AudioService.sink.audio ? AudioService.sink.audio : null
+            function onVolumeChanged() {
+                volumeSlider.value = Math.round(AudioService.sink.audio.volume * 100);
             }
         }
         
-        // Add click handler for mute icon
         Component.onCompleted: {
-            // Find the left icon and add mouse area
+            if (AudioService.sink && AudioService.sink.audio) {
+                value = Math.round(AudioService.sink.audio.volume * 100);
+            }
+            
             let leftIconItem = volumeSlider.children[0].children[0];
             if (leftIconItem) {
                 let mouseArea = Qt.createQmlObject(
@@ -49,6 +50,13 @@ Column {
                     leftIconItem,
                     "dynamicMouseArea"
                 );
+            }
+        }
+        
+        onSliderValueChanged: (newValue) => {
+            if (AudioService.sink && AudioService.sink.audio) {
+                AudioService.sink.audio.muted = false;
+                AudioService.sink.audio.volume = newValue / 100;
             }
         }
     }
