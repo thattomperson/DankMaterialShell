@@ -17,7 +17,6 @@ ScrollView {
     property real iconSizeRatio: 0.6
     property int maxIconSize: 56
     property int minIconSize: 32
-    property real wheelStepSize: 60
     property bool hoverUpdatesSelection: true
     property bool keyboardNavigationActive: false
 
@@ -63,24 +62,8 @@ ScrollView {
         rightMargin: leftMargin
         focus: true
         interactive: true
-        flickDeceleration: 8000
-        maximumFlickVelocity: 15000
-
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.NoButton
-            propagateComposedEvents: true
-            z: -1
-            onWheel: function(wheel) {
-                var delta = wheel.angleDelta.y;
-                var steps = delta / 120;
-                grid.contentY -= steps * wheelStepSize;
-                if (grid.contentY < 0)
-                    grid.contentY = 0;
-                else if (grid.contentY > grid.contentHeight - grid.height)
-                    grid.contentY = Math.max(0, grid.contentHeight - grid.height);
-            }
-        }
+        flickDeceleration: 300
+        maximumFlickVelocity: 30000
 
         delegate: Rectangle {
             width: grid.cellWidth - cellPadding

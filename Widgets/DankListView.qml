@@ -11,7 +11,6 @@ ScrollView {
     property int currentIndex: 0
     property int itemHeight: 72
     property int iconSize: 56
-    property real wheelStepSize: 60
     property bool showDescription: true
     property int itemSpacing: Theme.spacingS
     property bool hoverUpdatesSelection: true
@@ -52,24 +51,8 @@ ScrollView {
         focus: true
         interactive: true
         currentIndex: listView.currentIndex
-        flickDeceleration: 8000
-        maximumFlickVelocity: 15000
-
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.NoButton
-            propagateComposedEvents: true
-            z: -1
-            onWheel: function(wheel) {
-                var delta = wheel.angleDelta.y;
-                var steps = delta / 120;
-                list.contentY -= steps * wheelStepSize;
-                if (list.contentY < 0)
-                    list.contentY = 0;
-                else if (list.contentY > list.contentHeight - list.height)
-                    list.contentY = Math.max(0, list.contentHeight - list.height);
-            }
-        }
+        flickDeceleration: 600
+        maximumFlickVelocity: 30000
 
         delegate: Rectangle {
             width: list.width
