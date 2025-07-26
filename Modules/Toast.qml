@@ -9,7 +9,10 @@ import qs.Widgets
 
 PanelWindow {
     id: root
-
+    
+    property var modelData
+    screen: modelData
+   
     visible: ToastService.toastVisible
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1

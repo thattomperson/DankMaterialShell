@@ -50,8 +50,12 @@ ShellRoot {
         id: notificationCenter
     }
 
-    NotificationPopupManager {
-        id: notificationPopupManager
+    Variants {
+        model: Quickshell.screens
+
+        delegate: NotificationPopupManager {
+            modelData: item
+        }
     }
 
     ControlCenterPopout {
@@ -143,11 +147,19 @@ ShellRoot {
         target: "processlist"
     }
 
-    Toast {
-        id: toastWidget
+    Variants {
+        model: Quickshell.screens
+
+        delegate: Toast {
+            modelData: item
+        }
     }
 
-    VolumePopup {
-        id: volumePopup
+    Variants {
+        model: Quickshell.screens
+
+        delegate: VolumePopup {
+            modelData: item
+        }
     }
 }

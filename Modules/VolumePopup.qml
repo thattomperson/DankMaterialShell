@@ -9,7 +9,10 @@ import qs.Widgets
 
 PanelWindow {
     id: root
-
+    
+    property var modelData
+    screen: modelData
+    
     property bool volumePopupVisible: false
 
     function show() {

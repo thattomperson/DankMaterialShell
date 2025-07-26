@@ -5,6 +5,9 @@ import qs.Services
 
 QtObject {
     id: manager
+    
+    property var modelData
+       
     property int topMargin: 0
     property int baseNotificationHeight: 120
     property int maxTargetNotifications: 3
@@ -84,7 +87,8 @@ QtObject {
         const win = popupComponent.createObject(null, { 
             notificationData: wrapper, 
             notificationId: notificationId, 
-            screenY: topMargin 
+            screenY: topMargin,
+            screen: manager.modelData
         });
         
         if (!win) { 
