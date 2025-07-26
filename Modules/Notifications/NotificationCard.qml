@@ -12,6 +12,7 @@ Rectangle {
     property var notificationGroup
     property bool expanded: NotificationService.expandedGroups[notificationGroup?.key] || false
     property bool descriptionExpanded: false
+    property bool userInitiatedExpansion: false
     
     width: parent ? parent.width : 400
     height: {
@@ -19,10 +20,8 @@ Rectangle {
             return expandedContent.height + 28;
         }
         const baseHeight = 116;
-        if (descriptionExpanded && descriptionText.hasMoreText) {
-            const twoLineHeight = descriptionText.font.pixelSize * 1.2 * 2;
-            const extraHeight = descriptionText.contentHeight - twoLineHeight;
-            return baseHeight + extraHeight;
+        if (descriptionExpanded) {
+            return baseHeight + descriptionText.contentHeight - (descriptionText.font.pixelSize * 1.2 * 2);
         }
         return baseHeight;
     }
@@ -180,7 +179,7 @@ Rectangle {
                     Text {
                         id: descriptionText
                         property string fullText: notificationGroup?.latestNotification?.body || ""
-                        property bool hasMoreText: false
+                        property bool hasMoreText: truncated
                         
                         text: fullText
                         color: Theme.surfaceVariantText
@@ -192,19 +191,14 @@ Rectangle {
                         visible: text.length > 0
                         textFormat: Text.PlainText
                         
-                        onContentHeightChanged: {
-                            const singleLineHeight = font.pixelSize * 1.2;
-                            const twoLineHeight = singleLineHeight * 2;
-                            hasMoreText = descriptionText.contentHeight > twoLineHeight;
-                        }
-                        
                         MouseArea {
                             anchors.fill: parent
-                            cursorShape: parent.hasMoreText ? Qt.PointingHandCursor : Qt.ArrowCursor
-                            enabled: parent.hasMoreText
+                            cursorShape: (parent.hasMoreText || descriptionExpanded) ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            enabled: parent.hasMoreText || descriptionExpanded
                             onClicked: {
                                 descriptionExpanded = !descriptionExpanded;
                             }
+                            z: 1
                         }
                     }
                 }
@@ -246,18 +240,18 @@ Rectangle {
                 }
 
                 Rectangle {
-                    width: 20
-                    height: 20
-                    radius: 10
+                    width: 18
+                    height: 18
+                    radius: 9
                     color: Theme.primary
                     visible: (notificationGroup?.count || 0) > 1
                     anchors.verticalCenter: parent.verticalCenter
 
                     Text {
                         anchors.centerIn: parent
-                        text: (notificationGroup?.count || 0).toString()
+                        text: (notificationGroup?.count || 0) > 99 ? "99+" : (notificationGroup?.count || 0).toString()
                         color: Theme.primaryText
-                        font.pixelSize: 10
+                        font.pixelSize: 9
                         font.weight: Font.Bold
                     }
                 }
@@ -294,16 +288,13 @@ Rectangle {
                     border.width: 1
                     
                     Behavior on height {
-                        NumberAnimation {
-                            duration: Theme.shortDuration
-                            easing.type: Theme.standardEasing
-                        }
+                        enabled: false
                     }
 
                     Item {
                         anchors.fill: parent
                         anchors.margins: 12
-                        anchors.bottomMargin: 18
+                        anchors.bottomMargin: 8
 
                         Rectangle {
                             id: messageIcon
@@ -351,85 +342,134 @@ Rectangle {
                             }
                         }
 
-                        Column {
+                        Item {
                             anchors.left: messageIcon.right
                             anchors.leftMargin: 12
                             anchors.right: parent.right
                             anchors.rightMargin: 12  
                             anchors.top: parent.top
-                            anchors.topMargin: -2
-                            spacing: 2
+                            anchors.bottom: parent.bottom
 
-                            Text {
-                                width: parent.width
-                                text: modelData?.timeStr || ""
-                                color: Theme.surfaceVariantText
-                                font.pixelSize: Theme.fontSizeSmall
-                                font.weight: Font.Medium
-                                elide: Text.ElideRight
-                                maximumLineCount: 1
-                                visible: text.length > 0
-                            }
+                            Column {
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.top: parent.top
+                                anchors.bottom: buttonArea.top
+                                anchors.bottomMargin: 4
+                                spacing: 2
 
-                            Text {
-                                width: parent.width
-                                text: modelData?.summary || ""
-                                color: Theme.surfaceText
-                                font.pixelSize: Theme.fontSizeMedium
-                                font.weight: Font.Medium
-                                elide: Text.ElideRight
-                                maximumLineCount: 1
-                                visible: text.length > 0
-                            }
+                                Text {
+                                    width: parent.width
+                                    text: modelData?.timeStr || ""
+                                    color: Theme.surfaceVariantText
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    font.weight: Font.Medium
+                                    elide: Text.ElideRight
+                                    maximumLineCount: 1
+                                    visible: text.length > 0
+                                }
 
-                            Text {
-                                id: bodyText
-                                
-                                text: modelData?.body || ""
-                                color: Theme.surfaceVariantText
-                                font.pixelSize: Theme.fontSizeSmall
-                                width: parent.width
-                                elide: messageExpanded ? Text.ElideNone : Text.ElideRight
-                                maximumLineCount: messageExpanded ? -1 : 2
-                                wrapMode: Text.WordWrap
-                                visible: text.length > 0
-                                textFormat: Text.PlainText
-                                
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: parent.truncated ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                    enabled: parent.truncated || messageExpanded
-                                    onClicked: {
-                                        NotificationService.toggleMessageExpansion(modelData?.notification?.id || "");
+                                Text {
+                                    width: parent.width
+                                    text: modelData?.summary || ""
+                                    color: Theme.surfaceText
+                                    font.pixelSize: Theme.fontSizeMedium
+                                    font.weight: Font.Medium
+                                    elide: Text.ElideRight
+                                    maximumLineCount: 1
+                                    visible: text.length > 0
+                                }
+
+                                Text {
+                                    id: bodyText
+                                    property bool hasMoreText: truncated
+                                    
+                                    text: modelData?.body || ""
+                                    color: Theme.surfaceVariantText
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    width: parent.width
+                                    elide: messageExpanded ? Text.ElideNone : Text.ElideRight
+                                    maximumLineCount: messageExpanded ? -1 : 2
+                                    wrapMode: Text.WordWrap
+                                    visible: text.length > 0
+                                    textFormat: Text.PlainText
+                                    
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        enabled: bodyText.hasMoreText || messageExpanded
+                                        cursorShape: bodyText.hasMoreText || messageExpanded ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                        onClicked: {
+                                            if (bodyText.hasMoreText || messageExpanded) {
+                                                NotificationService.toggleMessageExpansion(modelData?.notification?.id || "");
+                                            }
+                                        }
                                     }
                                 }
                             }
-
-                            Row {
+                            
+                            Item {
+                                id: buttonArea
+                                anchors.left: parent.left
                                 anchors.right: parent.right
-                                spacing: 8
-                                anchors.topMargin: 4
-                                anchors.bottomMargin: 6
+                                anchors.bottom: parent.bottom
+                                height: 30
+                                
+                                Row {
+                                    anchors.right: parent.right
+                                    anchors.bottom: parent.bottom
+                                    spacing: 8
 
-                                Repeater {
-                                    model: modelData?.actions || []
-                                    
+                                    Repeater {
+                                        model: modelData?.actions || []
+                                        
+                                        Rectangle {
+                                            property bool isHovered: false
+                                            
+                                            width: Math.max(actionText.implicitWidth + 12, 50)
+                                            height: 24
+                                            radius: 4
+                                            color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
+                                            
+                                            Text {
+                                                id: actionText
+                                                text: modelData.text || ""
+                                                color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
+                                                font.pixelSize: Theme.fontSizeSmall
+                                                font.weight: Font.Medium
+                                                anchors.centerIn: parent
+                                                elide: Text.ElideRight
+                                            }
+                                            
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onEntered: parent.isHovered = true
+                                                onExited: parent.isHovered = false
+                                                onClicked: {
+                                                    if (modelData && modelData.invoke) {
+                                                        modelData.invoke();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     Rectangle {
                                         property bool isHovered: false
                                         
-                                        width: Math.max(actionText.implicitWidth + 12, 50)
+                                        width: Math.max(dismissText.implicitWidth + 12, 50)
                                         height: 24
                                         radius: 4
                                         color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
                                         
                                         Text {
-                                            id: actionText
-                                            text: modelData.text || ""
+                                            id: dismissText
+                                            text: "Dismiss"
                                             color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
                                             font.pixelSize: Theme.fontSizeSmall
                                             font.weight: Font.Medium
                                             anchors.centerIn: parent
-                                            elide: Text.ElideRight
                                         }
                                         
                                         MouseArea {
@@ -438,39 +478,8 @@ Rectangle {
                                             cursorShape: Qt.PointingHandCursor
                                             onEntered: parent.isHovered = true
                                             onExited: parent.isHovered = false
-                                            onClicked: {
-                                                if (modelData && modelData.invoke) {
-                                                    modelData.invoke();
-                                                }
-                                            }
+                                            onClicked: NotificationService.dismissNotification(modelData)
                                         }
-                                    }
-                                }
-
-                                Rectangle {
-                                    property bool isHovered: false
-                                    
-                                    width: Math.max(dismissText.implicitWidth + 12, 50)
-                                    height: 24
-                                    radius: 4
-                                    color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
-                                    
-                                    Text {
-                                        id: dismissText
-                                        text: "Dismiss"
-                                        color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.weight: Font.Medium
-                                        anchors.centerIn: parent
-                                    }
-                                    
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onEntered: parent.isHovered = true
-                                        onExited: parent.isHovered = false
-                                        onClicked: NotificationService.dismissNotification(modelData)
                                     }
                                 }
                             }
@@ -563,8 +572,11 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
-        visible: !expanded && (notificationGroup?.count || 0) > 1
-        onClicked: NotificationService.toggleGroupExpansion(notificationGroup?.key || "")
+        visible: !expanded && (notificationGroup?.count || 0) > 1 && !descriptionExpanded
+        onClicked: {
+            root.userInitiatedExpansion = true
+            NotificationService.toggleGroupExpansion(notificationGroup?.key || "")
+        }
         z: -1
     }
 
@@ -574,33 +586,38 @@ Rectangle {
         anchors.right: parent.right
         anchors.topMargin: 12
         anchors.rightMargin: 16
-        width: 40
-        height: 24
+        width: 60
+        height: 28
 
         DankActionButton {
             anchors.left: parent.left
             anchors.top: parent.top
             visible: (notificationGroup?.count || 0) > 1
             iconName: expanded ? "expand_less" : "expand_more"
-            iconSize: 14
-            buttonSize: 20
-            onClicked: NotificationService.toggleGroupExpansion(notificationGroup?.key || "")
+            iconSize: 18
+            buttonSize: 28
+            onClicked: {
+                root.userInitiatedExpansion = true
+                NotificationService.toggleGroupExpansion(notificationGroup?.key || "")
+            }
         }
 
         DankActionButton {
             anchors.right: parent.right
             anchors.top: parent.top
             iconName: "close"
-            iconSize: 14
-            buttonSize: 20
+            iconSize: 18
+            buttonSize: 28
             onClicked: NotificationService.dismissGroup(notificationGroup?.key || "")
         }
     }
 
     Behavior on height {
+        enabled: root.userInitiatedExpansion
         NumberAnimation {
             duration: Theme.mediumDuration
             easing.type: Theme.emphasizedEasing
+            onFinished: root.userInitiatedExpansion = false
         }
     }
 }

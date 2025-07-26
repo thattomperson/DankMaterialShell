@@ -91,7 +91,7 @@ ListView {
     }
 
     displaced: Transition {
-        enabled: !root.isUserScrolling
+        enabled: false
 
         NumberAnimation {
             properties: "y"
@@ -101,11 +101,11 @@ ListView {
     }
 
     move: Transition {
-        enabled: !root.isUserScrolling
+        enabled: false
 
         NumberAnimation {
             properties: "y"
-            duration: (root.atYBeginning && !root.isUserScrolling) ? Theme.mediumDuration : 0
+            duration: 0
             easing.type: Theme.emphasizedEasing
         }
 
