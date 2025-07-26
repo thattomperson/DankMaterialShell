@@ -411,8 +411,8 @@ Item {
                         
                         SequentialAnimation on scale {
                             running: root.unlocking
-                            NumberAnimation { from: 0; to: 1.2; duration: 200; easing.type: Easing.OutBack }
-                            NumberAnimation { from: 1.2; to: 1; duration: 150; easing.type: Easing.InBack }
+                            NumberAnimation { from: 0; to: 1.2; duration: Anims.durShort; easing.type: Easing.BezierSpline; easing.bezierCurve: Anims.emphasizedDecel }
+                            NumberAnimation { from: 1.2; to: 1; duration: Anims.durShort; easing.type: Easing.BezierSpline; easing.bezierCurve: Anims.emphasizedAccel }
                         }
                     }
 
@@ -450,7 +450,7 @@ Item {
                             RotationAnimation on rotation {
                                 running: pam.active && !root.unlocking
                                 loops: Animation.Infinite
-                                duration: 1000
+                                duration: Anims.durLong
                                 from: 0
                                 to: 360
                             }

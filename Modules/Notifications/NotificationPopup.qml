@@ -27,19 +27,23 @@ PanelWindow {
     }
 
     margins {
-        top: Theme.barHeight + 16
+        top: Theme.barHeight + 4
         right: 12
     }
 
     // Manager drives vertical stacking with this proxy:
     property int screenY: 0
-    onScreenYChanged: margins.top = Theme.barHeight + 16 + screenY
+    onScreenYChanged: margins.top = Theme.barHeight + 4 + screenY
 
     // Disable vertical tween while exiting so there is never diagonal motion
     Behavior on screenY {
         id: screenYAnim
         enabled: !exiting
-        NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+        NumberAnimation { 
+            duration: Anims.durShort
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Anims.standardDecel
+        }
     }
 
     // State
@@ -47,13 +51,12 @@ PanelWindow {
     signal entered()
     signal exitFinished()
 
-    // ---------------- CONTENT: animate this (not the Window) ----------------
     Item {
         id: content
         anchors.fill: parent
 
         // We animate a Translate so anchors never override horizontal motion
-        transform: Translate { id: tx; x: 400 }   // start off-screen right
+        transform: Translate { id: tx; x: Anims.slidePx }   // start off-screen right
 
         // Optional: layer while animating for smoothness
         layer.enabled: (enterX.running || exitAnim.running)
@@ -303,21 +306,37 @@ PanelWindow {
         }
     }
 
-    // ---------------- EXPLICIT ANIMATIONS (no Behavior races) ----------------
-    // Entrance (guaranteed): 400 -> 0
+    // Entrance: slide in from right using slowed Anims curves
     NumberAnimation {
         id: enterX
-        target: tx; property: "x"; from: 400; to: 0
-        duration: 240; easing.type: Easing.OutCubic
+        target: tx; property: "x"; from: Anims.slidePx; to: 0
+        duration: Anims.durMed
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: Anims.emphasizedDecel
         onStopped: if (!win.exiting && Math.abs(tx.x) < 0.5) win.entered();
     }
 
-    // Exit (guaranteed): (x: 0 -> 96) + (opacity: 1 -> 0)
+    // Exit: slide out to right + fade using slowed Anims curves
     ParallelAnimation {
         id: exitAnim
-        PropertyAnimation { target: tx; property: "x"; from: 0; to: 96; duration: 200; easing.type: Easing.OutCubic }
-        NumberAnimation   { target: content; property: "opacity"; from: 1; to: 0; duration: 200; easing.type: Easing.OutCubic }
-        NumberAnimation   { target: content; property: "scale"; from: 1; to: 0.98; duration: 160; easing.type: Easing.OutCubic }
+        PropertyAnimation { 
+            target: tx; property: "x"; from: 0; to: Anims.slidePx
+            duration: Anims.durShort
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Anims.emphasizedAccel
+        }
+        NumberAnimation { 
+            target: content; property: "opacity"; from: 1; to: 0
+            duration: Anims.durShort
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Anims.standardAccel
+        }
+        NumberAnimation { 
+            target: content; property: "scale"; from: 1; to: 0.98
+            duration: Anims.durShort
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Anims.emphasizedAccel
+        }
         onStopped: finalizeExit("animStopped")
     }
 

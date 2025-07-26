@@ -70,7 +70,9 @@ Column {
 
                     Behavior on width {
                         NumberAnimation {
-                            duration: 100
+                            duration: Anims.durShort
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Anims.standardDecel
                         }
                     }
                 }
@@ -90,7 +92,9 @@ Column {
 
                     Behavior on scale {
                         NumberAnimation {
-                            duration: 150
+                            duration: Anims.durShort
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Anims.standard
                         }
                     }
 

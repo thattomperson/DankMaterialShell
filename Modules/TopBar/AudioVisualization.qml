@@ -99,8 +99,9 @@ Item {
 
                 Behavior on height {
                     NumberAnimation {
-                        duration: 80
-                        easing.type: Easing.OutQuad
+                        duration: Anims.durShort
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Anims.standardDecel
                     }
 
                 }

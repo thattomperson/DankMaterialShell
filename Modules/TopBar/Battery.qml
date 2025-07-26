@@ -44,14 +44,16 @@ Rectangle {
 
                 NumberAnimation {
                     to: 0.6
-                    duration: 1000
-                    easing.type: Easing.InOutQuad
+                    duration: Anims.durLong
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Anims.standard
                 }
 
                 NumberAnimation {
                     to: 1
-                    duration: 1000
-                    easing.type: Easing.InOutQuad
+                    duration: Anims.durLong
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Anims.standard
                 }
 
             }

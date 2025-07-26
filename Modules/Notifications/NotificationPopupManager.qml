@@ -5,8 +5,8 @@ import qs.Services
 
 QtObject {
     id: manager
-    property int topMargin: 48
-    property int baseNotificationHeight: 132
+    property int topMargin: 0
+    property int baseNotificationHeight: 120
     property int maxTargetNotifications: 3
     property var popupWindows: []   // strong refs to windows (live until exitFinished)
 
