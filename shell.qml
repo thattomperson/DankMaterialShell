@@ -49,8 +49,8 @@ ShellRoot {
         id: notificationCenter
     }
 
-    NotificationPopup {
-        id: notificationPopup
+    NotificationPopupManager {
+        id: notificationPopupManager
     }
 
     ControlCenterPopout {

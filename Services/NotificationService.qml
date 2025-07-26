@@ -13,6 +13,20 @@ Singleton {
     readonly property list<NotifWrapper> allWrappers: []
     readonly property list<NotifWrapper> popups: allWrappers.filter(n => n.popup)
     
+    property list<NotifWrapper> notificationQueue: []
+    property list<NotifWrapper> visibleNotifications: []
+    property int maxVisibleNotifications: 3
+    property bool addGateBusy: false
+    property int enterAnimMs: 400
+    
+    Timer {
+        id: addGate
+        interval: enterAnimMs + 50
+        running: false
+        repeat: false
+        onTriggered: { addGateBusy = false; processQueue(); }
+    }
+    
     // Android 16-style grouped notifications
     readonly property var groupedNotifications: getGroupedNotifications()
     readonly property var groupedPopups: getGroupedPopups()
@@ -39,29 +53,22 @@ Singleton {
         inlineReplySupported: true
 
         onNotification: notif => {
-            console.log("=== RAW NOTIFICATION DATA ===");
-            console.log("appName:", notif.appName);
-            console.log("summary:", notif.summary);
-            console.log("body:", notif.body);
-            console.log("appIcon:", notif.appIcon);
-            console.log("image:", notif.image);
-            console.log("urgency:", notif.urgency);
-            console.log("hasInlineReply:", notif.hasInlineReply);
-            console.log("=============================");            
-            
             notif.tracked = true;
 
             const wrapper = notifComponent.createObject(root, {
-                popup: true, // Always show as popup initially
+                popup: !root.popupsDisabled,
                 notification: notif
             });
 
             if (wrapper) {
-                const groupKey = getGroupKey(wrapper);
-                
                 root.allWrappers.push(wrapper);
                 root.notifications.push(wrapper);
                 addToPersistentStorage(wrapper);
+                
+                if (!root.popupsDisabled) {
+                    notificationQueue = [...notificationQueue, wrapper];
+                    processQueue();
+                }
             }
         }
     }
@@ -70,15 +77,20 @@ Singleton {
         id: wrapper
 
         property bool popup: false
+        property bool removedByLimit: false
         
-        Component.onCompleted: {
-            popup = !root.popupsDisabled;
+        onPopupChanged: {
+            if (!popup) {
+                removeFromVisibleNotifications(wrapper);
+            }
         }
+        
+        // Don't override popup in onCompleted - it's set correctly during creation
         
         readonly property Timer timer: Timer {
             interval: 5000
             repeat: false
-            running: wrapper.popup
+            running: false
             onTriggered: {
                 wrapper.popup = false;
             }
@@ -185,9 +197,35 @@ Singleton {
     function disablePopups(disable) {
         popupsDisabled = disable;
         if (disable) {
+            notificationQueue = [];
+            visibleNotifications = [];
             for (const notif of root.allWrappers) {
                 notif.popup = false;
             }
+        }
+    }
+    
+    function processQueue() {
+        if (addGateBusy) return;
+        if (popupsDisabled) return;
+        if (notificationQueue.length === 0) return;
+
+        const [next, ...rest] = notificationQueue;
+        notificationQueue = rest;
+
+        visibleNotifications = [...visibleNotifications, next];
+        next.popup = true;
+
+        addGateBusy = true;
+        addGate.restart();
+    }
+
+    function removeFromVisibleNotifications(wrapper) {
+        const i = visibleNotifications.findIndex(n => n === wrapper);
+        if (i !== -1) {
+            const v = [...visibleNotifications]; v.splice(i, 1);
+            visibleNotifications = v;
+            processQueue();
         }
     }
 
@@ -264,11 +302,6 @@ Singleton {
         }
         
         return Object.values(groups).sort((a, b) => {
-            const aUrgency = a.latestNotification.urgency || 0;
-            const bUrgency = b.latestNotification.urgency || 0;
-            if (aUrgency !== bUrgency) {
-                return bUrgency - aUrgency;
-            }
             return b.latestNotification.time.getTime() - a.latestNotification.time.getTime();
         });
     }
