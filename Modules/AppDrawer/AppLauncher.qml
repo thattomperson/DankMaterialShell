@@ -36,6 +36,8 @@ Item {
     property var appUsageRanking: Prefs.appUsageRanking
     // Internal model
     property alias model: filteredModel
+    // Watch AppSearchService.applications changes via property binding
+    property var _watchApplications: AppSearchService.applications
 
     // Signals
     signal appLaunched(var app)
@@ -81,21 +83,21 @@ Item {
             var aUsage = appUsageRanking[aId] ? appUsageRanking[aId].usageCount : 0;
             var bUsage = appUsageRanking[bId] ? appUsageRanking[bId].usageCount : 0;
             if (aUsage !== bUsage)
-                return bUsage - aUsage; // Higher usage first
-
+                return bUsage - aUsage;
+ // Higher usage first
             return (a.name || "").localeCompare(b.name || ""); // Alphabetical fallback
         });
         // Convert to model format and populate
         apps.forEach((app) => {
             if (app)
                 filteredModel.append({
-                    "name": app.name || "",
-                    "exec": app.execString || "",
-                    "icon": app.icon || "application-x-executable",
-                    "comment": app.comment || "",
-                    "categories": app.categories || [],
-                    "desktopEntry": app
-                });
+                "name": app.name || "",
+                "exec": app.execString || "",
+                "icon": app.icon || "application-x-executable",
+                "comment": app.comment || "",
+                "categories": app.categories || [],
+                "desktopEntry": app
+            });
 
         });
     }
@@ -178,11 +180,7 @@ Item {
     }
     onSelectedCategoryChanged: updateFilteredModel()
     onAppUsageRankingChanged: updateFilteredModel()
-    
-    // Watch AppSearchService.applications changes via property binding
-    property var _watchApplications: AppSearchService.applications
     on_WatchApplicationsChanged: updateFilteredModel()
-    
     // Initialize
     Component.onCompleted: {
         updateFilteredModel();

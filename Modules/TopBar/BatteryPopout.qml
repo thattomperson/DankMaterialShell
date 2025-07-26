@@ -97,7 +97,10 @@ PanelWindow {
             radius: Theme.cornerRadiusLarge
             border.color: Theme.outlineMedium
             border.width: 1
-            
+            // Remove layer rendering for better performance
+            antialiasing: true
+            smooth: true
+
             // Material 3 elevation with multiple layers
             Rectangle {
                 anchors.fill: parent
@@ -108,7 +111,7 @@ PanelWindow {
                 border.width: 1
                 z: -3
             }
-            
+
             Rectangle {
                 anchors.fill: parent
                 anchors.margins: -2
@@ -118,7 +121,7 @@ PanelWindow {
                 border.width: 1
                 z: -2
             }
-            
+
             Rectangle {
                 anchors.fill: parent
                 color: "transparent"
@@ -127,10 +130,6 @@ PanelWindow {
                 radius: parent.radius
                 z: -1
             }
-            
-            // Remove layer rendering for better performance
-            antialiasing: true
-            smooth: true
 
             ScrollView {
                 anchors.fill: parent
@@ -180,7 +179,9 @@ PanelWindow {
                                     batteryPopupVisible = false;
                                 }
                             }
+
                         }
+
                     }
 
                     Rectangle {

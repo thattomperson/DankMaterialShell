@@ -323,6 +323,7 @@ PanelWindow {
                         if (controlCenterPopout.controlCenterVisible) {
                             if (NetworkService.wifiEnabled)
                                 NetworkService.scanWifi();
+
                         }
                     }
                 }

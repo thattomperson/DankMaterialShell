@@ -179,7 +179,7 @@ Column {
                 height: parent.height / 6
                 color: "transparent"
                 clip: true
-                
+
                 Rectangle {
                     anchors.centerIn: parent
                     width: parent.width - 4
@@ -203,13 +203,22 @@ Column {
                         anchors.fill: parent
                         radius: parent.radius
                         visible: CalendarService && CalendarService.khalAvailable && CalendarService.hasEventsForDate(dayDate)
-                        
+                        opacity: {
+                            if (isSelected)
+                                return 0.9;
+                            else if (isToday)
+                                return 0.8;
+                            else
+                                return 0.6;
+                        }
+
                         gradient: Gradient {
-                            GradientStop { 
+                            GradientStop {
                                 position: 0.89
-                                color: "transparent" 
+                                color: "transparent"
                             }
-                            GradientStop { 
+
+                            GradientStop {
                                 position: 0.9
                                 color: {
                                     if (isSelected)
@@ -220,8 +229,9 @@ Column {
                                         return Theme.primary;
                                 }
                             }
-                            GradientStop { 
-                                position: 1.0
+
+                            GradientStop {
+                                position: 1
                                 color: {
                                     if (isSelected)
                                         return Qt.lighter(Theme.primary, 1.3);
@@ -231,15 +241,7 @@ Column {
                                         return Theme.primary;
                                 }
                             }
-                        }
-                        
-                        opacity: {
-                            if (isSelected)
-                                return 0.9;
-                            else if (isToday)
-                                return 0.8;
-                            else
-                                return 0.6;
+
                         }
 
                         Behavior on opacity {
@@ -247,9 +249,11 @@ Column {
                                 duration: Theme.shortDuration
                                 easing.type: Theme.standardEasing
                             }
+
                         }
 
                     }
+
                 }
 
                 MouseArea {

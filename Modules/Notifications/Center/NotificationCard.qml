@@ -11,7 +11,7 @@ Rectangle {
     
     property var notificationGroup
     property bool expanded: NotificationService.expandedGroups[notificationGroup?.key] || false
-    property bool descriptionExpanded: false
+    property bool descriptionExpanded: NotificationService.expandedMessages[notificationGroup?.latestNotification?.notification?.id + "_desc"] || false
     property bool userInitiatedExpansion: false
     
     width: parent ? parent.width : 400
@@ -75,7 +75,8 @@ Rectangle {
             border.color: "transparent"
             border.width: 0
             anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 18
 
             IconImage {
                 anchors.fill: parent
@@ -178,7 +179,7 @@ Rectangle {
 
                     Text {
                         id: descriptionText
-                        property string fullText: notificationGroup?.latestNotification?.body || ""
+                        property string fullText: notificationGroup?.latestNotification?.htmlBody || ""
                         property bool hasMoreText: truncated
                         
                         text: fullText
@@ -189,16 +190,33 @@ Rectangle {
                         maximumLineCount: descriptionExpanded ? -1 : 2
                         wrapMode: Text.WordWrap
                         visible: text.length > 0
-                        textFormat: Text.PlainText
+                        linkColor: Theme.primary
+                        onLinkActivated: Qt.openUrlExternally(link)
                         
                         MouseArea {
                             anchors.fill: parent
-                            cursorShape: (parent.hasMoreText || descriptionExpanded) ? Qt.PointingHandCursor : Qt.ArrowCursor
-                            enabled: parent.hasMoreText || descriptionExpanded
-                            onClicked: {
-                                descriptionExpanded = !descriptionExpanded;
+                            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : 
+                                        (parent.hasMoreText || descriptionExpanded) ? Qt.PointingHandCursor : 
+                                        Qt.ArrowCursor
+                            
+                            onClicked: mouse => {
+                                if (!parent.hoveredLink && (parent.hasMoreText || descriptionExpanded)) {
+                                    const messageId = notificationGroup?.latestNotification?.notification?.id + "_desc";
+                                    NotificationService.toggleMessageExpansion(messageId);
+                                }
                             }
-                            z: 1
+                            
+                            propagateComposedEvents: true
+                            onPressed: mouse => {
+                                if (parent.hoveredLink) {
+                                    mouse.accepted = false;
+                                }
+                            }
+                            onReleased: mouse => {
+                                if (parent.hoveredLink) {
+                                    mouse.accepted = false;
+                                }
+                            }
                         }
                     }
                 }
@@ -305,7 +323,8 @@ Rectangle {
                             height: 32
                             radius: 16
                             anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.top: parent.top
+                            anchors.topMargin: 32
                             color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1)
                             border.color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
                             border.width: 1
@@ -384,7 +403,7 @@ Rectangle {
                                     id: bodyText
                                     property bool hasMoreText: truncated
                                     
-                                    text: modelData?.body || ""
+                                    text: modelData?.htmlBody || ""
                                     color: Theme.surfaceVariantText
                                     font.pixelSize: Theme.fontSizeSmall
                                     width: parent.width
@@ -392,15 +411,29 @@ Rectangle {
                                     maximumLineCount: messageExpanded ? -1 : 2
                                     wrapMode: Text.WordWrap
                                     visible: text.length > 0
-                                    textFormat: Text.PlainText
-                                    
+                                    linkColor: Theme.primary
+                                    onLinkActivated: Qt.openUrlExternally(link)
                                     MouseArea {
                                         anchors.fill: parent
-                                        enabled: bodyText.hasMoreText || messageExpanded
-                                        cursorShape: bodyText.hasMoreText || messageExpanded ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        onClicked: {
-                                            if (bodyText.hasMoreText || messageExpanded) {
+                                        cursorShape: parent.hoveredLink ? Qt.PointingHandCursor :
+                                                    (bodyText.hasMoreText || messageExpanded) ? Qt.PointingHandCursor : 
+                                                    Qt.ArrowCursor
+                                        
+                                        onClicked: mouse => {
+                                            if (!parent.hoveredLink && (bodyText.hasMoreText || messageExpanded)) {
                                                 NotificationService.toggleMessageExpansion(modelData?.notification?.id || "");
+                                            }
+                                        }
+                                        
+                                        propagateComposedEvents: true
+                                        onPressed: mouse => {
+                                            if (parent.hoveredLink) {
+                                                mouse.accepted = false;
+                                            }
+                                        }
+                                        onReleased: mouse => {
+                                            if (parent.hoveredLink) {
+                                                mouse.accepted = false;
                                             }
                                         }
                                     }

@@ -12,7 +12,8 @@ import qs.Modules.Settings
 import qs.Modules.ProcessList
 import qs.Modules.ControlCenter.Network
 import qs.Modules.Lock
-import qs.Modules.Notifications
+import qs.Modules.Notifications.Center
+import qs.Modules.Notifications.Popup
 import qs.Modals
 import qs.Services
 

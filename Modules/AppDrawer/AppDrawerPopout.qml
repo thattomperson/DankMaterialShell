@@ -260,8 +260,8 @@ PanelWindow {
                             function onIsVisibleChanged() {
                                 if (appDrawerPopout.isVisible)
                                     Qt.callLater(function() {
-                                        searchField.forceActiveFocus();
-                                    });
+                                    searchField.forceActiveFocus();
+                                });
                                 else
                                     searchField.clearFocus();
                             }

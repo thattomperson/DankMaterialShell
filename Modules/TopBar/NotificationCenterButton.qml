@@ -17,9 +17,9 @@ Rectangle {
 
     DankIcon {
         anchors.centerIn: parent
-        name: "notifications"
+        name: Prefs.doNotDisturb ? "notifications_off" : "notifications"
         size: Theme.iconSize - 6
-        color: notificationArea.containsMouse || root.isActive ? Theme.primary : Theme.surfaceText
+        color: Prefs.doNotDisturb ? Theme.error : (notificationArea.containsMouse || root.isActive ? Theme.primary : Theme.surfaceText)
     }
 
     // Notification dot indicator

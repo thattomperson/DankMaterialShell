@@ -44,6 +44,7 @@ Singleton {
     property bool wallpaperDynamicTheming: true
     property string wallpaperLastPath: ""
     property string profileLastPath: ""
+    property bool doNotDisturb: false
 
     function loadSettings() {
         parseSettings(settingsFile.text());
@@ -85,6 +86,7 @@ Singleton {
                 wallpaperDynamicTheming = settings.wallpaperDynamicTheming !== undefined ? settings.wallpaperDynamicTheming : true;
                 wallpaperLastPath = settings.wallpaperLastPath !== undefined ? settings.wallpaperLastPath : "";
                 profileLastPath = settings.profileLastPath !== undefined ? settings.profileLastPath : "";
+                doNotDisturb = settings.doNotDisturb !== undefined ? settings.doNotDisturb : false;
                         applyStoredTheme();
                         detectAvailableIconThemes();
                         updateGtkIconTheme(iconTheme);
@@ -130,7 +132,8 @@ Singleton {
             "wallpaperPath": wallpaperPath,
             "wallpaperDynamicTheming": wallpaperDynamicTheming,
             "wallpaperLastPath": wallpaperLastPath,
-            "profileLastPath": profileLastPath
+            "profileLastPath": profileLastPath,
+            "doNotDisturb": doNotDisturb
         }, null, 2));
     }
 
@@ -479,6 +482,11 @@ gtk-application-prefer-dark-theme=true`;
         if (wallpaperDynamicTheming && typeof Colors !== "undefined") {
             Colors.extractColors();
         }
+    }
+
+    function setDoNotDisturb(enabled) {
+        doNotDisturb = enabled;
+        saveSettings();
     }
 
     Component.onCompleted: loadSettings()

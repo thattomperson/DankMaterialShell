@@ -5,6 +5,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
 import qs.Services
+import qs.Common
+import "../Common/markdown2html.js" as Markdown2Html
 
 Singleton {
     id: root
@@ -60,8 +62,9 @@ Singleton {
         onNotification: notif => {
             notif.tracked = true;
 
+            const shouldShowPopup = !root.popupsDisabled && !Prefs.doNotDisturb;
             const wrapper = notifComponent.createObject(root, {
-                popup: !root.popupsDisabled,
+                popup: shouldShowPopup,
                 notification: notif
             });
 
@@ -70,7 +73,7 @@ Singleton {
                 root.notifications.push(wrapper);
                 addToPersistentStorage(wrapper);
                 
-                if (!root.popupsDisabled) {
+                if (shouldShowPopup) {
                     notificationQueue = [...notificationQueue, wrapper];
                     processQueue();
                 }
@@ -84,7 +87,6 @@ Singleton {
         property bool popup: false
         property bool removedByLimit: false
         property bool isPersistent: true
-        property int initialOffset: 0
         property int seq: 0
         
         onPopupChanged: {
@@ -93,7 +95,6 @@ Singleton {
             }
         }
         
-        // Don't override popup in onCompleted - it's set correctly during creation
         
         readonly property Timer timer: Timer {
             interval: 5000
@@ -120,14 +121,13 @@ Singleton {
         required property Notification notification
         readonly property string summary: notification.summary
         readonly property string body: notification.body
-        readonly property string appIcon: notification.appIcon
-        readonly property string cleanAppIcon: {
-            if (!appIcon) return "";
-            if (appIcon.startsWith("file://")) {
-                return appIcon.substring(7);
+        readonly property string htmlBody: {
+            if (body && (body.includes('<') && body.includes('>'))) {
+                return body;
             }
-            return appIcon;
+            return Markdown2Html.markdownToHtml(body);
         }
+        readonly property string appIcon: notification.appIcon
         readonly property string appName: notification.appName
         readonly property string desktopEntry: notification.desktopEntry
         readonly property string image: notification.image
@@ -141,7 +141,6 @@ Singleton {
         readonly property int urgency: notification.urgency
         readonly property list<NotificationAction> actions: notification.actions
 
-        // Enhanced properties for better handling
         readonly property bool hasImage: image && image.length > 0
         readonly property bool hasAppIcon: appIcon && appIcon.length > 0
 
@@ -159,7 +158,6 @@ Singleton {
                 const groupKey = getGroupKey(wrapper);
                 const remainingInGroup = root.notifications.filter(n => getGroupKey(n) === groupKey);
                 
-                // Only collapse the group if there's 1 or fewer notifications left
                 if (remainingInGroup.length <= 1) {
                     clearGroupExpansionState(groupKey);
                 }
@@ -178,7 +176,6 @@ Singleton {
         NotifWrapper {}
     }
 
-    // Helper functions
     function clearAllNotifications() {
         bulkDismissing = true;
         popupsDisabled = true;
@@ -198,7 +195,7 @@ Singleton {
         for (let i = 0; i < toDismiss.length; ++i) {
             const w = toDismiss[i];
             if (w && w.notification) {
-                try { w.notification.dismiss(); } catch (e) { /* ignore */ }
+                try { w.notification.dismiss(); } catch (e) {}
             }
         }
 
@@ -229,6 +226,7 @@ Singleton {
     function processQueue() {
         if (addGateBusy) return;
         if (popupsDisabled) return;
+        if (Prefs.doNotDisturb) return;
         if (notificationQueue.length === 0) return;
 
         const [next, ...rest] = notificationQueue;
@@ -433,9 +431,10 @@ Singleton {
         }
         return `${group.count} notifications`;
     }
+    
     function getGroupBody(group) {
         if (group.count === 1) {
-            return group.latestNotification.body;
+            return group.latestNotification.htmlBody; // Use HTML body
         }
         return `Latest: ${group.latestNotification.summary}`;
     }
@@ -446,6 +445,7 @@ Singleton {
             appName: wrapper.appName,
             summary: wrapper.summary,
             body: wrapper.body,
+            htmlBody: wrapper.htmlBody, // Store HTML version too
             appIcon: wrapper.appIcon,
             image: wrapper.image,
             urgency: wrapper.urgency,
@@ -467,19 +467,22 @@ Singleton {
         persistedNotifications = newPersisted;
     }
 
-    function getPersistentNotificationsByApp(appName) {
-        return persistedNotifications.filter(notif => notif.appName.toLowerCase() === appName.toLowerCase());
-    }
-    function getPersistentNotificationsByType(type) {
-        return persistedNotifications;
-    }
-    function searchPersistentNotifications(query) {
-        const searchLower = query.toLowerCase();
-        return persistedNotifications.filter(notif => 
-            notif.appName.toLowerCase().includes(searchLower) ||
-            notif.summary.toLowerCase().includes(searchLower) ||
-            notif.body.toLowerCase().includes(searchLower)
-        );
+
+    Connections {
+        target: Prefs
+        function onDoNotDisturbChanged() {
+            if (Prefs.doNotDisturb) {
+                // Hide all current popups when DND is enabled
+                for (const notif of visibleNotifications) {
+                    notif.popup = false;
+                }
+                visibleNotifications = [];
+                notificationQueue = [];
+            } else {
+                // Re-enable popup processing when DND is disabled
+                processQueue();
+            }
+        }
     }
 
     Component.onCompleted: {

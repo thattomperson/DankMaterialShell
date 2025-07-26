@@ -13,7 +13,9 @@ PanelWindow {
     required property var notificationData
     required property string notificationId
 
-    visible: true
+    readonly property bool hasValidData: notificationData && notificationData.notification
+    
+    visible: hasValidData
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -31,14 +33,11 @@ PanelWindow {
         right: 12
     }
 
-    // Manager drives vertical stacking with this proxy:
     property int screenY: 0
     onScreenYChanged: margins.top = Theme.barHeight + 4 + screenY
-
-    // Disable vertical tween while exiting so there is never diagonal motion
     Behavior on screenY {
         id: screenYAnim
-        enabled: !exiting
+        enabled: !exiting && !_isDestroying
         NumberAnimation { 
             duration: Anims.durShort
             easing.type: Easing.BezierSpline
@@ -46,19 +45,25 @@ PanelWindow {
         }
     }
 
-    // State
     property bool exiting: false
+    property bool _isDestroying: false
+    property bool _finalized: false
     signal entered()
     signal exitFinished()
+    onHasValidDataChanged: {
+        if (!hasValidData && !exiting && !_isDestroying) {
+            console.warn("NotificationPopup: Data became invalid, forcing exit");
+            forceExit();
+        }
+    }
 
     Item {
         id: content
         anchors.fill: parent
+        visible: win.hasValidData
 
-        // We animate a Translate so anchors never override horizontal motion
-        transform: Translate { id: tx; x: Anims.slidePx }   // start off-screen right
+        transform: Translate { id: tx; x: Anims.slidePx }
 
-        // Optional: layer while animating for smoothness
         layer.enabled: (enterX.running || exitAnim.running)
         layer.smooth: true
 
@@ -144,7 +149,6 @@ PanelWindow {
                 Rectangle {
                     id: iconContainer
                     readonly property bool hasNotificationImage: notificationData && notificationData.image && notificationData.image !== ""
-                    property alias iconImage: iconImage
 
                     width: 55
                     height: 55
@@ -242,7 +246,7 @@ PanelWindow {
                             }
 
                             Text {
-                                text: notificationData ? (notificationData.body || "") : ""
+                                text: notificationData ? (notificationData.htmlBody || "") : ""
                                 color: Theme.surfaceVariantText
                                 font.pixelSize: Theme.fontSizeSmall
                                 width: parent.width
@@ -250,7 +254,13 @@ PanelWindow {
                                 maximumLineCount: 2
                                 wrapMode: Text.WordWrap
                                 visible: text.length > 0
-                                textFormat: Text.PlainText
+                                linkColor: Theme.primary
+                                onLinkActivated: Qt.openUrlExternally(link)
+                                MouseArea {
+                                    anchors.fill: parent
+                                    acceptedButtons: Qt.NoButton 
+                                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                }
                             }
                         }
                     }
@@ -270,7 +280,7 @@ PanelWindow {
                 buttonSize: 28
                 z: 15
                 onClicked: {
-                    if (notificationData)
+                    if (notificationData && !win.exiting)
                         notificationData.popup = false;
                 }
             }
@@ -315,7 +325,7 @@ PanelWindow {
                                 if (modelData && modelData.invoke) {
                                     modelData.invoke();
                                 }
-                                if (notificationData) {
+                                if (notificationData && !win.exiting) {
                                     notificationData.popup = false;
                                 }
                             }
@@ -355,7 +365,7 @@ PanelWindow {
                     onEntered: dismissButton.isHovered = true
                     onExited: dismissButton.isHovered = false
                     onClicked: {
-                        if (notificationData) {
+                        if (notificationData && !win.exiting) {
                             NotificationService.dismissNotification(notificationData);
                         }
                     }
@@ -378,24 +388,22 @@ PanelWindow {
                         notificationData.timer.restart();
                 }
                 onClicked: {
-                    if (notificationData)
+                    if (notificationData && !win.exiting)
                         notificationData.popup = false;
                 }
             }
         }
     }
 
-    // Entrance: slide in from right using slowed Anims curves
     NumberAnimation {
         id: enterX
         target: tx; property: "x"; from: Anims.slidePx; to: 0
         duration: Anims.durMed
         easing.type: Easing.BezierSpline
         easing.bezierCurve: Anims.emphasizedDecel
-        onStopped: if (!win.exiting && Math.abs(tx.x) < 0.5) win.entered();
+        onStopped: if (!win.exiting && !win._isDestroying && Math.abs(tx.x) < 0.5) win.entered();
     }
 
-    // Exit: slide out to right + fade using slowed Anims curves
     ParallelAnimation {
         id: exitAnim
         PropertyAnimation { 
@@ -419,52 +427,94 @@ PanelWindow {
         onStopped: finalizeExit("animStopped")
     }
 
-    // Start entrance one tick after create (so it always animates)
-    Component.onCompleted: Qt.callLater(() => enterX.restart())
+    Component.onCompleted: {
+        if (hasValidData) {
+            Qt.callLater(() => enterX.restart())
+        } else {
+            console.warn("NotificationPopup created with invalid data");
+            forceExit();
+        }
+    }
 
-    // Safe connection to wrapper: disable automatically when wrapper is null
     Connections {
         id: wrapperConn
         target: win.notificationData || null
         ignoreUnknownSignals: true
+        enabled: !win._isDestroying
+        
         function onPopupChanged() {
-            if (!win.notificationData) return;        // guard
+            if (!win.notificationData || win._isDestroying) return;
             if (!win.notificationData.popup && !win.exiting) {
-                // Freeze vertical and start exit
-                win.exiting = true;                   // disables screenY Behavior
-                exitAnim.restart();
-                exitWatchdog.restart();               // safety net
-                if (NotificationService.removeFromVisibleNotifications)
-                    NotificationService.removeFromVisibleNotifications(win.notificationData);
+                startExit();
             }
         }
     }
-    onNotificationDataChanged: wrapperConn.target = win.notificationData || null
+    onNotificationDataChanged: {
+        if (!_isDestroying) {
+            wrapperConn.target = win.notificationData || null;
+        }
+    }
 
-    // Timer to start on entrance
     Timer {
         id: enterDelay
         interval: 160
         repeat: false
         onTriggered: {
-            if (notificationData && notificationData.timer)
+            if (notificationData && notificationData.timer && !exiting && !_isDestroying)
                 notificationData.timer.start();
         }
     }
 
-    // Start timer after entrance animation
-    onEntered: enterDelay.start()
+    onEntered: {
+        if (!_isDestroying) enterDelay.start();
+    }
 
-    // Idempotent finalizer so we never "half-exit"
-    property bool _finalized: false
+    function startExit() {
+        if (exiting || _isDestroying) return;
+        
+        exiting = true;
+        exitAnim.restart();
+        exitWatchdog.restart();
+        
+        if (NotificationService.removeFromVisibleNotifications) {
+            NotificationService.removeFromVisibleNotifications(win.notificationData);
+        }
+    }
+
+    function forceExit() {
+        if (_isDestroying) return;
+        
+        _isDestroying = true;
+        exiting = true;
+        visible = false;
+        exitWatchdog.stop();
+        finalizeExit("forced");
+    }
+
     function finalizeExit(reason) {
         if (_finalized) return;
         _finalized = true;
+        _isDestroying = true;
         exitWatchdog.stop();
-        win.exitFinished();                           // manager will destroy the window
+        
+        wrapperConn.enabled = false;
+        wrapperConn.target = null;
+        
+        win.exitFinished();
     }
-    Timer { id: exitWatchdog; interval: 600; repeat: false; onTriggered: finalizeExit("watchdog") }
+    
+    Timer { 
+        id: exitWatchdog
+        interval: 600
+        repeat: false
+        onTriggered: finalizeExit("watchdog")
+    }
 
-    // If the popup is torn down unexpectedly, don't leave dangling timers
-    Component.onDestruction: { exitWatchdog.stop(); }
+    Component.onDestruction: {
+        _isDestroying = true;
+        exitWatchdog.stop();
+        if (notificationData && notificationData.timer) {
+            notificationData.timer.stop();
+        }
+    }
 }

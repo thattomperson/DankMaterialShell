@@ -10,16 +10,30 @@ Item {
     width: parent.width
     height: 32
 
-    Text {
-        text: "Notifications"
-        font.pixelSize: Theme.fontSizeLarge
-        color: Theme.surfaceText
-        font.weight: Font.Medium
+    Row {
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
+        spacing: Theme.spacingXS
+
+        Text {
+            text: "Notifications"
+            font.pixelSize: Theme.fontSizeLarge
+            color: Theme.surfaceText
+            font.weight: Font.Medium
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        DankActionButton {
+            iconName: Prefs.doNotDisturb ? "notifications_off" : "notifications"
+            iconColor: Prefs.doNotDisturb ? Theme.error : Theme.surfaceText
+            buttonSize: 28
+            anchors.verticalCenter: parent.verticalCenter
+            onClicked: Prefs.setDoNotDisturb(!Prefs.doNotDisturb)
+        }
     }
 
     Rectangle {
+        id: clearAllButton
         width: 120
         height: 28
         radius: Theme.cornerRadiusLarge

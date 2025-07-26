@@ -42,8 +42,8 @@ Image {
             const grabPath = cachePath;
             if (visible && width > 0 && height > 0 && Window.window && Window.window.visible)
                 grabToImage((res) => {
-                    return res.saveToFile(grabPath);
-                });
+                return res.saveToFile(grabPath);
+            });
 
         }
     }

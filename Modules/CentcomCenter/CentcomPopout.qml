@@ -98,11 +98,12 @@ PanelWindow {
         y: Theme.barHeight + 4
         // Only resize after animation is complete
         onOpacityChanged: {
+            // Animation finished, now we can safely resize
+
             if (opacity === 1)
-                // Animation finished, now we can safely resize
                 Qt.callLater(() => {
-                    height = calculateHeight();
-                });
+                height = calculateHeight();
+            });
 
         }
 
@@ -196,6 +197,7 @@ PanelWindow {
                         width: parent.width
                         height: 140
                     }
+
                 }
 
                 // Right section for calendar - enhanced container
@@ -209,17 +211,22 @@ PanelWindow {
 
                     CalendarGrid {
                         id: calendarGrid
+
                         anchors.fill: parent
                         anchors.margins: Theme.spacingS
                     }
+
                 }
+
             }
 
             Events {
                 id: events
+
                 width: parent.width
                 selectedDate: calendarGrid.selectedDate
             }
+
         }
 
         Behavior on opacity {
