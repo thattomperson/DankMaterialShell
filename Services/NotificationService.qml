@@ -20,6 +20,7 @@ Singleton {
     property int maxVisibleNotifications: 3
     property bool addGateBusy: false
     property int enterAnimMs: 400
+    property int seqCounter: 0
     
     Timer {
         id: addGate
@@ -82,6 +83,7 @@ Singleton {
         property bool removedByLimit: false
         property bool isPersistent: true
         property int initialOffset: 0
+        property int seq: 0
         
         onPopupChanged: {
             if (!popup) {
@@ -217,6 +219,7 @@ Singleton {
         const [next, ...rest] = notificationQueue;
         notificationQueue = rest;
 
+        next.seq = ++seqCounter;
         visibleNotifications = [...visibleNotifications, next];
         next.popup = true;
 
