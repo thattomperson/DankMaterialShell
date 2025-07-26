@@ -76,17 +76,17 @@ Item {
                 }
             }
         }
-        // Sort apps by usage ranking, then alphabetically
-        apps = apps.sort(function(a, b) {
-            var aId = a.id || (a.execString || a.exec || "");
-            var bId = b.id || (b.execString || b.exec || "");
-            var aUsage = appUsageRanking[aId] ? appUsageRanking[aId].usageCount : 0;
-            var bUsage = appUsageRanking[bId] ? appUsageRanking[bId].usageCount : 0;
-            if (aUsage !== bUsage)
-                return bUsage - aUsage;
- // Higher usage first
-            return (a.name || "").localeCompare(b.name || ""); // Alphabetical fallback
-        });
+        if (searchQuery.length === 0) {
+            apps = apps.sort(function(a, b) {
+                var aId = a.id || (a.execString || a.exec || "");
+                var bId = b.id || (b.execString || b.exec || "");
+                var aUsage = appUsageRanking[aId] ? appUsageRanking[aId].usageCount : 0;
+                var bUsage = appUsageRanking[bId] ? appUsageRanking[bId].usageCount : 0;
+                if (aUsage !== bUsage)
+                    return bUsage - aUsage;
+                return (a.name || "").localeCompare(b.name || "");
+            });
+        }
         // Convert to model format and populate
         apps.forEach((app) => {
             if (app)

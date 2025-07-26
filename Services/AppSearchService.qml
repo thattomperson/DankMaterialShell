@@ -55,7 +55,33 @@ Singleton {
             scoreFn: r => {
                 var nameScore = r[0] ? r[0].score : 0
                 var commentScore = r[1] ? r[1].score : 0
-                return nameScore > 0 ? nameScore * 0.9 + commentScore * 0.1 : commentScore * 0.5
+                var appName = r.obj.entry.name || ""
+                var finalScore = 0
+                
+                if (nameScore > 0) {
+                    var queryLower = query.toLowerCase()
+                    var nameLower = appName.toLowerCase()
+                    
+                    if (nameLower === queryLower) {
+                        finalScore = nameScore * 100
+                    }
+                    else if (nameLower.startsWith(queryLower)) {
+                        finalScore = nameScore * 50
+                    }
+                    else if (nameLower.includes(" " + queryLower) || nameLower.includes(queryLower + " ") || nameLower.endsWith(" " + queryLower)) {
+                        finalScore = nameScore * 25
+                    }
+                    else if (nameLower.includes(queryLower)) {
+                        finalScore = nameScore * 10
+                    }
+                    else {
+                        finalScore = nameScore * 2 + commentScore * 0.1
+                    }
+                } else {
+                    finalScore = commentScore * 0.1
+                }
+                
+                return finalScore
             },
             limit: 50
         })
