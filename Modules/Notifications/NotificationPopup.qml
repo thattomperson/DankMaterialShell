@@ -19,7 +19,7 @@ PanelWindow {
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     color: "transparent"
     implicitWidth: 400
-    implicitHeight: 116
+    implicitHeight: 122
 
     anchors {
         top: true
@@ -138,13 +138,12 @@ PanelWindow {
                 anchors.right: parent.right
                 anchors.topMargin: 12
                 anchors.leftMargin: 16
-                anchors.rightMargin: 16
-                height: 86
+                anchors.rightMargin: 56
+                height: 98
 
                 Rectangle {
                     id: iconContainer
                     readonly property bool hasNotificationImage: notificationData && notificationData.image && notificationData.image !== ""
-                    readonly property bool appIconIsImage: notificationData && notificationData.appIcon && (notificationData.appIcon.startsWith("file://") || notificationData.appIcon.startsWith("http://") || notificationData.appIcon.startsWith("https://"))
                     property alias iconImage: iconImage
 
                     width: 55
@@ -196,89 +195,169 @@ PanelWindow {
                     id: textContainer
                     anchors.left: iconContainer.right
                     anchors.leftMargin: 12
-                    anchors.right: closeButton.left
-                    anchors.rightMargin: 8
+                    anchors.right: parent.right
+                    anchors.rightMargin: 0
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 8
                     color: "transparent"
 
-                    Column {
+                    Item {
                         width: parent.width
-                        spacing: 2
-                        anchors.verticalCenter: parent.verticalCenter
+                        height: parent.height
+                        anchors.top: parent.top
+                        anchors.topMargin: -4
 
-                        Text {
+                        Column {
                             width: parent.width
-                            text: {
-                                if (!notificationData) return "";
-                                const appName = notificationData.appName || "";
-                                const timeStr = notificationData.timeStr || "";
-                                if (timeStr.length > 0)
-                                    return appName + " • " + timeStr;
-                                else
-                                    return appName;
-                            }
-                            color: Theme.surfaceVariantText
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.weight: Font.Medium
-                            elide: Text.ElideRight
-                            maximumLineCount: 1
-                        }
+                            spacing: 2
 
-                        Text {
-                            text: notificationData ? (notificationData.summary || "") : ""
-                            color: Theme.surfaceText
-                            font.pixelSize: Theme.fontSizeMedium
-                            font.weight: Font.Medium
-                            width: parent.width
-                            elide: Text.ElideRight
-                            maximumLineCount: 1
-                            visible: text.length > 0
-                        }
-
-                        Text {
-                            property bool hasUrls: {
-                                if (!notificationData || !notificationData.body) return false;
-                                const urlRegex = /(https?:\/\/[^\s]+)/g;
-                                return urlRegex.test(notificationData.body);
+                            Text {
+                                width: parent.width
+                                text: {
+                                    if (!notificationData) return "";
+                                    const appName = notificationData.appName || "";
+                                    const timeStr = notificationData.timeStr || "";
+                                    if (timeStr.length > 0)
+                                        return appName + " • " + timeStr;
+                                    else
+                                        return appName;
+                                }
+                                color: Theme.surfaceVariantText
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.weight: Font.Medium
+                                elide: Text.ElideRight
+                                maximumLineCount: 1
                             }
 
-                            text: {
-                                if (!notificationData || !notificationData.body) return "";
-                                let bodyText = notificationData.body;
-                                if (bodyText.length > 105)
-                                    bodyText = bodyText.substring(0, 102) + "...";
-
-                                const urlRegex = /(https?:\/\/[^\s]+)/g;
-                                return bodyText.replace(urlRegex, '<a href="$1" style="color: ' + Theme.primary + '; text-decoration: underline;">$1</a>');
+                            Text {
+                                text: notificationData ? (notificationData.summary || "") : ""
+                                color: Theme.surfaceText
+                                font.pixelSize: Theme.fontSizeMedium
+                                font.weight: Font.Medium
+                                width: parent.width
+                                elide: Text.ElideRight
+                                maximumLineCount: 1
+                                visible: text.length > 0
                             }
-                            color: Theme.surfaceVariantText
-                            font.pixelSize: Theme.fontSizeSmall
-                            width: parent.width
-                            elide: Text.ElideRight
-                            maximumLineCount: 2
-                            wrapMode: Text.WordWrap
-                            visible: text.length > 0
-                            textFormat: Text.RichText
-                            onLinkActivated: function(link) {
-                                Qt.openUrlExternally(link);
+
+                            Text {
+                                text: notificationData ? (notificationData.body || "") : ""
+                                color: Theme.surfaceVariantText
+                                font.pixelSize: Theme.fontSizeSmall
+                                width: parent.width
+                                elide: Text.ElideRight
+                                maximumLineCount: 2
+                                wrapMode: Text.WordWrap
+                                visible: text.length > 0
+                                textFormat: Text.PlainText
                             }
                         }
                     }
                 }
 
-                DankActionButton {
-                    id: closeButton
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    iconName: "close"
-                    iconSize: 14
-                    buttonSize: 20
-                    z: 15
+
+            }
+            
+            DankActionButton {
+                id: closeButton
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.topMargin: 12
+                anchors.rightMargin: 16
+                iconName: "close"
+                iconSize: 18
+                buttonSize: 28
+                z: 15
+                onClicked: {
+                    if (notificationData)
+                        notificationData.popup = false;
+                }
+            }
+
+            Row {
+                anchors.right: dismissButton.left
+                anchors.rightMargin: 8
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 8
+                spacing: 8
+                z: 20
+                
+                Repeater {
+                    model: notificationData ? (notificationData.actions || []) : []
+                    
+                    Rectangle {
+                        property bool isHovered: false
+                        
+                        width: Math.max(actionText.implicitWidth + 12, 50)
+                        height: 24
+                        radius: 4
+                        color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
+                        
+                        Text {
+                            id: actionText
+                            text: modelData.text || ""
+                            color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.weight: Font.Medium
+                            anchors.centerIn: parent
+                            elide: Text.ElideRight
+                        }
+                        
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            acceptedButtons: Qt.LeftButton
+                            onEntered: parent.isHovered = true
+                            onExited: parent.isHovered = false
+                            onClicked: {
+                                if (modelData && modelData.invoke) {
+                                    modelData.invoke();
+                                }
+                                if (notificationData) {
+                                    notificationData.popup = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                id: dismissButton
+                property bool isHovered: false
+
+                anchors.right: parent.right
+                anchors.rightMargin: 16
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 8
+                width: Math.max(dismissText.implicitWidth + 12, 50)
+                height: 24
+                radius: 4
+                color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
+                z: 20
+
+                Text {
+                    id: dismissText
+                    text: "Dismiss"
+                    color: dismissButton.isHovered ? Theme.primary : Theme.surfaceVariantText
+                    font.pixelSize: Theme.fontSizeSmall
+                    font.weight: Font.Medium
+                    anchors.centerIn: parent
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    acceptedButtons: Qt.LeftButton
+                    onEntered: dismissButton.isHovered = true
+                    onExited: dismissButton.isHovered = false
                     onClicked: {
-                        if (notificationData)
-                            notificationData.popup = false;
+                        if (notificationData) {
+                            NotificationService.dismissNotification(notificationData);
+                        }
                     }
                 }
             }
@@ -289,7 +368,7 @@ PanelWindow {
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
                 propagateComposedEvents: true
-                z: 0
+                z: -1
                 onEntered: {
                     if (notificationData && notificationData.timer)
                         notificationData.timer.stop();

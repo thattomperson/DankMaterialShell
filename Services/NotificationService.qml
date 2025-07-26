@@ -21,7 +21,8 @@ Singleton {
     property bool addGateBusy: false
     property int enterAnimMs: 400
     property int seqCounter: 0
-    
+    property bool bulkDismissing: false
+
     Timer {
         id: addGate
         interval: enterAnimMs + 50
@@ -33,6 +34,7 @@ Singleton {
     // Android 16-style grouped notifications
     readonly property var groupedNotifications: getGroupedNotifications()
     readonly property var groupedPopups: getGroupedPopups()
+    
     
     property var expandedGroups: ({})
     property var expandedMessages: ({})
@@ -149,24 +151,20 @@ Singleton {
             function onDropped(): void {
                 const notifIndex = root.notifications.indexOf(wrapper);
                 const allIndex = root.allWrappers.indexOf(wrapper);
+                if (allIndex !== -1) root.allWrappers.splice(allIndex, 1);
+                if (notifIndex !== -1) root.notifications.splice(notifIndex, 1);
+
+                if (root.bulkDismissing) return;
+
+                const groupKey = getGroupKey(wrapper);
+                const remainingInGroup = root.notifications.filter(n => getGroupKey(n) === groupKey);
                 
-                if (allIndex !== -1) {
-                    root.allWrappers.splice(allIndex, 1);
+                // Only collapse the group if there's 1 or fewer notifications left
+                if (remainingInGroup.length <= 1) {
+                    clearGroupExpansionState(groupKey);
                 }
                 
-                if (notifIndex !== -1) {
-                    const groupKey = getGroupKey(wrapper);
-                    root.notifications.splice(notifIndex, 1);
-                    
-                    const remainingInGroup = root.notifications.filter(n => getGroupKey(n) === groupKey);
-                    if (remainingInGroup.length === 0) {
-                        clearGroupExpansionState(groupKey);
-                    } else if (remainingInGroup.length === 1) {
-                        clearGroupExpansionState(groupKey);
-                    }
-                    
-                    cleanupExpansionStates();
-                }
+                cleanupExpansionStates();
             }
 
             function onAboutToDestroy(): void {
@@ -182,17 +180,34 @@ Singleton {
 
     // Helper functions
     function clearAllNotifications() {
-        // Actually dismiss all notifications from center
-        const notificationsCopy = [...root.notifications];
-        notificationsCopy.forEach(notif => {
-            notif.notification.dismiss();
-        });
-        // Clear all expansion states
+        bulkDismissing = true;
+        popupsDisabled = true;
+        addGate.stop();
+        addGateBusy = false;
+        notificationQueue = [];
+
+        for (const w of visibleNotifications) w.popup = false;
+        visibleNotifications = [];
+
+        const toDismiss = notifications.slice();
+
+        if (notifications.length) notifications.splice(0, notifications.length);
         expandedGroups = {};
         expandedMessages = {};
+
+        for (let i = 0; i < toDismiss.length; ++i) {
+            const w = toDismiss[i];
+            if (w && w.notification) {
+                try { w.notification.dismiss(); } catch (e) { /* ignore */ }
+            }
+        }
+
+        bulkDismissing = false;
+        popupsDisabled = false;
     }
 
     function dismissNotification(wrapper) {
+        wrapper.popup = false;
         wrapper.notification.dismiss();
     }
     
@@ -367,6 +382,7 @@ Singleton {
         }
     }
     
+    
     function clearGroupExpansionState(groupKey) {
         let newExpandedGroups = {};
         for (const key in expandedGroups) {
@@ -376,6 +392,7 @@ Singleton {
         }
         expandedGroups = newExpandedGroups;
     }
+
 
     function cleanupExpansionStates() {
         const currentGroupKeys = new Set(groupedNotifications.map(g => g.key));
@@ -464,6 +481,7 @@ Singleton {
             notif.body.toLowerCase().includes(searchLower)
         );
     }
+
     Component.onCompleted: {
         cleanupPersistentStorage();
     }
