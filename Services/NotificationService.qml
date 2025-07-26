@@ -15,6 +15,8 @@ Singleton {
     
     property list<NotifWrapper> notificationQueue: []
     property list<NotifWrapper> visibleNotifications: []
+    property list<NotifWrapper> history: []
+    property int maxHistory: 200
     property int maxVisibleNotifications: 3
     property bool addGateBusy: false
     property int enterAnimMs: 400
@@ -78,6 +80,8 @@ Singleton {
 
         property bool popup: false
         property bool removedByLimit: false
+        property bool isPersistent: true
+        property int initialOffset: 0
         
         onPopupChanged: {
             if (!popup) {
@@ -226,6 +230,36 @@ Singleton {
             const v = [...visibleNotifications]; v.splice(i, 1);
             visibleNotifications = v;
             processQueue();
+        }
+    }
+
+    function releaseWrapper(w) {
+        // Remove from visible
+        let v = visibleNotifications.slice();
+        const vi = v.indexOf(w); 
+        if (vi !== -1) { 
+            v.splice(vi, 1); 
+            visibleNotifications = v; 
+        }
+
+        // Remove from queue
+        let q = notificationQueue.slice();
+        const qi = q.indexOf(w); 
+        if (qi !== -1) { 
+            q.splice(qi, 1); 
+            notificationQueue = q; 
+        }
+
+        // Push to bounded history or destroy if non-persistent
+        if (w && w.isPersistent) {
+            let h = history.slice(); 
+            h.push(w);
+            if (h.length > maxHistory) {
+                h.splice(0, h.length - maxHistory);
+            }
+            history = h;
+        } else if (w && w.destroy) {
+            w.destroy();
         }
     }
 

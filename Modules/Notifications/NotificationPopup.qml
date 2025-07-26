@@ -10,12 +10,11 @@ import qs.Widgets
 PanelWindow {
     id: root
 
-    required property var notificationData  // Individual notification wrapper
+    required property var notificationData // Individual notification wrapper
     required property string notificationId
     readonly property bool isPopup: notificationData.popup
     readonly property int expireTimeout: notificationData.notification.expireTimeout
-
-    property int verticalOffset: 0
+    property int verticalOffset: notificationData && notificationData.initialOffset || 0
     property bool initialAnimation: true
     property bool fadingOut: false
     property bool slideOut: false
@@ -29,9 +28,12 @@ PanelWindow {
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     color: "transparent"
-    
     implicitWidth: 400
-    implicitHeight: 116  // Individual notifications have fixed height
+    implicitHeight: 116 // Individual notifications have fixed height
+    Component.onCompleted: {
+        initialAnimation = false; // kicks the right→left slide-in
+        enterDelay.start(); // start TTL after entrance
+    }
 
     anchors {
         top: true
@@ -43,43 +45,46 @@ PanelWindow {
         right: 12
     }
 
-    Behavior on verticalOffset {
-        NumberAnimation {
-            duration: Anims.durMed
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Anims.emphasized
-        }
-    }
-
     Timer {
         id: enterDelay
-        interval: Anims.durMed            // must match the entrance duration
+
+        interval: Anims.durMed // must match the entrance duration
         repeat: false
         onTriggered: notificationData.timer.start()
     }
 
-    Component.onCompleted: {
-        initialAnimation = false;         // kicks the right→left slide-in
-        enterDelay.start();               // start TTL after entrance
+    Timer {
+        id: forceHideTimer
+
+        interval: 500 // Force hide after 500ms if stuck
+        repeat: false
+        onTriggered: {
+            console.warn("NotificationPopup: Forcing exit for stuck notification");
+            exitFinished();
+        }
     }
 
     Connections {
-        target: notificationData
         function onPopupChanged() {
             if (!notificationData.popup) {
-                if (notificationData.removedByLimit) {
+                if (notificationData.removedByLimit)
                     slideOut = true;
-                } else {
+                else
                     fadingOut = true;
-                }
+                // Start force hide timer as safety net
+                forceHideTimer.start();
                 // When a notification is no longer a popup, we want to remove it from the visible list
                 // so that other notifications can move into its place.
                 NotificationService.removeFromVisibleNotifications(notificationData);
             }
         }
+
+        target: notificationData
     }
 
     Rectangle {
+        property var shadowLayers: [shadowLayer1, shadowLayer2, shadowLayer3]
+
         anchors.fill: parent
         anchors.margins: 4
         radius: Theme.cornerRadiusLarge
@@ -88,50 +93,12 @@ PanelWindow {
         border.width: notificationData.urgency === 2 ? 2 : 1
         clip: true
         opacity: (fadingOut || slideOut) ? 0 : 1
-        scale: slideOut ? 0.98 : 1.0
+        scale: slideOut ? 0.98 : 1
 
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 180
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Anims.emphasized
-                onRunningChanged: if (!running && opacity === 0) root.visible = false
-            }
-        }
-
-        Behavior on scale {
-            NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
-        }
-
-        transform: Translate {
-            x: {
-                if (initialAnimation) return 400;   // start off-screen right
-                if (slideOut) return 64;            // gentle nudge on exit (was 400)
-                return 0;
-            }
-            Behavior on x {
-                enabled: initialAnimation || slideOut
-                NumberAnimation {
-                    id: xAnim
-                    duration: Anims.durMed
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: slideOut ? Anims.emphasized : Anims.emphasizedDecel
-                    onRunningChanged: {
-                        if (!running) {
-                            if (!slideOut) {        // entrance finished
-                                entering = false;
-                                entered();
-                            } else {                // exit finished
-                                exitFinished();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Shadow layers
+        // Shadow layers - marked for resource cleanup
         Rectangle {
+            id: shadowLayer1
+
             anchors.fill: parent
             anchors.margins: -3
             color: "transparent"
@@ -142,6 +109,8 @@ PanelWindow {
         }
 
         Rectangle {
+            id: shadowLayer2
+
             anchors.fill: parent
             anchors.margins: -2
             color: "transparent"
@@ -152,6 +121,8 @@ PanelWindow {
         }
 
         Rectangle {
+            id: shadowLayer3
+
             anchors.fill: parent
             color: "transparent"
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
@@ -184,11 +155,14 @@ PanelWindow {
                     position: 0.021
                     color: "transparent"
                 }
+
             }
+
         }
 
         Item {
             id: notificationContent
+
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
@@ -199,8 +173,10 @@ PanelWindow {
 
             Rectangle {
                 id: iconContainer
+
                 readonly property bool hasNotificationImage: notificationData.image && notificationData.image !== ""
                 readonly property bool appIconIsImage: notificationData.appIcon && (notificationData.appIcon.startsWith("file://") || notificationData.appIcon.startsWith("http://") || notificationData.appIcon.startsWith("https://"))
+                property alias iconImage: iconImage
 
                 width: 55
                 height: 55
@@ -212,8 +188,11 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
 
                 IconImage {
+                    id: iconImage
+
                     anchors.fill: parent
                     anchors.margins: 2
+                    asynchronous: true
                     source: {
                         if (parent.hasNotificationImage)
                             return notificationData.cleanImage;
@@ -222,6 +201,7 @@ PanelWindow {
                             const appIcon = notificationData.appIcon;
                             if (appIcon.startsWith("file://") || appIcon.startsWith("http://") || appIcon.startsWith("https://"))
                                 return appIcon;
+
                             return Quickshell.iconPath(appIcon, "");
                         }
                         return "";
@@ -240,10 +220,12 @@ PanelWindow {
                     font.weight: Font.Bold
                     color: Theme.primaryText
                 }
+
             }
 
             Rectangle {
                 id: textContainer
+
                 anchors.left: iconContainer.right
                 anchors.leftMargin: 12
                 anchors.right: closeButton.left
@@ -310,11 +292,14 @@ PanelWindow {
                             Qt.openUrlExternally(link);
                         }
                     }
+
                 }
+
             }
 
             DankActionButton {
                 id: closeButton
+
                 anchors.right: parent.right
                 anchors.top: parent.top
                 iconName: "close"
@@ -325,11 +310,13 @@ PanelWindow {
                     notificationData.popup = false;
                 }
             }
+
         }
 
         // Main hover area for persistence and click handling
         MouseArea {
             id: cardHoverArea
+
             anchors.fill: parent
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton
@@ -341,10 +328,85 @@ PanelWindow {
             onExited: {
                 if (notificationData.popup)
                     notificationData.timer.restart();
+
             }
             onClicked: {
                 notificationData.popup = false;
             }
         }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 180
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
+                onRunningChanged: {
+                    if (!running && opacity === 0) {
+                        forceHideTimer.stop(); // Cancel force hide since animation completed normally
+                        exitFinished();
+                    }
+                }
+            }
+
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: 160
+                easing.type: Easing.OutCubic
+            }
+
+        }
+
+        transform: Translate {
+            x: {
+                if (initialAnimation)
+                    return 400;
+ // start off-screen right
+                if (slideOut)
+                    return 64;
+ // gentle nudge on exit (was 400)
+                return 0;
+            }
+
+            Behavior on x {
+                enabled: initialAnimation || slideOut
+
+                NumberAnimation {
+                    id: xAnim
+
+                    duration: Anims.durMed
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: slideOut ? Anims.emphasized : Anims.emphasizedDecel
+                    onRunningChanged: {
+                        if (!running) {
+                            if (!slideOut) {
+                                // entrance finished
+                                entering = false;
+                                entered();
+                            } else {
+                                // exit finished
+                                forceHideTimer.stop();
+                                // Cancel force hide since slide completed normally
+                                exitFinished();
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        }
+
     }
+
+    Behavior on verticalOffset {
+        NumberAnimation {
+            duration: Anims.durMed
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Anims.emphasized
+        }
+
+    }
+
 }
