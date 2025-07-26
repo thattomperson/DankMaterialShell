@@ -5,18 +5,14 @@ import qs.Services
 
 QtObject {
     id: manager
-
-    property int maxTargetNotifications: 3
+    property int topMargin: 48
     property int baseNotificationHeight: 132
-    property int topMargin: 0
-    property var popupWindows: []
+    property int maxTargetNotifications: 3
+    property var popupWindows: []   // strong refs to windows (live until exitFinished)
 
+    // Factory
     property Component popupComponent: Component {
         NotificationPopup {
-            property var wrapper
-            notificationData: wrapper
-            notificationId: wrapper.notification.id
-            rowHeight: manager.baseNotificationHeight
             onEntered: manager._onPopupEntered(this)
             onExitFinished: manager._onPopupExitFinished(this)
         }
@@ -29,77 +25,115 @@ QtObject {
         }
     }
 
-    function _hasWindowFor(w) { return popupWindows.some(p => p && p.notificationData === w); }
+    function _hasWindowFor(w) { 
+        return popupWindows.some(p => p && p.notificationData === w); 
+    }
 
     function _sync(newWrappers) {
         for (let w of newWrappers) {
-            if (!_hasWindowFor(w)) _insertNewestAtTop(w);
+            if (!_hasWindowFor(w)) insertNewestAtTop(w);
         }
         for (let p of popupWindows.slice()) {
-            if (newWrappers.indexOf(p.notificationData) === -1 && p && !p.exiting) {
+            if (p && p.notificationData && newWrappers.indexOf(p.notificationData) === -1 && !p.exiting) {
                 p.notificationData.removedByLimit = true;
                 p.notificationData.popup = false;
             }
         }
     }
 
-    function _insertNewestAtTop(wrapper) {
+    // Insert newest at top
+    function insertNewestAtTop(wrapper) {
+        // Shift live, non-exiting windows down *now*
         for (let p of popupWindows) {
-            if (p && p.notificationData && p.notificationData.popup && !p.exiting) {
-                p.screenY = p.screenY + baseNotificationHeight;
-            }
+            if (!p) continue;
+            if (p.exiting) continue;
+            // Guard: skip if p is already being destroyed
+            if (p.status === Component.Null) continue;
+            p.screenY = p.screenY + baseNotificationHeight;
         }
 
-        const win = popupComponent.createObject(null, { wrapper: wrapper, screenY: topMargin });
-        if (!win) {
-            console.warn("Popup create failed");
-            return;
+        // Create the new top window at fixed Y
+        const notificationId = wrapper && wrapper.notification ? wrapper.notification.id : "";
+        const win = popupComponent.createObject(null, { notificationData: wrapper, notificationId: notificationId, screenY: topMargin });
+        if (!win) { 
+            console.warn("Popup create failed"); 
+            return; 
         }
         popupWindows.push(win);
+
         _maybeStartOverflow();
     }
 
-    function _active() {
-        return popupWindows.filter(p => p && p.notificationData && p.notificationData.popup);
-    }
 
+    // Overflow: keep one extra (slot #4), then ask bottom to exit gracefully
+    function _active() { 
+        return popupWindows.filter(p => p && p.notificationData && p.notificationData.popup); 
+    }
+    
     function _bottom() {
-        let b = null, max = -1;
+        let b = null, maxY = -1;
         for (let p of _active()) {
-            if (!p.exiting && p.screenY > max) {
-                max = p.screenY;
-                b = p;
+            if (p.exiting) continue;
+            if (p.screenY > maxY) { 
+                maxY = p.screenY; 
+                b = p; 
             }
         }
         return b;
     }
-
+    
     function _maybeStartOverflow() {
         if (_active().length <= maxTargetNotifications + 1) return;
         const b = _bottom();
         if (b && !b.exiting) {
+            // Tell the popup to animate out (don't destroy here)
             b.notificationData.removedByLimit = true;
             b.notificationData.popup = false;
         }
     }
 
-    function _onPopupEntered(p) {
-        // Entry completed
+    // After entrance, you may kick overflow (optional)
+    function _onPopupEntered(p) { 
+        _maybeStartOverflow(); 
     }
 
+    // Primary cleanup path (after the popup finishes its exit)
     function _onPopupExitFinished(p) {
         const i = popupWindows.indexOf(p);
-        if (i !== -1) {
-            popupWindows.splice(i, 1);
-            popupWindows = popupWindows.slice();
+        if (i !== -1) { 
+            popupWindows.splice(i,1); 
+            popupWindows = popupWindows.slice(); 
         }
-        if (NotificationService.releaseWrapper) NotificationService.releaseWrapper(p.notificationData);
+        if (NotificationService.releaseWrapper) 
+            NotificationService.releaseWrapper(p.notificationData);
+        // Finally destroy the window object
         p.destroy();
 
-        const survivors = _active().filter(s => !s.exiting).sort((a,b) => a.screenY - b.screenY);
+        // Compact survivors (only live, non-exiting)
+        const survivors = _active().filter(s => !s.exiting)
+                          .sort((a,b) => a.screenY - b.screenY);
         for (let k = 0; k < survivors.length; ++k)
             survivors[k].screenY = topMargin + k * baseNotificationHeight;
 
         _maybeStartOverflow();
+    }
+
+    // Optional sweeper (dev only): catch any stranded windows every 2s
+    property Timer sweeper: Timer {
+        interval: 2000
+        running: true
+        repeat: true
+        onTriggered: {
+            for (let p of popupWindows.slice()) {
+                if (!p) continue;
+                if (!p.visible && !p.notificationData) {
+                    const i = popupWindows.indexOf(p);
+                    if (i !== -1) { 
+                        popupWindows.splice(i,1); 
+                        popupWindows = popupWindows.slice(); 
+                    }
+                }
+            }
+        }
     }
 }

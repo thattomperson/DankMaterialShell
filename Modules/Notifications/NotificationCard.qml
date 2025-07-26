@@ -13,7 +13,7 @@ Rectangle {
     property bool expanded: NotificationService.expandedGroups[notificationGroup?.key] || false
     property bool descriptionExpanded: false
     
-    width: parent.width
+    width: parent ? parent.width : 400
     height: {
         if (expanded) {
             return expandedContent.height + 28;

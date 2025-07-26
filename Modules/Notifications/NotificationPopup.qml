@@ -12,24 +12,6 @@ PanelWindow {
 
     required property var notificationData
     required property string notificationId
-    readonly property bool isPopup: notificationData.popup
-    readonly property int expireTimeout: notificationData.notification.expireTimeout
-    
-    property int screenY: 0
-    onScreenYChanged: margins.top = Theme.barHeight + 16 + screenY
-    Behavior on screenY {
-        enabled: !exiting
-        NumberAnimation {
-            duration: 220
-            easing.type: Easing.OutCubic
-        }
-    }
-
-    property int rowHeight: 132
-    property bool exiting: false
-
-    signal entered()
-    signal exitFinished()
 
     visible: true
     WlrLayershell.layer: WlrLayershell.Overlay
@@ -49,45 +31,32 @@ PanelWindow {
         right: 12
     }
 
+    // Manager drives vertical stacking with this proxy:
+    property int screenY: 0
+    onScreenYChanged: margins.top = Theme.barHeight + 16 + screenY
+
+    // Disable vertical tween while exiting so there is never diagonal motion
+    Behavior on screenY {
+        id: screenYAnim
+        enabled: !exiting
+        NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
+    }
+
+    // State
+    property bool exiting: false
+    signal entered()
+    signal exitFinished()
+
+    // ---------------- CONTENT: animate this (not the Window) ----------------
     Item {
         id: content
         anchors.fill: parent
 
-        transform: Translate {
-            id: tx
-            x: 400
-            Behavior on x {
-                NumberAnimation {
-                    id: xAnim
-                    duration: 240
-                    easing.type: Easing.OutCubic
-                    onRunningChanged: {
-                        if (!running && win && !win.exiting && Math.abs(tx.x) < 0.5) win.entered();
-                        if (!running && win && win.exiting && Math.abs(tx.x - 96) < 0.5) maybeFinishExit();
-                    }
-                }
-            }
-        }
+        // We animate a Translate so anchors never override horizontal motion
+        transform: Translate { id: tx; x: 400 }   // start off-screen right
 
-        opacity: win.exiting ? 0 : 1
-        Behavior on opacity {
-            NumberAnimation {
-                id: fadeAnim
-                duration: 200
-                easing.type: Easing.OutCubic
-                onRunningChanged: if (!running && win && win.exiting && content && content.opacity === 0) maybeFinishExit()
-            }
-        }
-
-        scale: win.exiting ? 0.98 : 1.0
-        Behavior on scale {
-            NumberAnimation {
-                duration: 160
-                easing.type: Easing.OutCubic
-            }
-        }
-
-        layer.enabled: (Math.abs(tx.x) > 0.5) || win.exiting
+        // Optional: layer while animating for smoothness
+        layer.enabled: (enterX.running || exitAnim.running)
         layer.smooth: true
 
         Rectangle {
@@ -97,8 +66,8 @@ PanelWindow {
             anchors.margins: 4
             radius: Theme.cornerRadiusLarge
             color: Theme.popupBackground()
-            border.color: notificationData.urgency === 2 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
-            border.width: notificationData.urgency === 2 ? 2 : 1
+            border.color: notificationData && notificationData.urgency === 2 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            border.width: notificationData && notificationData.urgency === 2 ? 2 : 1
             clip: true
 
             Rectangle {
@@ -136,7 +105,7 @@ PanelWindow {
             Rectangle {
                 anchors.fill: parent
                 radius: parent.radius
-                visible: notificationData.urgency === 2
+                visible: notificationData && notificationData.urgency === 2
                 opacity: 1
 
                 gradient: Gradient {
@@ -171,8 +140,8 @@ PanelWindow {
 
                 Rectangle {
                     id: iconContainer
-                    readonly property bool hasNotificationImage: notificationData.image && notificationData.image !== ""
-                    readonly property bool appIconIsImage: notificationData.appIcon && (notificationData.appIcon.startsWith("file://") || notificationData.appIcon.startsWith("http://") || notificationData.appIcon.startsWith("https://"))
+                    readonly property bool hasNotificationImage: notificationData && notificationData.image && notificationData.image !== ""
+                    readonly property bool appIconIsImage: notificationData && notificationData.appIcon && (notificationData.appIcon.startsWith("file://") || notificationData.appIcon.startsWith("http://") || notificationData.appIcon.startsWith("https://"))
                     property alias iconImage: iconImage
 
                     width: 55
@@ -190,8 +159,10 @@ PanelWindow {
                         anchors.margins: 2
                         asynchronous: true
                         source: {
+                            if (!notificationData) return "";
+                            
                             if (parent.hasNotificationImage)
-                                return notificationData.cleanImage;
+                                return notificationData.cleanImage || "";
 
                             if (notificationData.appIcon) {
                                 const appIcon = notificationData.appIcon;
@@ -207,9 +178,9 @@ PanelWindow {
 
                     Text {
                         anchors.centerIn: parent
-                        visible: !parent.hasNotificationImage && (!notificationData.appIcon || notificationData.appIcon === "")
+                        visible: !parent.hasNotificationImage && (!notificationData || !notificationData.appIcon || notificationData.appIcon === "")
                         text: {
-                            const appName = notificationData.appName || "?";
+                            const appName = notificationData && notificationData.appName ? notificationData.appName : "?";
                             return appName.charAt(0).toUpperCase();
                         }
                         font.pixelSize: 20
@@ -237,10 +208,13 @@ PanelWindow {
                         Text {
                             width: parent.width
                             text: {
-                                if (notificationData.timeStr.length > 0)
-                                    return notificationData.appName + " • " + notificationData.timeStr;
+                                if (!notificationData) return "";
+                                const appName = notificationData.appName || "";
+                                const timeStr = notificationData.timeStr || "";
+                                if (timeStr.length > 0)
+                                    return appName + " • " + timeStr;
                                 else
-                                    return notificationData.appName;
+                                    return appName;
                             }
                             color: Theme.surfaceVariantText
                             font.pixelSize: Theme.fontSizeSmall
@@ -250,7 +224,7 @@ PanelWindow {
                         }
 
                         Text {
-                            text: notificationData.summary
+                            text: notificationData ? (notificationData.summary || "") : ""
                             color: Theme.surfaceText
                             font.pixelSize: Theme.fontSizeMedium
                             font.weight: Font.Medium
@@ -262,11 +236,13 @@ PanelWindow {
 
                         Text {
                             property bool hasUrls: {
+                                if (!notificationData || !notificationData.body) return false;
                                 const urlRegex = /(https?:\/\/[^\s]+)/g;
                                 return urlRegex.test(notificationData.body);
                             }
 
                             text: {
+                                if (!notificationData || !notificationData.body) return "";
                                 let bodyText = notificationData.body;
                                 if (bodyText.length > 105)
                                     bodyText = bodyText.substring(0, 102) + "...";
@@ -298,7 +274,8 @@ PanelWindow {
                     buttonSize: 20
                     z: 15
                     onClicked: {
-                        notificationData.popup = false;
+                        if (notificationData)
+                            notificationData.popup = false;
                     }
                 }
             }
@@ -311,64 +288,85 @@ PanelWindow {
                 propagateComposedEvents: true
                 z: 0
                 onEntered: {
-                    notificationData.timer.stop();
+                    if (notificationData && notificationData.timer)
+                        notificationData.timer.stop();
                 }
                 onExited: {
-                    if (notificationData.popup)
+                    if (notificationData && notificationData.popup && notificationData.timer)
                         notificationData.timer.restart();
                 }
                 onClicked: {
-                    notificationData.popup = false;
+                    if (notificationData)
+                        notificationData.popup = false;
                 }
             }
         }
     }
 
-    Component.onCompleted: {
-        enterDelay.start();
-        Qt.callLater(() => { tx.x = 0; });
+    // ---------------- EXPLICIT ANIMATIONS (no Behavior races) ----------------
+    // Entrance (guaranteed): 400 -> 0
+    NumberAnimation {
+        id: enterX
+        target: tx; property: "x"; from: 400; to: 0
+        duration: 240; easing.type: Easing.OutCubic
+        onStopped: if (!win.exiting && Math.abs(tx.x) < 0.5) win.entered();
     }
 
-    Timer {
-        id: enterDelay
-        interval: Anims.durMed
-        repeat: false
-        onTriggered: notificationData.timer.start()
+    // Exit (guaranteed): (x: 0 -> 96) + (opacity: 1 -> 0)
+    ParallelAnimation {
+        id: exitAnim
+        PropertyAnimation { target: tx; property: "x"; from: 0; to: 96; duration: 200; easing.type: Easing.OutCubic }
+        NumberAnimation   { target: content; property: "opacity"; from: 1; to: 0; duration: 200; easing.type: Easing.OutCubic }
+        NumberAnimation   { target: content; property: "scale"; from: 1; to: 0.98; duration: 160; easing.type: Easing.OutCubic }
+        onStopped: finalizeExit("animStopped")
     }
 
+    // Start entrance one tick after create (so it always animates)
+    Component.onCompleted: Qt.callLater(() => enterX.restart())
+
+    // Safe connection to wrapper: disable automatically when wrapper is null
     Connections {
-        target: notificationData
+        id: wrapperConn
+        target: win.notificationData || null
+        ignoreUnknownSignals: true
         function onPopupChanged() {
-            if (!notificationData.popup && !win.exiting) {
-                win.exiting = true;
-                win.screenY = win.screenY;
-                tx.x = 96;
-                exitWatchdog.restart();
-                forceCleanupTimer.restart();
-                NotificationService.removeFromVisibleNotifications(notificationData);
+            if (!win.notificationData) return;        // guard
+            if (!win.notificationData.popup && !win.exiting) {
+                // Freeze vertical and start exit
+                win.exiting = true;                   // disables screenY Behavior
+                exitAnim.restart();
+                exitWatchdog.restart();               // safety net
+                if (NotificationService.removeFromVisibleNotifications)
+                    NotificationService.removeFromVisibleNotifications(win.notificationData);
             }
         }
     }
+    onNotificationDataChanged: wrapperConn.target = win.notificationData || null
 
+    // Timer to start on entrance
     Timer {
-        id: exitWatchdog
-        interval: 500
+        id: enterDelay
+        interval: 160
         repeat: false
-        onTriggered: if (win) win.exitFinished()
-    }
-    
-    Timer {
-        id: forceCleanupTimer
-        interval: 2000
-        repeat: false
-        onTriggered: if (win) win.exitFinished()
-    }
-
-    function maybeFinishExit() {
-        if (win && win.exiting && content && Math.abs(tx.x - 96) < 0.5 && content.opacity === 0) {
-            exitWatchdog.stop();
-            forceCleanupTimer.stop();
-            win.exitFinished();
+        onTriggered: {
+            if (notificationData && notificationData.timer)
+                notificationData.timer.start();
         }
     }
+
+    // Start timer after entrance animation
+    onEntered: enterDelay.start()
+
+    // Idempotent finalizer so we never "half-exit"
+    property bool _finalized: false
+    function finalizeExit(reason) {
+        if (_finalized) return;
+        _finalized = true;
+        exitWatchdog.stop();
+        win.exitFinished();                           // manager will destroy the window
+    }
+    Timer { id: exitWatchdog; interval: 600; repeat: false; onTriggered: finalizeExit("watchdog") }
+
+    // If the popup is torn down unexpectedly, don't leave dangling timers
+    Component.onDestruction: { exitWatchdog.stop(); }
 }

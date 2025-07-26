@@ -11,7 +11,7 @@ Column {
         SysMonitorService.addRef();
         SysMonitorService.addRef();
         // Trigger immediate updates for both services
-        SysMonitorService.updateSystemStats();
+        SysMonitorService.updateAllStats();
     }
 
     Component.onDestruction: {
