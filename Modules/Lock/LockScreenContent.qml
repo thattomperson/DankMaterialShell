@@ -51,9 +51,6 @@ Item {
         pickRandomFact()
         WeatherService.addRef()
         UserInfoService.refreshUserInfo()
-        if (!demoMode) {
-            debugUnlockTimer.start()
-        }
     }
     
     function pickRandomFact() {
@@ -68,18 +65,6 @@ Item {
     
     Component.onDestruction: {
         WeatherService.removeRef()
-    }
-
-    Timer {
-        id: debugUnlockTimer
-        interval: 30000
-        running: false
-        onTriggered: {
-            if (!demoMode) {
-                console.log("Debug timeout reached - auto unlocking")
-                root.unlockRequested()
-            }
-        }
     }
 
     Image {
