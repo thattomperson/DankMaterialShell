@@ -210,7 +210,7 @@ PanelWindow {
                         width: parent.width
                         height: parent.height
                         anchors.top: parent.top
-                        anchors.topMargin: -4
+                        anchors.topMargin: -2
 
                         Column {
                             width: parent.width

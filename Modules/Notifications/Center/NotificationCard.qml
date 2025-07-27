@@ -26,7 +26,7 @@ Rectangle {
         return baseHeight;
     }
     radius: Theme.cornerRadiusLarge
-    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
     border.color: notificationGroup?.latestNotification?.urgency === 2 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
     border.width: notificationGroup?.latestNotification?.urgency === 2 ? 2 : 1
     clip: true
@@ -144,7 +144,7 @@ Rectangle {
                 width: parent.width
                 height: parent.height
                 anchors.top: parent.top
-                anchors.topMargin: -4
+                anchors.topMargin: -2
 
                 Column {
                     width: parent.width
