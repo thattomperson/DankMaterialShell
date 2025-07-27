@@ -341,7 +341,7 @@ DankModal {
             anchors.margins: Theme.spacingL
             spacing: Theme.spacingL
 
-            Row {
+            Item {
                 width: parent.width
                 height: 40
 

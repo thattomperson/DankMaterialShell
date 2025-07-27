@@ -255,7 +255,7 @@ PanelWindow {
                                 wrapMode: Text.WordWrap
                                 visible: text.length > 0
                                 linkColor: Theme.primary
-                                onLinkActivated: Qt.openUrlExternally(link)
+                                onLinkActivated: (link) => Qt.openUrlExternally(link)
                                 MouseArea {
                                     anchors.fill: parent
                                     acceptedButtons: Qt.NoButton 

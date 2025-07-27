@@ -191,7 +191,7 @@ Rectangle {
                         wrapMode: Text.WordWrap
                         visible: text.length > 0
                         linkColor: Theme.primary
-                        onLinkActivated: Qt.openUrlExternally(link)
+                        onLinkActivated: (link) => Qt.openUrlExternally(link)
                         
                         MouseArea {
                             anchors.fill: parent
@@ -412,7 +412,7 @@ Rectangle {
                                     wrapMode: Text.WordWrap
                                     visible: text.length > 0
                                     linkColor: Theme.primary
-                                    onLinkActivated: Qt.openUrlExternally(link)
+                                    onLinkActivated: (link) => Qt.openUrlExternally(link)
                                     MouseArea {
                                         anchors.fill: parent
                                         cursorShape: parent.hoveredLink ? Qt.PointingHandCursor :

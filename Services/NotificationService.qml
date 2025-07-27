@@ -204,6 +204,7 @@ Singleton {
     }
 
     function dismissNotification(wrapper) {
+        if (!wrapper || !wrapper.notification) return;
         wrapper.popup = false;
         wrapper.notification.dismiss();
     }
@@ -369,11 +370,13 @@ Singleton {
         const group = groupedNotifications.find(g => g.key === groupKey);
         if (group) {
             for (const notif of group.notifications) {
-                notif.notification.dismiss();
+                if (notif && notif.notification) {
+                    notif.notification.dismiss();
+                }
             }
         } else {
             for (const notif of allWrappers) {
-                if (getGroupKey(notif) === groupKey) {
+                if (notif && notif.notification && getGroupKey(notif) === groupKey) {
                     notif.notification.dismiss();
                 }
             }

@@ -51,7 +51,7 @@ QtObject {
     function _sync(newWrappers) {
         // Add new notifications
         for (let w of newWrappers) {
-            if (!_hasWindowFor(w)) {
+            if (w && !_hasWindowFor(w)) {
                 insertNewestAtTop(w);
             }
         }
