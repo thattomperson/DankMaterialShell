@@ -20,6 +20,7 @@ Item {
             id: lock
 
             property bool unlocked: false
+            property string sharedPasswordBuffer: ""
 
             locked: true
 
@@ -30,6 +31,10 @@ Item {
 
             LockSurface {
                 lock: lock
+                sharedPasswordBuffer: lock.sharedPasswordBuffer
+                onPasswordChanged: (newPassword) => {
+                    lock.sharedPasswordBuffer = newPassword
+                }
             }
         }
     }

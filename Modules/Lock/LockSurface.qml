@@ -10,6 +10,9 @@ WlSessionLockSurface {
     id: root
 
     required property WlSessionLock lock
+    required property string sharedPasswordBuffer
+
+    signal passwordChanged(string newPassword)
 
     property bool thisLocked: false
     readonly property bool locked: thisLocked && !lock.unlocked
@@ -41,7 +44,13 @@ WlSessionLockSurface {
         sourceComponent: LockScreenContent {
             demoMode: false
             powerModal: powerModal
+            passwordBuffer: root.sharedPasswordBuffer
             onUnlockRequested: root.unlock()
+            onPasswordBufferChanged: {
+                if (root.sharedPasswordBuffer !== passwordBuffer) {
+                    root.passwordChanged(passwordBuffer)
+                }
+            }
         }
     }
 }
