@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import qs.Common
@@ -17,6 +18,8 @@ DankModal {
     property bool showClearConfirmation: false
     property var clipboardEntries: []
     property string searchText: ""
+    property bool imagemagickAvailable: false
+    property string thumbnailCacheDir: ""
 
     function updateFilteredModel() {
         filteredClipboardModel.clear();
@@ -47,6 +50,7 @@ DankModal {
 
     function show() {
         clipboardHistoryModal.isVisible = true;
+        initializeThumbnailSystem();
         refreshClipboard();
         console.log("ClipboardHistoryModal: Opening and refreshing");
     }
@@ -57,10 +61,40 @@ DankModal {
         cleanupTempFiles();
     }
 
+    function initializeThumbnailSystem() {
+        getCacheDirProcess.running = true;
+    }
+
     function cleanupTempFiles() {
         cleanupProcess.command = ["sh", "-c", "rm -f /tmp/clipboard_preview_*.png"];
         cleanupProcess.running = true;
     }
+
+    function generateThumbnails() {
+        if (!imagemagickAvailable) return;
+        
+        for (let i = 0; i < clipboardModel.count; i++) {
+            const entry = clipboardModel.get(i).entry;
+            const entryType = getEntryType(entry);
+            
+            if (entryType === "image") {
+                const entryId = entry.split('\t')[0];
+                const thumbnailPath = `${thumbnailCacheDir}/${entryId}.png`;
+                
+                thumbnailGenProcess.command = [
+                    "sh", "-c", 
+                    `mkdir -p "${thumbnailCacheDir}" && cliphist decode ${entryId} | magick - -resize '128x128>' "${thumbnailPath}"`
+                ];
+                thumbnailGenProcess.running = true;
+            }
+        }
+    }
+
+    function getThumbnailPath(entry) {
+        const entryId = entry.split('\t')[0];
+        return `${thumbnailCacheDir}/${entryId}.png`;
+    }
+
 
     function refreshClipboard() {
         clipboardProcess.running = true;
@@ -263,6 +297,7 @@ DankModal {
 
                 }
                 updateFilteredModel();
+                generateThumbnails();
             }
         }
 
@@ -312,6 +347,47 @@ DankModal {
 
         running: false
     }
+
+    Process {
+        id: getCacheDirProcess
+
+        command: ["sh", "-c", "echo ${XDG_CACHE_HOME:-$HOME/.cache}/cliphist/thumbs"]
+        running: false
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                thumbnailCacheDir = text.trim();
+                checkImageMagickProcess.running = true;
+            }
+        }
+    }
+
+    Process {
+        id: checkImageMagickProcess
+
+        command: ["which", "magick"]
+        running: false
+
+        onExited: (exitCode) => {
+            imagemagickAvailable = (exitCode === 0);
+            if (!imagemagickAvailable) {
+                console.warn("ClipboardHistoryModal: ImageMagick not available, thumbnails disabled");
+            }
+        }
+    }
+
+    Process {
+        id: thumbnailGenProcess
+
+        running: false
+
+        onExited: (exitCode) => {
+            if (exitCode !== 0) {
+                console.warn("ClipboardHistoryModal: Thumbnail generation failed with exit code:", exitCode);
+            }
+        }
+    }
+
 
     IpcHandler {
         function open() {
@@ -451,9 +527,11 @@ DankModal {
                             property string entryType: getEntryType(model.entry)
                             property string entryPreview: getEntryPreview(model.entry)
                             property int entryIndex: index + 1
+                            property string entryData: model.entry
+                            property alias thumbnailImageSource: thumbnailImageSource
 
                             width: clipboardListView.width
-                            height: Math.max(60, contentText.contentHeight + Theme.spacingL)
+                            height: Math.max(entryType === "image" ? 72 : 60, contentText.contentHeight + Theme.spacingL)
                             radius: Theme.cornerRadius
                             color: mouseArea.containsMouse ? Theme.primaryHover : Theme.primaryBackground
                             border.color: Theme.outlineStrong
@@ -483,30 +561,101 @@ DankModal {
 
                                 }
 
-                                // Content icon and text
+                                // Content thumbnail/icon and text
                                 Row {
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: parent.width - 68 // Account for index (24) + spacing (16) + delete button (32) - small margin
                                     spacing: Theme.spacingM
 
-                                    DankIcon {
-                                        name: {
-                                            if (entryType === "image")
-                                                return "image";
-
-                                            if (entryType === "long_text")
-                                                return "subject";
-
-                                            return "content_copy";
-                                        }
-                                        size: Theme.iconSize
-                                        color: Theme.primary
+                                    // Thumbnail or icon container
+                                    Item {
+                                        width: entryType === "image" ? 48 : Theme.iconSize
+                                        height: entryType === "image" ? 48 : Theme.iconSize
                                         anchors.verticalCenter: parent.verticalCenter
+
+                                        // Image thumbnail
+                                        CachingImage {
+                                            id: thumbnailImageSource
+                                            anchors.fill: parent
+                                            source: entryType === "image" && imagemagickAvailable ? "file://" + getThumbnailPath(model.entry) : ""
+                                            fillMode: Image.PreserveAspectCrop
+                                            smooth: true
+                                            cache: true
+                                            visible: false
+                                            asynchronous: true
+                                            
+                                            // Handle loading errors gracefully and retry once
+                                            onStatusChanged: {
+                                                if (status === Image.Error && source !== "") {
+                                                    // Clear source to prevent repeated error attempts
+                                                    const originalSource = source;
+                                                    source = "";
+                                                    
+                                                    // Retry once after 2 seconds to allow thumbnail generation
+                                                    retryTimer.originalSource = originalSource;
+                                                    retryTimer.start();
+                                                }
+                                            }
+                                            
+                                            Timer {
+                                                id: retryTimer
+                                                interval: 2000
+                                                repeat: false
+                                                property string originalSource: ""
+                                                
+                                                onTriggered: {
+                                                    if (originalSource !== "" && thumbnailImageSource.source === "") {
+                                                        thumbnailImageSource.source = originalSource;
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        MultiEffect {
+                                            anchors.fill: parent
+                                            source: thumbnailImageSource
+                                            maskEnabled: true
+                                            maskSource: clipboardCircularMask
+                                            visible: entryType === "image" && imagemagickAvailable && thumbnailImageSource.status === Image.Ready
+                                            maskThresholdMin: 0.5
+                                            maskSpreadAtMin: 1
+                                        }
+
+                                        Item {
+                                            id: clipboardCircularMask
+                                            width: 48
+                                            height: 48
+                                            layer.enabled: true
+                                            layer.smooth: true
+                                            visible: false
+
+                                            Rectangle {
+                                                anchors.fill: parent
+                                                radius: width / 2
+                                                color: "black"
+                                                antialiasing: true
+                                            }
+                                        }
+
+                                        // Fallback icon
+                                        DankIcon {
+                                            visible: !(entryType === "image" && imagemagickAvailable && thumbnailImageSource.status === Image.Ready)
+                                            name: {
+                                                if (entryType === "image")
+                                                    return "image";
+                                                if (entryType === "long_text")
+                                                    return "subject";
+                                                return "content_copy";
+                                            }
+                                            size: Theme.iconSize
+                                            color: Theme.primary
+                                            anchors.centerIn: parent
+                                        }
                                     }
 
                                     Column {
                                         anchors.verticalCenter: parent.verticalCenter
-                                        width: parent.width - Theme.iconSize - Theme.spacingM
+                                        width: parent.width - (entryType === "image" ? 48 : Theme.iconSize) - Theme.spacingM
                                         spacing: Theme.spacingXS
 
                                         StyledText {
