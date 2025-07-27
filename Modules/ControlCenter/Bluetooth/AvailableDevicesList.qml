@@ -28,13 +28,14 @@ Column {
         }
 
         Item {
-            width: 1
+            width: parent.width - scanButton.width - parent.spacing - 150 // Spacer to push button right
             height: 1
         }
 
         Rectangle {
-            width: Math.max(140, scanText.contentWidth + Theme.spacingL * 2)
-            height: 36
+            id: scanButton
+            width: Math.max(100, scanText.contentWidth + Theme.spacingL * 2)
+            height: 32
             radius: Theme.cornerRadius
             color: scanArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08)
             border.color: Theme.primary
@@ -46,7 +47,7 @@ Column {
 
                 DankIcon {
                     name: BluetoothService.adapter && BluetoothService.adapter.discovering ? "stop" : "bluetooth_searching"
-                    size: Theme.iconSize - 4
+                    size: Theme.iconSize - 6
                     color: Theme.primary
                     anchors.verticalCenter: parent.verticalCenter
                 }
@@ -54,8 +55,8 @@ Column {
                 Text {
                     id: scanText
 
-                    text: BluetoothService.adapter && BluetoothService.adapter.discovering ? "Stop Scanning" : "Start Scanning"
-                    font.pixelSize: Theme.fontSizeMedium
+                    text: BluetoothService.adapter && BluetoothService.adapter.discovering ? "Stop Scanning" : "Scan"
+                    font.pixelSize: Theme.fontSizeSmall
                     color: Theme.primary
                     font.weight: Font.Medium
                     anchors.verticalCenter: parent.verticalCenter
