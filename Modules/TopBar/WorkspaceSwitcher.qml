@@ -56,7 +56,10 @@ Rectangle {
     width: Prefs.showWorkspacePadding ? Math.max(120, workspaceRow.implicitWidth + Theme.spacingL * 2) : workspaceRow.implicitWidth + Theme.spacingL * 2
     height: 30
     radius: Theme.cornerRadiusLarge
-    color: Theme.surfaceTextHover
+    color: {
+        const baseColor = Theme.surfaceTextHover;
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+    }
     visible: NiriService.niriAvailable
 
     Connections {

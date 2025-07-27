@@ -14,7 +14,10 @@ Rectangle {
     width: compactMode ? Math.min(baseWidth, maxCompactWidth) : Math.min(baseWidth, maxNormalWidth)
     height: 30
     radius: Theme.cornerRadius
-    color: mouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
+    color: {
+        const baseColor = mouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover;
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+    }
     clip: true
     visible: FocusedWindowService.niriAvailable && (FocusedWindowService.focusedAppName || FocusedWindowService.focusedWindowTitle)
 

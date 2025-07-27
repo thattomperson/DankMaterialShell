@@ -14,6 +14,7 @@ Singleton {
     property bool themeIsDynamic: false
     property bool isLightMode: false
     property real topBarTransparency: 0.75
+    property real topBarWidgetTransparency: 0.85
     property real popupTransparency: 0.92
     property var appUsageRanking: {}
     property bool use24HourClock: true
@@ -58,6 +59,7 @@ Singleton {
                 themeIsDynamic = settings.themeIsDynamic !== undefined ? settings.themeIsDynamic : false;
                 isLightMode = settings.isLightMode !== undefined ? settings.isLightMode : false;
                 topBarTransparency = settings.topBarTransparency !== undefined ? (settings.topBarTransparency > 1 ? settings.topBarTransparency / 100 : settings.topBarTransparency) : 0.75;
+                topBarWidgetTransparency = settings.topBarWidgetTransparency !== undefined ? (settings.topBarWidgetTransparency > 1 ? settings.topBarWidgetTransparency / 100 : settings.topBarWidgetTransparency) : 0.85;
                 popupTransparency = settings.popupTransparency !== undefined ? (settings.popupTransparency > 1 ? settings.popupTransparency / 100 : settings.popupTransparency) : 0.92;
                 appUsageRanking = settings.appUsageRanking || {};
                 use24HourClock = settings.use24HourClock !== undefined ? settings.use24HourClock : true;
@@ -105,6 +107,7 @@ Singleton {
             "themeIsDynamic": themeIsDynamic,
             "isLightMode": isLightMode,
             "topBarTransparency": topBarTransparency,
+            "topBarWidgetTransparency": topBarWidgetTransparency,
             "popupTransparency": popupTransparency,
             "appUsageRanking": appUsageRanking,
             "use24HourClock": use24HourClock,
@@ -174,6 +177,11 @@ Singleton {
 
     function setTopBarTransparency(transparency) {
         topBarTransparency = transparency;
+        saveSettings();
+    }
+
+    function setTopBarWidgetTransparency(transparency) {
+        topBarWidgetTransparency = transparency;
         saveSettings();
     }
 

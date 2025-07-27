@@ -12,7 +12,10 @@ Rectangle {
     width: visible ? Math.min(100, weatherRow.implicitWidth + Theme.spacingS * 2) : 0
     height: 30
     radius: Theme.cornerRadius
-    color: weatherArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
+    color: {
+        const baseColor = weatherArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover;
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+    }
 
     Ref {
         service: WeatherService

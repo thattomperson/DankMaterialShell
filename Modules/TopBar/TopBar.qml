@@ -236,7 +236,10 @@ PanelWindow {
                     width: 40
                     height: 30
                     radius: Theme.cornerRadius
-                    color: clipboardArea.containsMouse ? Theme.primaryHover : Theme.secondaryHover
+                    color: {
+                        const baseColor = clipboardArea.containsMouse ? Theme.primaryHover : Theme.secondaryHover;
+                        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+                    }
                     anchors.verticalCenter: parent.verticalCenter
                     visible: Prefs.showClipboard
 

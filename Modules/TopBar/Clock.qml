@@ -13,7 +13,11 @@ Rectangle {
     width: clockRow.implicitWidth + Theme.spacingS * 2
     height: 30
     radius: Theme.cornerRadius
-    color: clockMouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
+    color: {
+        const baseColor = clockMouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover;
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+    }
+
     Component.onCompleted: {
         root.currentDate = systemClock.date;
     }

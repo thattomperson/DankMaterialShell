@@ -165,6 +165,32 @@ ScrollView {
                     spacing: Theme.spacingS
 
                     StyledText {
+                        text: "Top Bar Widget Transparency"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceText
+                        font.weight: Font.Medium
+                    }
+
+                    DankSlider {
+                        width: parent.width
+                        height: 24
+                        value: Math.round(Prefs.topBarWidgetTransparency * 100)
+                        minimum: 0
+                        maximum: 100
+                        unit: ""
+                        showValue: true
+                        onSliderValueChanged: (newValue) => {
+                            Prefs.setTopBarWidgetTransparency(newValue / 100);
+                        }
+                    }
+
+                }
+
+                Column {
+                    width: parent.width
+                    spacing: Theme.spacingS
+
+                    StyledText {
                         text: "Popup Transparency"
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceText

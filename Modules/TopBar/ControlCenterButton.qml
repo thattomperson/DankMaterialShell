@@ -29,7 +29,10 @@ Rectangle {
     width: Math.max(80, controlIndicators.implicitWidth + Theme.spacingS * 2)
     height: 30
     radius: Theme.cornerRadius
-    color: controlCenterArea.containsMouse || root.isActive ? Theme.primaryPressed : Theme.secondaryHover
+    color: {
+        const baseColor = controlCenterArea.containsMouse || root.isActive ? Theme.primaryPressed : Theme.secondaryHover;
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+    }
 
     Row {
         id: controlIndicators

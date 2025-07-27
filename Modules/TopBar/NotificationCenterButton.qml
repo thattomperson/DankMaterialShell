@@ -13,7 +13,10 @@ Rectangle {
     width: 40
     height: 30
     radius: Theme.cornerRadius
-    color: notificationArea.containsMouse || root.isActive ? Theme.primaryPressed : Theme.secondaryHover
+    color: {
+        const baseColor = notificationArea.containsMouse || root.isActive ? Theme.primaryPressed : Theme.secondaryHover;
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+    }
 
     DankIcon {
         anchors.centerIn: parent

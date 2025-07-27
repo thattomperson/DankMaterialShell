@@ -14,7 +14,10 @@ Rectangle {
     width: BatteryService.batteryAvailable ? 70 : 40
     height: 30
     radius: Theme.cornerRadius
-    color: batteryArea.containsMouse || batteryPopupVisible ? Theme.primaryPressed : Theme.secondaryHover
+    color: {
+        const baseColor = batteryArea.containsMouse || batteryPopupVisible ? Theme.primaryPressed : Theme.secondaryHover;
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+    }
     visible: true
 
     Row {

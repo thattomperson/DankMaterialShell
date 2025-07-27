@@ -15,7 +15,11 @@ Rectangle {
     width: 55
     height: 30
     radius: Theme.cornerRadius
-    color: cpuArea.containsMouse ? Theme.primaryPressed : Theme.secondaryHover
+    color: {
+        const baseColor = cpuArea.containsMouse ? Theme.primaryPressed : Theme.secondaryHover;
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+    }
+
     Component.onCompleted: {
         SysMonitorService.addRef();
     }

@@ -18,7 +18,11 @@ Rectangle {
 
     height: 30
     radius: Theme.cornerRadius
-    color: Theme.surfaceTextHover
+    color: {
+        const baseColor = Theme.surfaceTextHover;
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+    }
+
     states: [
         State {
             name: "shown"

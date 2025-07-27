@@ -431,6 +431,7 @@ Singleton {
     property real opacityFull: 1
     // Transparency system - can be overridden by Prefs
     property real panelTransparency: 0.85
+    property real widgetTransparency: 0.85
     property real popupTransparency: 0.92
 
     // Handle successful color extraction
@@ -516,6 +517,10 @@ Singleton {
 
     function panelBackground() {
         return Qt.rgba(surfaceContainer.r, surfaceContainer.g, surfaceContainer.b, panelTransparency);
+    }
+
+    function widgetBackground() {
+        return Qt.rgba(surfaceContainer.r, surfaceContainer.g, surfaceContainer.b, widgetTransparency);
     }
 
     function getBatteryIcon(level, isCharging, batteryAvailable) {
@@ -633,12 +638,22 @@ Singleton {
         if (typeof Prefs !== "undefined") {
             if (Prefs.popupTransparency !== undefined)
                 root.popupTransparency = Prefs.popupTransparency;
+            
+            if (Prefs.topBarWidgetTransparency !== undefined)
+                root.widgetTransparency = Prefs.topBarWidgetTransparency;
 
             // Connect to transparency changes
             if (Prefs.popupTransparencyChanged)
                 Prefs.popupTransparencyChanged.connect(function() {
                     if (typeof Prefs !== "undefined" && Prefs.popupTransparency !== undefined)
                         root.popupTransparency = Prefs.popupTransparency;
+
+                });
+            
+            if (Prefs.topBarWidgetTransparencyChanged)
+                Prefs.topBarWidgetTransparencyChanged.connect(function() {
+                    if (typeof Prefs !== "undefined" && Prefs.topBarWidgetTransparency !== undefined)
+                        root.widgetTransparency = Prefs.topBarWidgetTransparency;
 
                 });
 
