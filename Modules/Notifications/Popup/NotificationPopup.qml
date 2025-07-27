@@ -449,9 +449,23 @@ PanelWindow {
             }
         }
     }
+
+    Connections {
+        id: notificationConn
+        target: (win.notificationData && win.notificationData.notification && win.notificationData.notification.Retainable) || null
+        ignoreUnknownSignals: true
+        enabled: !win._isDestroying
+        
+        function onDropped() {
+            if (!win._isDestroying && !win.exiting) {
+                forceExit();
+            }
+        }
+    }
     onNotificationDataChanged: {
         if (!_isDestroying) {
             wrapperConn.target = win.notificationData || null;
+            notificationConn.target = (win.notificationData && win.notificationData.notification && win.notificationData.notification.Retainable) || null;
         }
     }
 
