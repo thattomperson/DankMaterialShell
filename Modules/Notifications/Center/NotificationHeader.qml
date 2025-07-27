@@ -24,11 +24,46 @@ Item {
         }
 
         DankActionButton {
+            id: doNotDisturbButton
             iconName: Prefs.doNotDisturb ? "notifications_off" : "notifications"
             iconColor: Prefs.doNotDisturb ? Theme.error : Theme.surfaceText
             buttonSize: 28
             anchors.verticalCenter: parent.verticalCenter
             onClicked: Prefs.setDoNotDisturb(!Prefs.doNotDisturb)
+
+            Rectangle {
+                id: doNotDisturbTooltip
+
+                width: tooltipText.contentWidth + Theme.spacingS * 2
+                height: tooltipText.contentHeight + Theme.spacingXS * 2
+                radius: Theme.cornerRadiusSmall
+                color: Theme.surfaceContainer
+                border.color: Theme.outline
+                border.width: 1
+                anchors.bottom: parent.top
+                anchors.bottomMargin: Theme.spacingS
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: doNotDisturbButton.children[1].containsMouse // Access StateLayer's containsMouse
+                opacity: visible ? 1 : 0
+
+                Text {
+                    id: tooltipText
+
+                    text: "Do Not Disturb"
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceText
+                    font.weight: Font.Medium
+                    anchors.centerIn: parent
+                    font.hintingPreference: Font.PreferFullHinting
+                }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Theme.shortDuration
+                        easing.type: Theme.standardEasing
+                    }
+                }
+            }
         }
     }
 
