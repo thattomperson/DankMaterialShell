@@ -491,14 +491,14 @@ Rectangle {
                                     Rectangle {
                                         property bool isHovered: false
                                         
-                                        width: Math.max(dismissText.implicitWidth + 12, 50)
+                                        width: Math.max(clearText.implicitWidth + 12, 50)
                                         height: 24
                                         radius: 4
                                         color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
                                         
                                         Text {
-                                            id: dismissText
-                                            text: "Dismiss"
+                                            id: clearText
+                                            text: "Clear"
                                             color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
                                             font.pixelSize: Theme.fontSizeSmall
                                             font.weight: Font.Medium
@@ -525,7 +525,7 @@ Rectangle {
 
     Row {
         visible: !expanded
-        anchors.right: dismissButton.left
+        anchors.right: clearButton.left
         anchors.rightMargin: 8
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 8
@@ -569,7 +569,7 @@ Rectangle {
     }
 
     Rectangle {
-        id: dismissButton
+        id: clearButton
 
         property bool isHovered: false
 
@@ -578,16 +578,16 @@ Rectangle {
         anchors.rightMargin: 16
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 8
-        width: dismissText.width + 16
-        height: dismissText.height + 8
+        width: clearText.width + 16
+        height: clearText.height + 8
         radius: 6
         color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
 
         Text {
-            id: dismissText
+            id: clearText
 
-            text: "Dismiss"
-            color: dismissButton.isHovered ? Theme.primary : Theme.surfaceVariantText
+            text: "Clear"
+            color: clearButton.isHovered ? Theme.primary : Theme.surfaceVariantText
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
             anchors.centerIn: parent
@@ -597,8 +597,8 @@ Rectangle {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onEntered: dismissButton.isHovered = true
-            onExited: dismissButton.isHovered = false
+            onEntered: clearButton.isHovered = true
+            onExited: clearButton.isHovered = false
             onClicked: NotificationService.dismissGroup(notificationGroup?.key || "")
         }
     }
