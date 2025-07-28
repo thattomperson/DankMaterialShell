@@ -22,7 +22,6 @@ Rectangle {
         const baseColor = Theme.surfaceTextHover;
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
     }
-
     states: [
         State {
             name: "shown"
@@ -115,7 +114,6 @@ Rectangle {
                         title = activePlayer.trackTitle || "Unknown Track";
                         subtitle = activePlayer.trackArtist || "";
                     }
-
                     return subtitle.length > 0 ? title + " • " + subtitle : title;
                 }
                 font.pixelSize: Theme.fontSizeSmall

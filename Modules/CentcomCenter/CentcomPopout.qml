@@ -51,6 +51,8 @@ PanelWindow {
     }
 
     Rectangle {
+        // Animation finished, now we can safely resize
+
         id: mainContainer
 
         readonly property real targetWidth: Math.min(Screen.width * 0.9, 600)
@@ -98,8 +100,6 @@ PanelWindow {
         y: Theme.barHeight + 4
         // Only resize after animation is complete
         onOpacityChanged: {
-            // Animation finished, now we can safely resize
-
             if (opacity === 1)
                 Qt.callLater(() => {
                 height = calculateHeight();

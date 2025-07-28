@@ -17,9 +17,9 @@ Rectangle {
     radius: Theme.cornerRadius
     color: {
         // Only show background when there's content to display
-        if (!FocusedWindowService.focusedAppName && !FocusedWindowService.focusedWindowTitle) {
+        if (!FocusedWindowService.focusedAppName && !FocusedWindowService.focusedWindowTitle)
             return "transparent";
-        }
+
         const baseColor = mouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover;
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
     }

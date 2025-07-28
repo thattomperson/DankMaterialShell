@@ -9,10 +9,8 @@ import qs.Widgets
 
 PanelWindow {
     id: root
-    
+
     property var modelData
-    screen: modelData
-    
     property bool volumePopupVisible: false
 
     function show() {
@@ -26,6 +24,7 @@ PanelWindow {
 
     }
 
+    screen: modelData
     visible: volumePopupVisible
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1

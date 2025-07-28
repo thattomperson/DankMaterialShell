@@ -133,9 +133,9 @@ Rectangle {
                     visible: Prefs.showWorkspaceIndex
                     anchors.centerIn: parent
                     text: isPlaceholder ? sequentialNumber : sequentialNumber
-                    color: isPlaceholder ? Theme.surfaceTextAlpha : Theme.surfaceText
-                    font.pixelSize: Theme.fontSizeMedium
-                    font.bold: isActive && !isPlaceholder
+                    color: isActive ? Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.95) : isPlaceholder ? Theme.surfaceTextAlpha : Theme.surfaceTextMedium
+                    font.pixelSize: Theme.fontSizeSmall
+                    font.weight: isActive && !isPlaceholder ? Font.DemiBold : Font.Normal
                 }
 
                 Behavior on width {

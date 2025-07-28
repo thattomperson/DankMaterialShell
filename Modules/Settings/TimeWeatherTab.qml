@@ -133,6 +133,7 @@ ScrollView {
                             Prefs.setWeatherLocation(displayName, coordinates);
                         }
                     }
+
                 }
 
             }

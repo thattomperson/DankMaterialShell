@@ -6,6 +6,7 @@ import qs.Common
 
 ListView {
     id: listView
+
     property int currentIndex: 0
     property int itemHeight: 72
     property int iconSize: 56
@@ -13,6 +14,8 @@ ListView {
     property int itemSpacing: Theme.spacingS
     property bool hoverUpdatesSelection: true
     property bool keyboardNavigationActive: false
+    property real wheelMultiplier: 1.8
+    property int wheelBaseStep: 160
 
     signal keyboardNavigationReset()
     signal itemClicked(int index, var modelData)
@@ -37,29 +40,6 @@ ListView {
 
     }
     clip: true
-
-    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
-    ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
-
-    property real wheelMultiplier: 1.8
-    property int wheelBaseStep: 160
-
-    WheelHandler {
-        target: null
-        onWheel: (ev) => {
-            let dy = ev.pixelDelta.y !== 0
-                     ? ev.pixelDelta.y
-                     : (ev.angleDelta.y / 120) * listView.wheelBaseStep;
-            if (ev.inverted) dy = -dy;
-
-            const maxY = Math.max(0, listView.contentHeight - listView.height);
-            listView.contentY = Math.max(0, Math.min(maxY,
-                listView.contentY - dy * listView.wheelMultiplier));
-
-            ev.accepted = true;
-        }
-    }
-
     anchors.margins: itemSpacing
     spacing: itemSpacing
     focus: true
@@ -67,103 +47,124 @@ ListView {
     flickDeceleration: 600
     maximumFlickVelocity: 30000
 
+    WheelHandler {
+        target: null
+        onWheel: (ev) => {
+            let dy = ev.pixelDelta.y !== 0 ? ev.pixelDelta.y : (ev.angleDelta.y / 120) * listView.wheelBaseStep;
+            if (ev.inverted)
+                dy = -dy;
+
+            const maxY = Math.max(0, listView.contentHeight - listView.height);
+            listView.contentY = Math.max(0, Math.min(maxY, listView.contentY - dy * listView.wheelMultiplier));
+            ev.accepted = true;
+        }
+    }
+
+    ScrollBar.vertical: ScrollBar {
+        policy: ScrollBar.AlwaysOn
+    }
+
+    ScrollBar.horizontal: ScrollBar {
+        policy: ScrollBar.AlwaysOff
+    }
+
     delegate: Rectangle {
         width: listView.width
         height: itemHeight
-            radius: Theme.cornerRadiusLarge
-            color: ListView.isCurrentItem ? Theme.primaryPressed : mouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
-            border.color: ListView.isCurrentItem ? Theme.primarySelected : Theme.outlineMedium
-            border.width: ListView.isCurrentItem ? 2 : 1
+        radius: Theme.cornerRadiusLarge
+        color: ListView.isCurrentItem ? Theme.primaryPressed : mouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
+        border.color: ListView.isCurrentItem ? Theme.primarySelected : Theme.outlineMedium
+        border.width: ListView.isCurrentItem ? 2 : 1
 
-            Row {
-                anchors.fill: parent
-                anchors.margins: Theme.spacingM
-                spacing: Theme.spacingL
+        Row {
+            anchors.fill: parent
+            anchors.margins: Theme.spacingM
+            spacing: Theme.spacingL
 
-                Item {
-                    width: iconSize
-                    height: iconSize
-                    anchors.verticalCenter: parent.verticalCenter
+            Item {
+                width: iconSize
+                height: iconSize
+                anchors.verticalCenter: parent.verticalCenter
 
-                    IconImage {
-                        id: iconImg
+                IconImage {
+                    id: iconImg
 
-                        anchors.fill: parent
-                        source: (model.icon) ? Quickshell.iconPath(model.icon, "") : ""
-                        smooth: true
-                        asynchronous: true
-                        visible: status === Image.Ready
-                    }
-
-                    Rectangle {
-                        anchors.fill: parent
-                        visible: !iconImg.visible
-                        color: Theme.surfaceLight
-                        radius: Theme.cornerRadiusLarge
-                        border.width: 1
-                        border.color: Theme.primarySelected
-
-                        StyledText {
-                            anchors.centerIn: parent
-                            text: (model.name && model.name.length > 0) ? model.name.charAt(0).toUpperCase() : "A"
-                            font.pixelSize: iconSize * 0.4
-                            color: Theme.primary
-                            font.weight: Font.Bold
-                        }
-
-                    }
-
+                    anchors.fill: parent
+                    source: (model.icon) ? Quickshell.iconPath(model.icon, "") : ""
+                    smooth: true
+                    asynchronous: true
+                    visible: status === Image.Ready
                 }
 
-                Column {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width - iconSize - Theme.spacingL
-                    spacing: Theme.spacingXS
+                Rectangle {
+                    anchors.fill: parent
+                    visible: !iconImg.visible
+                    color: Theme.surfaceLight
+                    radius: Theme.cornerRadiusLarge
+                    border.width: 1
+                    border.color: Theme.primarySelected
 
                     StyledText {
-                        width: parent.width
-                        text: model.name || ""
-                        font.pixelSize: Theme.fontSizeLarge
-                        color: Theme.surfaceText
-                        font.weight: Font.Medium
-                        elide: Text.ElideRight
-                    }
-
-                    StyledText {
-                        width: parent.width
-                        text: model.comment || "Application"
-                        font.pixelSize: Theme.fontSizeMedium
-                        color: Theme.surfaceVariantText
-                        elide: Text.ElideRight
-                        visible: showDescription && model.comment && model.comment.length > 0
+                        anchors.centerIn: parent
+                        text: (model.name && model.name.length > 0) ? model.name.charAt(0).toUpperCase() : "A"
+                        font.pixelSize: iconSize * 0.4
+                        color: Theme.primary
+                        font.weight: Font.Bold
                     }
 
                 }
 
             }
 
-            MouseArea {
-                id: mouseArea
+            Column {
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - iconSize - Theme.spacingL
+                spacing: Theme.spacingXS
 
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                z: 10
-                onEntered: {
-                    if (hoverUpdatesSelection && !keyboardNavigationActive)
-                        listView.currentIndex = index;
+                StyledText {
+                    width: parent.width
+                    text: model.name || ""
+                    font.pixelSize: Theme.fontSizeLarge
+                    color: Theme.surfaceText
+                    font.weight: Font.Medium
+                    elide: Text.ElideRight
+                }
 
-                    itemHovered(index);
+                StyledText {
+                    width: parent.width
+                    text: model.comment || "Application"
+                    font.pixelSize: Theme.fontSizeMedium
+                    color: Theme.surfaceVariantText
+                    elide: Text.ElideRight
+                    visible: showDescription && model.comment && model.comment.length > 0
                 }
-                onPositionChanged: {
-                    // Signal parent to reset keyboard navigation flag when mouse moves
-                    keyboardNavigationReset();
-                }
-                onClicked: {
-                    itemClicked(index, model);
-                }
+
             }
 
         }
+
+        MouseArea {
+            id: mouseArea
+
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            z: 10
+            onEntered: {
+                if (hoverUpdatesSelection && !keyboardNavigationActive)
+                    listView.currentIndex = index;
+
+                itemHovered(index);
+            }
+            onPositionChanged: {
+                // Signal parent to reset keyboard navigation flag when mouse moves
+                keyboardNavigationReset();
+            }
+            onClicked: {
+                itemClicked(index, model);
+            }
+        }
+
+    }
 
 }

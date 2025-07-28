@@ -76,7 +76,7 @@ Item {
                 }
             }
         }
-        if (searchQuery.length === 0) {
+        if (searchQuery.length === 0)
             apps = apps.sort(function(a, b) {
                 var aId = a.id || (a.execString || a.exec || "");
                 var bId = b.id || (b.execString || b.exec || "");
@@ -84,9 +84,10 @@ Item {
                 var bUsage = appUsageRanking[bId] ? appUsageRanking[bId].usageCount : 0;
                 if (aUsage !== bUsage)
                     return bUsage - aUsage;
+
                 return (a.name || "").localeCompare(b.name || "");
             });
-        }
+
         // Convert to model format and populate
         apps.forEach((app) => {
             if (app)
