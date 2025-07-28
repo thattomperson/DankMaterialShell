@@ -30,6 +30,7 @@ paru -S quickshell-git
 | matugen | Allows dynamic themes based on wallpaper | Just can choose from preconfigured themes instead of dynamic colors |
 | ddcutil (or brightnessctl) | Allows controlling brightness of monitors | No Brightness |
 | wl-clipboard | Unlocks copy functionality of certain elements, such as process PIDs | No copy |
+| qt5ct + qt6ct | Icon theme | Setting icon theme in settings won't work for QT5 or QT6 applications |
 
 ```bash
 # Arch

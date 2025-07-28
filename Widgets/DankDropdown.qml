@@ -11,6 +11,7 @@ Rectangle {
     property string currentValue: ""
     property var options: []
     property var optionIcons: [] // Array of icon names corresponding to options
+    property bool forceRecreate: false
 
     signal valueChanged(string value)
 
@@ -18,10 +19,36 @@ Rectangle {
     height: 60
     radius: Theme.cornerRadius
     color: Theme.surfaceHover
+    
+    Component.onCompleted: {
+        // Force a small delay to ensure proper initialization
+        forceRecreateTimer.start();
+    }
+    
+    Timer {
+        id: forceRecreateTimer
+        interval: 50
+        repeat: false
+        onTriggered: {
+            root.forceRecreate = !root.forceRecreate;
+        }
+    }
+    
+    Component.onDestruction: {
+        var popup = popupLoader.item;
+        if (popup && popup.visible) {
+            popup.close();
+        }
+    }
+    
     onVisibleChanged: {
-        if (!visible && dropdownMenu.visible)
-            dropdownMenu.close();
-
+        var popup = popupLoader.item;
+        if (!visible && popup && popup.visible)
+            popup.close();
+        else if (visible) {
+            // Force recreate popup when component becomes visible
+            forceRecreateTimer.start();
+        }
     }
 
     Column {
@@ -70,13 +97,14 @@ Rectangle {
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
             onClicked: {
-                if (dropdownMenu.visible) {
-                    dropdownMenu.close();
-                } else {
+                var popup = popupLoader.item;
+                if (popup && popup.visible) {
+                    popup.close();
+                } else if (popup) {
                     var pos = dropdown.mapToItem(Overlay.overlay, 0, dropdown.height + 4);
-                    dropdownMenu.x = pos.x;
-                    dropdownMenu.y = pos.y;
-                    dropdownMenu.open();
+                    popup.x = pos.x;
+                    popup.y = pos.y;
+                    popup.open();
                 }
             }
         }
@@ -125,15 +153,26 @@ Rectangle {
 
     }
 
-    Popup {
-        id: dropdownMenu
+    Loader {
+        id: popupLoader
+        active: true
+        property bool recreateFlag: root.forceRecreate
+        onRecreateFlagChanged: {
+            // Force recreation by toggling active
+            active = false;
+            active = true;
+        }
+        
+        sourceComponent: Component {
+            Popup {
+                id: dropdownMenu
 
-        parent: Overlay.overlay
-        width: 180
-        height: Math.min(200, root.options.length * 36 + 16)
-        padding: 0
-        modal: true
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+                parent: Overlay.overlay
+                width: 180
+                height: Math.min(200, root.options.length * 36 + 16)
+                padding: 0
+                modal: true
+                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
         background: Rectangle {
             color: "transparent"
@@ -212,7 +251,8 @@ Rectangle {
                             onClicked: {
                                 root.currentValue = modelData;
                                 root.valueChanged(modelData);
-                                dropdownMenu.close();
+                                var popup = popupLoader.item;
+                                if (popup) popup.close();
                             }
                         }
 
@@ -221,7 +261,9 @@ Rectangle {
             }
 
         }
-
+        
+            }
+        }
     }
 
 }

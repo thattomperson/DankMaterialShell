@@ -156,7 +156,7 @@ DankModal {
                             anchors.fill: parent
                             active: settingsTabBar.currentIndex === 4
                             visible: active
-                            asynchronous: true
+                            asynchronous: false
                             sourceComponent: Component {
                                 AppearanceTab {}
                             }

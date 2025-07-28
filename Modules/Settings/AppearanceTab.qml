@@ -85,16 +85,17 @@ ScrollView {
                 DankDropdown {
                     width: parent.width
                     text: "Icon Theme"
-                    description: "Select icon theme (requires restart)"
+                    description: "Select icon theme (may require logout to apply)"
                     currentValue: Prefs.iconTheme
                     options: Prefs.availableIconThemes
                     onValueChanged: (value) => {
                         Prefs.setIconTheme(value);
+                        if (value !== "System Default" && !Prefs.qt5ctAvailable && !Prefs.qt6ctAvailable) {
+                            ToastService.showWarning("qt5ct or qt6ct not found - Qt app themes may not update without these tools");
+                        }
                     }
                 }
-
             }
-
         }
 
         // Transparency Settings Section

@@ -37,6 +37,8 @@ Singleton {
     property string iconTheme: "System Default"
     property var availableIconThemes: ["System Default"]
     property string systemDefaultIconTheme: "Adwaita"
+    property bool qt5ctAvailable: false
+    property bool qt6ctAvailable: false
     property bool useOSLogo: false
     property string osLogoColorOverride: ""
     property real osLogoBrightness: 0.5
@@ -46,6 +48,7 @@ Singleton {
     property string wallpaperLastPath: ""
     property string profileLastPath: ""
     property bool doNotDisturb: false
+    readonly property string _homeUrl: StandardPaths.writableLocation(StandardPaths.HomeLocation)
 
     function loadSettings() {
         parseSettings(settingsFile.text());
@@ -91,6 +94,7 @@ Singleton {
                 doNotDisturb = settings.doNotDisturb !== undefined ? settings.doNotDisturb : false;
                         applyStoredTheme();
                         detectAvailableIconThemes();
+                        detectQtTools();
                         updateGtkIconTheme(iconTheme);
                         applyStoredIconTheme();
             } else {
@@ -348,98 +352,110 @@ Singleton {
         systemDefaultDetectionProcess.running = true;
     }
 
+    function detectQtTools() {
+        qtToolsDetectionProcess.running = true;
+    }
+
     function setIconTheme(themeName) {
         iconTheme = themeName;
-        
         updateGtkIconTheme(themeName);
-        
-        updateQuickshellIconTheme(themeName);
-        
+        updateQtIconTheme(themeName);
         saveSettings();
     }
     
     function updateGtkIconTheme(themeName) {
-        var gtkThemeName;
-        
-        switch(themeName) {
-            case "System Default":
-                gtkThemeName = systemDefaultIconTheme;
-                break;
-            case "Papirus":
-                gtkThemeName = "Papirus";
-                break;
-            case "Papirus-Dark":
-                gtkThemeName = "Papirus-Dark";
-                break;
-            case "Papirus-Light":
-                gtkThemeName = "Papirus-Light";
-                break;
-            case "Adwaita":
-                gtkThemeName = "Adwaita";
-                break;
-            default:
-                gtkThemeName = themeName;
-        }
-        
-        
-        envCheckProcess.command = ["sh", "-c", "echo 'QT_QPA_PLATFORMTHEME=' $QT_QPA_PLATFORMTHEME"];
-        envCheckProcess.running = true;
-        
-        var gtk3Settings = `[Settings]
-gtk-icon-theme-name=${gtkThemeName}
-gtk-theme-name=Adwaita-dark
-gtk-application-prefer-dark-theme=true`;
-        
-        gtk3Process.command = ["sh", "-c", `mkdir -p ~/.config/gtk-3.0 && echo '${gtk3Settings}' > ~/.config/gtk-3.0/settings.ini`];
-        gtk3Process.running = true;
-        
-        gtk4Process.command = ["sh", "-c", `mkdir -p ~/.config/gtk-4.0 && echo '${gtk3Settings}' > ~/.config/gtk-4.0/settings.ini`];
-        gtk4Process.running = true;
-        
-        reloadThemeProcess.command = ["sh", "-c", "gsettings set org.gnome.desktop.interface icon-theme '" + gtkThemeName + "' 2>/dev/null || true"];
-        reloadThemeProcess.running = true;
-        
-        
+        console.log("Updating GTK icon theme to:", themeName);
+        var gtkThemeName = (themeName === "System Default") ? systemDefaultIconTheme : themeName;
+
+        var preferDark = (!isLightMode) ? "true" : "false";
+        var gtkSettings =
+            "[Settings]\n" +
+            "gtk-icon-theme-name=" + gtkThemeName + "\n" +
+            "gtk-theme-name=" + (isLightMode ? "Adwaita" : "Adwaita-dark") + "\n" +
+            "gtk-application-prefer-dark-theme=" + preferDark + "\n";
+
+        var home = _shq(root._homeUrl.replace("file://", ""));
+        var script =
+            "mkdir -p " + home + "/.config/gtk-3.0 " + home + "/.config/gtk-4.0 2>/dev/null || true\n" +
+            "printf %s " + _shq(gtkSettings) + " > " + home + "/.config/gtk-3.0/settings.ini\n" +
+            "printf %s " + _shq(gtkSettings) + " > " + home + "/.config/gtk-4.0/settings.ini\n" +
+            "rm -rf " + home + "/.cache/icon-cache " + home + "/.cache/thumbnails 2>/dev/null || true\n";
+
+        Quickshell.execDetached(["sh", "-lc", script]);
     }
-    
-    function updateQuickshellIconTheme(themeName) {
-        var quickshellThemeName;
-        
-        switch(themeName) {
-            case "System Default":
-                quickshellThemeName = "";
-                break;
-            case "Papirus":
-                quickshellThemeName = "Papirus";
-                break;
-            case "Papirus-Dark":
-                quickshellThemeName = "Papirus-Dark";
-                break;
-            case "Papirus-Light":
-                quickshellThemeName = "Papirus-Light";
-                break;
-            case "Adwaita":
-                quickshellThemeName = "Adwaita";
-                break;
-            default:
-                quickshellThemeName = themeName;
+
+    function updateQtIconTheme(themeName) {
+        console.log("Updating Qt icon theme to:", themeName);
+        var qtThemeName = (themeName === "System Default") ? "" : themeName;
+
+        var home = _shq(root._homeUrl.replace("file://", ""));
+        if (!qtThemeName) {
+            var revertScript =
+                "remove_icon_theme() {\n" +
+                "  local config_file=\"$1\"\n" +
+                "  if [ -f \"$config_file\" ]; then\n" +
+                "    awk '\n" +
+                "      BEGIN { in_appearance = 0 }\n" +
+                "      /^\\[Appearance\\]/ { in_appearance = 1; print; next }\n" +
+                "      /^\\[/ && in_appearance { in_appearance = 0 }\n" +
+                "      in_appearance && /^icon_theme=/ { next }\n" +
+                "      { print }\n" +
+                "    ' \"$config_file\" > \"$config_file.tmp\" && mv \"$config_file.tmp\" \"$config_file\"\n" +
+                "  fi\n" +
+                "}\n" +
+                "remove_icon_theme " + home + "/.config/qt5ct/qt5ct.conf\n" +
+                "remove_icon_theme " + home + "/.config/qt6ct/qt6ct.conf\n" +
+                "rm -f " + home + "/.config/environment.d/95-qtct.conf 2>/dev/null || true\n" +
+                "systemctl --user import-environment --unset=QT_QPA_PLATFORMTHEME 2>/dev/null || true\n" +
+                "dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME= 2>/dev/null || true\n" +
+                "rm -rf " + home + "/.cache/icon-cache " + home + "/.cache/thumbnails 2>/dev/null || true\n";
+
+            Quickshell.execDetached(["sh", "-lc", revertScript]);
+            return;
         }
-        
-        
-        
-        if (quickshellThemeName) {
-            envSetProcess.command = ["sh", "-c", `export QS_ICON_THEME="${quickshellThemeName}" && rm -rf ~/.cache/icon-cache ~/.cache/thumbnails 2>/dev/null || true`];
-        } else {
-            envSetProcess.command = ["sh", "-c", `unset QS_ICON_THEME && rm -rf ~/.cache/icon-cache ~/.cache/thumbnails 2>/dev/null || true`];
-        }
-        envSetProcess.running = true;
-        
+
+        var script =
+            "mkdir -p " + home + "/.config/qt5ct " + home + "/.config/qt6ct " + home + "/.config/environment.d 2>/dev/null || true\n" +
+            "update_qt_config() {\n" +
+            "  local config_file=\"$1\"\n" +
+            "  local theme_name=\"$2\"\n" +
+            "  if [ -f \"$config_file\" ]; then\n" +
+            "    if grep -q '^\\[Appearance\\]' \"$config_file\"; then\n" +
+            "      awk -v theme=\"$theme_name\" '\n" +
+            "        BEGIN { in_appearance = 0 }\n" +
+            "        /^\\[Appearance\\]/ { in_appearance = 1; print; next }\n" +
+            "        /^\\[/ && in_appearance { in_appearance = 0 }\n" +
+            "        in_appearance && /^icon_theme=/ { print \"icon_theme=\" theme; next }\n" +
+            "        in_appearance && /^\\[/ { print \"icon_theme=\" theme; print; in_appearance = 0; next }\n" +
+            "        { print }\n" +
+            "        END { if (in_appearance) print \"icon_theme=\" theme }\n" +
+            "      ' \"$config_file\" > \"$config_file.tmp\" && mv \"$config_file.tmp\" \"$config_file\"\n" +
+            "    else\n" +
+            "      printf '\\n[Appearance]\\nicon_theme=%s\\n' \"$theme_name\" >> \"$config_file\"\n" +
+            "    fi\n" +
+            "  else\n" +
+            "    printf '[Appearance]\\nicon_theme=%s\\n' \"$theme_name\" > \"$config_file\"\n" +
+            "  fi\n" +
+            "}\n" +
+            "update_qt_config " + home + "/.config/qt5ct/qt5ct.conf " + _shq(qtThemeName) + "\n" +
+            "update_qt_config " + home + "/.config/qt6ct/qt6ct.conf " + _shq(qtThemeName) + "\n" +
+            "if command -v qt6ct >/dev/null 2>&1; then\n" +
+            "  printf 'QT_QPA_PLATFORMTHEME=qt6ct\\n' > " + home + "/.config/environment.d/95-qtct.conf\n" +
+            "elif command -v qt5ct >/dev/null 2>&1; then\n" +
+            "  printf 'QT_QPA_PLATFORMTHEME=qt5ct\\n' > " + home + "/.config/environment.d/95-qtct.conf\n" +
+            "else\n" +
+            "  rm -f " + home + "/.config/environment.d/95-qtct.conf 2>/dev/null || true\n" +
+            "fi\n" +
+            "systemctl --user import-environment QT_QPA_PLATFORMTHEME 2>/dev/null || true\n" +
+            "dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME 2>/dev/null || true\n" +
+            "rm -rf " + home + "/.cache/icon-cache " + home + "/.cache/thumbnails 2>/dev/null || true\n";
+
+        Quickshell.execDetached(["sh", "-lc", script]);
     }
-    
+
     function applyStoredIconTheme() {
-        if (iconTheme && iconTheme !== "System Default") {
-            updateGtkIconTheme(iconTheme);
-        }
+        updateGtkIconTheme(iconTheme);
+        updateQtIconTheme(iconTheme);
     }
 
     function setUseOSLogo(enabled) {
@@ -495,6 +511,11 @@ gtk-application-prefer-dark-theme=true`;
     function setDoNotDisturb(enabled) {
         doNotDisturb = enabled;
         saveSettings();
+    }
+
+    // Helper to safely single-quote shell strings
+    function _shq(s) {
+        return "'" + String(s).replace(/'/g, "'\\''") + "'";
     }
 
     Component.onCompleted: loadSettings()
@@ -606,6 +627,28 @@ gtk-application-prefer-dark-theme=true`;
                     }
                 }
                 availableIconThemes = detectedThemes;
+            }
+        }
+    }
+
+    Process {
+        id: qtToolsDetectionProcess
+        command: ["sh", "-c", "echo -n 'qt5ct:'; command -v qt5ct >/dev/null && echo 'true' || echo 'false'; echo -n 'qt6ct:'; command -v qt6ct >/dev/null && echo 'true' || echo 'false'"]
+        running: false
+        
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (text && text.trim()) {
+                    var lines = text.trim().split('\n');
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i];
+                        if (line.startsWith('qt5ct:')) {
+                            qt5ctAvailable = line.split(':')[1] === 'true';
+                        } else if (line.startsWith('qt6ct:')) {
+                            qt6ctAvailable = line.split(':')[1] === 'true';
+                        }
+                    }
+                }
             }
         }
     }
