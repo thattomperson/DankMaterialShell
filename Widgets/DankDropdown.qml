@@ -259,6 +259,8 @@ Rectangle {
                         anchors.margins: 1
                         placeholderText: "Search..."
                         text: dropdownMenu.searchQuery
+                        topPadding: Theme.spacingS
+                        bottomPadding: Theme.spacingS
                         onTextChanged: {
                             dropdownMenu.searchQuery = text
                             dropdownMenu.updateFilteredOptions()

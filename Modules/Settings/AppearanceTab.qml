@@ -87,7 +87,14 @@ ScrollView {
                     text: "Icon Theme"
                     description: "Select icon theme"
                     currentValue: Prefs.iconTheme
-                    options: Prefs.availableIconThemes
+                    enableFuzzySearch: true
+                    popupWidthOffset: 100
+                    maxPopupHeight: 400
+                    options: {
+                        // Force refresh of icon themes to prevent stale data
+                        Prefs.detectAvailableIconThemes();
+                        return Prefs.availableIconThemes;
+                    }
                     onValueChanged: (value) => {
                         Prefs.setIconTheme(value);
                         if (value !== "System Default" && !Prefs.qt5ctAvailable && !Prefs.qt6ctAvailable) {
