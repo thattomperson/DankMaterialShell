@@ -56,6 +56,7 @@ Item {
                         color: parent.parent.isActive ? Theme.primary : Theme.surfaceText
                         font.weight: parent.parent.isActive ? Font.Medium : Font.Normal
                         anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenterOffset: 1
                         visible: parent.parent.hasText
                     }
 

@@ -36,7 +36,7 @@ Rectangle {
             id: appText
 
             text: FocusedWindowService.focusedAppName || ""
-            font.pixelSize: Theme.fontSizeMedium
+            font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
             color: Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter
@@ -47,7 +47,7 @@ Rectangle {
 
         StyledText {
             text: "•"
-            font.pixelSize: Theme.fontSizeMedium
+            font.pixelSize: Theme.fontSizeSmall
             color: Theme.outlineButton
             anchors.verticalCenter: parent.verticalCenter
             visible: appText.text && titleText.text
@@ -57,7 +57,7 @@ Rectangle {
             id: titleText
 
             text: FocusedWindowService.focusedWindowTitle || ""
-            font.pixelSize: Theme.fontSizeMedium
+            font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
             color: Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter

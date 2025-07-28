@@ -31,7 +31,7 @@ Rectangle {
 
         StyledText {
             text: Prefs.use24HourClock ? Qt.formatTime(root.currentDate, "H:mm") : Qt.formatTime(root.currentDate, "h:mm AP")
-            font.pixelSize: Theme.fontSizeMedium
+            font.pixelSize: Theme.fontSizeMedium - 1
             color: Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter
         }
@@ -46,7 +46,7 @@ Rectangle {
 
         StyledText {
             text: Qt.formatDate(root.currentDate, "ddd d")
-            font.pixelSize: Theme.fontSizeMedium
+            font.pixelSize: Theme.fontSizeMedium - 1
             color: Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter
             visible: !compactMode

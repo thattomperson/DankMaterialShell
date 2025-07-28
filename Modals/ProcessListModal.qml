@@ -130,7 +130,7 @@ DankModal {
 
                                 Row {
                                     anchors.centerIn: parent
-                                    spacing: Theme.spacingS
+                                    spacing: Theme.spacingXS
 
                                     DankIcon {
                                         name: {
@@ -148,6 +148,7 @@ DankModal {
                                         size: Theme.iconSize - 2
                                         color: currentTab === index ? Theme.primary : Theme.surfaceText
                                         opacity: currentTab === index ? 1 : 0.7
+                                        anchors.verticalCenter: parent.verticalCenter
 
                                         Behavior on color {
                                             ColorAnimation {
@@ -161,8 +162,10 @@ DankModal {
                                     StyledText {
                                         text: modelData
                                         font.pixelSize: Theme.fontSizeLarge
-                                        font.weight: currentTab === index ? Font.Bold : Font.Medium
+                                        font.weight: Font.Medium
                                         color: currentTab === index ? Theme.primary : Theme.surfaceText
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        anchors.verticalCenterOffset: -1
 
                                         Behavior on color {
                                             ColorAnimation {

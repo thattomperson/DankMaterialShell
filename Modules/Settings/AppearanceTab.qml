@@ -104,17 +104,14 @@ ScrollView {
                         if (Prefs.fontFamily === Prefs.defaultFontFamily) {
                             return "Default";
                         }
-                        return Prefs.fontFamily || "System Default";
+                        return Prefs.fontFamily || "Default";
                     }
                     enableFuzzySearch: true
                     popupWidthOffset: 100
                     maxPopupHeight: 400
                     options: {
-                        var fonts = ["System Default"];
+                        var fonts = ["Default"];
                         var availableFonts = Qt.fontFamilies();
-                        
-                        // Add default font at the top
-                        fonts.push("Default");
                         
                         var rootFamilies = [];
                         var seenFamilies = new Set();
@@ -151,9 +148,7 @@ ScrollView {
                         return fonts.concat(rootFamilies.sort());
                     }
                     onValueChanged: (value) => {
-                        if (value === "System Default") {
-                            Prefs.setFontFamily(Prefs.defaultFontFamily);
-                        } else if (value === "Default") {
+                        if (value === "Default") {
                             Prefs.setFontFamily(Prefs.defaultFontFamily);
                         } else {
                             Prefs.setFontFamily(value);
@@ -206,17 +201,14 @@ ScrollView {
                         if (Prefs.monoFontFamily === Prefs.defaultMonoFontFamily) {
                             return "Default";
                         }
-                        return Prefs.monoFontFamily || "System Default";
+                        return Prefs.monoFontFamily || "Default";
                     }
                     enableFuzzySearch: true
                     popupWidthOffset: 100
                     maxPopupHeight: 400
                     options: {
-                        var fonts = ["System Default"];
+                        var fonts = ["Default"];
                         var availableFonts = Qt.fontFamilies();
-                        
-                        // Add default mono font at the top
-                        fonts.push("Default");
                         
                         var monoFamilies = [];
                         var seenFamilies = new Set();
@@ -265,9 +257,7 @@ ScrollView {
                         return fonts.concat(monoFamilies.sort());
                     }
                     onValueChanged: (value) => {
-                        if (value === "System Default") {
-                            Prefs.setMonoFontFamily(Prefs.defaultMonoFontFamily);
-                        } else if (value === "Default") {
+                        if (value === "Default") {
                             Prefs.setMonoFontFamily(Prefs.defaultMonoFontFamily);
                         } else {
                             Prefs.setMonoFontFamily(value);
