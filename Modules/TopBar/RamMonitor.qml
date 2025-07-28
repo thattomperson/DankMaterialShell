@@ -1,4 +1,3 @@
-import "."
 import QtQuick
 import QtQuick.Controls
 import qs.Common
