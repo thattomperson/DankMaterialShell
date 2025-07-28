@@ -17,11 +17,15 @@ This shell kinda depends on [Niri](https://github.com/YaLTeR/niri), but only for
 mkdir -p ~/.local/share/fonts && curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf && fc-cache -f
 # Can also be installed from AUR on arch linux, paru -S ttf-material-symbols-variable-git 
 
-# 2 --- JetBrains Mono (recommended font)
+# 2 --- Noto Sans (recommended font)
+mkdir -p ~/.local/share/fonts && curl -L "https://github.com/notofonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf" -o ~/.local/share/fonts/NotoSans-Regular.ttf && curl -L "https://github.com/notofonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Bold.ttf" -o ~/.local/share/fonts/NotoSans-Bold.ttf && fc-cache -f
+
+
+# 3 --- JetBrains Mono (recommended font)
 mkdir -p ~/.local/share/fonts && curl -L "https://download-cdn.jetbrains.com/fonts/JetBrainsMono-2.304.zip" -o /tmp/JetBrainsMono.zip && unzip -j /tmp/JetBrainsMono.zip "fonts/ttf/*.ttf" -d ~/.local/share/fonts/ && rm /tmp/JetBrainsMono.zip && fc-cache -f
 
 
-# 3 --- QuickShell (recommended to use a git build)
+# 4 --- QuickShell (recommended to use a git build)
 paru -S quickshell-git
 ```
 

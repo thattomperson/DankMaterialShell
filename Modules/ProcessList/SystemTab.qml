@@ -61,18 +61,21 @@ ScrollView {
                         StyledText {
                             text: SysMonitorService.distribution + " • " + SysMonitorService.architecture + " • " + SysMonitorService.kernelVersion
                             font.pixelSize: Theme.fontSizeMedium
+                            font.family: Prefs.monoFontFamily
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                         }
 
                         StyledText {
                             text: "Up " + UserInfoService.uptime + " • Boot: " + SysMonitorService.bootTime
                             font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.6)
                         }
 
                         StyledText {
                             text: "Load: " + SysMonitorService.loadAverage + " • " + SysMonitorService.processCount + " processes, " + SysMonitorService.threadCount + " threads"
                             font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.6)
                         }
 
@@ -97,6 +100,7 @@ ScrollView {
                         StyledText {
                             text: SysMonitorService.cpuModel
                             font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
                             font.weight: Font.Medium
                             color: Theme.surfaceText
                             width: parent.width
@@ -106,6 +110,7 @@ ScrollView {
                         StyledText {
                             text: SysMonitorService.motherboard
                             font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
                             font.weight: Font.Medium
                             color: Theme.surfaceText
                             width: parent.width
@@ -121,6 +126,7 @@ ScrollView {
                         StyledText {
                             text: SysMonitorService.formatMemory(SysMonitorService.totalMemoryMB) + " Memory"
                             font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
                             font.weight: Font.Medium
                             color: Theme.surfaceText
                             width: parent.width
@@ -130,6 +136,7 @@ ScrollView {
                         StyledText {
                             text: "BIOS " + SysMonitorService.biosVersion
                             font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
                             font.weight: Font.Medium
                             color: Theme.surfaceText
                             width: parent.width
@@ -194,6 +201,7 @@ ScrollView {
                             StyledText {
                                 text: "Device"
                                 font.pixelSize: Theme.fontSizeSmall
+                                font.family: Prefs.monoFontFamily
                                 font.weight: Font.Bold
                                 color: Theme.surfaceText
                                 width: parent.width * 0.25
@@ -203,6 +211,7 @@ ScrollView {
                             StyledText {
                                 text: "Mount"
                                 font.pixelSize: Theme.fontSizeSmall
+                                font.family: Prefs.monoFontFamily
                                 font.weight: Font.Bold
                                 color: Theme.surfaceText
                                 width: parent.width * 0.2
@@ -212,6 +221,7 @@ ScrollView {
                             StyledText {
                                 text: "Size"
                                 font.pixelSize: Theme.fontSizeSmall
+                                font.family: Prefs.monoFontFamily
                                 font.weight: Font.Bold
                                 color: Theme.surfaceText
                                 width: parent.width * 0.15
@@ -221,6 +231,7 @@ ScrollView {
                             StyledText {
                                 text: "Used"
                                 font.pixelSize: Theme.fontSizeSmall
+                                font.family: Prefs.monoFontFamily
                                 font.weight: Font.Bold
                                 color: Theme.surfaceText
                                 width: parent.width * 0.15
@@ -230,6 +241,7 @@ ScrollView {
                             StyledText {
                                 text: "Available"
                                 font.pixelSize: Theme.fontSizeSmall
+                                font.family: Prefs.monoFontFamily
                                 font.weight: Font.Bold
                                 color: Theme.surfaceText
                                 width: parent.width * 0.15
@@ -239,6 +251,7 @@ ScrollView {
                             StyledText {
                                 text: "Use%"
                                 font.pixelSize: Theme.fontSizeSmall
+                                font.family: Prefs.monoFontFamily
                                 font.weight: Font.Bold
                                 color: Theme.surfaceText
                                 width: parent.width * 0.1
@@ -272,6 +285,7 @@ ScrollView {
                                     StyledText {
                                         text: modelData.device
                                         font.pixelSize: Theme.fontSizeSmall
+                                        font.family: Prefs.monoFontFamily
                                         color: Theme.surfaceText
                                         width: parent.width * 0.25
                                         elide: Text.ElideRight
@@ -281,6 +295,7 @@ ScrollView {
                                     StyledText {
                                         text: modelData.mount
                                         font.pixelSize: Theme.fontSizeSmall
+                                        font.family: Prefs.monoFontFamily
                                         color: Theme.surfaceText
                                         width: parent.width * 0.2
                                         elide: Text.ElideRight
@@ -290,6 +305,7 @@ ScrollView {
                                     StyledText {
                                         text: modelData.size
                                         font.pixelSize: Theme.fontSizeSmall
+                                        font.family: Prefs.monoFontFamily
                                         color: Theme.surfaceText
                                         width: parent.width * 0.15
                                         elide: Text.ElideRight
@@ -299,6 +315,7 @@ ScrollView {
                                     StyledText {
                                         text: modelData.used
                                         font.pixelSize: Theme.fontSizeSmall
+                                        font.family: Prefs.monoFontFamily
                                         color: Theme.surfaceText
                                         width: parent.width * 0.15
                                         elide: Text.ElideRight
@@ -308,6 +325,7 @@ ScrollView {
                                     StyledText {
                                         text: modelData.avail
                                         font.pixelSize: Theme.fontSizeSmall
+                                        font.family: Prefs.monoFontFamily
                                         color: Theme.surfaceText
                                         width: parent.width * 0.15
                                         elide: Text.ElideRight
@@ -317,6 +335,7 @@ ScrollView {
                                     StyledText {
                                         text: modelData.percent
                                         font.pixelSize: Theme.fontSizeSmall
+                                        font.family: Prefs.monoFontFamily
                                         color: {
                                             const percent = parseInt(modelData.percent);
                                             if (percent > 90)

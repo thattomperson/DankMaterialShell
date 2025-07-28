@@ -56,6 +56,7 @@ Row {
             StyledText {
                 text: SysMonitorService.totalCpuUsage.toFixed(1) + "%"
                 font.pixelSize: Theme.fontSizeLarge
+                font.family: Prefs.monoFontFamily
                 font.weight: Font.Bold
                 color: Theme.surfaceText
             }
@@ -63,6 +64,7 @@ Row {
             StyledText {
                 text: SysMonitorService.cpuCount + " cores"
                 font.pixelSize: Theme.fontSizeSmall
+                font.family: Prefs.monoFontFamily
                 color: Theme.surfaceText
                 opacity: 0.7
             }
@@ -126,6 +128,7 @@ Row {
             StyledText {
                 text: SysMonitorService.formatSystemMemory(SysMonitorService.usedMemoryKB)
                 font.pixelSize: Theme.fontSizeLarge
+                font.family: Prefs.monoFontFamily
                 font.weight: Font.Bold
                 color: Theme.surfaceText
             }
@@ -133,6 +136,7 @@ Row {
             StyledText {
                 text: "of " + SysMonitorService.formatSystemMemory(SysMonitorService.totalMemoryKB)
                 font.pixelSize: Theme.fontSizeSmall
+                font.family: Prefs.monoFontFamily
                 color: Theme.surfaceText
                 opacity: 0.7
             }
@@ -180,6 +184,7 @@ Row {
             StyledText {
                 text: SysMonitorService.totalSwapKB > 0 ? SysMonitorService.formatSystemMemory(SysMonitorService.usedSwapKB) : "None"
                 font.pixelSize: Theme.fontSizeLarge
+                font.family: Prefs.monoFontFamily
                 font.weight: Font.Bold
                 color: Theme.surfaceText
             }
@@ -187,6 +192,7 @@ Row {
             StyledText {
                 text: SysMonitorService.totalSwapKB > 0 ? "of " + SysMonitorService.formatSystemMemory(SysMonitorService.totalSwapKB) : "No swap configured"
                 font.pixelSize: Theme.fontSizeSmall
+                font.family: Prefs.monoFontFamily
                 color: Theme.surfaceText
                 opacity: 0.7
             }

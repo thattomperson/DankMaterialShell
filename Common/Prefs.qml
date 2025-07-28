@@ -448,10 +448,11 @@ Singleton {
             "}\n" +
             "update_qt_config " + home + "/.config/qt5ct/qt5ct.conf " + _shq(qtThemeName) + "\n" +
             "update_qt_config " + home + "/.config/qt6ct/qt6ct.conf " + _shq(qtThemeName) + "\n" +
-            "if command -v qt6ct >/dev/null 2>&1; then\n" +
-            "  printf 'QT_QPA_PLATFORMTHEME=qt6ct\\nQT_QPA_PLATFORMTHEME_QT6=qt6ct\\n' > " + home + "/.config/environment.d/95-qtct.conf\n" +
-            "elif command -v qt5ct >/dev/null 2>&1; then\n" +
+            "if command -v qt5ct >/dev/null 2>&1; then\n" +
             "  printf 'QT_QPA_PLATFORMTHEME=qt5ct\\n' > " + home + "/.config/environment.d/95-qtct.conf\n" +
+            "  if command -v qt6ct >/dev/null 2>&1; then\n" +
+            "    printf 'QT_QPA_PLATFORMTHEME_QT6=qt6ct\\n' >> " + home + "/.config/environment.d/95-qtct.conf\n" +
+            "  fi\n" +
             "else\n" +
             "  rm -f " + home + "/.config/environment.d/95-qtct.conf 2>/dev/null || true\n" +
             "fi\n" +
