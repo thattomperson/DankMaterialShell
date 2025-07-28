@@ -45,7 +45,11 @@ Column {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: SysMonitorService.setSortBy("name")
+                onClicked: {
+                    processListView.captureAnchor();
+                    SysMonitorService.setSortBy("name");
+                    processListView.restoreAnchor();
+                }
             }
             
             Behavior on color {
@@ -76,7 +80,11 @@ Column {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: SysMonitorService.setSortBy("cpu")
+                onClicked: {
+                    processListView.captureAnchor();
+                    SysMonitorService.setSortBy("cpu");
+                    processListView.restoreAnchor();
+                }
             }
             
             Behavior on color {
@@ -107,7 +115,11 @@ Column {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: SysMonitorService.setSortBy("memory")
+                onClicked: {
+                    processListView.captureAnchor();
+                    SysMonitorService.setSortBy("memory");
+                    processListView.restoreAnchor();
+                }
             }
             
             Behavior on color {
@@ -139,7 +151,11 @@ Column {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: SysMonitorService.setSortBy("pid")
+                onClicked: {
+                    processListView.captureAnchor();
+                    SysMonitorService.setSortBy("pid");
+                    processListView.restoreAnchor();
+                }
             }
             
             Behavior on color {
@@ -169,7 +185,11 @@ Column {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: SysMonitorService.toggleSortOrder()
+                onClicked: {
+                    processListView.captureAnchor();
+                    SysMonitorService.toggleSortOrder();
+                    processListView.restoreAnchor();
+                }
             }
 
             Behavior on color {
@@ -183,23 +203,74 @@ Column {
 
     }
 
-    ScrollView {
+    ListView {
+        id: processListView
+
         width: parent.width
-        height: parent.height - 24 // Subtract header height
+        height: parent.height - columnHeaders.height
         clip: true
-        ScrollBar.vertical.policy: ScrollBar.AsNeeded
-        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+        spacing: 4
+        model: SysMonitorService.processes
 
-        ListView {
-            id: processListView
+        delegate: ProcessListItem {
+            process: modelData
+            contextMenu: root.contextMenu
+        }
 
-            anchors.fill: parent
-            model: SysMonitorService.processes
-            spacing: 4
+        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+        ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
 
-            delegate: ProcessListItem {
-                process: modelData
-                contextMenu: root.contextMenu
+        property real wheelMultiplier: 1.8
+        property int  wheelBaseStep: 160
+
+        WheelHandler {
+            target: null
+            onWheel: (ev) => {
+                let dy = ev.pixelDelta.y !== 0
+                         ? ev.pixelDelta.y
+                         : (ev.angleDelta.y / 120) * processListView.wheelBaseStep;
+                if (ev.inverted) dy = -dy;
+
+                const maxY = Math.max(0, processListView.contentHeight - processListView.height);
+                processListView.contentY = Math.max(0, Math.min(maxY,
+                    processListView.contentY - dy * processListView.wheelMultiplier));
+
+                ev.accepted = true;
+            }
+        }
+
+        property string keyRoleName: "pid"
+        property var    _anchorKey: undefined
+        property real   _anchorOffset: 0
+
+        function captureAnchor() {
+            const y = contentY + 1;
+            const idx = indexAt(0, y);
+            if (idx < 0 || !model || idx >= model.length) return;
+            _anchorKey = model[idx][keyRoleName];
+            const it = itemAtIndex(idx);
+            _anchorOffset = it ? (y - it.y) : 0;
+        }
+
+        function restoreAnchor() {
+            Qt.callLater(function() {
+                if (_anchorKey === undefined || !model) return;
+
+                var i = -1;
+                for (var j = 0; j < model.length; ++j) {
+                    if (model[j][keyRoleName] === _anchorKey) { i = j; break; }
+                }
+                if (i < 0) return;
+
+                positionViewAtIndex(i, ListView.Beginning);
+                const maxY = Math.max(0, contentHeight - height);
+                contentY = Math.max(0, Math.min(maxY, contentY + _anchorOffset - 1));
+            });
+        }
+
+        onModelChanged: {
+            if (model && model.length > 0) {
+                restoreAnchor();
             }
         }
     }

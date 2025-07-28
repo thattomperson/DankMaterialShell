@@ -501,29 +501,46 @@ DankModal {
                 border.width: 1
                 clip: true
 
-                ScrollView {
+                ListView {
+                    id: clipboardListView
+
                     anchors.fill: parent
                     anchors.margins: Theme.spacingS
                     clip: true
-                    ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                    model: filteredClipboardModel
+                    spacing: Theme.spacingXS
 
-                    ListView {
-                        id: clipboardListView
+                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                    ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
 
-                        width: parent.availableWidth
-                        model: filteredClipboardModel
-                        spacing: Theme.spacingXS
+                    property real wheelMultiplier: 1.8
+                    property int wheelBaseStep: 160
 
-                        StyledText {
-                            text: "No clipboard entries found"
-                            anchors.centerIn: parent
-                            font.pixelSize: Theme.fontSizeMedium
-                            color: Theme.surfaceVariantText
-                            visible: filteredClipboardModel.count === 0
+                    WheelHandler {
+                        target: null
+                        onWheel: (ev) => {
+                            let dy = ev.pixelDelta.y !== 0
+                                     ? ev.pixelDelta.y
+                                     : (ev.angleDelta.y / 120) * clipboardListView.wheelBaseStep;
+                            if (ev.inverted) dy = -dy;
+
+                            const maxY = Math.max(0, clipboardListView.contentHeight - clipboardListView.height);
+                            clipboardListView.contentY = Math.max(0, Math.min(maxY,
+                                clipboardListView.contentY - dy * clipboardListView.wheelMultiplier));
+
+                            ev.accepted = true;
                         }
+                    }
 
-                        delegate: Rectangle {
+                    StyledText {
+                        text: "No clipboard entries found"
+                        anchors.centerIn: parent
+                        font.pixelSize: Theme.fontSizeMedium
+                        color: Theme.surfaceVariantText
+                        visible: filteredClipboardModel.count === 0
+                    }
+
+                    delegate: Rectangle {
                             property string entryType: getEntryType(model.entry)
                             property string entryPreview: getEntryPreview(model.entry)
                             property int entryIndex: index + 1
@@ -728,8 +745,6 @@ DankModal {
                         }
 
                     }
-
-                }
 
             }
 

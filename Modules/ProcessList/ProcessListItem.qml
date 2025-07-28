@@ -9,7 +9,7 @@ Rectangle {
     property var process: null
     property var contextMenu: null
 
-    width: parent.width
+    width: parent ? parent.width : 0
     height: 40
     radius: Theme.cornerRadiusLarge
     color: processMouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"

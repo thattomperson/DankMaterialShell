@@ -91,18 +91,36 @@ DankModal {
             }
 
             // Network Details
-            ScrollView {
+            Flickable {
                 width: parent.width
                 height: parent.height - 140
                 clip: true
-                ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                contentWidth: width
+                contentHeight: detailsRect.height
 
-                Flickable {
-                    contentWidth: parent.width
-                    contentHeight: detailsRect.height
+                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
 
-                    Rectangle {
+                property real wheelMultiplier: 1.8
+                property int wheelBaseStep: 160
+
+                WheelHandler {
+                    target: null
+                    onWheel: (ev) => {
+                        let dy = ev.pixelDelta.y !== 0
+                                 ? ev.pixelDelta.y
+                                 : (ev.angleDelta.y / 120) * parent.wheelBaseStep;
+                        if (ev.inverted) dy = -dy;
+
+                        const maxY = Math.max(0, parent.contentHeight - parent.height);
+                        parent.contentY = Math.max(0, Math.min(maxY,
+                            parent.contentY - dy * parent.wheelMultiplier));
+
+                        ev.accepted = true;
+                    }
+                }
+
+                Rectangle {
                         id: detailsRect
 
                         width: parent.width
@@ -123,8 +141,6 @@ DankModal {
                             wrapMode: Text.WordWrap
                             lineHeight: 1.5
                         }
-
-                    }
 
                 }
 

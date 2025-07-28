@@ -4,10 +4,8 @@ import Quickshell
 import Quickshell.Widgets
 import qs.Common
 
-ScrollView {
+ListView {
     id: listView
-
-    property alias model: list.model
     property int currentIndex: 0
     property int itemHeight: 72
     property int iconSize: 56
@@ -22,15 +20,15 @@ ScrollView {
 
     // Ensure the current item is visible
     function ensureVisible(index) {
-        if (index < 0 || index >= list.count)
+        if (index < 0 || index >= listView.count)
             return ;
 
         var itemY = index * (itemHeight + itemSpacing);
         var itemBottom = itemY + itemHeight;
-        if (itemY < list.contentY)
-            list.contentY = itemY;
-        else if (itemBottom > list.contentY + list.height)
-            list.contentY = itemBottom - list.height;
+        if (itemY < listView.contentY)
+            listView.contentY = itemY;
+        else if (itemBottom > listView.contentY + listView.height)
+            listView.contentY = itemBottom - listView.height;
     }
 
     onCurrentIndexChanged: {
@@ -39,24 +37,39 @@ ScrollView {
 
     }
     clip: true
-    ScrollBar.vertical.policy: ScrollBar.AlwaysOn
-    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-    ListView {
-        id: list
+    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
+    ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
 
-        anchors.fill: parent
-        anchors.margins: itemSpacing
-        spacing: listView.itemSpacing
-        focus: true
-        interactive: true
-        currentIndex: listView.currentIndex
-        flickDeceleration: 600
-        maximumFlickVelocity: 30000
+    property real wheelMultiplier: 1.8
+    property int wheelBaseStep: 160
 
-        delegate: Rectangle {
-            width: list.width
-            height: itemHeight
+    WheelHandler {
+        target: null
+        onWheel: (ev) => {
+            let dy = ev.pixelDelta.y !== 0
+                     ? ev.pixelDelta.y
+                     : (ev.angleDelta.y / 120) * listView.wheelBaseStep;
+            if (ev.inverted) dy = -dy;
+
+            const maxY = Math.max(0, listView.contentHeight - listView.height);
+            listView.contentY = Math.max(0, Math.min(maxY,
+                listView.contentY - dy * listView.wheelMultiplier));
+
+            ev.accepted = true;
+        }
+    }
+
+    anchors.margins: itemSpacing
+    spacing: itemSpacing
+    focus: true
+    interactive: true
+    flickDeceleration: 600
+    maximumFlickVelocity: 30000
+
+    delegate: Rectangle {
+        width: listView.width
+        height: itemHeight
             radius: Theme.cornerRadiusLarge
             color: ListView.isCurrentItem ? Theme.primaryPressed : mouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
             border.color: ListView.isCurrentItem ? Theme.primarySelected : Theme.outlineMedium
@@ -152,7 +165,5 @@ ScrollView {
             }
 
         }
-
-    }
 
 }

@@ -145,16 +145,36 @@ Rectangle {
             border.width: 1
             radius: Theme.cornerRadiusSmall
 
-            ScrollView {
+            ListView {
                 anchors.fill: parent
                 anchors.margins: Theme.spacingS
                 clip: true
+                model: root.options
+                spacing: 2
 
-                ListView {
-                    model: root.options
-                    spacing: 2
+                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
 
-                    delegate: Rectangle {
+                property real wheelMultiplier: 1.8
+                property int wheelBaseStep: 160
+
+                WheelHandler {
+                    target: null
+                    onWheel: (ev) => {
+                        let dy = ev.pixelDelta.y !== 0
+                                 ? ev.pixelDelta.y
+                                 : (ev.angleDelta.y / 120) * parent.wheelBaseStep;
+                        if (ev.inverted) dy = -dy;
+
+                        const maxY = Math.max(0, parent.contentHeight - parent.height);
+                        parent.contentY = Math.max(0, Math.min(maxY,
+                            parent.contentY - dy * parent.wheelMultiplier));
+
+                        ev.accepted = true;
+                    }
+                }
+
+                delegate: Rectangle {
                         width: ListView.view.width
                         height: 32
                         radius: Theme.cornerRadiusSmall
@@ -195,8 +215,6 @@ Rectangle {
                                 dropdownMenu.close();
                             }
                         }
-
-                    }
 
                 }
 

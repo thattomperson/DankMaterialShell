@@ -4,10 +4,8 @@ import Quickshell
 import Quickshell.Widgets
 import qs.Common
 
-ScrollView {
+GridView {
     id: gridView
-
-    property alias model: grid.model
     property int currentIndex: 0
     property int columns: 4
     property bool adaptiveColumns: false
@@ -26,15 +24,15 @@ ScrollView {
 
     // Ensure the current item is visible
     function ensureVisible(index) {
-        if (index < 0 || index >= grid.count)
+        if (index < 0 || index >= gridView.count)
             return ;
 
-        var itemY = Math.floor(index / grid.actualColumns) * grid.cellHeight;
-        var itemBottom = itemY + grid.cellHeight;
-        if (itemY < grid.contentY)
-            grid.contentY = itemY;
-        else if (itemBottom > grid.contentY + grid.height)
-            grid.contentY = itemBottom - grid.height;
+        var itemY = Math.floor(index / gridView.actualColumns) * gridView.cellHeight;
+        var itemBottom = itemY + gridView.cellHeight;
+        if (itemY < gridView.contentY)
+            gridView.contentY = itemY;
+        else if (itemBottom > gridView.contentY + gridView.height)
+            gridView.contentY = itemBottom - gridView.height;
     }
 
     onCurrentIndexChanged: {
@@ -43,31 +41,47 @@ ScrollView {
 
     }
     clip: true
-    ScrollBar.vertical.policy: ScrollBar.AsNeeded
-    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-    GridView {
-        id: grid
+    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+    ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
 
-        property int baseCellWidth: adaptiveColumns ? Math.max(minCellWidth, Math.min(maxCellWidth, width / columns)) : (width - Theme.spacingS * 2) / columns
-        property int baseCellHeight: baseCellWidth + 20
-        property int actualColumns: adaptiveColumns ? Math.floor(width / cellWidth) : columns
-        property int remainingSpace: width - (actualColumns * cellWidth)
+    property real wheelMultiplier: 1.8
+    property int wheelBaseStep: 160
 
-        anchors.fill: parent
-        anchors.margins: Theme.spacingS
-        cellWidth: baseCellWidth
-        cellHeight: baseCellHeight
-        leftMargin: Math.max(Theme.spacingS, remainingSpace / 2)
-        rightMargin: leftMargin
-        focus: true
-        interactive: true
-        flickDeceleration: 300
-        maximumFlickVelocity: 30000
+    WheelHandler {
+        target: null
+        onWheel: (ev) => {
+            let dy = ev.pixelDelta.y !== 0
+                     ? ev.pixelDelta.y
+                     : (ev.angleDelta.y / 120) * gridView.wheelBaseStep;
+            if (ev.inverted) dy = -dy;
 
-        delegate: Rectangle {
-            width: grid.cellWidth - cellPadding
-            height: grid.cellHeight - cellPadding
+            const maxY = Math.max(0, gridView.contentHeight - gridView.height);
+            gridView.contentY = Math.max(0, Math.min(maxY,
+                gridView.contentY - dy * gridView.wheelMultiplier));
+
+            ev.accepted = true;
+        }
+    }
+
+    property int baseCellWidth: adaptiveColumns ? Math.max(minCellWidth, Math.min(maxCellWidth, width / columns)) : (width - Theme.spacingS * 2) / columns
+    property int baseCellHeight: baseCellWidth + 20
+    property int actualColumns: adaptiveColumns ? Math.floor(width / cellWidth) : columns
+    property int remainingSpace: width - (actualColumns * cellWidth)
+
+    anchors.margins: Theme.spacingS
+    cellWidth: baseCellWidth
+    cellHeight: baseCellHeight
+    leftMargin: Math.max(Theme.spacingS, remainingSpace / 2)
+    rightMargin: leftMargin
+    focus: true
+    interactive: true
+    flickDeceleration: 300
+    maximumFlickVelocity: 30000
+
+    delegate: Rectangle {
+        width: gridView.cellWidth - cellPadding
+        height: gridView.cellHeight - cellPadding
             radius: Theme.cornerRadiusLarge
             color: currentIndex === index ? Theme.primaryPressed : mouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
             border.color: currentIndex === index ? Theme.primarySelected : Theme.outlineMedium
@@ -78,7 +92,7 @@ ScrollView {
                 spacing: Theme.spacingS
 
                 Item {
-                    property int iconSize: Math.min(maxIconSize, Math.max(minIconSize, grid.cellWidth * iconSizeRatio))
+                    property int iconSize: Math.min(maxIconSize, Math.max(minIconSize, gridView.cellWidth * iconSizeRatio))
 
                     width: iconSize
                     height: iconSize
@@ -116,7 +130,7 @@ ScrollView {
 
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: grid.cellWidth - 12
+                    width: gridView.cellWidth - 12
                     text: model.name || ""
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText
@@ -152,7 +166,5 @@ ScrollView {
             }
 
         }
-
-    }
 
 }

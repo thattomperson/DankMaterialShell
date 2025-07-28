@@ -198,21 +198,41 @@ DankModal {
             }
 
             // File grid
-            ScrollView {
+            GridView {
+                id: fileGrid
+                
                 width: parent.width
                 height: parent.height - 80
                 clip: true
+                cellWidth: 150
+                cellHeight: 130
+                cacheBuffer: 260
+                
+                model: folderModel
 
-                GridView {
-                    id: fileGrid
-                    
-                    cellWidth: 150
-                    cellHeight: 130
-                    cacheBuffer: 260  // Only cache ~2 rows worth of items
-                    
-                    model: folderModel
+                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
 
-                    delegate: StyledRect {
+                property real wheelMultiplier: 1.8
+                property int wheelBaseStep: 160
+
+                WheelHandler {
+                    target: null
+                    onWheel: (ev) => {
+                        let dy = ev.pixelDelta.y !== 0
+                                 ? ev.pixelDelta.y
+                                 : (ev.angleDelta.y / 120) * fileGrid.wheelBaseStep;
+                        if (ev.inverted) dy = -dy;
+
+                        const maxY = Math.max(0, fileGrid.contentHeight - fileGrid.height);
+                        fileGrid.contentY = Math.max(0, Math.min(maxY,
+                            fileGrid.contentY - dy * fileGrid.wheelMultiplier));
+
+                        ev.accepted = true;
+                    }
+                }
+
+                delegate: StyledRect {
                         id: delegateRoot
                         
                         required property bool fileIsDir
@@ -292,7 +312,6 @@ DankModal {
                         }
                     }
                 }
-            }
         }
     }
 }
