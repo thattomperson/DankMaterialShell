@@ -179,6 +179,8 @@ Rectangle {
                         color: Theme.surfaceText
                         width: parent.width
                         elide: Text.ElideRight
+                        wrapMode: Text.NoWrap
+                        maximumLineCount: 1
                     }
 
                     StyledText {
@@ -192,6 +194,8 @@ Rectangle {
                         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.8)
                         width: parent.width
                         elide: Text.ElideRight
+                        wrapMode: Text.NoWrap
+                        maximumLineCount: 1
                     }
 
                     StyledText {
@@ -205,6 +209,8 @@ Rectangle {
                         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.6)
                         width: parent.width
                         elide: Text.ElideRight
+                        wrapMode: Text.NoWrap
+                        maximumLineCount: 1
                         visible: text.length > 0
                     }
 
