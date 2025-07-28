@@ -14,8 +14,12 @@ Singleton {
 
     readonly property string _homeUrl: StandardPaths.writableLocation(StandardPaths.HomeLocation)
     readonly property string homeDir: _homeUrl.startsWith("file://") ? _homeUrl.substring(7) : _homeUrl
+    readonly property string shellDir: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Common/", "")
     readonly property string wallpaperPath: Prefs.wallpaperPath
     property bool matugenAvailable: false
+    property bool gtkThemingEnabled: false
+    property bool qtThemingEnabled: false
+    property bool systemThemeGenerationInProgress: false
     property string matugenJson: ""
     property var matugenColors: ({
     })
@@ -81,6 +85,8 @@ Singleton {
     Component.onCompleted: {
         console.log("Colors.qml → home =", homeDir);
         matugenCheck.running = true;
+        checkGtkThemingAvailability();
+        checkQtThemingAvailability();
         if (typeof Theme !== "undefined")
             Theme.isLightModeChanged.connect(root.onLightModeChanged);
     }
@@ -165,6 +171,13 @@ Singleton {
 
         generateNiriConfig();
         generateGhosttyConfig();
+        
+        if (gtkThemingEnabled && typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) {
+            generateGtkThemes();
+        }
+        if (qtThemingEnabled && typeof Prefs !== "undefined" && Prefs.qtThemingEnabled) {
+            generateQtThemes();
+        }
     }
 
     function generateNiriConfig() {
@@ -241,6 +254,49 @@ palette = 15=${fg_b}`;
         ghosttyConfigWriter.command = ["bash", "-c", `echo '${content}' > ghostty-colors.generated.conf`];
         ghosttyConfigWriter.running = true;
     }
+    
+    function checkGtkThemingAvailability() {
+        gtkAvailabilityChecker.running = true;
+    }
+    
+    function checkQtThemingAvailability() {
+        qtAvailabilityChecker.running = true;
+    }
+    
+    function generateSystemThemes() {
+        if (systemThemeGenerationInProgress) {
+            console.log("System theme generation already in progress, skipping");
+            return;
+        }
+        
+        if (!matugenAvailable) {
+            console.warn("Matugen not available, cannot generate system themes");
+            return;
+        }
+        
+        if (!wallpaperPath || wallpaperPath === "") {
+            console.warn("No wallpaper path set, cannot generate system themes");
+            return;
+        }
+        
+        console.log("Generating system themes using matugen templates");
+        console.log("Wallpaper:", wallpaperPath);
+        console.log("Shell directory:", shellDir);
+        
+        systemThemeGenerationInProgress = true;
+        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir];
+        systemThemeGenerator.running = true;
+    }
+    
+    function generateGtkThemes() {
+        console.log("Generating GTK themes using matugen templates");
+        generateSystemThemes();
+    }
+    
+    function generateQtThemes() {
+        console.log("Generating Qt themes using matugen templates");
+        generateSystemThemes();
+    }
 
     Process {
         id: niriConfigWriter
@@ -263,6 +319,105 @@ palette = 15=${fg_b}`;
             } else {
                 console.warn("Failed to generate ghostty config, exit code:", exitCode);
             }
+        }
+    }
+    
+    Process {
+        id: gtkAvailabilityChecker
+        command: ["bash", "-c", "command -v gsettings >/dev/null && [ -d ~/.config/gtk-3.0 -o -d ~/.config/gtk-4.0 ]"]
+        running: false
+        onExited: (exitCode) => {
+            gtkThemingEnabled = (exitCode === 0);
+            console.log("GTK theming available:", gtkThemingEnabled);
+        }
+    }
+    
+    Process {
+        id: qtAvailabilityChecker
+        command: ["bash", "-c", "command -v qt5ct >/dev/null || command -v qt6ct >/dev/null"]
+        running: false
+        onExited: (exitCode) => {
+            qtThemingEnabled = (exitCode === 0);
+            console.log("Qt theming available:", qtThemingEnabled);
+        }
+    }
+    
+    Process {
+        id: systemThemeGenerator
+        running: false
+        
+        stdout: StdioCollector {
+            id: systemThemeStdout
+        }
+        
+        stderr: StdioCollector {
+            id: systemThemeStderr
+        }
+        
+        onStarted: {
+            console.log("System theme generation process started with command:", command);
+        }
+        
+        onExited: (exitCode) => {
+            systemThemeGenerationInProgress = false;
+            console.log("System theme generation process exited with code:", exitCode);
+            
+            if (exitCode === 0) {
+                console.log("System themes generated successfully");
+                console.log("stdout:", systemThemeStdout.text);
+                
+                if (gtkThemingEnabled && typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) {
+                    console.log("Applying GTK theme...");
+                    gtkThemeApplier.running = true;
+                }
+                
+                ToastService.showInfo("System themes updated successfully");
+            } else {
+                console.error("System theme generation failed, exit code:", exitCode);
+                console.error("stdout:", systemThemeStdout.text);
+                console.error("stderr:", systemThemeStderr.text);
+                ToastService.showError("Failed to generate system themes: " + systemThemeStderr.text);
+            }
+        }
+    }
+    
+    Process {
+        id: gtkThemeApplier
+        running: false
+        
+        stdout: StdioCollector {
+            id: gtkApplierStdout
+        }
+        
+        stderr: StdioCollector {
+            id: gtkApplierStderr
+        }
+        
+        onExited: (exitCode) => {
+            if (exitCode === 0) {
+                console.log("GTK theme applied successfully");
+                ToastService.showInfo("GTK applications themed successfully");
+            } else {
+                console.warn("GTK theme application failed, exit code:", exitCode);
+                console.warn("stderr:", gtkApplierStderr.text);
+                ToastService.showWarning("GTK theme application failed");
+            }
+        }
+        
+        Component.onCompleted: {
+            command = ["bash", "-c", `
+                # Reset GTK theme first
+                gsettings set org.gnome.desktop.interface gtk-theme '' 2>/dev/null || true
+                # Apply adw-gtk3-dark theme  
+                gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark 2>/dev/null || true
+                # Import the generated colors
+                if [ -f ~/.config/gtk-3.0/colors.css ]; then
+                    echo "GTK 3 colors imported"
+                fi
+                if [ -f ~/.config/gtk-4.0/colors.css ]; then
+                    echo "GTK 4 colors imported"
+                fi
+            `];
         }
     }
 

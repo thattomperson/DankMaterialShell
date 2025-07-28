@@ -52,6 +52,8 @@ Singleton {
     property string fontFamily: "Inter Variable"
     property string monoFontFamily: "Fira Code"
     property int fontWeight: Font.Normal
+    property bool gtkThemingEnabled: false
+    property bool qtThemingEnabled: false
     
     readonly property string defaultFontFamily: "Inter Variable"
     readonly property string defaultMonoFontFamily: "Fira Code"
@@ -131,6 +133,8 @@ Singleton {
                 fontFamily = settings.fontFamily !== undefined ? settings.fontFamily : defaultFontFamily;
                 monoFontFamily = settings.monoFontFamily !== undefined ? settings.monoFontFamily : defaultMonoFontFamily;
                 fontWeight = settings.fontWeight !== undefined ? settings.fontWeight : Font.Normal;
+                gtkThemingEnabled = settings.gtkThemingEnabled !== undefined ? settings.gtkThemingEnabled : false;
+                qtThemingEnabled = settings.qtThemingEnabled !== undefined ? settings.qtThemingEnabled : false;
                         applyStoredTheme();
                         detectAvailableIconThemes();
                         detectQtTools();
@@ -182,7 +186,9 @@ Singleton {
             "doNotDisturb": doNotDisturb,
             "fontFamily": fontFamily,
             "monoFontFamily": monoFontFamily,
-            "fontWeight": fontWeight
+            "fontWeight": fontWeight,
+            "gtkThemingEnabled": gtkThemingEnabled,
+            "qtThemingEnabled": qtThemingEnabled
         }, null, 2));
     }
 
@@ -576,6 +582,16 @@ Singleton {
 
     function setMonoFontFamily(family) {
         monoFontFamily = family;
+        saveSettings();
+    }
+
+    function setGtkThemingEnabled(enabled) {
+        gtkThemingEnabled = enabled;
+        saveSettings();
+    }
+
+    function setQtThemingEnabled(enabled) {
+        qtThemingEnabled = enabled;
         saveSettings();
     }
 

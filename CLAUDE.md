@@ -48,6 +48,7 @@ This is a Quickshell-based desktop shell implementation with Material Design 3 d
 - **Quickshell Framework** - QML-based framework for building desktop shells
 - **Qt/QtQuick** - UI rendering and controls
 - **Wayland** - Display server protocol
+- **Matugen** - Dynamic theming system for wallpaper-based colors and system app theming
 
 ## Development Commands
 
@@ -162,6 +163,7 @@ shell.qml           # Main entry point (minimal orchestration)
 - **AppLauncher**: Full-featured app grid/list with 93+ applications, search, categories
 - **ClipboardHistoryModal**: Complete clipboard management with cliphist integration
 - **TopBar**: Per-monitor panels with workspace switching, clock, system tray
+- **System App Theming**: Automatic GTK and Qt application theming using matugen templates
 
 #### Key Widgets
 

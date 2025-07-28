@@ -37,17 +37,25 @@ paru -S quickshell-git
 |------------|---------|------------|
 | cava | Equalizer in TopBar uses Audio Data | Equalizer shifts at random |
 | cliphist | Allows clipboard history view | No clipboard history view available |
-| matugen | Allows dynamic themes based on wallpaper | Just can choose from preconfigured themes instead of dynamic colors |
+| matugen | Allows dynamic themes based on wallpaper and system app theming | Just can choose from preconfigured themes instead of dynamic colors |
 | ddcutil (or brightnessctl) | Allows controlling brightness of monitors | No Brightness |
 | wl-clipboard | Unlocks copy functionality of certain elements, such as process PIDs | No copy |
-| qt5ct + qt6ct | Icon theme | Setting icon theme in settings won't work for QT5 or QT6 applications |
+| qt5ct + qt6ct | Icon theme and Qt app theming | Setting icon theme in settings won't work for QT5 or QT6 applications, no Qt theming |
+| adw-gtk3 | GTK app theming | No GTK theming |
+| gsettings | GTK theme management | No GTK theming |
 
 ```bash
 # Arch
-paru -S ttf-material-symbols-variable-git inter-font ttf-fira-code matugen cliphist cava wl-clipboard ddcutil
+paru -S ttf-material-symbols-variable-git inter-font ttf-fira-code matugen cliphist cava wl-clipboard ddcutil adw-gtk3 qt5ct qt6ct
 ```
 
 **Note on networking:** This shell requires NetworkManager for WiFi functionality.
+
+**Note on system app theming:** DankMaterialShell can automatically theme GTK and Qt applications to match your dynamic wallpaper colors. This requires:
+- For GTK apps: `adw-gtk3` theme and `gsettings`
+- For Qt apps: `qt5ct` and/or `qt6ct`
+
+Enable these features in Settings → Appearance → System App Theming after installing the dependencies.
 
 3. Install DankMaterialShell
 

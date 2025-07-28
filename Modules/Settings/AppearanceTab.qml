@@ -755,12 +755,83 @@ ScrollView {
                             ColorAnimation {
                                 duration: Theme.mediumDuration
                                 easing.type: Theme.standardEasing
-                            }
-
                         }
 
                     }
 
+
+
+                }
+
+            }
+
+        }
+        }
+
+        // System App Theming Section
+        StyledRect {
+            width: parent.width
+            height: systemThemingSection.implicitHeight + Theme.spacingL * 2
+            radius: Theme.cornerRadiusLarge
+            color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+            border.width: 1
+            visible: Theme.isDynamicTheme && Colors.matugenAvailable
+
+            Column {
+                id: systemThemingSection
+
+                anchors.fill: parent
+                anchors.margins: Theme.spacingL
+                spacing: Theme.spacingM
+
+                Row {
+                    width: parent.width
+                    spacing: Theme.spacingM
+
+                    DankIcon {
+                        name: "extension"
+                        size: Theme.iconSize
+                        color: Theme.primary
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    StyledText {
+                        text: "System App Theming"
+                        font.pixelSize: Theme.fontSizeLarge
+                        font.weight: Font.Medium
+                        color: Theme.surfaceText
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                }
+
+                DankToggle {
+                    width: parent.width
+                    text: "Theme GTK Applications"
+                    description: Colors.gtkThemingEnabled ? "File managers, text editors, and system dialogs will match your theme" : "GTK theming not available (install gsettings and adw-gtk3)"
+                    enabled: Colors.gtkThemingEnabled
+                    checked: Colors.gtkThemingEnabled && Prefs.gtkThemingEnabled
+                    onToggled: function(checked) {
+                        Prefs.setGtkThemingEnabled(checked);
+                        if (checked && Theme.isDynamicTheme) {
+                            Colors.generateGtkThemes();
+                        }
+                    }
+                }
+
+                DankToggle {
+                    width: parent.width
+                    text: "Theme Qt Applications"
+                    description: Colors.qtThemingEnabled ? "Qt applications will match your theme colors" : "Qt theming not available (install qt5ct or qt6ct)"
+                    enabled: Colors.qtThemingEnabled
+                    checked: Colors.qtThemingEnabled && Prefs.qtThemingEnabled
+                    onToggled: function(checked) {
+                        Prefs.setQtThemingEnabled(checked);
+                        if (checked && Theme.isDynamicTheme) {
+                            Colors.generateQtThemes();
+                        }
+                    }
                 }
 
             }
