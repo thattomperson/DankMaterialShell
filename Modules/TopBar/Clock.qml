@@ -38,7 +38,7 @@ Rectangle {
 
         StyledText {
             text: "•"
-            font.pixelSize: Theme.fontSizeMedium
+            font.pixelSize: Theme.fontSizeSmall
             color: Theme.outlineButton
             anchors.verticalCenter: parent.verticalCenter
             visible: !compactMode

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import qs.Common
 import qs.Widgets
+import "../Common/fuzzysort.js" as FuzzySort
 
 Rectangle {
     id: root
@@ -12,6 +13,9 @@ Rectangle {
     property var options: []
     property var optionIcons: [] // Array of icon names corresponding to options
     property bool forceRecreate: false
+    property bool enableFuzzySearch: false
+    property int popupWidthOffset: 0  // How much wider the popup should be than the button
+    property int maxPopupHeight: 400
 
     signal valueChanged(string value)
 
@@ -102,7 +106,8 @@ Rectangle {
                     popup.close();
                 } else if (popup) {
                     var pos = dropdown.mapToItem(Overlay.overlay, 0, dropdown.height + 4);
-                    popup.x = pos.x;
+                    // Center the wider popup over the dropdown button
+                    popup.x = pos.x - (root.popupWidthOffset / 2);
                     popup.y = pos.y;
                     popup.open();
                 }
@@ -167,12 +172,63 @@ Rectangle {
             Popup {
                 id: dropdownMenu
 
+                property string searchQuery: ""
+                property var filteredOptions: []
+                property int selectedIndex: -1
+
                 parent: Overlay.overlay
-                width: 180
-                height: Math.min(200, root.options.length * 36 + 16)
+                width: dropdown.width + root.popupWidthOffset
+                height: Math.min(root.maxPopupHeight, 
+                    (root.enableFuzzySearch ? 48 : 0) + 
+                    Math.min(filteredOptions.length, 10) * 36 + 16)
                 padding: 0
                 modal: true
                 closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+                onOpened: {
+                    searchQuery = ""
+                    updateFilteredOptions()
+                    if (root.enableFuzzySearch && searchField.visible) {
+                        searchField.forceActiveFocus()
+                    }
+                }
+
+                function updateFilteredOptions() {
+                    if (!root.enableFuzzySearch || searchQuery.length === 0) {
+                        filteredOptions = root.options
+                    } else {
+                        var results = FuzzySort.go(searchQuery, root.options, {
+                            limit: 50,
+                            threshold: -10000
+                        })
+                        filteredOptions = results.map(function(result) {
+                            return result.target
+                        })
+                    }
+                    selectedIndex = -1
+                }
+
+                function selectNext() {
+                    if (filteredOptions.length > 0) {
+                        selectedIndex = (selectedIndex + 1) % filteredOptions.length
+                        listView.positionViewAtIndex(selectedIndex, ListView.Contain)
+                    }
+                }
+
+                function selectPrevious() {
+                    if (filteredOptions.length > 0) {
+                        selectedIndex = selectedIndex <= 0 ? filteredOptions.length - 1 : selectedIndex - 1
+                        listView.positionViewAtIndex(selectedIndex, ListView.Contain)
+                    }
+                }
+
+                function selectCurrent() {
+                    if (selectedIndex >= 0 && selectedIndex < filteredOptions.length) {
+                        root.currentValue = filteredOptions[selectedIndex]
+                        root.valueChanged(filteredOptions[selectedIndex])
+                        dropdownMenu.close()
+                    }
+                }
 
         background: Rectangle {
             color: "transparent"
@@ -184,15 +240,53 @@ Rectangle {
             border.width: 1
             radius: Theme.cornerRadiusSmall
 
-            ListView {
+            Column {
                 anchors.fill: parent
                 anchors.margins: Theme.spacingS
-                clip: true
-                model: root.options
-                spacing: 2
 
-                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
-                ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
+                // Search field
+                Rectangle {
+                    id: searchContainer
+                    width: parent.width
+                    height: 36
+                    visible: root.enableFuzzySearch
+                    radius: Theme.cornerRadiusSmall
+                    color: Theme.surfaceVariantAlpha
+
+                    DankTextField {
+                        id: searchField
+                        anchors.fill: parent
+                        anchors.margins: 1
+                        placeholderText: "Search..."
+                        text: dropdownMenu.searchQuery
+                        onTextChanged: {
+                            dropdownMenu.searchQuery = text
+                            dropdownMenu.updateFilteredOptions()
+                        }
+
+                        Keys.onDownPressed: dropdownMenu.selectNext()
+                        Keys.onUpPressed: dropdownMenu.selectPrevious()
+                        Keys.onReturnPressed: dropdownMenu.selectCurrent()
+                        Keys.onEnterPressed: dropdownMenu.selectCurrent()
+                    }
+                }
+
+                Item {
+                    width: 1
+                    height: Theme.spacingXS
+                    visible: root.enableFuzzySearch
+                }
+
+                ListView {
+                    id: listView
+                    width: parent.width
+                    height: parent.height - (root.enableFuzzySearch ? searchContainer.height + Theme.spacingXS : 0)
+                    clip: true
+                    model: dropdownMenu.filteredOptions
+                    spacing: 2
+
+                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+                    ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
 
                 property real wheelMultiplier: 1.8
                 property int wheelBaseStep: 160
@@ -213,11 +307,16 @@ Rectangle {
                     }
                 }
 
-                delegate: Rectangle {
+                    delegate: Rectangle {
+                        property bool isSelected: dropdownMenu.selectedIndex === index
+                        property bool isCurrentValue: root.currentValue === modelData
+                        property int optionIndex: root.options.indexOf(modelData)
+
                         width: ListView.view.width
                         height: 32
                         radius: Theme.cornerRadiusSmall
-                        color: optionArea.containsMouse ? Theme.primaryHoverLight : "transparent"
+                        color: isSelected ? Theme.primaryHover : 
+                               optionArea.containsMouse ? Theme.primaryHoverLight : "transparent"
 
                         Row {
                             anchors.left: parent.left
@@ -226,9 +325,10 @@ Rectangle {
                             spacing: Theme.spacingS
 
                             DankIcon {
-                                name: root.optionIcons.length > index ? root.optionIcons[index] : ""
+                                name: optionIndex >= 0 && root.optionIcons.length > optionIndex ? 
+                                      root.optionIcons[optionIndex] : ""
                                 size: 18
-                                color: root.currentValue === modelData ? Theme.primary : Theme.surfaceVariantText
+                                color: isCurrentValue ? Theme.primary : Theme.surfaceVariantText
                                 visible: name !== ""
                             }
 
@@ -236,10 +336,11 @@ Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData
                                 font.pixelSize: Theme.fontSizeMedium
-                                color: root.currentValue === modelData ? Theme.primary : Theme.surfaceText
-                                font.weight: root.currentValue === modelData ? Font.Medium : Font.Normal
+                                color: isCurrentValue ? Theme.primary : Theme.surfaceText
+                                font.weight: isCurrentValue ? Font.Medium : Font.Normal
+                                width: parent.parent.width - parent.x - Theme.spacingS
+                                elide: Text.ElideRight
                             }
-
                         }
 
                         MouseArea {
@@ -249,17 +350,14 @@ Rectangle {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                root.currentValue = modelData;
-                                root.valueChanged(modelData);
-                                var popup = popupLoader.item;
-                                if (popup) popup.close();
+                                root.currentValue = modelData
+                                root.valueChanged(modelData)
+                                dropdownMenu.close()
                             }
                         }
-
+                        }
                 }
-
             }
-
         }
         
             }

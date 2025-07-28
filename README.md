@@ -17,12 +17,14 @@ This shell kinda depends on [Niri](https://github.com/YaLTeR/niri), but only for
 mkdir -p ~/.local/share/fonts && curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf && fc-cache -f
 # Can also be installed from AUR on arch linux, paru -S ttf-material-symbols-variable-git 
 
-# 2 --- Noto Sans (recommended font)
-mkdir -p ~/.local/share/fonts && curl -L "https://github.com/notofonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf" -o ~/.local/share/fonts/NotoSans-Regular.ttf && curl -L "https://github.com/notofonts/noto-fonts/raw/main/hinted/ttf/NotoSans/NotoSans-Bold.ttf" -o ~/.local/share/fonts/NotoSans-Bold.ttf && fc-cache -f
+# 2 --- Inter Variable (recommended font)
+mkdir -p ~/.local/share/fonts && curl -L "https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip" -o /tmp/Inter.zip && unzip -j /tmp/Inter.zip "InterVariable.ttf" "InterVariable-Italic.ttf" -d ~/.local/share/fonts/ && rm /tmp/Inter.zip && fc-cache -f
+# Can also be installed on arch linux, pacman -S inter-fonts
 
 
-# 3 --- JetBrains Mono (recommended font)
-mkdir -p ~/.local/share/fonts && curl -L "https://download-cdn.jetbrains.com/fonts/JetBrainsMono-2.304.zip" -o /tmp/JetBrainsMono.zip && unzip -j /tmp/JetBrainsMono.zip "fonts/ttf/*.ttf" -d ~/.local/share/fonts/ && rm /tmp/JetBrainsMono.zip && fc-cache -f
+# 3 --- Fira Code (recommended monospace font)
+mkdir -p ~/.local/share/fonts && curl -L "https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip" -o /tmp/FiraCode.zip && unzip -j /tmp/FiraCode.zip "ttf/*.ttf" -d ~/.local/share/fonts/ && rm /tmp/FiraCode.zip && fc-cache -f
+# Can also be installed on arch linux, pacman -S ttf-fira-code
 
 
 # 4 --- QuickShell (recommended to use a git build)
@@ -42,7 +44,7 @@ paru -S quickshell-git
 
 ```bash
 # Arch
-paru -S ttf-material-symbols-variable-git matugen cliphist cava wl-clipboard ddcutil
+paru -S ttf-material-symbols-variable-git inter-font ttf-fira-code matugen cliphist cava wl-clipboard ddcutil
 ```
 
 **Note on networking:** This shell requires NetworkManager for WiFi functionality.

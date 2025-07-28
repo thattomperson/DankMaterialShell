@@ -115,11 +115,6 @@ Rectangle {
                         title = activePlayer.trackTitle || "Unknown Track";
                         subtitle = activePlayer.trackArtist || "";
                     }
-                    if (title.length > 20)
-                        title = title.substring(0, 20) + "...";
-
-                    if (subtitle.length > 22)
-                        subtitle = subtitle.substring(0, 22) + "...";
 
                     return subtitle.length > 0 ? title + " • " + subtitle : title;
                 }
@@ -127,6 +122,8 @@ Rectangle {
                 color: Theme.surfaceText
                 font.weight: Font.Medium
                 elide: Text.ElideRight
+                wrapMode: Text.NoWrap
+                maximumLineCount: 1
 
                 MouseArea {
                     anchors.fill: parent

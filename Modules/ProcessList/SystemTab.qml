@@ -54,8 +54,10 @@ ScrollView {
                         StyledText {
                             text: SysMonitorService.hostname
                             font.pixelSize: Theme.fontSizeXLarge
+                            font.family: Prefs.monoFontFamily
                             font.weight: Font.Light
                             color: Theme.surfaceText
+                            verticalAlignment: Text.AlignVCenter
                         }
 
                         StyledText {
@@ -63,6 +65,7 @@ ScrollView {
                             font.pixelSize: Theme.fontSizeMedium
                             font.family: Prefs.monoFontFamily
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                            verticalAlignment: Text.AlignVCenter
                         }
 
                         StyledText {
@@ -70,6 +73,7 @@ ScrollView {
                             font.pixelSize: Theme.fontSizeSmall
                             font.family: Prefs.monoFontFamily
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.6)
+                            verticalAlignment: Text.AlignVCenter
                         }
 
                         StyledText {
@@ -77,6 +81,7 @@ ScrollView {
                             font.pixelSize: Theme.fontSizeSmall
                             font.family: Prefs.monoFontFamily
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.6)
+                            verticalAlignment: Text.AlignVCenter
                         }
 
                     }
@@ -93,56 +98,141 @@ ScrollView {
                     width: parent.width
                     spacing: Theme.spacingXL
 
-                    Column {
+                    Rectangle {
                         width: (parent.width - Theme.spacingXL) / 2
-                        spacing: Theme.spacingS
+                        height: Math.max(hardwareColumn.implicitHeight, memoryColumn.implicitHeight) + Theme.spacingM
+                        radius: Theme.cornerRadius
+                        color: Qt.rgba(Theme.surfaceContainerHigh.r, Theme.surfaceContainerHigh.g, Theme.surfaceContainerHigh.b, 0.4)
+                        border.width: 1
+                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.1)
 
-                        StyledText {
-                            text: SysMonitorService.cpuModel
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.family: Prefs.monoFontFamily
-                            font.weight: Font.Medium
-                            color: Theme.surfaceText
-                            width: parent.width
-                            elide: Text.ElideRight
+                        Column {
+                            id: hardwareColumn
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: Theme.spacingM
+                            spacing: Theme.spacingXS
+
+                            Row {
+                                width: parent.width
+                                spacing: Theme.spacingS
+
+                                DankIcon {
+                                    name: "memory"
+                                    size: Theme.iconSizeSmall
+                                    color: Theme.primary
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                StyledText {
+                                    text: "Hardware"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    font.family: Prefs.monoFontFamily
+                                    font.weight: Font.Bold
+                                    color: Theme.primary
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            StyledText {
+                                text: SysMonitorService.cpuModel
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.family: Prefs.monoFontFamily
+                                font.weight: Font.Medium
+                                color: Theme.surfaceText
+                                width: parent.width
+                                elide: Text.ElideRight
+                                wrapMode: Text.Wrap
+                                maximumLineCount: 2
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
+                            StyledText {
+                                text: SysMonitorService.motherboard
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.family: Prefs.monoFontFamily
+                                color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.8)
+                                width: parent.width
+                                elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
+                            StyledText {
+                                text: "BIOS " + SysMonitorService.biosVersion
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.family: Prefs.monoFontFamily
+                                color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                                width: parent.width
+                                elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
+                            }
                         }
-
-                        StyledText {
-                            text: SysMonitorService.motherboard
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.family: Prefs.monoFontFamily
-                            font.weight: Font.Medium
-                            color: Theme.surfaceText
-                            width: parent.width
-                            elide: Text.ElideRight
-                        }
-
                     }
 
-                    Column {
+                    Rectangle {
                         width: (parent.width - Theme.spacingXL) / 2
-                        spacing: Theme.spacingS
+                        height: Math.max(hardwareColumn.implicitHeight, memoryColumn.implicitHeight) + Theme.spacingM
+                        radius: Theme.cornerRadius
+                        color: Qt.rgba(Theme.surfaceContainerHigh.r, Theme.surfaceContainerHigh.g, Theme.surfaceContainerHigh.b, 0.4)
+                        border.width: 1
+                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.1)
 
-                        StyledText {
-                            text: SysMonitorService.formatMemory(SysMonitorService.totalMemoryMB) + " Memory"
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.family: Prefs.monoFontFamily
-                            font.weight: Font.Medium
-                            color: Theme.surfaceText
-                            width: parent.width
-                            elide: Text.ElideRight
+                        Column {
+                            id: memoryColumn
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: Theme.spacingM
+                            spacing: Theme.spacingXS
+
+                            Row {
+                                width: parent.width
+                                spacing: Theme.spacingS
+
+                                DankIcon {
+                                    name: "developer_board"
+                                    size: Theme.iconSizeSmall
+                                    color: Theme.secondary
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                StyledText {
+                                    text: "Memory"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    font.family: Prefs.monoFontFamily
+                                    font.weight: Font.Bold
+                                    color: Theme.secondary
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            StyledText {
+                                text: SysMonitorService.formatSystemMemory(SysMonitorService.totalMemoryKB) + " Total"
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.family: Prefs.monoFontFamily
+                                font.weight: Font.Medium
+                                color: Theme.surfaceText
+                                width: parent.width
+                                elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
+                            StyledText {
+                                text: SysMonitorService.formatSystemMemory(SysMonitorService.usedMemoryKB) + " Used • " + SysMonitorService.formatSystemMemory(SysMonitorService.totalMemoryKB - SysMonitorService.usedMemoryKB) + " Available"
+                                font.pixelSize: Theme.fontSizeSmall
+                                font.family: Prefs.monoFontFamily
+                                color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
+                                width: parent.width
+                                elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
+                            }
+
+                            Item {
+                                width: parent.width
+                                height: Theme.fontSizeSmall + Theme.spacingXS
+                            }
                         }
-
-                        StyledText {
-                            text: "BIOS " + SysMonitorService.biosVersion
-                            font.pixelSize: Theme.fontSizeSmall
-                            font.family: Prefs.monoFontFamily
-                            font.weight: Font.Medium
-                            color: Theme.surfaceText
-                            width: parent.width
-                            elide: Text.ElideRight
-                        }
-
                     }
 
                 }
@@ -181,6 +271,7 @@ ScrollView {
                     StyledText {
                         text: "Storage & Disks"
                         font.pixelSize: Theme.fontSizeLarge
+                        font.family: Prefs.monoFontFamily
                         font.weight: Font.Bold
                         color: Theme.surfaceText
                         anchors.verticalCenter: parent.verticalCenter
@@ -206,6 +297,7 @@ ScrollView {
                                 color: Theme.surfaceText
                                 width: parent.width * 0.25
                                 elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
                             }
 
                             StyledText {
@@ -216,6 +308,7 @@ ScrollView {
                                 color: Theme.surfaceText
                                 width: parent.width * 0.2
                                 elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
                             }
 
                             StyledText {
@@ -226,6 +319,7 @@ ScrollView {
                                 color: Theme.surfaceText
                                 width: parent.width * 0.15
                                 elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
                             }
 
                             StyledText {
@@ -236,6 +330,7 @@ ScrollView {
                                 color: Theme.surfaceText
                                 width: parent.width * 0.15
                                 elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
                             }
 
                             StyledText {
@@ -246,6 +341,7 @@ ScrollView {
                                 color: Theme.surfaceText
                                 width: parent.width * 0.15
                                 elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
                             }
 
                             StyledText {
@@ -256,6 +352,7 @@ ScrollView {
                                 color: Theme.surfaceText
                                 width: parent.width * 0.1
                                 elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
                             }
 
                         }
@@ -290,6 +387,7 @@ ScrollView {
                                         width: parent.width * 0.25
                                         elide: Text.ElideRight
                                         anchors.verticalCenter: parent.verticalCenter
+                                        verticalAlignment: Text.AlignVCenter
                                     }
 
                                     StyledText {
@@ -300,6 +398,7 @@ ScrollView {
                                         width: parent.width * 0.2
                                         elide: Text.ElideRight
                                         anchors.verticalCenter: parent.verticalCenter
+                                        verticalAlignment: Text.AlignVCenter
                                     }
 
                                     StyledText {
@@ -310,6 +409,7 @@ ScrollView {
                                         width: parent.width * 0.15
                                         elide: Text.ElideRight
                                         anchors.verticalCenter: parent.verticalCenter
+                                        verticalAlignment: Text.AlignVCenter
                                     }
 
                                     StyledText {
@@ -320,6 +420,7 @@ ScrollView {
                                         width: parent.width * 0.15
                                         elide: Text.ElideRight
                                         anchors.verticalCenter: parent.verticalCenter
+                                        verticalAlignment: Text.AlignVCenter
                                     }
 
                                     StyledText {
@@ -330,6 +431,7 @@ ScrollView {
                                         width: parent.width * 0.15
                                         elide: Text.ElideRight
                                         anchors.verticalCenter: parent.verticalCenter
+                                        verticalAlignment: Text.AlignVCenter
                                     }
 
                                     StyledText {
@@ -349,6 +451,7 @@ ScrollView {
                                         width: parent.width * 0.1
                                         elide: Text.ElideRight
                                         anchors.verticalCenter: parent.verticalCenter
+                                        verticalAlignment: Text.AlignVCenter
                                     }
 
                                 }

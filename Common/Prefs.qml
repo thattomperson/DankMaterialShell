@@ -5,6 +5,7 @@ import QtCore
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.Services
 
 Singleton {
 
@@ -48,10 +49,42 @@ Singleton {
     property string wallpaperLastPath: ""
     property string profileLastPath: ""
     property bool doNotDisturb: false
-    property string fontFamily: "Noto Sans"
-    property string monoFontFamily: "JetBrains Mono"
+    property string fontFamily: "Inter Variable"
+    property string monoFontFamily: "Fira Code"
     property int fontWeight: Font.Normal
+    
+    readonly property string defaultFontFamily: "Inter Variable"
+    readonly property string defaultMonoFontFamily: "Fira Code"
+    
     readonly property string _homeUrl: StandardPaths.writableLocation(StandardPaths.HomeLocation)
+    
+    Timer {
+        id: fontCheckTimer
+        interval: 3000
+        repeat: false
+        onTriggered: {
+            var availableFonts = Qt.fontFamilies()
+            var missingFonts = []
+            
+            if (fontFamily === defaultFontFamily && !availableFonts.includes(defaultFontFamily)) {
+                missingFonts.push(defaultFontFamily)
+            }
+            if (monoFontFamily === defaultMonoFontFamily && !availableFonts.includes(defaultMonoFontFamily)) {
+                missingFonts.push(defaultMonoFontFamily)
+            }
+            
+            if (missingFonts.length > 0) {
+                var message = "Missing fonts: " + missingFonts.join(", ") + ". Using system defaults."
+                console.warn("Prefs: " + message)
+                ToastService.showWarning(message)
+            }
+        }
+    }
+    
+    Component.onCompleted: {
+        loadSettings();
+        fontCheckTimer.start()
+    }
 
     function loadSettings() {
         parseSettings(settingsFile.text());
@@ -95,8 +128,8 @@ Singleton {
                 wallpaperLastPath = settings.wallpaperLastPath !== undefined ? settings.wallpaperLastPath : "";
                 profileLastPath = settings.profileLastPath !== undefined ? settings.profileLastPath : "";
                 doNotDisturb = settings.doNotDisturb !== undefined ? settings.doNotDisturb : false;
-                fontFamily = settings.fontFamily !== undefined ? settings.fontFamily : "Noto Sans";
-                monoFontFamily = settings.monoFontFamily !== undefined ? settings.monoFontFamily : "JetBrains Mono";
+                fontFamily = settings.fontFamily !== undefined ? settings.fontFamily : defaultFontFamily;
+                monoFontFamily = settings.monoFontFamily !== undefined ? settings.monoFontFamily : defaultMonoFontFamily;
                 fontWeight = settings.fontWeight !== undefined ? settings.fontWeight : Font.Normal;
                         applyStoredTheme();
                         detectAvailableIconThemes();
@@ -542,9 +575,6 @@ Singleton {
     function _shq(s) {
         return "'" + String(s).replace(/'/g, "'\\''") + "'";
     }
-
-    Component.onCompleted: loadSettings()
-    
 
     FileView {
         id: settingsFile

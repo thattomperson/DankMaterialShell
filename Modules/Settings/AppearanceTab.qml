@@ -100,10 +100,22 @@ ScrollView {
                     width: parent.width
                     text: "Font Family"
                     description: "Select system font family"
-                    currentValue: Prefs.fontFamily || "System Default"
+                    currentValue: {
+                        if (Prefs.fontFamily === Prefs.defaultFontFamily) {
+                            return "Default";
+                        }
+                        return Prefs.fontFamily || "System Default";
+                    }
+                    enableFuzzySearch: true
+                    popupWidthOffset: 100
+                    maxPopupHeight: 400
                     options: {
                         var fonts = ["System Default"];
                         var availableFonts = Qt.fontFamilies();
+                        
+                        // Add default font at the top
+                        fonts.push("Default");
+                        
                         var rootFamilies = [];
                         var seenFamilies = new Set();
                         
@@ -113,6 +125,11 @@ ScrollView {
                             
                             // Skip fonts beginning with . (like .AppleSystem)
                             if (fontName.startsWith(".")) {
+                                continue;
+                            }
+                            
+                            // Skip the default font since we already added it as recommended
+                            if (fontName === Prefs.defaultFontFamily) {
                                 continue;
                             }
                             
@@ -134,7 +151,13 @@ ScrollView {
                         return fonts.concat(rootFamilies.sort());
                     }
                     onValueChanged: (value) => {
-                        Prefs.setFontFamily(value === "System Default" ? "Noto Sans" : value);
+                        if (value === "System Default") {
+                            Prefs.setFontFamily(Prefs.defaultFontFamily);
+                        } else if (value === "Default") {
+                            Prefs.setFontFamily(Prefs.defaultFontFamily);
+                        } else {
+                            Prefs.setFontFamily(value);
+                        }
                     }
                 }
 
@@ -179,10 +202,22 @@ ScrollView {
                     width: parent.width
                     text: "Monospace Font"
                     description: "Select monospace font for process list and technical displays"
-                    currentValue: Prefs.monoFontFamily || "System Default"
+                    currentValue: {
+                        if (Prefs.monoFontFamily === Prefs.defaultMonoFontFamily) {
+                            return "Default";
+                        }
+                        return Prefs.monoFontFamily || "System Default";
+                    }
+                    enableFuzzySearch: true
+                    popupWidthOffset: 100
+                    maxPopupHeight: 400
                     options: {
                         var fonts = ["System Default"];
                         var availableFonts = Qt.fontFamilies();
+                        
+                        // Add default mono font at the top
+                        fonts.push("Default");
+                        
                         var monoFamilies = [];
                         var seenFamilies = new Set();
                         
@@ -192,6 +227,11 @@ ScrollView {
                             
                             // Skip fonts beginning with .
                             if (fontName.startsWith(".")) {
+                                continue;
+                            }
+                            
+                            // Skip the default mono font since we already added it as recommended
+                            if (fontName === Prefs.defaultMonoFontFamily) {
                                 continue;
                             }
                             
@@ -225,7 +265,13 @@ ScrollView {
                         return fonts.concat(monoFamilies.sort());
                     }
                     onValueChanged: (value) => {
-                        Prefs.setMonoFontFamily(value === "System Default" ? "JetBrains Mono" : value);
+                        if (value === "System Default") {
+                            Prefs.setMonoFontFamily(Prefs.defaultMonoFontFamily);
+                        } else if (value === "Default") {
+                            Prefs.setMonoFontFamily(Prefs.defaultMonoFontFamily);
+                        } else {
+                            Prefs.setMonoFontFamily(value);
+                        }
                     }
                 }
             }

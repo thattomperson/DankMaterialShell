@@ -211,18 +211,49 @@ Column {
     ListView {
         id: processListView
 
+        property real stableY: 0
+        property bool isUserScrolling: false
+        property bool isScrollBarDragging: false
+
         width: parent.width
         height: parent.height - columnHeaders.height
         clip: true
         spacing: 4
         model: SysMonitorService.processes
+        boundsBehavior: Flickable.StopAtBounds
+        flickDeceleration: 1500
+        maximumFlickVelocity: 2000
+
+        onMovementStarted: isUserScrolling = true
+        onMovementEnded: {
+            isUserScrolling = false
+            if (contentY > 40) {
+                stableY = contentY
+            }
+        }
+
+        onContentYChanged: {
+            if (!isUserScrolling && !isScrollBarDragging && visible && stableY > 40 && Math.abs(contentY - stableY) > 10) {
+                contentY = stableY
+            }
+        }
 
         delegate: ProcessListItem {
             process: modelData
             contextMenu: root.contextMenu
         }
 
-        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+        ScrollBar.vertical: ScrollBar { 
+            id: verticalScrollBar
+            policy: ScrollBar.AsNeeded 
+            
+            onPressedChanged: {
+                processListView.isScrollBarDragging = pressed
+                if (!pressed && processListView.contentY > 40) {
+                    processListView.stableY = processListView.contentY
+                }
+            }
+        }
         ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
 
         property real wheelMultiplier: 1.8
@@ -274,8 +305,11 @@ Column {
         }
 
         onModelChanged: {
-            if (model && model.length > 0) {
-                restoreAnchor();
+            if (model && model.length > 0 && !isUserScrolling && stableY > 40) {
+                // Preserve scroll position when model updates
+                Qt.callLater(function() {
+                    contentY = stableY
+                })
             }
         }
     }
