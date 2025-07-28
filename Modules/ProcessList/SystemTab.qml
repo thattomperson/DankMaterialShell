@@ -143,8 +143,8 @@ ScrollView {
                                 color: Theme.surfaceText
                                 width: parent.width
                                 elide: Text.ElideRight
-                                wrapMode: Text.Wrap
-                                maximumLineCount: 2
+                                wrapMode: Text.NoWrap
+                                maximumLineCount: 1
                                 verticalAlignment: Text.AlignVCenter
                             }
 
@@ -155,6 +155,8 @@ ScrollView {
                                 color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.8)
                                 width: parent.width
                                 elide: Text.ElideRight
+                                wrapMode: Text.NoWrap
+                                maximumLineCount: 1
                                 verticalAlignment: Text.AlignVCenter
                             }
 
