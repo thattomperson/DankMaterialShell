@@ -27,14 +27,6 @@ Singleton {
         }
     }
     
-    function increaseBrightness() {
-        setBrightness(brightnessLevel + 10);
-    }
-    
-    function decreaseBrightness() {
-        setBrightness(brightnessLevel - 10);
-    }
-    
     Component.onCompleted: {
         ddcAvailabilityChecker.running = true;
         laptopBacklightChecker.running = true;

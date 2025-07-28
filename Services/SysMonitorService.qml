@@ -357,31 +357,6 @@ Singleton {
             return (mem / (1024 * 1024)).toFixed(1) + " GB";
     }
 
-    function formatMemory(mb) {
-        const mem = mb || 0;
-        if (mem >= 1024)
-            return (mem / 1024).toFixed(1) + " GB";
-        return mem.toFixed(0) + " MB";
-    }
-
-    function getCpuUsageColor() {
-        if (cpuUsage > 80) return "#e74c3c";
-        if (cpuUsage > 60) return "#f39c12";
-        return "#27ae60";
-    }
-
-    function getMemoryUsageColor() {
-        if (memoryUsage > 90) return "#e74c3c";
-        if (memoryUsage > 75) return "#f39c12";
-        return "#3498db";
-    }
-
-    function getTemperatureColor() {
-        if (cpuTemperature > 80) return "#e74c3c";
-        if (cpuTemperature > 65) return "#f39c12";
-        return "#27ae60";
-    }
-
     Timer {
         id: updateTimer
         interval: root.updateInterval

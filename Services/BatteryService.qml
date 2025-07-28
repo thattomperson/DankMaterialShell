@@ -54,9 +54,4 @@ Singleton {
         else
             return minutes + "m";
     }
-
-    function getBluetoothDevices() {
-        return bluetoothDevices;
-    }
-
 }

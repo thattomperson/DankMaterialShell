@@ -114,9 +114,6 @@ Singleton {
         return !device.paired && !device.pairing && !device.blocked;
     }
 
-    function debugDevice(device) {
-        console.log("Device:", device.name, "paired:", device.paired, "connected:", device.connected, "signalStrength:", device.signalStrength);
-    }
 
 
     function getSignalStrength(device) {
@@ -170,7 +167,4 @@ Singleton {
         device.trusted = true;
         device.connect();
     }
-
-
-
 }

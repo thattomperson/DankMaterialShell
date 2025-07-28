@@ -17,8 +17,6 @@ Singleton {
     
     property list<NotifWrapper> notificationQueue: []
     property list<NotifWrapper> visibleNotifications: []
-    property list<NotifWrapper> history: []
-    property int maxHistory: 200
     property int maxVisibleNotifications: 3
     property bool addGateBusy: false
     property int enterAnimMs: 400
@@ -42,10 +40,6 @@ Singleton {
     property var expandedMessages: ({})
     property bool popupsDisabled: false
     
-    // Notification persistence settings
-    property int maxStoredNotifications: 100
-    property int maxNotificationAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
-    property var persistedNotifications: ([]) // Stored notification history
 
     NotificationServer {
         id: server
@@ -71,7 +65,6 @@ Singleton {
             if (wrapper) {
                 root.allWrappers.push(wrapper);
                 root.notifications.push(wrapper);
-                addToPersistentStorage(wrapper);
                 
                 if (shouldShowPopup) {
                     notificationQueue = [...notificationQueue, wrapper];
@@ -209,10 +202,6 @@ Singleton {
         wrapper.notification.dismiss();
     }
     
-    function hidePopup(wrapper) {
-        wrapper.popup = false;
-    }
-    
     function disablePopups(disable) {
         popupsDisabled = disable;
         if (disable) {
@@ -267,15 +256,8 @@ Singleton {
             notificationQueue = q; 
         }
 
-        // Push to bounded history or destroy if non-persistent
-        if (w && w.isPersistent) {
-            let h = history.slice(); 
-            h.push(w);
-            if (h.length > maxHistory) {
-                h.splice(0, h.length - maxHistory);
-            }
-            history = h;
-        } else if (w && w.destroy) {
+        // Destroy wrapper if non-persistent
+        if (w && w.destroy && !w.isPersistent) {
             w.destroy();
         }
     }
@@ -383,7 +365,6 @@ Singleton {
         }
     }
     
-    
     function clearGroupExpansionState(groupKey) {
         let newExpandedGroups = {};
         for (const key in expandedGroups) {
@@ -393,7 +374,6 @@ Singleton {
         }
         expandedGroups = newExpandedGroups;
     }
-
 
     function cleanupExpansionStates() {
         const currentGroupKeys = new Set(groupedNotifications.map(g => g.key));
@@ -428,48 +408,6 @@ Singleton {
         expandedMessages = newExpandedMessages;
     }
 
-    function getGroupTitle(group) {
-        if (group.count === 1) {
-            return group.latestNotification.summary;
-        }
-        return `${group.count} notifications`;
-    }
-    
-    function getGroupBody(group) {
-        if (group.count === 1) {
-            return group.latestNotification.htmlBody; // Use HTML body
-        }
-        return `Latest: ${group.latestNotification.summary}`;
-    }
-
-    function addToPersistentStorage(wrapper) {
-        const persistedNotif = {
-            id: wrapper.notification.id,
-            appName: wrapper.appName,
-            summary: wrapper.summary,
-            body: wrapper.body,
-            htmlBody: wrapper.htmlBody, // Store HTML version too
-            appIcon: wrapper.appIcon,
-            image: wrapper.image,
-            urgency: wrapper.urgency,
-            timestamp: wrapper.time.getTime(),
-        };
-        persistedNotifications.unshift(persistedNotif);
-        cleanupPersistentStorage();
-    }
-
-    function cleanupPersistentStorage() {
-        const now = new Date().getTime();
-        let newPersisted = [];
-        for (let i = 0; i < persistedNotifications.length && i < maxStoredNotifications; i++) {
-            const notif = persistedNotifications[i];
-            if (now - notif.timestamp < maxNotificationAge) {
-                newPersisted.push(notif);
-            }
-        }
-        persistedNotifications = newPersisted;
-    }
-
 
     Connections {
         target: Prefs
@@ -488,7 +426,4 @@ Singleton {
         }
     }
 
-    Component.onCompleted: {
-        cleanupPersistentStorage();
-    }
 }

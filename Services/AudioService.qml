@@ -14,55 +14,6 @@ Singleton {
     
     signal volumeChanged()
 
-    function displayName(node) {
-        if (!node) return ""
-        
-        if (node.properties && node.properties["device.description"]) {
-            return node.properties["device.description"]
-        }
-
-        if (node.description && node.description !== node.name) {
-            return node.description
-        }
-
-        if (node.nickname && node.nickname !== node.name) {
-            return node.nickname
-        }
-
-        if (node.name.includes("analog-stereo")) return "Built-in Speakers"
-        else if (node.name.includes("bluez")) return "Bluetooth Audio"
-        else if (node.name.includes("usb")) return "USB Audio"
-        else if (node.name.includes("hdmi")) return "HDMI Audio"
-
-        return node.name
-    }
-
-    function subtitle(name) {
-        if (!name) return ""
-
-        if (name.includes('usb-')) {
-            if (name.includes('SteelSeries')) {
-                return "USB Gaming Headset"
-            } else if (name.includes('Generic')) {
-                return "USB Audio Device"
-            }
-            return "USB Audio"
-        } else if (name.includes('pci-')) {
-            if (name.includes('01_00.1') || name.includes('01:00.1')) {
-                return "NVIDIA GPU Audio"
-            }
-            return "PCI Audio"
-        } else if (name.includes('bluez')) {
-            return "Bluetooth Audio"
-        } else if (name.includes('analog')) {
-            return "Built-in Audio"
-        } else if (name.includes('hdmi')) {
-            return "HDMI Audio"
-        }
-
-        return ""
-    }
-
     PwObjectTracker {
         objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource]
     }
@@ -73,30 +24,13 @@ Singleton {
         if (root.sink && root.sink.audio) {
             const clampedVolume = Math.max(0, Math.min(100, percentage));
             root.sink.audio.volume = clampedVolume / 100;
+            root.volumeChanged();
             return "Volume set to " + clampedVolume + "%";
         }
         return "No audio sink available";
     }
 
-    function incrementVolume(step) {
-        if (root.sink && root.sink.audio) {
-            const currentVolume = Math.round(root.sink.audio.volume * 100);
-            const newVolume = Math.max(0, Math.min(100, currentVolume + step));
-            root.sink.audio.volume = newVolume / 100;
-            return "Volume increased to " + newVolume + "%";
-        }
-        return "No audio sink available";
-    }
 
-    function decrementVolume(step) {
-        if (root.sink && root.sink.audio) {
-            const currentVolume = Math.round(root.sink.audio.volume * 100);
-            const newVolume = Math.max(0, Math.min(100, currentVolume - step));
-            root.sink.audio.volume = newVolume / 100;
-            return "Volume decreased to " + newVolume + "%";
-        }
-        return "No audio sink available";
-    }
 
     function toggleMute() {
         if (root.sink && root.sink.audio) {
@@ -128,27 +62,33 @@ Singleton {
         target: "audio"
 
         function setvolume(percentage: string): string {
-            const result = root.setVolume(parseInt(percentage));
-            root.volumeChanged();
-            return result;
+            return root.setVolume(parseInt(percentage));
         }
 
         function increment(step: string): string {
-            const result = root.incrementVolume(parseInt(step || "5"));
-            root.volumeChanged();
-            return result;
+            if (root.sink && root.sink.audio) {
+                const currentVolume = Math.round(root.sink.audio.volume * 100);
+                const newVolume = Math.max(0, Math.min(100, currentVolume + parseInt(step || "5")));
+                root.sink.audio.volume = newVolume / 100;
+                root.volumeChanged();
+                return "Volume increased to " + newVolume + "%";
+            }
+            return "No audio sink available";
         }
 
         function decrement(step: string): string {
-            const result = root.decrementVolume(parseInt(step || "5"));
-            root.volumeChanged();
-            return result;
+            if (root.sink && root.sink.audio) {
+                const currentVolume = Math.round(root.sink.audio.volume * 100);
+                const newVolume = Math.max(0, Math.min(100, currentVolume - parseInt(step || "5")));
+                root.sink.audio.volume = newVolume / 100;
+                root.volumeChanged();
+                return "Volume decreased to " + newVolume + "%";
+            }
+            return "No audio sink available";
         }
 
         function mute(): string {
-            const result = root.toggleMute();
-            root.volumeChanged();
-            return result;
+            return root.toggleMute();
         }
 
         function setmic(percentage: string): string {

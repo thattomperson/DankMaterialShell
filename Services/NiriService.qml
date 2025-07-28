@@ -333,13 +333,6 @@ Singleton {
         return false
     }
     
-    function getWorkspaceByIndex(index) {
-        if (index >= 0 && index < allWorkspaces.length) {
-            return allWorkspaces[index]
-        }
-        return null
-    }
-    
     function getCurrentOutputWorkspaceNumbers() {
         return currentOutputWorkspaces.map(w => w.idx + 1) // niri uses 0-based, UI shows 1-based
     }
@@ -349,18 +342,5 @@ Singleton {
             return allWorkspaces[focusedWorkspaceIndex].idx + 1
         }
         return 1
-    }
-    
-    function isWorkspaceActive(workspaceNumber) {
-        return workspaceNumber === getCurrentWorkspaceNumber()
-    }
-    
-    // For compatibility with existing components
-    function getCurrentWorkspace() {
-        return getCurrentWorkspaceNumber()
-    }
-    
-    function getWorkspaceList() {
-        return getCurrentOutputWorkspaceNumbers()
     }
 }
