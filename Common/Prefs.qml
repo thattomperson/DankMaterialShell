@@ -218,6 +218,9 @@ Singleton {
 
     function setLightMode(lightMode) {
         isLightMode = lightMode;
+        if (typeof Theme !== "undefined") {
+            Theme.isLightMode = lightMode;
+        }
         saveSettings();
     }
 
@@ -738,6 +741,29 @@ Singleton {
         function clear(): string {
             root.setWallpaper("")
             return "SUCCESS: Wallpaper cleared"
+        }
+    }
+
+    IpcHandler {
+        target: "theme"
+
+        function toggle(): string {
+            root.setLightMode(!root.isLightMode)
+            return root.isLightMode ? "light" : "dark"
+        }
+
+        function light(): string {
+            root.setLightMode(true)
+            return "light"
+        }
+
+        function dark(): string {
+            root.setLightMode(false)
+            return "dark"  
+        }
+
+        function get(): string {
+            return root.isLightMode ? "light" : "dark"
         }
     }
 }

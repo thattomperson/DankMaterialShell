@@ -7,7 +7,6 @@ import qs.Common
 ListView {
     id: listView
 
-    property int currentIndex: 0
     property int itemHeight: 72
     property int iconSize: 56
     property bool showDescription: true
@@ -23,15 +22,15 @@ ListView {
 
     // Ensure the current item is visible
     function ensureVisible(index) {
-        if (index < 0 || index >= listView.count)
+        if (index < 0 || index >= count)
             return ;
 
         var itemY = index * (itemHeight + itemSpacing);
         var itemBottom = itemY + itemHeight;
-        if (itemY < listView.contentY)
-            listView.contentY = itemY;
-        else if (itemBottom > listView.contentY + listView.height)
-            listView.contentY = itemBottom - listView.height;
+        if (itemY < contentY)
+            contentY = itemY;
+        else if (itemBottom > contentY + height)
+            contentY = itemBottom - height;
     }
 
     onCurrentIndexChanged: {
@@ -50,12 +49,12 @@ ListView {
     WheelHandler {
         target: null
         onWheel: (ev) => {
-            let dy = ev.pixelDelta.y !== 0 ? ev.pixelDelta.y : (ev.angleDelta.y / 120) * listView.wheelBaseStep;
+            let dy = ev.pixelDelta.y !== 0 ? ev.pixelDelta.y : (ev.angleDelta.y / 120) * wheelBaseStep;
             if (ev.inverted)
                 dy = -dy;
 
-            const maxY = Math.max(0, listView.contentHeight - listView.height);
-            listView.contentY = Math.max(0, Math.min(maxY, listView.contentY - dy * listView.wheelMultiplier));
+            const maxY = Math.max(0, contentHeight - height);
+            contentY = Math.max(0, Math.min(maxY, contentY - dy * wheelMultiplier));
             ev.accepted = true;
         }
     }
@@ -69,7 +68,7 @@ ListView {
     }
 
     delegate: Rectangle {
-        width: listView.width
+        width: ListView.view.width
         height: itemHeight
         radius: Theme.cornerRadiusLarge
         color: ListView.isCurrentItem ? Theme.primaryPressed : mouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
@@ -152,7 +151,7 @@ ListView {
             z: 10
             onEntered: {
                 if (hoverUpdatesSelection && !keyboardNavigationActive)
-                    listView.currentIndex = index;
+                    currentIndex = index;
 
                 itemHovered(index);
             }

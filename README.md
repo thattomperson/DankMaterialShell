@@ -125,6 +125,10 @@ qs -c DankMaterialShell ipc call <target> <function>
 | wallpaper | get | none | Get current wallpaper path |
 | wallpaper | set | path (string) | Set wallpaper to image path and refresh theme |
 | wallpaper | clear | none | Clear current wallpaper |
+| theme | get | none | Get current theme mode (light/dark) |
+| theme | toggle | none | Toggle between light and dark mode |
+| theme | light | none | Set theme to light mode |
+| theme | dark | none | Set theme to dark mode |
 | notifs | clear | none | Clear all notifications |
 
 
