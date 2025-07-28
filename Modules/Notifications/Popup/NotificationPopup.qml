@@ -286,7 +286,7 @@ PanelWindow {
             }
 
             Row {
-                anchors.right: dismissButton.left
+                anchors.right: clearButton.left
                 anchors.rightMargin: 8
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 8
@@ -335,23 +335,23 @@ PanelWindow {
             }
 
             Rectangle {
-                id: dismissButton
+                id: clearButton
                 property bool isHovered: false
 
                 anchors.right: parent.right
                 anchors.rightMargin: 16
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 8
-                width: Math.max(dismissText.implicitWidth + 12, 50)
+                width: Math.max(clearText.implicitWidth + 12, 50)
                 height: 24
                 radius: 4
                 color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
                 z: 20
 
                 StyledText {
-                    id: dismissText
-                    text: "Dismiss"
-                    color: dismissButton.isHovered ? Theme.primary : Theme.surfaceVariantText
+                    id: clearText
+                    text: "Clear"
+                    color: clearButton.isHovered ? Theme.primary : Theme.surfaceVariantText
                     font.pixelSize: Theme.fontSizeSmall
                     font.weight: Font.Medium
                     anchors.centerIn: parent
@@ -362,8 +362,8 @@ PanelWindow {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     acceptedButtons: Qt.LeftButton
-                    onEntered: dismissButton.isHovered = true
-                    onExited: dismissButton.isHovered = false
+                    onEntered: clearButton.isHovered = true
+                    onExited: clearButton.isHovered = false
                     onClicked: {
                         if (notificationData && !win.exiting) {
                             NotificationService.dismissNotification(notificationData);
