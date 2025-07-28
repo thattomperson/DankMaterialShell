@@ -48,6 +48,9 @@ Singleton {
     property string wallpaperLastPath: ""
     property string profileLastPath: ""
     property bool doNotDisturb: false
+    property string fontFamily: "Noto Sans"
+    property string monoFontFamily: "JetBrains Mono"
+    property int fontWeight: Font.Normal
     readonly property string _homeUrl: StandardPaths.writableLocation(StandardPaths.HomeLocation)
 
     function loadSettings() {
@@ -92,6 +95,9 @@ Singleton {
                 wallpaperLastPath = settings.wallpaperLastPath !== undefined ? settings.wallpaperLastPath : "";
                 profileLastPath = settings.profileLastPath !== undefined ? settings.profileLastPath : "";
                 doNotDisturb = settings.doNotDisturb !== undefined ? settings.doNotDisturb : false;
+                fontFamily = settings.fontFamily !== undefined ? settings.fontFamily : "Noto Sans";
+                monoFontFamily = settings.monoFontFamily !== undefined ? settings.monoFontFamily : "JetBrains Mono";
+                fontWeight = settings.fontWeight !== undefined ? settings.fontWeight : Font.Normal;
                         applyStoredTheme();
                         detectAvailableIconThemes();
                         detectQtTools();
@@ -140,7 +146,10 @@ Singleton {
             "wallpaperDynamicTheming": wallpaperDynamicTheming,
             "wallpaperLastPath": wallpaperLastPath,
             "profileLastPath": profileLastPath,
-            "doNotDisturb": doNotDisturb
+            "doNotDisturb": doNotDisturb,
+            "fontFamily": fontFamily,
+            "monoFontFamily": monoFontFamily,
+            "fontWeight": fontWeight
         }, null, 2));
     }
 
@@ -406,8 +415,8 @@ Singleton {
                 "remove_icon_theme " + home + "/.config/qt5ct/qt5ct.conf\n" +
                 "remove_icon_theme " + home + "/.config/qt6ct/qt6ct.conf\n" +
                 "rm -f " + home + "/.config/environment.d/95-qtct.conf 2>/dev/null || true\n" +
-                "systemctl --user import-environment --unset=QT_QPA_PLATFORMTHEME 2>/dev/null || true\n" +
-                "dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME= 2>/dev/null || true\n" +
+                "systemctl --user import-environment --unset=QT_QPA_PLATFORMTHEME --unset=QT_QPA_PLATFORMTHEME_QT6 2>/dev/null || true\n" +
+                "dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME= QT_QPA_PLATFORMTHEME_QT6= 2>/dev/null || true\n" +
                 "rm -rf " + home + "/.cache/icon-cache " + home + "/.cache/thumbnails 2>/dev/null || true\n";
 
             Quickshell.execDetached(["sh", "-lc", revertScript]);
@@ -440,14 +449,14 @@ Singleton {
             "update_qt_config " + home + "/.config/qt5ct/qt5ct.conf " + _shq(qtThemeName) + "\n" +
             "update_qt_config " + home + "/.config/qt6ct/qt6ct.conf " + _shq(qtThemeName) + "\n" +
             "if command -v qt6ct >/dev/null 2>&1; then\n" +
-            "  printf 'QT_QPA_PLATFORMTHEME=qt6ct\\n' > " + home + "/.config/environment.d/95-qtct.conf\n" +
+            "  printf 'QT_QPA_PLATFORMTHEME=qt6ct\\nQT_QPA_PLATFORMTHEME_QT6=qt6ct\\n' > " + home + "/.config/environment.d/95-qtct.conf\n" +
             "elif command -v qt5ct >/dev/null 2>&1; then\n" +
             "  printf 'QT_QPA_PLATFORMTHEME=qt5ct\\n' > " + home + "/.config/environment.d/95-qtct.conf\n" +
             "else\n" +
             "  rm -f " + home + "/.config/environment.d/95-qtct.conf 2>/dev/null || true\n" +
             "fi\n" +
-            "systemctl --user import-environment QT_QPA_PLATFORMTHEME 2>/dev/null || true\n" +
-            "dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME 2>/dev/null || true\n" +
+            "systemctl --user import-environment QT_QPA_PLATFORMTHEME QT_QPA_PLATFORMTHEME_QT6 2>/dev/null || true\n" +
+            "dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME QT_QPA_PLATFORMTHEME_QT6 2>/dev/null || true\n" +
             "rm -rf " + home + "/.cache/icon-cache " + home + "/.cache/thumbnails 2>/dev/null || true\n";
 
         Quickshell.execDetached(["sh", "-lc", script]);
@@ -510,6 +519,21 @@ Singleton {
 
     function setDoNotDisturb(enabled) {
         doNotDisturb = enabled;
+        saveSettings();
+    }
+
+    function setFontFamily(family) {
+        fontFamily = family;
+        saveSettings();
+    }
+
+    function setFontWeight(weight) {
+        fontWeight = weight;
+        saveSettings();
+    }
+
+    function setMonoFontFamily(family) {
+        monoFontFamily = family;
         saveSettings();
     }
 

@@ -276,7 +276,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        Text {
+                        StyledText {
                             text: model.name || "Unknown"
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceText
@@ -309,7 +309,7 @@ Item {
 
             }
 
-            Text {
+            StyledText {
                 anchors.centerIn: parent
                 text: root.isLoading ? "Searching..." : "No locations found"
                 font.pixelSize: Theme.fontSizeMedium

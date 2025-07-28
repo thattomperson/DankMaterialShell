@@ -33,7 +33,7 @@ ScrollView {
             spacing: Theme.spacingM
             visible: BrightnessService.brightnessAvailable
 
-            Text {
+            StyledText {
                 text: "Brightness"
                 font.pixelSize: Theme.fontSizeLarge
                 color: Theme.surfaceText
@@ -58,7 +58,7 @@ ScrollView {
                 }
             }
 
-            Text {
+            StyledText {
                 text: "using ddc - changes may take a moment to apply"
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceVariantText
@@ -73,7 +73,7 @@ ScrollView {
             width: parent.width
             spacing: Theme.spacingM
 
-            Text {
+            StyledText {
                 text: "Display Settings"
                 font.pixelSize: Theme.fontSizeLarge
                 color: Theme.surfaceText
@@ -105,7 +105,7 @@ ScrollView {
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
 
-                        Text {
+                        StyledText {
                             text: "Night Mode"
                             font.pixelSize: Theme.fontSizeMedium
                             color: Prefs.nightModeEnabled ? Theme.primary : Theme.surfaceText
@@ -156,7 +156,7 @@ ScrollView {
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
 
-                        Text {
+                        StyledText {
                             text: Theme.isLightMode ? "Light Mode" : "Dark Mode"
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.isLightMode ? Theme.primary : Theme.surfaceText

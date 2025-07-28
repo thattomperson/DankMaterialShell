@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
+import qs.Widgets
 
 PanelWindow {
     id: root
@@ -117,7 +118,7 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: Theme.spacingXS
 
-                        Text {
+                        StyledText {
                             text: modelData.text || ""
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceText

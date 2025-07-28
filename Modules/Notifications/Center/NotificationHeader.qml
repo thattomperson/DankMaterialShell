@@ -15,7 +15,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.spacingXS
 
-        Text {
+        StyledText {
             text: "Notifications"
             font.pixelSize: Theme.fontSizeLarge
             color: Theme.surfaceText
@@ -46,7 +46,7 @@ Item {
                 visible: doNotDisturbButton.children[1].containsMouse // Access StateLayer's containsMouse
                 opacity: visible ? 1 : 0
 
-                Text {
+                StyledText {
                     id: tooltipText
 
                     text: "Do Not Disturb"
@@ -90,7 +90,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
             }
 
-            Text {
+            StyledText {
                 text: "Clear All"
                 font.pixelSize: Theme.fontSizeSmall
                 color: clearArea.containsMouse ? Theme.primary : Theme.surfaceText

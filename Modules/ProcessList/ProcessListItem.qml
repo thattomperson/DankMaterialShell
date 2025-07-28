@@ -65,9 +65,10 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        Text {
+        StyledText {
             text: process ? process.displayName : ""
             font.pixelSize: Theme.fontSizeSmall
+            font.family: Prefs.monoFontFamily
             font.weight: Font.Medium
             color: Theme.surfaceText
             width: 250
@@ -96,9 +97,10 @@ Rectangle {
             anchors.rightMargin: 194
             anchors.verticalCenter: parent.verticalCenter
 
-            Text {
+            StyledText {
                 text: SysMonitorService.formatCpuUsage(process ? process.cpu : 0)
                 font.pixelSize: Theme.fontSizeSmall
+                font.family: Prefs.monoFontFamily
                 font.weight: Font.Bold
                 color: {
                     if (process && process.cpu > 80)
@@ -133,9 +135,10 @@ Rectangle {
             anchors.rightMargin: 102
             anchors.verticalCenter: parent.verticalCenter
 
-            Text {
+            StyledText {
                 text: SysMonitorService.formatMemoryUsage(process ? process.memoryKB : 0)
                 font.pixelSize: Theme.fontSizeSmall
+                font.family: Prefs.monoFontFamily
                 font.weight: Font.Bold
                 color: {
                     if (process && process.memoryKB > 1024 * 1024)
@@ -151,9 +154,10 @@ Rectangle {
 
         }
 
-        Text {
+        StyledText {
             text: process ? process.pid.toString() : ""
             font.pixelSize: Theme.fontSizeSmall
+            font.family: Prefs.monoFontFamily
             color: Theme.surfaceText
             opacity: 0.7
             width: 50

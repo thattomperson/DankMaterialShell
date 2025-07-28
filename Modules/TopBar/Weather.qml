@@ -34,11 +34,10 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        Text {
+        StyledText {
             text: (Prefs.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp) + "°" + (Prefs.useFahrenheit ? "F" : "C")
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceText
-            font.weight: Font.Medium
             anchors.verticalCenter: parent.verticalCenter
         }
 

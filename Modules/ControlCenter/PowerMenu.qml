@@ -69,7 +69,7 @@ PanelWindow {
             Row {
                 width: parent.width
 
-                Text {
+                StyledText {
                     text: "Power Options"
                     font.pixelSize: Theme.fontSizeLarge
                     color: Theme.surfaceText
@@ -119,7 +119,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        Text {
+                        StyledText {
                             text: "Log Out"
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceText
@@ -166,7 +166,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        Text {
+                        StyledText {
                             text: "Suspend"
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceText
@@ -213,7 +213,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        Text {
+                        StyledText {
                             text: "Reboot"
                             font.pixelSize: Theme.fontSizeMedium
                             color: rebootArea.containsMouse ? Theme.warning : Theme.surfaceText
@@ -260,7 +260,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        Text {
+                        StyledText {
                             text: "Power Off"
                             font.pixelSize: Theme.fontSizeMedium
                             color: powerOffArea.containsMouse ? Theme.error : Theme.surfaceText

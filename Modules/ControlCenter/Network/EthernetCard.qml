@@ -39,7 +39,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
 
-            Text {
+            StyledText {
                 text: "Ethernet"
                 font.pixelSize: Theme.fontSizeMedium
                 color: NetworkService.networkStatus === "ethernet" ? Theme.primary : Theme.surfaceText
@@ -49,7 +49,7 @@ Rectangle {
             }
         }
 
-        Text {
+        StyledText {
             text: NetworkService.ethernetConnected ? (NetworkService.ethernetIP || "Connected") : "Disconnected"
             font.pixelSize: Theme.fontSizeSmall
             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)

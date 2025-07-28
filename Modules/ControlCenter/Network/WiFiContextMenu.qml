@@ -101,7 +101,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
-                Text {
+                StyledText {
                     text: wifiContextMenuWindow.networkData && wifiContextMenuWindow.networkData.connected ? "Disconnect" : "Connect"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText
@@ -182,7 +182,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
-                Text {
+                StyledText {
                     text: "Forget Network"
                     font.pixelSize: Theme.fontSizeSmall
                     color: forgetWifiArea.containsMouse ? Theme.error : Theme.surfaceText
@@ -233,7 +233,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
-                Text {
+                StyledText {
                     text: "Network Info"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText

@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Row {
     width: parent.width
@@ -44,7 +45,7 @@ Row {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
 
-            Text {
+            StyledText {
                 text: "CPU"
                 font.pixelSize: Theme.fontSizeSmall
                 font.weight: Font.Medium
@@ -52,14 +53,14 @@ Row {
                 opacity: SysMonitorService.sortBy === "cpu" ? 1 : 0.8
             }
 
-            Text {
+            StyledText {
                 text: SysMonitorService.totalCpuUsage.toFixed(1) + "%"
                 font.pixelSize: Theme.fontSizeLarge
                 font.weight: Font.Bold
                 color: Theme.surfaceText
             }
 
-            Text {
+            StyledText {
                 text: SysMonitorService.cpuCount + " cores"
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceText
@@ -114,7 +115,7 @@ Row {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
 
-            Text {
+            StyledText {
                 text: "Memory"
                 font.pixelSize: Theme.fontSizeSmall
                 font.weight: Font.Medium
@@ -122,14 +123,14 @@ Row {
                 opacity: SysMonitorService.sortBy === "memory" ? 1 : 0.8
             }
 
-            Text {
+            StyledText {
                 text: SysMonitorService.formatSystemMemory(SysMonitorService.usedMemoryKB)
                 font.pixelSize: Theme.fontSizeLarge
                 font.weight: Font.Bold
                 color: Theme.surfaceText
             }
 
-            Text {
+            StyledText {
                 text: "of " + SysMonitorService.formatSystemMemory(SysMonitorService.totalMemoryKB)
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceText
@@ -168,7 +169,7 @@ Row {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
 
-            Text {
+            StyledText {
                 text: "Swap"
                 font.pixelSize: Theme.fontSizeSmall
                 font.weight: Font.Medium
@@ -176,14 +177,14 @@ Row {
                 opacity: 0.8
             }
 
-            Text {
+            StyledText {
                 text: SysMonitorService.totalSwapKB > 0 ? SysMonitorService.formatSystemMemory(SysMonitorService.usedSwapKB) : "None"
                 font.pixelSize: Theme.fontSizeLarge
                 font.weight: Font.Bold
                 color: Theme.surfaceText
             }
 
-            Text {
+            StyledText {
                 text: SysMonitorService.totalSwapKB > 0 ? "of " + SysMonitorService.formatSystemMemory(SysMonitorService.totalSwapKB) : "No swap configured"
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceText

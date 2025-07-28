@@ -102,7 +102,7 @@ Item {
                     visible: (sliderMouseArea.containsMouse && slider.showValue) || (slider.isDragging && slider.showValue)
                     opacity: visible ? 1 : 0
 
-                    Text {
+                    StyledText {
                         id: tooltipText
 
                         text: slider.value + slider.unit

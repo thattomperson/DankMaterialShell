@@ -110,7 +110,7 @@ Item {
             width: 400
             height: 140
 
-            Text {
+            StyledText {
                 id: clockText
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
@@ -128,7 +128,7 @@ Item {
                 }
             }
 
-            Text {
+            StyledText {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: clockText.bottom
                 anchors.topMargin: -20
@@ -298,7 +298,7 @@ Item {
                     }
                 }
 
-                Text {
+                StyledText {
                     id: placeholder
                     anchors.left: lockIcon.right
                     anchors.leftMargin: Theme.spacingM
@@ -334,7 +334,7 @@ Item {
                     }
                 }
 
-                Text {
+                StyledText {
                     anchors.left: lockIcon.right
                     anchors.leftMargin: Theme.spacingM
                     anchors.right: (revealButton.visible ? revealButton.left : (enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right)))
@@ -470,7 +470,7 @@ Item {
             
             }
             
-            Text {
+            StyledText {
                 Layout.fillWidth: true
                 Layout.preferredHeight: placeholder.pamState ? 20 : 0
                 text: {
@@ -501,7 +501,7 @@ Item {
             }
         }
 
-        Text {
+        StyledText {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.margins: Theme.spacingXL
@@ -512,7 +512,7 @@ Item {
             visible: demoMode
         }
 
-        Text {
+        StyledText {
             anchors.top: parent.top
             anchors.right: parent.right
             anchors.margins: Theme.spacingXL
@@ -525,7 +525,7 @@ Item {
             visible: text !== ""
         }
 
-        Text {
+        StyledText {
             anchors.bottom: parent.bottom
             anchors.right: parent.right  
             anchors.margins: Theme.spacingXL
@@ -579,7 +579,7 @@ Item {
             }
         }
         
-        Text {
+        StyledText {
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.margins: Theme.spacingL
@@ -671,7 +671,7 @@ Item {
                     color: Theme.error
                 }
                 
-                Text {
+                StyledText {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "Power off this computer?"
                     color: Theme.surfaceText
@@ -690,7 +690,7 @@ Item {
                         color: cancelMouse1.pressed ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.7) : 
                                cancelMouse1.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.9) : Theme.surfaceVariant
                         
-                        Text {
+                        StyledText {
                             anchors.centerIn: parent
                             text: "Cancel"
                             color: Theme.surfaceText
@@ -713,7 +713,7 @@ Item {
                         color: powerMouse.pressed ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.8) :
                                powerMouse.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 1.0) : Theme.error
                         
-                        Text {
+                        StyledText {
                             anchors.centerIn: parent
                             text: "Power Off"
                             color: "white"
@@ -767,7 +767,7 @@ Item {
                     color: Theme.primary
                 }
                 
-                Text {
+                StyledText {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "Restart this computer?"
                     color: Theme.surfaceText
@@ -786,7 +786,7 @@ Item {
                         color: cancelMouse2.pressed ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.7) : 
                                cancelMouse2.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.9) : Theme.surfaceVariant
                         
-                        Text {
+                        StyledText {
                             anchors.centerIn: parent
                             text: "Cancel"
                             color: Theme.surfaceText
@@ -809,7 +809,7 @@ Item {
                         color: rebootMouse.pressed ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.8) :
                                rebootMouse.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 1.0) : Theme.primary
                         
-                        Text {
+                        StyledText {
                             anchors.centerIn: parent
                             text: "Restart"
                             color: "white"
@@ -863,7 +863,7 @@ Item {
                     color: Theme.primary
                 }
                 
-                Text {
+                StyledText {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "End this session?"
                     color: Theme.surfaceText
@@ -882,7 +882,7 @@ Item {
                         color: cancelMouse3.pressed ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.7) : 
                                cancelMouse3.containsMouse ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.9) : Theme.surfaceVariant
                         
-                        Text {
+                        StyledText {
                             anchors.centerIn: parent
                             text: "Cancel"
                             color: Theme.surfaceText
@@ -905,7 +905,7 @@ Item {
                         color: logoutMouse.pressed ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.8) :
                                logoutMouse.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 1.0) : Theme.primary
                         
-                        Text {
+                        StyledText {
                             anchors.centerIn: parent
                             text: "Log Out"
                             color: "white"

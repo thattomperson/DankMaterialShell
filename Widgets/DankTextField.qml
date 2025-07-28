@@ -186,7 +186,7 @@ StyledRect {
 
     }
 
-    Text {
+    StyledText {
         id: placeholderLabel
 
         anchors.fill: textInput

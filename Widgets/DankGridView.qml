@@ -116,7 +116,7 @@ GridView {
                         border.width: 1
                         border.color: Theme.primarySelected
 
-                        Text {
+                        StyledText {
                             anchors.centerIn: parent
                             text: (model.name && model.name.length > 0) ? model.name.charAt(0).toUpperCase() : "A"
                             font.pixelSize: Math.min(28, parent.width * 0.5)
@@ -128,7 +128,7 @@ GridView {
 
                 }
 
-                Text {
+                StyledText {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: gridView.cellWidth - 12
                     text: model.name || ""

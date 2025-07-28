@@ -33,7 +33,7 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
-        Text {
+        StyledText {
             text: "No Weather Data"
             font.pixelSize: Theme.fontSizeMedium
             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
@@ -70,7 +70,7 @@ Rectangle {
                     spacing: Theme.spacingXS
                     anchors.verticalCenter: parent.verticalCenter
 
-                    Text {
+                    StyledText {
                         text: (Prefs.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp) + "°" + (Prefs.useFahrenheit ? "F" : "C")
                         font.pixelSize: Theme.fontSizeXLarge
                         color: Theme.surfaceText
@@ -90,7 +90,7 @@ Rectangle {
 
                     }
 
-                    Text {
+                    StyledText {
                         text: WeatherService.weather.city || ""
                         font.pixelSize: Theme.fontSizeMedium
                         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
@@ -119,7 +119,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
-                Text {
+                StyledText {
                     text: WeatherService.weather.humidity ? WeatherService.weather.humidity + "%" : "--"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText
@@ -138,7 +138,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
-                Text {
+                StyledText {
                     text: WeatherService.weather.wind || "--"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText
@@ -157,7 +157,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
-                Text {
+                StyledText {
                     text: WeatherService.weather.sunrise || "--"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText
@@ -176,7 +176,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
-                Text {
+                StyledText {
                     text: WeatherService.weather.sunset || "--"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText

@@ -3,6 +3,7 @@ import QtQuick.Controls
 import Quickshell
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Rectangle {
     id: root
@@ -128,7 +129,7 @@ Rectangle {
                 }
 
                 // Show index for placeholders if Prefs.showWorkspaceIndex is true, otherwise show a subtle dot
-                Text {
+                StyledText {
                     visible: Prefs.showWorkspaceIndex
                     anchors.centerIn: parent
                     text: isPlaceholder ? sequentialNumber : sequentialNumber

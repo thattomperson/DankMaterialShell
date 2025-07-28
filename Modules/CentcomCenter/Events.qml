@@ -75,7 +75,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        Text {
+        StyledText {
             text: hasEvents ? (Qt.formatDate(selectedDate, "MMM d") + " • " + (selectedDateEvents.length === 1 ? "1 event" : selectedDateEvents.length + " events")) : Qt.formatDate(selectedDate, "MMM d")
             font.pixelSize: Theme.fontSizeMedium
             color: Theme.surfaceText
@@ -98,7 +98,7 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
-        Text {
+        StyledText {
             text: "No events"
             font.pixelSize: Theme.fontSizeMedium
             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
@@ -179,7 +179,7 @@ Rectangle {
                 anchors.rightMargin: Theme.spacingM
                 spacing: 6
 
-                Text {
+                StyledText {
                     width: parent.width
                     text: modelData.title
                     font.pixelSize: Theme.fontSizeMedium
@@ -208,7 +208,7 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        Text {
+                        StyledText {
                             text: {
                                 if (modelData.allDay) {
                                     return "All day";
@@ -244,7 +244,7 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        Text {
+                        StyledText {
                             text: modelData.location
                             font.pixelSize: Theme.fontSizeSmall
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)

@@ -37,7 +37,7 @@ Column {
         width: parent.width
         spacing: Theme.spacingS
 
-        Text {
+        StyledText {
             text: "Available Networks"
             font.pixelSize: Theme.fontSizeMedium
             color: Theme.surfaceText
@@ -150,7 +150,7 @@ Column {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 2
 
-                            Text {
+                            StyledText {
                                 width: parent.width
                                 text: modelData.ssid
                                 font.pixelSize: Theme.fontSizeSmall
@@ -159,7 +159,7 @@ Column {
                                 elide: Text.ElideRight
                             }
 
-                            Text {
+                            StyledText {
                                 width: parent.width
                                 text: {
                                     if (modelData.connected)

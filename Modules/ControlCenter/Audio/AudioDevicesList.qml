@@ -16,7 +16,7 @@ Column {
     width: parent.width
     spacing: Theme.spacingM
 
-    Text {
+    StyledText {
         text: "Output Device"
         font.pixelSize: Theme.fontSizeLarge
         color: Theme.surfaceText
@@ -44,7 +44,7 @@ Column {
                 color: Theme.primary
             }
 
-            Text {
+            StyledText {
                 text: "Current: " + (root.currentSinkDisplayName || "None")
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.primary
@@ -101,14 +101,14 @@ Column {
                     spacing: 2
                     anchors.verticalCenter: parent.verticalCenter
 
-                    Text {
+                    StyledText {
                         text: AudioService.displayName(modelData)
                         font.pixelSize: Theme.fontSizeMedium
                         color: modelData === AudioService.sink ? Theme.primary : Theme.surfaceText
                         font.weight: modelData === AudioService.sink ? Font.Medium : Font.Normal
                     }
 
-                    Text {
+                    StyledText {
                         text: {
                             if (AudioService.subtitle(modelData.name) && AudioService.subtitle(modelData.name) !== "")
                                 return AudioService.subtitle(modelData.name) + (modelData === AudioService.sink ? " • Selected" : "");

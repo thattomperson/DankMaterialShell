@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Popup {
     id: processContextMenu
@@ -80,7 +81,7 @@ Popup {
                 radius: Theme.cornerRadiusSmall
                 color: copyPidArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
 
-                Text {
+                StyledText {
                     anchors.left: parent.left
                     anchors.leftMargin: Theme.spacingS
                     anchors.verticalCenter: parent.verticalCenter
@@ -110,7 +111,7 @@ Popup {
                 radius: Theme.cornerRadiusSmall
                 color: copyNameArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
 
-                Text {
+                StyledText {
                     anchors.left: parent.left
                     anchors.leftMargin: Theme.spacingS
                     anchors.verticalCenter: parent.verticalCenter
@@ -157,7 +158,7 @@ Popup {
                 enabled: processContextMenu.processData
                 opacity: enabled ? 1 : 0.5
 
-                Text {
+                StyledText {
                     anchors.left: parent.left
                     anchors.leftMargin: Theme.spacingS
                     anchors.verticalCenter: parent.verticalCenter
@@ -190,7 +191,7 @@ Popup {
                 enabled: processContextMenu.processData && processContextMenu.processData.pid > 1000
                 opacity: enabled ? 1 : 0.5
 
-                Text {
+                StyledText {
                     anchors.left: parent.left
                     anchors.leftMargin: Theme.spacingS
                     anchors.verticalCenter: parent.verticalCenter

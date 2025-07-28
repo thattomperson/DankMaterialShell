@@ -51,26 +51,26 @@ ScrollView {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: Theme.spacingS
 
-                        Text {
+                        StyledText {
                             text: SysMonitorService.hostname
                             font.pixelSize: Theme.fontSizeXLarge
                             font.weight: Font.Light
                             color: Theme.surfaceText
                         }
 
-                        Text {
+                        StyledText {
                             text: SysMonitorService.distribution + " • " + SysMonitorService.architecture + " • " + SysMonitorService.kernelVersion
                             font.pixelSize: Theme.fontSizeMedium
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                         }
 
-                        Text {
+                        StyledText {
                             text: "Up " + UserInfoService.uptime + " • Boot: " + SysMonitorService.bootTime
                             font.pixelSize: Theme.fontSizeSmall
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.6)
                         }
 
-                        Text {
+                        StyledText {
                             text: "Load: " + SysMonitorService.loadAverage + " • " + SysMonitorService.processCount + " processes, " + SysMonitorService.threadCount + " threads"
                             font.pixelSize: Theme.fontSizeSmall
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.6)
@@ -94,7 +94,7 @@ ScrollView {
                         width: (parent.width - Theme.spacingXL) / 2
                         spacing: Theme.spacingS
 
-                        Text {
+                        StyledText {
                             text: SysMonitorService.cpuModel
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Medium
@@ -103,7 +103,7 @@ ScrollView {
                             elide: Text.ElideRight
                         }
 
-                        Text {
+                        StyledText {
                             text: SysMonitorService.motherboard
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Medium
@@ -118,7 +118,7 @@ ScrollView {
                         width: (parent.width - Theme.spacingXL) / 2
                         spacing: Theme.spacingS
 
-                        Text {
+                        StyledText {
                             text: SysMonitorService.formatMemory(SysMonitorService.totalMemoryMB) + " Memory"
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Medium
@@ -127,7 +127,7 @@ ScrollView {
                             elide: Text.ElideRight
                         }
 
-                        Text {
+                        StyledText {
                             text: "BIOS " + SysMonitorService.biosVersion
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Medium
@@ -171,7 +171,7 @@ ScrollView {
                         anchors.verticalCenter: parent.verticalCenter
                     }
 
-                    Text {
+                    StyledText {
                         text: "Storage & Disks"
                         font.pixelSize: Theme.fontSizeLarge
                         font.weight: Font.Bold
@@ -191,7 +191,7 @@ ScrollView {
                             height: 24
                             spacing: Theme.spacingS
 
-                            Text {
+                            StyledText {
                                 text: "Device"
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.Bold
@@ -200,7 +200,7 @@ ScrollView {
                                 elide: Text.ElideRight
                             }
 
-                            Text {
+                            StyledText {
                                 text: "Mount"
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.Bold
@@ -209,7 +209,7 @@ ScrollView {
                                 elide: Text.ElideRight
                             }
 
-                            Text {
+                            StyledText {
                                 text: "Size"
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.Bold
@@ -218,7 +218,7 @@ ScrollView {
                                 elide: Text.ElideRight
                             }
 
-                            Text {
+                            StyledText {
                                 text: "Used"
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.Bold
@@ -227,7 +227,7 @@ ScrollView {
                                 elide: Text.ElideRight
                             }
 
-                            Text {
+                            StyledText {
                                 text: "Available"
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.Bold
@@ -236,7 +236,7 @@ ScrollView {
                                 elide: Text.ElideRight
                             }
 
-                            Text {
+                            StyledText {
                                 text: "Use%"
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.Bold
@@ -269,7 +269,7 @@ ScrollView {
                                     anchors.fill: parent
                                     spacing: Theme.spacingS
 
-                                    Text {
+                                    StyledText {
                                         text: modelData.device
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: Theme.surfaceText
@@ -278,7 +278,7 @@ ScrollView {
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
 
-                                    Text {
+                                    StyledText {
                                         text: modelData.mount
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: Theme.surfaceText
@@ -287,7 +287,7 @@ ScrollView {
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
 
-                                    Text {
+                                    StyledText {
                                         text: modelData.size
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: Theme.surfaceText
@@ -296,7 +296,7 @@ ScrollView {
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
 
-                                    Text {
+                                    StyledText {
                                         text: modelData.used
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: Theme.surfaceText
@@ -305,7 +305,7 @@ ScrollView {
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
 
-                                    Text {
+                                    StyledText {
                                         text: modelData.avail
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: Theme.surfaceText
@@ -314,7 +314,7 @@ ScrollView {
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
 
-                                    Text {
+                                    StyledText {
                                         text: modelData.percent
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: {

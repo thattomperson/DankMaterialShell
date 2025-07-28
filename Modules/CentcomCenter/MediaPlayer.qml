@@ -96,7 +96,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 
-            Text {
+            StyledText {
                 text: "No Media Playing"
                 font.pixelSize: Theme.fontSizeMedium
                 color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
@@ -167,7 +167,7 @@ Rectangle {
                     height: parent.height
                     spacing: Theme.spacingXS
 
-                    Text {
+                    StyledText {
                         text: activePlayer && activePlayer.trackTitle || lastValidTitle || "Unknown Track"
                         onTextChanged: {
                             if (activePlayer && activePlayer.trackTitle)
@@ -181,7 +181,7 @@ Rectangle {
                         elide: Text.ElideRight
                     }
 
-                    Text {
+                    StyledText {
                         text: activePlayer && activePlayer.trackArtist || lastValidArtist || "Unknown Artist"
                         onTextChanged: {
                             if (activePlayer && activePlayer.trackArtist)
@@ -194,7 +194,7 @@ Rectangle {
                         elide: Text.ElideRight
                     }
 
-                    Text {
+                    StyledText {
                         text: activePlayer && activePlayer.trackAlbum || lastValidAlbum || ""
                         onTextChanged: {
                             if (activePlayer && activePlayer.trackAlbum)

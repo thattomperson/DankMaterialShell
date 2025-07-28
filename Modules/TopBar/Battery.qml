@@ -63,7 +63,7 @@ Rectangle {
 
         }
 
-        Text {
+        StyledText {
             text: BatteryService.batteryLevel + "%"
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
@@ -116,7 +116,7 @@ Rectangle {
             anchors.centerIn: parent
             spacing: 2
 
-            Text {
+            StyledText {
                 id: tooltipText
 
                 text: {

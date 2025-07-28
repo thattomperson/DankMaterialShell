@@ -19,7 +19,7 @@ Column {
         width: parent.width
         spacing: Theme.spacingM
 
-        Text {
+        StyledText {
             text: "Available Devices"
             font.pixelSize: Theme.fontSizeLarge
             color: Theme.surfaceText
@@ -52,7 +52,7 @@ Column {
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
-                Text {
+                StyledText {
                     id: scanText
 
                     text: BluetoothService.adapter && BluetoothService.adapter.discovering ? "Stop Scanning" : "Scan"
@@ -103,7 +103,7 @@ Column {
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
-                Text {
+                StyledText {
                     text: "Pairing Limitation"
                     font.pixelSize: Theme.fontSizeMedium
                     color: Theme.warning
@@ -112,7 +112,7 @@ Column {
                 }
             }
 
-            Text {
+            StyledText {
                 text: "Quickshell does not support pairing devices that require pin or confirmation."
                 font.pixelSize: Theme.fontSizeSmall
                 color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.8)
@@ -188,7 +188,7 @@ Column {
                     spacing: 2
                     anchors.verticalCenter: parent.verticalCenter
 
-                    Text {
+                    StyledText {
                         text: modelData.name || modelData.deviceName
                         font.pixelSize: Theme.fontSizeMedium
                         color: {
@@ -209,7 +209,7 @@ Column {
                         Row {
                             spacing: Theme.spacingS
 
-                            Text {
+                            StyledText {
                                 text: {
                                     if (modelData.pairing)
                                         return "Pairing...";
@@ -236,7 +236,7 @@ Column {
                                 visible: modelData.signalStrength !== undefined && modelData.signalStrength > 0 && !modelData.pairing && !modelData.blocked
                             }
 
-                            Text {
+                            StyledText {
                                 text: (modelData.signalStrength !== undefined && modelData.signalStrength > 0) ? modelData.signalStrength + "%" : ""
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
@@ -268,7 +268,7 @@ Column {
                 border.width: 1
                 opacity: canConnect || isBusy ? 1 : 0.5
 
-                Text {
+                StyledText {
                     anchors.centerIn: parent
                     text: {
                         if (modelData.pairing)
@@ -349,7 +349,7 @@ Column {
                 }
             }
 
-            Text {
+            StyledText {
                 text: "Scanning for devices..."
                 font.pixelSize: Theme.fontSizeLarge
                 color: Theme.surfaceText
@@ -358,7 +358,7 @@ Column {
             }
         }
 
-        Text {
+        StyledText {
             text: "Make sure your device is in pairing mode"
             font.pixelSize: Theme.fontSizeMedium
             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
@@ -366,7 +366,7 @@ Column {
         }
     }
 
-    Text {
+    StyledText {
         text: "No devices found. Put your device in pairing mode and click Start Scanning."
         font.pixelSize: Theme.fontSizeMedium
         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)

@@ -30,7 +30,7 @@ Item {
                 color: selectedCategory === modelData ? Theme.primary : "transparent"
                 border.color: selectedCategory === modelData ? "transparent" : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
 
-                Text {
+                StyledText {
                     anchors.centerIn: parent
                     text: modelData
                     color: selectedCategory === modelData ? Theme.surface : Theme.surfaceText
@@ -80,7 +80,7 @@ Item {
                     color: selectedCategory === modelData ? Theme.primary : "transparent"
                     border.color: selectedCategory === modelData ? "transparent" : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
 
-                    Text {
+                    StyledText {
                         anchors.centerIn: parent
                         text: modelData
                         color: selectedCategory === modelData ? Theme.surface : Theme.surfaceText
@@ -124,7 +124,7 @@ Item {
                     color: selectedCategory === modelData ? Theme.primary : "transparent"
                     border.color: selectedCategory === modelData ? "transparent" : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
 
-                    Text {
+                    StyledText {
                         anchors.centerIn: parent
                         text: modelData
                         color: selectedCategory === modelData ? Theme.surface : Theme.surfaceText

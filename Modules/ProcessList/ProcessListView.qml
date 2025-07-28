@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Column {
     id: root
@@ -31,9 +32,10 @@ Column {
             anchors.leftMargin: 0
             anchors.verticalCenter: parent.verticalCenter
             
-            Text {
+            StyledText {
                 text: "Process"
                 font.pixelSize: Theme.fontSizeSmall
+                font.family: Prefs.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "name" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
                 opacity: SysMonitorService.sortBy === "name" ? 1.0 : 0.7
@@ -66,9 +68,10 @@ Column {
             anchors.rightMargin: 200
             anchors.verticalCenter: parent.verticalCenter
 
-            Text {
+            StyledText {
                 text: "CPU"
                 font.pixelSize: Theme.fontSizeSmall
+                font.family: Prefs.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "cpu" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
                 opacity: SysMonitorService.sortBy === "cpu" ? 1.0 : 0.7
@@ -101,9 +104,10 @@ Column {
             anchors.rightMargin: 112
             anchors.verticalCenter: parent.verticalCenter
 
-            Text {
+            StyledText {
                 text: "RAM"
                 font.pixelSize: Theme.fontSizeSmall
+                font.family: Prefs.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "memory" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
                 opacity: SysMonitorService.sortBy === "memory" ? 1.0 : 0.7
@@ -136,9 +140,10 @@ Column {
             anchors.rightMargin: 53
             anchors.verticalCenter: parent.verticalCenter
             
-            Text {
+            StyledText {
                 text: "PID"
                 font.pixelSize: Theme.fontSizeSmall
+                font.family: Prefs.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "pid" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
                 opacity: SysMonitorService.sortBy === "pid" ? 1.0 : 0.7
@@ -172,7 +177,7 @@ Column {
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
 
-            Text {
+            StyledText {
                 text: SysMonitorService.sortDescending ? "↓" : "↑"
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.surfaceText

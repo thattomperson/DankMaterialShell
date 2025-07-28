@@ -16,7 +16,7 @@ Column {
     width: parent.width
     spacing: Theme.spacingM
 
-    Text {
+    StyledText {
         text: "Microphone Level"
         font.pixelSize: Theme.fontSizeLarge
         color: Theme.surfaceText
@@ -112,7 +112,7 @@ Column {
                         visible: (micMouseArea.containsMouse && !root.micMuted) || micMouseArea.isDragging
                         opacity: visible ? 1 : 0
                         
-                        Text {
+                        StyledText {
                             id: tooltipText
                             text: Math.round(root.micLevel) + "%"
                             font.pixelSize: Theme.fontSizeSmall

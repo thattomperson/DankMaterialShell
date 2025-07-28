@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Column {
     anchors.fill: parent
@@ -57,7 +58,7 @@ Column {
                 height: 32
                 spacing: Theme.spacingM
 
-                Text {
+                StyledText {
                     text: "CPU"
                     font.pixelSize: Theme.fontSizeLarge
                     font.weight: Font.Bold
@@ -72,7 +73,7 @@ Column {
                     color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
                     anchors.verticalCenter: parent.verticalCenter
 
-                    Text {
+                    StyledText {
                         text: SysMonitorService.totalCpuUsage.toFixed(1) + "%"
                         font.pixelSize: Theme.fontSizeSmall
                         font.weight: Font.Bold
@@ -87,7 +88,7 @@ Column {
                     height: 1
                 }
 
-                Text {
+                StyledText {
                     text: SysMonitorService.cpuCount + " cores"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
@@ -115,7 +116,7 @@ Column {
                             height: 20
                             spacing: Theme.spacingS
 
-                            Text {
+                            StyledText {
                                 text: "C" + index
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.surfaceVariantText
@@ -156,7 +157,7 @@ Column {
 
                             }
 
-                            Text {
+                            StyledText {
                                 text: SysMonitorService.perCoreCpuUsage[index] ? SysMonitorService.perCoreCpuUsage[index].toFixed(0) + "%" : "0%"
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.Medium
@@ -195,14 +196,14 @@ Column {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 4
 
-                Text {
+                StyledText {
                     text: "Memory"
                     font.pixelSize: Theme.fontSizeLarge
                     font.weight: Font.Bold
                     color: Theme.surfaceText
                 }
 
-                Text {
+                StyledText {
                     text: SysMonitorService.formatSystemMemory(SysMonitorService.usedMemoryKB) + " / " + SysMonitorService.formatSystemMemory(SysMonitorService.totalMemoryKB)
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
@@ -252,7 +253,7 @@ Column {
 
                 }
 
-                Text {
+                StyledText {
                     text: SysMonitorService.totalMemoryKB > 0 ? ((SysMonitorService.usedMemoryKB / SysMonitorService.totalMemoryKB) * 100).toFixed(1) + "% used" : "No data"
                     font.pixelSize: Theme.fontSizeSmall
                     font.weight: Font.Bold
@@ -270,14 +271,14 @@ Column {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 4
 
-                Text {
+                StyledText {
                     text: "Swap"
                     font.pixelSize: Theme.fontSizeLarge
                     font.weight: Font.Bold
                     color: Theme.surfaceText
                 }
 
-                Text {
+                StyledText {
                     text: SysMonitorService.totalSwapKB > 0 ? 
                         SysMonitorService.formatSystemMemory(SysMonitorService.usedSwapKB) + " / " + SysMonitorService.formatSystemMemory(SysMonitorService.totalSwapKB) :
                         "No swap configured"
@@ -323,7 +324,7 @@ Column {
                     }
                 }
 
-                Text {
+                StyledText {
                     text: SysMonitorService.totalSwapKB > 0 ? ((SysMonitorService.usedSwapKB / SysMonitorService.totalSwapKB) * 100).toFixed(1) + "% used" : "Not available"
                     font.pixelSize: Theme.fontSizeSmall
                     font.weight: Font.Bold
@@ -353,7 +354,7 @@ Column {
                 anchors.centerIn: parent
                 spacing: Theme.spacingXS
 
-                Text {
+                StyledText {
                     text: "Network"
                     font.pixelSize: Theme.fontSizeMedium
                     font.weight: Font.Bold
@@ -368,13 +369,13 @@ Column {
                     Row {
                         spacing: 4
 
-                        Text {
+                        StyledText {
                             text: "↓"
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.info
                         }
 
-                        Text {
+                        StyledText {
                             text: SysMonitorService.networkRxRate > 0 ? formatNetworkSpeed(SysMonitorService.networkRxRate) : "0 B/s"
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Bold
@@ -386,13 +387,13 @@ Column {
                     Row {
                         spacing: 4
 
-                        Text {
+                        StyledText {
                             text: "↑"
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.error
                         }
 
-                        Text {
+                        StyledText {
                             text: SysMonitorService.networkTxRate > 0 ? formatNetworkSpeed(SysMonitorService.networkTxRate) : "0 B/s"
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Bold
@@ -419,7 +420,7 @@ Column {
                 anchors.centerIn: parent
                 spacing: Theme.spacingXS
 
-                Text {
+                StyledText {
                     text: "Disk"
                     font.pixelSize: Theme.fontSizeMedium
                     font.weight: Font.Bold
@@ -434,13 +435,13 @@ Column {
                     Row {
                         spacing: 4
 
-                        Text {
+                        StyledText {
                             text: "R"
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.primary
                         }
 
-                        Text {
+                        StyledText {
                             text: formatDiskSpeed(SysMonitorService.diskReadRate)
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Bold
@@ -452,13 +453,13 @@ Column {
                     Row {
                         spacing: 4
 
-                        Text {
+                        StyledText {
                             text: "W"
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.warning
                         }
 
-                        Text {
+                        StyledText {
                             text: formatDiskSpeed(SysMonitorService.diskWriteRate)
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Bold

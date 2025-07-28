@@ -35,14 +35,14 @@ Rectangle {
             spacing: 2
             anchors.verticalCenter: parent.verticalCenter
 
-            Text {
+            StyledText {
                 text: "Bluetooth"
                 font.pixelSize: Theme.fontSizeLarge
                 color: BluetoothService.adapter && BluetoothService.adapter.enabled ? Theme.primary : Theme.surfaceText
                 font.weight: Font.Medium
             }
 
-            Text {
+            StyledText {
                 text: BluetoothService.adapter && BluetoothService.adapter.enabled ? "Enabled" : "Disabled"
                 font.pixelSize: Theme.fontSizeSmall
                 color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)

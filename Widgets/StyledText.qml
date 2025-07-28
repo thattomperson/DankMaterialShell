@@ -6,6 +6,8 @@ Text {
 
     color: Theme.surfaceText
     font.pixelSize: Appearance.fontSize.normal
+    font.family: Prefs.fontFamily
+    font.weight: Prefs.fontWeight
     wrapMode: Text.WordWrap
     elide: Text.ElideRight
     verticalAlignment: Text.AlignVCenter

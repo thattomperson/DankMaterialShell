@@ -80,7 +80,7 @@ Column {
 
         }
 
-        Text {
+        StyledText {
             width: parent.width - 80
             height: 40
             text: Qt.formatDate(displayDate, "MMMM yyyy")
@@ -134,7 +134,7 @@ Column {
                 height: 32
                 color: "transparent"
 
-                Text {
+                StyledText {
                     anchors.centerIn: parent
                     text: modelData
                     font.pixelSize: Theme.fontSizeSmall
@@ -188,7 +188,7 @@ Column {
                     radius: Theme.cornerRadiusSmall
                     clip: true
 
-                    Text {
+                    StyledText {
                         anchors.centerIn: parent
                         text: dayDate.getDate()
                         font.pixelSize: Theme.fontSizeMedium

@@ -1,6 +1,7 @@
 import QtQuick
 import qs.Common
 import qs.Services
+import qs.Widgets
 
 Rectangle {
     id: root
@@ -31,7 +32,7 @@ Rectangle {
         anchors.centerIn: parent
         spacing: Theme.spacingS
 
-        Text {
+        StyledText {
             id: appText
 
             text: FocusedWindowService.focusedAppName || ""
@@ -44,7 +45,7 @@ Rectangle {
             width: Math.min(implicitWidth, compactMode ? 80 : 180)
         }
 
-        Text {
+        StyledText {
             text: "•"
             font.pixelSize: Theme.fontSizeMedium
             color: Theme.outlineButton
@@ -52,7 +53,7 @@ Rectangle {
             visible: appText.text && titleText.text
         }
 
-        Text {
+        StyledText {
             id: titleText
 
             text: FocusedWindowService.focusedWindowTitle || ""

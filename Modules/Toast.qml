@@ -74,7 +74,7 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
             }
 
-            Text {
+            StyledText {
                 text: ToastService.currentMessage
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.background

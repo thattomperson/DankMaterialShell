@@ -73,7 +73,7 @@ Column {
                 visible: root.collapsible
             }
 
-            Text {
+            StyledText {
                 text: root.title
                 font.pixelSize: Theme.fontSizeLarge
                 color: Theme.surfaceText

@@ -84,7 +84,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                 }
                 
-                Text {
+                StyledText {
                     text: root.deviceData && root.deviceData.connected ? "Disconnect" : "Connect"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText
@@ -153,7 +153,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                 }
                 
-                Text {
+                StyledText {
                     text: "Forget Device"
                     font.pixelSize: Theme.fontSizeSmall
                     color: forgetArea.containsMouse ? Theme.error : Theme.surfaceText

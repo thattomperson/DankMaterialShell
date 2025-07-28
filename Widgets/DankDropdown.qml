@@ -59,14 +59,14 @@ Rectangle {
         anchors.rightMargin: Theme.spacingM
         spacing: Theme.spacingXS
 
-        Text {
+        StyledText {
             text: root.text
             font.pixelSize: Theme.fontSizeMedium
             color: Theme.surfaceText
             font.weight: Font.Medium
         }
 
-        Text {
+        StyledText {
             text: root.description
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceVariantText
@@ -128,7 +128,7 @@ Rectangle {
                 visible: name !== ""
             }
 
-            Text {
+            StyledText {
                 text: root.currentValue
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.surfaceText
@@ -232,7 +232,7 @@ Rectangle {
                                 visible: name !== ""
                             }
 
-                            Text {
+                            StyledText {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData
                                 font.pixelSize: Theme.fontSizeMedium

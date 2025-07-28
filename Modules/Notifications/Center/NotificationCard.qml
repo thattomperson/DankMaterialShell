@@ -95,7 +95,7 @@ Rectangle {
                 visible: status === Image.Ready
             }
 
-            Text {
+            StyledText {
                 anchors.centerIn: parent
                 visible: !parent.hasNotificationImage && (!notificationGroup?.latestNotification?.appIcon || notificationGroup.latestNotification.appIcon === "")
                 text: {
@@ -118,7 +118,7 @@ Rectangle {
                 anchors.rightMargin: -2
                 visible: (notificationGroup?.count || 0) > 1
 
-                Text {
+                StyledText {
                     anchors.centerIn: parent
                     text: (notificationGroup?.count || 0) > 99 ? "99+" : (notificationGroup?.count || 0).toString()
                     color: Theme.primaryText
@@ -150,7 +150,7 @@ Rectangle {
                     width: parent.width
                     spacing: 2
 
-                    Text {
+                    StyledText {
                         width: parent.width
                         text: {
                             const timeStr = notificationGroup?.latestNotification?.timeStr || "";
@@ -166,7 +166,7 @@ Rectangle {
                         maximumLineCount: 1
                     }
 
-                    Text {
+                    StyledText {
                         text: notificationGroup?.latestNotification?.summary || ""
                         color: Theme.surfaceText
                         font.pixelSize: Theme.fontSizeMedium
@@ -177,7 +177,7 @@ Rectangle {
                         visible: text.length > 0
                     }
 
-                    Text {
+                    StyledText {
                         id: descriptionText
                         property string fullText: notificationGroup?.latestNotification?.htmlBody || ""
                         property bool hasMoreText: truncated
@@ -247,7 +247,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: Theme.spacingS
 
-                Text {
+                StyledText {
                     text: notificationGroup?.appName || ""
                     color: Theme.surfaceText
                     font.pixelSize: Theme.fontSizeLarge
@@ -265,7 +265,7 @@ Rectangle {
                     visible: (notificationGroup?.count || 0) > 1
                     anchors.verticalCenter: parent.verticalCenter
 
-                    Text {
+                    StyledText {
                         anchors.centerIn: parent
                         text: (notificationGroup?.count || 0) > 99 ? "99+" : (notificationGroup?.count || 0).toString()
                         color: Theme.primaryText
@@ -348,7 +348,7 @@ Rectangle {
                                 visible: status === Image.Ready
                             }
 
-                            Text {
+                            StyledText {
                                 anchors.centerIn: parent
                                 visible: !parent.hasNotificationImage && (!modelData?.appIcon || modelData.appIcon === "")
                                 text: {
@@ -377,7 +377,7 @@ Rectangle {
                                 anchors.bottomMargin: 4
                                 spacing: 2
 
-                                Text {
+                                StyledText {
                                     width: parent.width
                                     text: modelData?.timeStr || ""
                                     color: Theme.surfaceVariantText
@@ -388,7 +388,7 @@ Rectangle {
                                     visible: text.length > 0
                                 }
 
-                                Text {
+                                StyledText {
                                     width: parent.width
                                     text: modelData?.summary || ""
                                     color: Theme.surfaceText
@@ -399,7 +399,7 @@ Rectangle {
                                     visible: text.length > 0
                                 }
 
-                                Text {
+                                StyledText {
                                     id: bodyText
                                     property bool hasMoreText: truncated
                                     
@@ -463,7 +463,7 @@ Rectangle {
                                             radius: 4
                                             color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
                                             
-                                            Text {
+                                            StyledText {
                                                 id: actionText
                                                 text: modelData.text || ""
                                                 color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
@@ -496,7 +496,7 @@ Rectangle {
                                         radius: 4
                                         color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
                                         
-                                        Text {
+                                        StyledText {
                                             id: dismissText
                                             text: "Dismiss"
                                             color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
@@ -542,7 +542,7 @@ Rectangle {
                 radius: 4
                 color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
                 
-                Text {
+                StyledText {
                     id: actionText
                     text: modelData.text || ""
                     color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
@@ -583,7 +583,7 @@ Rectangle {
         radius: 6
         color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
 
-        Text {
+        StyledText {
             id: dismissText
 
             text: "Dismiss"

@@ -94,7 +94,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
 
-            Text {
+            StyledText {
                 id: mediaText
 
                 anchors.verticalCenter: parent.verticalCenter

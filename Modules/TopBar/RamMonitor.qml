@@ -60,7 +60,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        Text {
+        StyledText {
             text: (SysMonitorService.memoryUsage || 0).toFixed(0) + "%"
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium

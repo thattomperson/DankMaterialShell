@@ -143,7 +143,7 @@ PanelWindow {
                     Row {
                         width: parent.width
 
-                        Text {
+                        StyledText {
                             text: BatteryService.batteryAvailable ? "Battery Information" : "Power Management"
                             font.pixelSize: Theme.fontSizeLarge
                             color: Theme.surfaceText
@@ -221,7 +221,7 @@ PanelWindow {
                                 Row {
                                     spacing: Theme.spacingM
 
-                                    Text {
+                                    StyledText {
                                         text: BatteryService.batteryLevel + "%"
                                         font.pixelSize: Theme.fontSizeLarge
                                         color: {
@@ -236,7 +236,7 @@ PanelWindow {
                                         font.weight: Font.Bold
                                     }
 
-                                    Text {
+                                    StyledText {
                                         text: BatteryService.batteryStatus
                                         font.pixelSize: Theme.fontSizeMedium
                                         color: {
@@ -254,7 +254,7 @@ PanelWindow {
 
                                 }
 
-                                Text {
+                                StyledText {
                                     text: {
                                         let time = BatteryService.formatTimeRemaining();
                                         if (time !== "Unknown")
@@ -298,14 +298,14 @@ PanelWindow {
                                 spacing: Theme.spacingS
                                 anchors.verticalCenter: parent.verticalCenter
 
-                                Text {
+                                StyledText {
                                     text: "No Battery Detected"
                                     font.pixelSize: Theme.fontSizeLarge
                                     color: Theme.surfaceText
                                     font.weight: Font.Medium
                                 }
 
-                                Text {
+                                StyledText {
                                     text: "Power profile management is available"
                                     font.pixelSize: Theme.fontSizeMedium
                                     color: Theme.surfaceTextMedium
@@ -323,7 +323,7 @@ PanelWindow {
                         spacing: Theme.spacingM
                         visible: BatteryService.batteryAvailable
 
-                        Text {
+                        StyledText {
                             text: "Battery Details"
                             font.pixelSize: Theme.fontSizeLarge
                             color: Theme.surfaceText
@@ -339,14 +339,14 @@ PanelWindow {
                                 spacing: 2
                                 width: (parent.width - Theme.spacingXL) / 2
 
-                                Text {
+                                StyledText {
                                     text: "Health"
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: Theme.surfaceTextMedium
                                     font.weight: Font.Medium
                                 }
 
-                                Text {
+                                StyledText {
                                     text: BatteryService.batteryHealth
                                     font.pixelSize: Theme.fontSizeMedium
                                     color: {
@@ -365,14 +365,14 @@ PanelWindow {
                                 spacing: 2
                                 width: (parent.width - Theme.spacingXL) / 2
 
-                                Text {
+                                StyledText {
                                     text: "Capacity"
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: Theme.surfaceTextMedium
                                     font.weight: Font.Medium
                                 }
 
-                                Text {
+                                StyledText {
                                     text: BatteryService.batteryCapacity > 0 ? BatteryService.batteryCapacity.toFixed(1) + " Wh" : "Unknown"
                                     font.pixelSize: Theme.fontSizeMedium
                                     color: Theme.surfaceText
@@ -390,7 +390,7 @@ PanelWindow {
                         spacing: Theme.spacingM
                         visible: true
 
-                        Text {
+                        StyledText {
                             text: "Power Profile"
                             font.pixelSize: Theme.fontSizeLarge
                             color: Theme.surfaceText
@@ -429,14 +429,14 @@ PanelWindow {
                                             spacing: 2
                                             anchors.verticalCenter: parent.verticalCenter
 
-                                            Text {
+                                            StyledText {
                                                 text: Theme.getPowerProfileLabel(modelData)
                                                 font.pixelSize: Theme.fontSizeMedium
                                                 color: root.isActiveProfile(modelData) ? Theme.primary : Theme.surfaceText
                                                 font.weight: root.isActiveProfile(modelData) ? Font.Medium : Font.Normal
                                             }
 
-                                            Text {
+                                            StyledText {
                                                 text: Theme.getPowerProfileDescription(modelData)
                                                 font.pixelSize: Theme.fontSizeSmall
                                                 color: Theme.surfaceTextMedium
@@ -492,14 +492,14 @@ PanelWindow {
                                 spacing: 2
                                 anchors.verticalCenter: parent.verticalCenter
 
-                                Text {
+                                StyledText {
                                     text: "Power Profile Degradation"
                                     font.pixelSize: Theme.fontSizeMedium
                                     color: Theme.error
                                     font.weight: Font.Medium
                                 }
 
-                                Text {
+                                StyledText {
                                     text: (typeof PowerProfiles !== "undefined") ? PerformanceDegradationReason.toString(PowerProfiles.degradationReason) : ""
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.8)

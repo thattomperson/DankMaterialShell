@@ -12,7 +12,7 @@ Column {
     width: parent.width
     spacing: Theme.spacingM
 
-    Text {
+    StyledText {
         text: "Volume"
         font.pixelSize: Theme.fontSizeLarge
         color: Theme.surfaceText

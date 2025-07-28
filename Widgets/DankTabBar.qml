@@ -50,7 +50,7 @@ Item {
                         visible: parent.parent.hasIcon
                     }
 
-                    Text {
+                    StyledText {
                         text: modelData.text || ""
                         font.pixelSize: Theme.fontSizeMedium
                         color: parent.parent.isActive ? Theme.primary : Theme.surfaceText

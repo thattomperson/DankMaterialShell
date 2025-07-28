@@ -192,7 +192,7 @@ PanelWindow {
                         width: parent.width
                         height: 40
 
-                        Text {
+                        StyledText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: "Applications"
                             font.pixelSize: Theme.fontSizeLarge + 4
@@ -205,7 +205,7 @@ PanelWindow {
                             height: 1
                         }
 
-                        Text {
+                        StyledText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: appLauncher.model.count + " apps"
                             font.pixelSize: Theme.fontSizeMedium

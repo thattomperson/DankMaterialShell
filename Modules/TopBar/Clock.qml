@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import qs.Common
+import qs.Widgets
 
 Rectangle {
     id: root
@@ -28,15 +29,14 @@ Rectangle {
         anchors.centerIn: parent
         spacing: Theme.spacingS
 
-        Text {
+        StyledText {
             text: Prefs.use24HourClock ? Qt.formatTime(root.currentDate, "H:mm") : Qt.formatTime(root.currentDate, "h:mm AP")
             font.pixelSize: Theme.fontSizeMedium
             color: Theme.surfaceText
-            font.weight: Font.Medium
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        Text {
+        StyledText {
             text: "•"
             font.pixelSize: Theme.fontSizeMedium
             color: Theme.outlineButton
@@ -44,11 +44,10 @@ Rectangle {
             visible: !compactMode
         }
 
-        Text {
+        StyledText {
             text: Qt.formatDate(root.currentDate, "ddd d")
             font.pixelSize: Theme.fontSizeMedium
             color: Theme.surfaceText
-            font.weight: Font.Medium
             anchors.verticalCenter: parent.verticalCenter
             visible: !compactMode
         }

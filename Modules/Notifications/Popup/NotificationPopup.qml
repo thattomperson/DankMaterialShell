@@ -182,7 +182,7 @@ PanelWindow {
                         visible: status === Image.Ready
                     }
 
-                    Text {
+                    StyledText {
                         anchors.centerIn: parent
                         visible: !parent.hasNotificationImage && (!notificationData || !notificationData.appIcon || notificationData.appIcon === "")
                         text: {
@@ -216,7 +216,7 @@ PanelWindow {
                             width: parent.width
                             spacing: 2
 
-                            Text {
+                            StyledText {
                                 width: parent.width
                                 text: {
                                     if (!notificationData) return "";
@@ -234,7 +234,7 @@ PanelWindow {
                                 maximumLineCount: 1
                             }
 
-                            Text {
+                            StyledText {
                                 text: notificationData ? (notificationData.summary || "") : ""
                                 color: Theme.surfaceText
                                 font.pixelSize: Theme.fontSizeMedium
@@ -245,7 +245,7 @@ PanelWindow {
                                 visible: text.length > 0
                             }
 
-                            Text {
+                            StyledText {
                                 text: notificationData ? (notificationData.htmlBody || "") : ""
                                 color: Theme.surfaceVariantText
                                 font.pixelSize: Theme.fontSizeSmall
@@ -304,7 +304,7 @@ PanelWindow {
                         radius: 4
                         color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
                         
-                        Text {
+                        StyledText {
                             id: actionText
                             text: modelData.text || ""
                             color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
@@ -348,7 +348,7 @@ PanelWindow {
                 color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
                 z: 20
 
-                Text {
+                StyledText {
                     id: dismissText
                     text: "Dismiss"
                     color: dismissButton.isHovered ? Theme.primary : Theme.surfaceVariantText

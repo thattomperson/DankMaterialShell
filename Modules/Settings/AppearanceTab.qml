@@ -85,7 +85,7 @@ ScrollView {
                 DankDropdown {
                     width: parent.width
                     text: "Icon Theme"
-                    description: "Select icon theme (may require logout to apply)"
+                    description: "Select icon theme"
                     currentValue: Prefs.iconTheme
                     options: Prefs.availableIconThemes
                     onValueChanged: (value) => {
@@ -93,6 +93,139 @@ ScrollView {
                         if (value !== "System Default" && !Prefs.qt5ctAvailable && !Prefs.qt6ctAvailable) {
                             ToastService.showWarning("qt5ct or qt6ct not found - Qt app themes may not update without these tools");
                         }
+                    }
+                }
+
+                DankDropdown {
+                    width: parent.width
+                    text: "Font Family"
+                    description: "Select system font family"
+                    currentValue: Prefs.fontFamily || "System Default"
+                    options: {
+                        var fonts = ["System Default"];
+                        var availableFonts = Qt.fontFamilies();
+                        var rootFamilies = [];
+                        var seenFamilies = new Set();
+                        
+                        // Filter to root family names by removing common weight/style suffixes
+                        for (var i = 0; i < availableFonts.length; i++) {
+                            var fontName = availableFonts[i];
+                            
+                            // Skip fonts beginning with . (like .AppleSystem)
+                            if (fontName.startsWith(".")) {
+                                continue;
+                            }
+                            
+                            var rootName = fontName
+                                .replace(/ (Thin|Extra Light|Light|Regular|Medium|Semi Bold|Demi Bold|Bold|Extra Bold|Black|Heavy)$/i, "")
+                                .replace(/ (Italic|Oblique|Condensed|Extended|Narrow|Wide)$/i, "")
+                                .replace(/ (UI|Display|Text|Mono|Sans|Serif)$/i, function(match, suffix) {
+                                    // Keep these suffixes as they're part of the family name
+                                    return match;
+                                })
+                                .trim();
+                            
+                            if (!seenFamilies.has(rootName) && rootName !== "") {
+                                seenFamilies.add(rootName);
+                                rootFamilies.push(rootName);
+                            }
+                        }
+                        
+                        return fonts.concat(rootFamilies.sort());
+                    }
+                    onValueChanged: (value) => {
+                        Prefs.setFontFamily(value === "System Default" ? "Noto Sans" : value);
+                    }
+                }
+
+                DankDropdown {
+                    width: parent.width
+                    text: "Font Weight"
+                    description: "Select font weight"
+                    currentValue: {
+                        switch(Prefs.fontWeight) {
+                            case Font.Thin: return "Thin";
+                            case Font.ExtraLight: return "Extra Light";
+                            case Font.Light: return "Light";
+                            case Font.Normal: return "Regular";
+                            case Font.Medium: return "Medium";
+                            case Font.DemiBold: return "Demi Bold";
+                            case Font.Bold: return "Bold";
+                            case Font.ExtraBold: return "Extra Bold";
+                            case Font.Black: return "Black";
+                            default: return "Regular";
+                        }
+                    }
+                    options: ["Thin", "Extra Light", "Light", "Regular", "Medium", "Demi Bold", "Bold", "Extra Bold", "Black"]
+                    onValueChanged: (value) => {
+                        var weight;
+                        switch(value) {
+                            case "Thin": weight = Font.Thin; break;
+                            case "Extra Light": weight = Font.ExtraLight; break;
+                            case "Light": weight = Font.Light; break;
+                            case "Regular": weight = Font.Normal; break;
+                            case "Medium": weight = Font.Medium; break;
+                            case "Demi Bold": weight = Font.DemiBold; break;
+                            case "Bold": weight = Font.Bold; break;
+                            case "Extra Bold": weight = Font.ExtraBold; break;
+                            case "Black": weight = Font.Black; break;
+                            default: weight = Font.Normal; break;
+                        }
+                        Prefs.setFontWeight(weight);
+                    }
+                }
+
+                DankDropdown {
+                    width: parent.width
+                    text: "Monospace Font"
+                    description: "Select monospace font for process list and technical displays"
+                    currentValue: Prefs.monoFontFamily || "System Default"
+                    options: {
+                        var fonts = ["System Default"];
+                        var availableFonts = Qt.fontFamilies();
+                        var monoFamilies = [];
+                        var seenFamilies = new Set();
+                        
+                        // Filter to likely monospace fonts
+                        for (var i = 0; i < availableFonts.length; i++) {
+                            var fontName = availableFonts[i];
+                            
+                            // Skip fonts beginning with .
+                            if (fontName.startsWith(".")) {
+                                continue;
+                            }
+                            
+                            // Look for common monospace indicators
+                            var lowerName = fontName.toLowerCase();
+                            if (lowerName.includes("mono") || 
+                                lowerName.includes("code") || 
+                                lowerName.includes("console") ||
+                                lowerName.includes("terminal") ||
+                                lowerName.includes("courier") ||
+                                lowerName.includes("dejavu sans mono") ||
+                                lowerName.includes("jetbrains") ||
+                                lowerName.includes("fira") ||
+                                lowerName.includes("hack") ||
+                                lowerName.includes("source code") ||
+                                lowerName.includes("ubuntu mono") ||
+                                lowerName.includes("cascadia")) {
+                                
+                                var rootName = fontName
+                                    .replace(/ (Thin|Extra Light|Light|Regular|Medium|Semi Bold|Demi Bold|Bold|Extra Bold|Black|Heavy)$/i, "")
+                                    .replace(/ (Italic|Oblique|Condensed|Extended|Narrow|Wide)$/i, "")
+                                    .trim();
+                                
+                                if (!seenFamilies.has(rootName) && rootName !== "") {
+                                    seenFamilies.add(rootName);
+                                    monoFamilies.push(rootName);
+                                }
+                            }
+                        }
+                        
+                        return fonts.concat(monoFamilies.sort());
+                    }
+                    onValueChanged: (value) => {
+                        Prefs.setMonoFontFamily(value === "System Default" ? "JetBrains Mono" : value);
                     }
                 }
             }

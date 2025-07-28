@@ -214,14 +214,14 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: Theme.spacingXS
 
-                            Text {
+                            StyledText {
                                 text: UserInfoService.fullName || UserInfoService.username || "User"
                                 font.pixelSize: Theme.fontSizeLarge
                                 color: Theme.surfaceText
                                 font.weight: Font.Medium
                             }
 
-                            Text {
+                            StyledText {
                                 text: "Uptime: " + (UserInfoService.uptime || "Unknown")
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.surfaceVariantText
@@ -381,7 +381,7 @@ PanelWindow {
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
 
-                                Text {
+                                StyledText {
                                     text: "Logout"
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: logoutButton.containsMouse ? Theme.warning : Theme.surfaceText
@@ -431,7 +431,7 @@ PanelWindow {
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
 
-                                Text {
+                                StyledText {
                                     text: "Restart"
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: rebootButton.containsMouse ? Theme.warning : Theme.surfaceText
@@ -481,7 +481,7 @@ PanelWindow {
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
 
-                                Text {
+                                StyledText {
                                     text: "Suspend"
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: suspendButton.containsMouse ? Theme.primary : Theme.surfaceText
@@ -531,7 +531,7 @@ PanelWindow {
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
 
-                                Text {
+                                StyledText {
                                     text: "Shutdown"
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: shutdownButton.containsMouse ? Theme.error : Theme.surfaceText

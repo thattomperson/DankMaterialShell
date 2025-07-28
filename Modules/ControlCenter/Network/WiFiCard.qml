@@ -60,7 +60,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
             }
 
-            Text {
+            StyledText {
                 text: {
                     if (!NetworkService.wifiEnabled) {
                         return "WiFi is off";
@@ -78,7 +78,7 @@ Rectangle {
             }
         }
 
-        Text {
+        StyledText {
             text: {
                 if (!NetworkService.wifiEnabled) {
                     return "Turn on WiFi to see networks";

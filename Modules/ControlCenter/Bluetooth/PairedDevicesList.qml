@@ -17,7 +17,7 @@ Column {
     spacing: Theme.spacingM
     visible: BluetoothService.adapter && BluetoothService.adapter.enabled
 
-    Text {
+    StyledText {
         text: "Paired Devices"
         font.pixelSize: Theme.fontSizeLarge
         color: Theme.surfaceText
@@ -54,7 +54,7 @@ Column {
                     spacing: 2
                     anchors.verticalCenter: parent.verticalCenter
 
-                    Text {
+                    StyledText {
                         text: modelData.name || modelData.deviceName
                         font.pixelSize: Theme.fontSizeMedium
                         color: modelData.connected ? Theme.primary : Theme.surfaceText
@@ -64,13 +64,13 @@ Column {
                     Row {
                         spacing: Theme.spacingXS
 
-                        Text {
+                        StyledText {
                             text: BluetoothDeviceState.toString(modelData.state)
                             font.pixelSize: Theme.fontSizeSmall
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                         }
 
-                        Text {
+                        StyledText {
                             text: {
                                 if (modelData.batteryAvailable && modelData.battery > 0)
                                     return "• " + Math.round(modelData.battery * 100) + "%";

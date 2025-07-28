@@ -167,7 +167,7 @@ Item {
                 color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3)
             }
 
-            Text {
+            StyledText {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "WiFi is turned off"
                 font.pixelSize: Theme.fontSizeLarge
@@ -175,7 +175,7 @@ Item {
                 font.weight: Font.Medium
             }
 
-            Text {
+            StyledText {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "Turn on WiFi to see networks"
                 font.pixelSize: Theme.fontSizeMedium

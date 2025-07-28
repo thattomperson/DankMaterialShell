@@ -103,7 +103,7 @@ ListView {
                         border.width: 1
                         border.color: Theme.primarySelected
 
-                        Text {
+                        StyledText {
                             anchors.centerIn: parent
                             text: (model.name && model.name.length > 0) ? model.name.charAt(0).toUpperCase() : "A"
                             font.pixelSize: iconSize * 0.4
@@ -120,7 +120,7 @@ ListView {
                     width: parent.width - iconSize - Theme.spacingL
                     spacing: Theme.spacingXS
 
-                    Text {
+                    StyledText {
                         width: parent.width
                         text: model.name || ""
                         font.pixelSize: Theme.fontSizeLarge
@@ -129,7 +129,7 @@ ListView {
                         elide: Text.ElideRight
                     }
 
-                    Text {
+                    StyledText {
                         width: parent.width
                         text: model.comment || "Application"
                         font.pixelSize: Theme.fontSizeMedium
