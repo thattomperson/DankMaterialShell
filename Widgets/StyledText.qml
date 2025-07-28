@@ -29,7 +29,6 @@ Text {
     wrapMode: Text.WordWrap
     elide: Text.ElideRight
     verticalAlignment: Text.AlignVCenter
-    textFormat: Text.PlainText
     antialiasing: true
 
     Behavior on color {
