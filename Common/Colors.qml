@@ -14,7 +14,7 @@ Singleton {
 
     readonly property string _homeUrl: StandardPaths.writableLocation(StandardPaths.HomeLocation)
     readonly property string homeDir: _homeUrl.startsWith("file://") ? _homeUrl.substring(7) : _homeUrl
-    readonly property string wallpaperPath: Prefs.wallpaperPath || homeDir + "/quickshell/current_wallpaper"
+    readonly property string wallpaperPath: Prefs.wallpaperPath
     readonly property string notifyPath: homeDir + "/quickshell/wallpaper_changed"
     property bool matugenAvailable: false
     property string matugenJson: ""

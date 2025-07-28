@@ -720,9 +720,7 @@ ScrollView {
                                 id: autoTooltipText
 
                                 text: {
-                                    if (ToastService.wallpaperErrorStatus === "error")
-                                        return "Wallpaper symlink missing at ~/quickshell/current_wallpaper";
-                                    else if (ToastService.wallpaperErrorStatus === "matugen_missing")
+                                    if (ToastService.wallpaperErrorStatus === "matugen_missing")
                                         return "Install matugen package for dynamic themes";
                                     else
                                         return "Dynamic wallpaper-based colors";
