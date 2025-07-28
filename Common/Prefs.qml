@@ -460,13 +460,22 @@ Singleton {
             "  if [ -f \"$config_file\" ]; then\n" +
             "    if grep -q '^\\[Appearance\\]' \"$config_file\"; then\n" +
             "      awk -v theme=\"$theme_name\" '\n" +
-            "        BEGIN { in_appearance = 0 }\n" +
+            "        BEGIN { in_appearance = 0; icon_theme_added = 0 }\n" +
             "        /^\\[Appearance\\]/ { in_appearance = 1; print; next }\n" +
-            "        /^\\[/ && in_appearance { in_appearance = 0 }\n" +
-            "        in_appearance && /^icon_theme=/ { print \"icon_theme=\" theme; next }\n" +
-            "        in_appearance && /^\\[/ { print \"icon_theme=\" theme; print; in_appearance = 0; next }\n" +
+            "        /^\\[/ && !/^\\[Appearance\\]/ { \n" +
+            "          if (in_appearance && !icon_theme_added) { \n" +
+            "            print \"icon_theme=\" theme; icon_theme_added = 1 \n" +
+            "          } \n" +
+            "          in_appearance = 0; print; next \n" +
+            "        }\n" +
+            "        in_appearance && /^icon_theme=/ { \n" +
+            "          if (!icon_theme_added) { \n" +
+            "            print \"icon_theme=\" theme; icon_theme_added = 1 \n" +
+            "          } \n" +
+            "          next \n" +
+            "        }\n" +
             "        { print }\n" +
-            "        END { if (in_appearance) print \"icon_theme=\" theme }\n" +
+            "        END { if (in_appearance && !icon_theme_added) print \"icon_theme=\" theme }\n" +
             "      ' \"$config_file\" > \"$config_file.tmp\" && mv \"$config_file.tmp\" \"$config_file\"\n" +
             "    else\n" +
             "      printf '\\n[Appearance]\\nicon_theme=%s\\n' \"$theme_name\" >> \"$config_file\"\n" +
