@@ -114,22 +114,9 @@ ScrollView {
                     }
                 }
 
-                DankToggle {
-                    width: parent.width
-                    text: "Override Location"
-                    description: "Use a specific location instead of auto-detection"
-                    checked: Prefs.weatherLocationOverrideEnabled
-                    onToggled: (checked) => {
-                        return Prefs.setWeatherLocationOverrideEnabled(checked);
-                    }
-                }
-
-                // Location input - only visible when override is enabled
                 Column {
                     width: parent.width
-                    spacing: Theme.spacingS
-                    visible: Prefs.weatherLocationOverrideEnabled
-                    opacity: visible ? 1 : 0
+                    spacing: Theme.spacingXS
 
                     StyledText {
                         text: "Location"
@@ -140,29 +127,12 @@ ScrollView {
 
                     DankLocationSearch {
                         width: parent.width
-                        currentLocation: Prefs.weatherLocationOverride
-                        placeholderText: "Search for a location..."
+                        currentLocation: Prefs.weatherLocation
+                        placeholderText: "New York, NY"
                         onLocationSelected: (displayName, coordinates) => {
-                            Prefs.setWeatherLocationOverride(coordinates);
+                            Prefs.setWeatherLocation(displayName, coordinates);
                         }
                     }
-
-                    StyledText {
-                        text: "Examples: \"New York\", \"Tokyo\", \"90210\""
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceVariantText
-                        wrapMode: Text.WordWrap
-                        width: parent.width
-                    }
-
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: Theme.mediumDuration
-                            easing.type: Theme.emphasizedEasing
-                        }
-
-                    }
-
                 }
 
             }

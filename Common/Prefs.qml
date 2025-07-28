@@ -22,8 +22,8 @@ Singleton {
     property bool useFahrenheit: false
     property bool nightModeEnabled: false
     property string profileImage: ""
-    property string weatherLocationOverride: "New York, NY"
-    property bool weatherLocationOverrideEnabled: false
+    property string weatherLocation: "New York, NY"
+    property string weatherCoordinates: "40.7128,-74.0060"
     property bool showFocusedWindow: true
     property bool showWeather: true
     property bool showMusic: true
@@ -105,8 +105,8 @@ Singleton {
                 useFahrenheit = settings.useFahrenheit !== undefined ? settings.useFahrenheit : false;
                 nightModeEnabled = settings.nightModeEnabled !== undefined ? settings.nightModeEnabled : false;
                 profileImage = settings.profileImage !== undefined ? settings.profileImage : "";
-                weatherLocationOverride = settings.weatherLocationOverride !== undefined ? settings.weatherLocationOverride : "New York, NY";
-                weatherLocationOverrideEnabled = settings.weatherLocationOverrideEnabled !== undefined ? settings.weatherLocationOverrideEnabled : false;
+                weatherLocation = settings.weatherLocation !== undefined ? settings.weatherLocation : "New York, NY";
+                weatherCoordinates = settings.weatherCoordinates !== undefined ? settings.weatherCoordinates : "40.7128,-74.0060";
                 showFocusedWindow = settings.showFocusedWindow !== undefined ? settings.showFocusedWindow : true;
                 showWeather = settings.showWeather !== undefined ? settings.showWeather : true;
                 showMusic = settings.showMusic !== undefined ? settings.showMusic : true;
@@ -157,8 +157,8 @@ Singleton {
             "useFahrenheit": useFahrenheit,
             "nightModeEnabled": nightModeEnabled,
             "profileImage": profileImage,
-            "weatherLocationOverride": weatherLocationOverride,
-            "weatherLocationOverrideEnabled": weatherLocationOverrideEnabled,
+            "weatherLocation": weatherLocation,
+            "weatherCoordinates": weatherCoordinates,
             "showFocusedWindow": showFocusedWindow,
             "showWeather": showWeather,
             "showMusic": showMusic,
@@ -372,14 +372,10 @@ Singleton {
         saveSettings();
     }
 
-    // Weather location override setter
-    function setWeatherLocationOverride(location) {
-        weatherLocationOverride = location;
-        saveSettings();
-    }
-
-    function setWeatherLocationOverrideEnabled(enabled) {
-        weatherLocationOverrideEnabled = enabled;
+    // Weather location setter
+    function setWeatherLocation(displayName, coordinates) {
+        weatherLocation = displayName;
+        weatherCoordinates = coordinates;
         saveSettings();
     }
 

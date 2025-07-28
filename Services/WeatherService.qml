@@ -91,7 +91,7 @@ Singleton {
     }
     
     function getWeatherUrl() {
-        const location = Prefs.weatherLocationOverride || "New York, NY"
+        const location = Prefs.weatherCoordinates || "40.7128,-74.0060"
         const url = `wttr.in/${encodeURIComponent(location)}?format=j1`
         console.log("Using location:", location, "URL:", url)
         return url
@@ -269,10 +269,30 @@ Singleton {
     }
     
     Component.onCompleted: {
-        // Watch for preference changes to refetch weather
-        Prefs.weatherLocationOverrideChanged.connect(() => {
+        Prefs.weatherCoordinatesChanged.connect(() => {
             console.log("Weather location changed, force refreshing weather")
-            Qt.callLater(root.forceRefresh)
+            root.weather = {
+                available: false,
+                loading: true,
+                temp: 0,
+                tempF: 0,
+                city: "",
+                wCode: "113", 
+                humidity: 0,
+                wind: "",
+                sunrise: "06:00",
+                sunset: "18:00",
+                uv: 0,
+                pressure: 0
+            }
+            root.lastFetchTime = 0
+            root.forceRefresh()
+        })
+        
+        Prefs.weatherLocationChanged.connect(() => {
+            console.log("Weather location display name changed")
+            const currentWeather = Object.assign({}, root.weather)
+            root.weather = currentWeather
         })
     }
 }
