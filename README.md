@@ -2,7 +2,7 @@
 
 A [Quickshell](https://quickshell.org/) built shell designed to be highly functional, in Material 3 style.
 
-Specifically created for [Niri](https://github.com/YaLTeR/niri).
+Specifically created for [niri](https://github.com/YaLTeR/niri).
 
 <image>
 
@@ -10,35 +10,42 @@ Specifically created for [Niri](https://github.com/YaLTeR/niri).
 
 1. Install required dependencies
 
-This shell kinda depends on [Niri](https://github.com/YaLTeR/niri), but only for workspaces and the active window widget in TopBar. So it could be used on any other wayland compositor with minimal changes.
+This shell was primarily built for [niri](https://github.com/YaLTeR/niri), but only for workspaces and the active window widget in TopBar. So it could be used on any other wayland compositor with minimal changes.
 
 ```bash
 # 1 --- Material Symbols Font (if not present)
 mkdir -p ~/.local/share/fonts && curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf && fc-cache -f
-# Can also be installed from AUR on arch linux, paru -S ttf-material-symbols-variable-git 
+# Arch: paru -S ttf-material-symbols-variable-git
+# Fedora: Use manual installation (Fedora packages contain legacy Material Icons, not Material Symbols)
 
 # 2 --- Inter Variable (recommended font)
 mkdir -p ~/.local/share/fonts && curl -L "https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip" -o /tmp/Inter.zip && unzip -j /tmp/Inter.zip "InterVariable.ttf" "InterVariable-Italic.ttf" -d ~/.local/share/fonts/ && rm /tmp/Inter.zip && fc-cache -f
-# Can also be installed on arch linux, pacman -S inter-fonts
-
+# Arch: pacman -S inter-font
+# Fedora: sudo dnf install rsms-inter-fonts
 
 # 3 --- Fira Code (recommended monospace font)
 mkdir -p ~/.local/share/fonts && curl -L "https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip" -o /tmp/FiraCode.zip && unzip -j /tmp/FiraCode.zip "ttf/*.ttf" -d ~/.local/share/fonts/ && rm /tmp/FiraCode.zip && fc-cache -f
-# Can also be installed on arch linux, pacman -S ttf-fira-code
-
+# Arch: pacman -S ttf-fira-code
+# Fedora: sudo dnf install fira-code-fonts
 
 # 4 --- QuickShell (recommended to use a git build)
+# Arch
 paru -S quickshell-git
+
+# Fedora
+sudo dnf copr enable errornointernet/quickshell
+sudo dnf install quickshell
+# or
+sudo dnf install quickshell-git
 ```
 
 2. Install optional dependencies to unlock certain features
 
 | Dependency | Purpose | If Missing |
 |------------|---------|------------|
-| cava | Equalizer in TopBar uses Audio Data | Equalizer shifts at random |
-| cliphist | Allows clipboard history view | No clipboard history view available |
 | matugen | Allows dynamic themes based on wallpaper and system app theming | Just can choose from preconfigured themes instead of dynamic colors |
-| ddcutil (or brightnessctl) | Allows controlling brightness of monitors | No Brightness |
+| ddcutil | Allows controlling brightness of external monitors via DDC/CI | No external monitor brightness control |
+| brightnessctl | Allows controlling brightness of laptop displays via backlight | No laptop display brightness control |
 | wl-clipboard | Unlocks copy functionality of certain elements, such as process PIDs | No copy |
 | qt5ct + qt6ct | Icon theme and Qt app theming | Setting icon theme in settings won't work for QT5 or QT6 applications, no Qt theming |
 | adw-gtk3 | GTK app theming | No GTK theming |
@@ -46,7 +53,36 @@ paru -S quickshell-git
 
 ```bash
 # Arch
-paru -S ttf-material-symbols-variable-git inter-font ttf-fira-code matugen cliphist cava wl-clipboard ddcutil adw-gtk3 qt5ct qt6ct
+# Core dependencies
+pacman -S inter-font ttf-fira-code cava wl-clipboard cliphist
+paru -S ttf-material-symbols-variable-git    # AUR package
+
+# Optional: Brightness control
+pacman -S ddcutil          # For external monitors
+pacman -S brightnessctl    # For laptop displays
+
+# Optional: App theming (only if you use GTK/Qt applications)
+pacman -S adw-gtk3 qt5ct qt6ct gsettings-desktop-schemas
+
+# Third-party packages (AUR)
+paru -S matugen
+
+# Fedora
+# Core dependencies
+sudo dnf install cava wl-clipboard
+
+# COPR packages (core dependencies from third-party repositories)
+sudo dnf copr enable wef/cliphist && sudo dnf install cliphist
+
+# Optional: Brightness control
+sudo dnf install ddcutil          # For external monitors
+sudo dnf install brightnessctl    # For laptop displays
+
+# Optional: App theming (only if you use GTK/Qt applications)
+sudo dnf install adw-gtk3-theme qt5ct qt6ct gsettings-desktop-schemas
+
+# Optional third-party packages (COPR repositories)
+sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 ```
 
 **Note on networking:** This shell requires NetworkManager for WiFi functionality.
@@ -147,6 +183,9 @@ qs -c DankMaterialShell ipc call <target> <function>
 ```
 # Arch
 pacman -S vdirsyncer khal python-aiohttp-oauthlib
+
+# Fedora
+sudo dnf install python3-vdirsyncer khal python3-aiohttp-oauthlib
 ```
 
 2. Configure vdirsyncer
@@ -195,6 +234,6 @@ khal configure
 
 # Choose option 2 for month/day/year
 # Time format, doesnt matter
-# Choose option 1 for use calendar alreayd on this computer
+# Choose option 1 for use calendar already on this computer
 ```
 
