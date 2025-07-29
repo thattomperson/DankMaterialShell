@@ -53,6 +53,12 @@ Singleton {
             console.log("Light mode changed - updating dynamic colors");
             colorUpdateTrigger++;
             colorsUpdated();
+            
+            // If dynamic theme is active, regenerate system themes with new light/dark mode
+            if (typeof Theme !== "undefined" && Theme.isDynamicTheme) {
+                console.log("Regenerating system themes for new light/dark mode");
+                generateSystemThemes();
+            }
         }
     }
 
@@ -283,8 +289,15 @@ palette = 15=${fg_b}`;
         console.log("Wallpaper:", wallpaperPath);
         console.log("Shell directory:", shellDir);
         
+        // Get current theme preferences
+        const isLight = (typeof Theme !== "undefined" && Theme.isLightMode) ? "true" : "false";
+        const iconTheme = (typeof Prefs !== "undefined" && Prefs.iconTheme) ? Prefs.iconTheme : "System Default";
+        
+        console.log("Theme mode:", isLight === "true" ? "light" : "dark");
+        console.log("Icon theme:", iconTheme);
+        
         systemThemeGenerationInProgress = true;
-        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir];
+        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, "generate", isLight, iconTheme];
         systemThemeGenerator.running = true;
     }
     
@@ -296,6 +309,26 @@ palette = 15=${fg_b}`;
     function generateQtThemes() {
         console.log("Generating Qt themes using matugen templates");
         generateSystemThemes();
+    }
+    
+    function restoreSystemThemes() {
+        console.log("Restoring original system themes");
+        
+        const shellDir = root.shellDir;
+        if (!shellDir) {
+            console.warn("Shell directory not available, cannot restore system themes");
+            return;
+        }
+        
+        // Get current theme preferences
+        const isLight = (typeof Theme !== "undefined" && Theme.isLightMode) ? "true" : "false";
+        const iconTheme = (typeof Prefs !== "undefined" && Prefs.iconTheme) ? Prefs.iconTheme : "System Default";
+        
+        console.log("Restoring to theme mode:", isLight === "true" ? "light" : "dark");
+        console.log("Icon theme:", iconTheme);
+        
+        systemThemeRestoreProcess.command = [shellDir + "/generate-themes.sh", "", shellDir, "restore", isLight, iconTheme];
+        systemThemeRestoreProcess.running = true;
     }
 
     Process {
@@ -366,10 +399,7 @@ palette = 15=${fg_b}`;
                 console.log("System themes generated successfully");
                 console.log("stdout:", systemThemeStdout.text);
                 
-                if (gtkThemingEnabled && typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) {
-                    console.log("Applying GTK theme...");
-                    gtkThemeApplier.running = true;
-                }
+                // GTK theme application is now handled by the simplified generate-themes.sh script
                 
                 ToastService.showInfo("System themes updated successfully");
             } else {
@@ -382,43 +412,36 @@ palette = 15=${fg_b}`;
     }
     
     Process {
-        id: gtkThemeApplier
+        id: systemThemeRestoreProcess
         running: false
         
         stdout: StdioCollector {
-            id: gtkApplierStdout
+            id: restoreThemeStdout
         }
         
         stderr: StdioCollector {
-            id: gtkApplierStderr
+            id: restoreThemeStderr
+        }
+        
+        onStarted: {
+            console.log("System theme restoration process started with command:", command);
         }
         
         onExited: (exitCode) => {
+            console.log("System theme restoration process exited with code:", exitCode);
+            
             if (exitCode === 0) {
-                console.log("GTK theme applied successfully");
-                ToastService.showInfo("GTK applications themed successfully");
+                console.log("System themes restored successfully");
+                console.log("stdout:", restoreThemeStdout.text);
+                ToastService.showInfo("System themes restored to default");
             } else {
-                console.warn("GTK theme application failed, exit code:", exitCode);
-                console.warn("stderr:", gtkApplierStderr.text);
-                ToastService.showWarning("GTK theme application failed");
+                console.error("System theme restoration failed, exit code:", exitCode);
+                console.error("stdout:", restoreThemeStdout.text);
+                console.error("stderr:", restoreThemeStderr.text);
+                ToastService.showWarning("Failed to restore system themes: " + restoreThemeStderr.text);
             }
         }
-        
-        Component.onCompleted: {
-            command = ["bash", "-c", `
-                # Reset GTK theme first
-                gsettings set org.gnome.desktop.interface gtk-theme '' 2>/dev/null || true
-                # Apply adw-gtk3-dark theme  
-                gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark 2>/dev/null || true
-                # Import the generated colors
-                if [ -f ~/.config/gtk-3.0/colors.css ]; then
-                    echo "GTK 3 colors imported"
-                fi
-                if [ -f ~/.config/gtk-4.0/colors.css ]; then
-                    echo "GTK 4 colors imported"
-                fi
-            `];
-        }
     }
+    
 
 }

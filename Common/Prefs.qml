@@ -37,7 +37,7 @@ Singleton {
     property string networkPreference: "auto"
     property string iconTheme: "System Default"
     property var availableIconThemes: ["System Default"]
-    property string systemDefaultIconTheme: "Adwaita"
+    property string systemDefaultIconTheme: ""
     property bool qt5ctAvailable: false
     property bool qt6ctAvailable: false
     property bool useOSLogo: false
@@ -408,27 +408,40 @@ Singleton {
         updateGtkIconTheme(themeName);
         updateQtIconTheme(themeName);
         saveSettings();
+        
+        // If dynamic theme is active, regenerate system themes with new icon theme
+        if (typeof Theme !== "undefined" && Theme.isDynamicTheme && typeof Colors !== "undefined") {
+            console.log("Icon theme changed during dynamic theming - regenerating system themes");
+            Colors.generateSystemThemes();
+        }
     }
     
     function updateGtkIconTheme(themeName) {
         console.log("Updating GTK icon theme to:", themeName);
         var gtkThemeName = (themeName === "System Default") ? systemDefaultIconTheme : themeName;
 
-        var preferDark = (!isLightMode) ? "true" : "false";
-        var gtkSettings =
-            "[Settings]\n" +
-            "gtk-icon-theme-name=" + gtkThemeName + "\n" +
-            "gtk-theme-name=" + (isLightMode ? "Adwaita" : "Adwaita-dark") + "\n" +
-            "gtk-application-prefer-dark-theme=" + preferDark + "\n";
+        // Update icon theme via dconf/gsettings AND settings.ini files
+        if (gtkThemeName !== "System Default" && gtkThemeName !== "") {
+            var script = 
+                "# Update dconf/gsettings\n" +
+                "if command -v dconf >/dev/null 2>&1; then\n" +
+                "    dconf write /org/gnome/desktop/interface/icon-theme \\\"" + gtkThemeName + "\\\"\n" +
+                "elif command -v gsettings >/dev/null 2>&1; then\n" +
+                "    gsettings set org.gnome.desktop.interface icon-theme '" + gtkThemeName + "'\n" +
+                "fi\n" +
+                "\n" +
+                "# Update settings.ini files (keep existing gtk-theme-name)\n" +
+                "for config_dir in ~/.config/gtk-3.0 ~/.config/gtk-4.0; do\n" +
+                "    if [ -f \"$config_dir/settings.ini\" ]; then\n" +
+                "        sed -i 's/^gtk-icon-theme-name=.*/gtk-icon-theme-name=" + gtkThemeName + "/' \"$config_dir/settings.ini\"\n" +
+                "    fi\n" +
+                "done\n" +
+                "\n" +
+                "# Clear icon cache\n" +
+                "rm -rf ~/.cache/icon-cache ~/.cache/thumbnails 2>/dev/null || true\n";
 
-        var home = _shq(root._homeUrl.replace("file://", ""));
-        var script =
-            "mkdir -p " + home + "/.config/gtk-3.0 " + home + "/.config/gtk-4.0 2>/dev/null || true\n" +
-            "printf %s " + _shq(gtkSettings) + " > " + home + "/.config/gtk-3.0/settings.ini\n" +
-            "printf %s " + _shq(gtkSettings) + " > " + home + "/.config/gtk-4.0/settings.ini\n" +
-            "rm -rf " + home + "/.cache/icon-cache " + home + "/.cache/thumbnails 2>/dev/null || true\n";
-
-        Quickshell.execDetached(["sh", "-lc", script]);
+            Quickshell.execDetached(["sh", "-lc", script]);
+        }
     }
 
     function updateQtIconTheme(themeName) {
@@ -676,13 +689,13 @@ Singleton {
     
     Process {
         id: systemDefaultDetectionProcess
-        command: ["sh", "-c", "gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null | sed \"s/'//g\" || echo 'Adwaita'"]
+        command: ["sh", "-c", "gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null | sed \"s/'//g\" || echo ''"]
         running: false
         onExited: (exitCode) => {
             if (exitCode === 0 && stdout && stdout.length > 0) {
                 systemDefaultIconTheme = stdout.trim();
             } else {
-                systemDefaultIconTheme = "Adwaita";
+                systemDefaultIconTheme = "";
             }
             iconThemeDetectionProcess.running = true;
         }

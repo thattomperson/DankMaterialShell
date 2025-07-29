@@ -466,6 +466,11 @@ Singleton {
                 console.error("Colors singleton not available");
             }
         } else if (themeIndex >= 0 && themeIndex < themes.length) {
+            // If switching away from dynamic theme, restore system themes
+            if (isDynamicTheme && typeof Colors !== "undefined") {
+                console.log("Switching away from dynamic theme, restoring system themes");
+                Colors.restoreSystemThemes();
+            }
             currentThemeIndex = themeIndex;
             isDynamicTheme = false;
         }
