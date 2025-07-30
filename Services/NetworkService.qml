@@ -9,6 +9,7 @@ import qs.Common
 Singleton {
     id: root
     
+    property int refCount: 0
     property string networkStatus: "disconnected" // "ethernet", "wifi", "disconnected"
     property string ethernetIP: ""
     property string ethernetInterface: ""
@@ -42,6 +43,25 @@ Singleton {
     
     signal networksUpdated()
     
+    function addRef() {
+        refCount++;
+        console.log("NetworkService: addRef, refCount now:", refCount);
+        if (refCount === 1) {
+            // Start monitoring when first consumer appears
+            networkStatusChecker.running = true;
+        }
+    }
+    
+    function removeRef() {
+        refCount = Math.max(0, refCount - 1);
+        console.log("NetworkService: removeRef, refCount now:", refCount);
+        if (refCount === 0) {
+            // Stop monitoring when no consumers
+            networkStatusChecker.running = false;
+            autoRefreshTimer.running = false;
+        }
+    }
+    
     // Load saved preference on startup
     Component.onCompleted: {
         // Load preference from Prefs system
@@ -58,7 +78,7 @@ Singleton {
     Process {
         id: networkStatusChecker
         command: ["sh", "-c", "nmcli -t -f DEVICE,TYPE,STATE device | grep -E '(ethernet|wifi)' && echo '---' && ip link show | grep -E '^[0-9]+:.*ethernet.*state UP'"]
-        running: true
+        running: false
         
         stdout: StdioCollector {
             onStreamFinished: {
@@ -519,7 +539,7 @@ Singleton {
     Timer {
         id: autoRefreshTimer
         interval: 20000
-        running: root.autoRefreshEnabled
+        running: root.autoRefreshEnabled && root.refCount > 0
         repeat: true
         onTriggered: scanWifi()
     }
