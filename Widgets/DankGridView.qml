@@ -102,7 +102,7 @@ GridView {
                     id: iconImg
 
                     anchors.fill: parent
-                    source: (model.icon) ? Quickshell.iconPath(model.icon, "") : ""
+                    source: (model.icon) ? Quickshell.iconPath(model.icon, Prefs.iconTheme === "System Default" ? "" : Prefs.iconTheme) : ""
                     smooth: true
                     asynchronous: true
                     visible: status === Image.Ready

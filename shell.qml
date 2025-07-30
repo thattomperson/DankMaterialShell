@@ -3,6 +3,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Widgets
 import qs.Modules
 import qs.Modules.TopBar
 import qs.Modules.AppDrawer

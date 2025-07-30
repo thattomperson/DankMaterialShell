@@ -423,22 +423,44 @@ Singleton {
         // Update icon theme via dconf/gsettings AND settings.ini files
         if (gtkThemeName !== "System Default" && gtkThemeName !== "") {
             var script = 
-                "# Update dconf/gsettings\n" +
-                "if command -v dconf >/dev/null 2>&1; then\n" +
-                "    dconf write /org/gnome/desktop/interface/icon-theme \\\"" + gtkThemeName + "\\\"\n" +
-                "elif command -v gsettings >/dev/null 2>&1; then\n" +
+                "# Update dconf/gsettings with multiple fallbacks for Fedora\n" +
+                "if command -v gsettings >/dev/null 2>&1 && gsettings list-schemas | grep -q org.gnome.desktop.interface; then\n" +
                 "    gsettings set org.gnome.desktop.interface icon-theme '" + gtkThemeName + "'\n" +
+                "    echo 'Updated via gsettings'\n" +
+                "elif command -v dconf >/dev/null 2>&1; then\n" +
+                "    dconf write /org/gnome/desktop/interface/icon-theme \\\"" + gtkThemeName + "\\\"\n" +
+                "    echo 'Updated via dconf'\n" +
                 "fi\n" +
+                "\n" +
+                "# Ensure config directories exist\n" +
+                "mkdir -p ~/.config/gtk-3.0 ~/.config/gtk-4.0\n" +
                 "\n" +
                 "# Update settings.ini files (keep existing gtk-theme-name)\n" +
                 "for config_dir in ~/.config/gtk-3.0 ~/.config/gtk-4.0; do\n" +
-                "    if [ -f \"$config_dir/settings.ini\" ]; then\n" +
-                "        sed -i 's/^gtk-icon-theme-name=.*/gtk-icon-theme-name=" + gtkThemeName + "/' \"$config_dir/settings.ini\"\n" +
+                "    settings_file=\"$config_dir/settings.ini\"\n" +
+                "    if [ -f \"$settings_file\" ]; then\n" +
+                "        # Update existing icon-theme-name line or add it\n" +
+                "        if grep -q '^gtk-icon-theme-name=' \"$settings_file\"; then\n" +
+                "            sed -i 's/^gtk-icon-theme-name=.*/gtk-icon-theme-name=" + gtkThemeName + "/' \"$settings_file\"\n" +
+                "        else\n" +
+                "            # Add icon theme setting to [Settings] section or create it\n" +
+                "            if grep -q '\\[Settings\\]' \"$settings_file\"; then\n" +
+                "                sed -i '/\\[Settings\\]/a gtk-icon-theme-name=" + gtkThemeName + "' \"$settings_file\"\n" +
+                "            else\n" +
+                "                echo -e '\\n[Settings]\\ngtk-icon-theme-name=" + gtkThemeName + "' >> \"$settings_file\"\n" +
+                "            fi\n" +
+                "        fi\n" +
+                "    else\n" +
+                "        # Create new settings.ini file\n" +
+                "        echo -e '[Settings]\\ngtk-icon-theme-name=" + gtkThemeName + "' > \"$settings_file\"\n" +
                 "    fi\n" +
+                "    echo \"Updated $settings_file\"\n" +
                 "done\n" +
                 "\n" +
-                "# Clear icon cache\n" +
-                "rm -rf ~/.cache/icon-cache ~/.cache/thumbnails 2>/dev/null || true\n";
+                "# Clear icon cache and force refresh\n" +
+                "rm -rf ~/.cache/icon-cache ~/.cache/thumbnails 2>/dev/null || true\n" +
+                "# Send SIGHUP to running GTK applications to reload themes (Fedora-specific)\n" +
+                "pkill -HUP -f 'gtk' 2>/dev/null || true\n";
 
             Quickshell.execDetached(["sh", "-lc", script]);
         }
