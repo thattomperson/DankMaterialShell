@@ -46,18 +46,15 @@ Singleton {
     function addRef() {
         refCount++;
         console.log("NetworkService: addRef, refCount now:", refCount);
-        if (refCount === 1) {
-            // Start monitoring when first consumer appears
-            networkStatusChecker.running = true;
-        }
+        // Reference counting affects WiFi scanning operations only
+        // Basic network status monitoring always runs
     }
     
     function removeRef() {
         refCount = Math.max(0, refCount - 1);
         console.log("NetworkService: removeRef, refCount now:", refCount);
+        // Stop intensive WiFi operations when no consumers
         if (refCount === 0) {
-            // Stop monitoring when no consumers
-            networkStatusChecker.running = false;
             autoRefreshTimer.running = false;
         }
     }
@@ -78,7 +75,7 @@ Singleton {
     Process {
         id: networkStatusChecker
         command: ["sh", "-c", "nmcli -t -f DEVICE,TYPE,STATE device | grep -E '(ethernet|wifi)' && echo '---' && ip link show | grep -E '^[0-9]+:.*ethernet.*state UP'"]
-        running: false
+        running: true
         
         stdout: StdioCollector {
             onStreamFinished: {
