@@ -14,6 +14,8 @@ Singleton {
 
     readonly property string _homeUrl: StandardPaths.writableLocation(StandardPaths.HomeLocation)
     readonly property string homeDir: _homeUrl.startsWith("file://") ? _homeUrl.substring(7) : _homeUrl
+    readonly property string _configUrl: StandardPaths.writableLocation(StandardPaths.ConfigLocation)
+    readonly property string configDir: _configUrl.startsWith("file://") ? _configUrl.substring(7) : _configUrl
     readonly property string shellDir: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Common/", "")
     readonly property string wallpaperPath: Prefs.wallpaperPath
     property bool matugenAvailable: false
@@ -292,12 +294,16 @@ palette = 15=${fg_b}`;
         // Get current theme preferences
         const isLight = (typeof Theme !== "undefined" && Theme.isLightMode) ? "true" : "false";
         const iconTheme = (typeof Prefs !== "undefined" && Prefs.iconTheme) ? Prefs.iconTheme : "System Default";
+        const gtkTheming = (typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) ? "true" : "false";
+        const qtTheming = (typeof Prefs !== "undefined" && Prefs.qtThemingEnabled) ? "true" : "false";
         
         console.log("Theme mode:", isLight === "true" ? "light" : "dark");
         console.log("Icon theme:", iconTheme);
+        console.log("GTK theming enabled:", gtkTheming);
+        console.log("Qt theming enabled:", qtTheming);
         
         systemThemeGenerationInProgress = true;
-        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, homeDir, "generate", isLight, iconTheme];
+        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme, gtkTheming, qtTheming];
         systemThemeGenerator.running = true;
     }
     
@@ -323,11 +329,15 @@ palette = 15=${fg_b}`;
         // Get current theme preferences
         const isLight = (typeof Theme !== "undefined" && Theme.isLightMode) ? "true" : "false";
         const iconTheme = (typeof Prefs !== "undefined" && Prefs.iconTheme) ? Prefs.iconTheme : "System Default";
+        const gtkTheming = (typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) ? "true" : "false";
+        const qtTheming = (typeof Prefs !== "undefined" && Prefs.qtThemingEnabled) ? "true" : "false";
         
         console.log("Restoring to theme mode:", isLight === "true" ? "light" : "dark");
         console.log("Icon theme:", iconTheme);
+        console.log("GTK theming enabled:", gtkTheming);
+        console.log("Qt theming enabled:", qtTheming);
         
-        systemThemeRestoreProcess.command = [shellDir + "/generate-themes.sh", "", shellDir, homeDir, "restore", isLight, iconTheme];
+        systemThemeRestoreProcess.command = [shellDir + "/generate-themes.sh", "", shellDir, configDir, "restore", isLight, iconTheme, gtkTheming, qtTheming];
         systemThemeRestoreProcess.running = true;
     }
 
@@ -357,7 +367,7 @@ palette = 15=${fg_b}`;
     
     Process {
         id: gtkAvailabilityChecker
-        command: ["bash", "-c", "command -v gsettings >/dev/null && [ -d ~/.config/gtk-3.0 -o -d ~/.config/gtk-4.0 ]"]
+        command: ["bash", "-c", "command -v gsettings >/dev/null && [ -d " + configDir + "/gtk-3.0 -o -d " + configDir + "/gtk-4.0 ]"]
         running: false
         onExited: (exitCode) => {
             gtkThemingEnabled = (exitCode === 0);
@@ -398,10 +408,6 @@ palette = 15=${fg_b}`;
             if (exitCode === 0) {
                 console.log("System themes generated successfully");
                 console.log("stdout:", systemThemeStdout.text);
-                
-                // GTK theme application is now handled by the simplified generate-themes.sh script
-                
-                ToastService.showInfo("System themes updated successfully");
             } else {
                 console.error("System theme generation failed, exit code:", exitCode);
                 console.error("stdout:", systemThemeStdout.text);

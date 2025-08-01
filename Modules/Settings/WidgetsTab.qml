@@ -6,7 +6,6 @@ import qs.Widgets
 ScrollView {
     id: widgetsTab
 
-    contentWidth: availableWidth
     contentHeight: column.implicitHeight + Theme.spacingXL
     clip: true
 

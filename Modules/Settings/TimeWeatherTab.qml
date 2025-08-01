@@ -6,7 +6,6 @@ import qs.Widgets
 ScrollView {
     id: timeWeatherTab
 
-    contentWidth: availableWidth
     contentHeight: column.implicitHeight
     clip: true
 

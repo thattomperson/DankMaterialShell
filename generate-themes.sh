@@ -5,13 +5,15 @@
 
 WALLPAPER_PATH="$1"
 SHELL_DIR="$2"
-HOME_DIR="$3"
+CONFIG_DIR="$3"  # Config directory (typically ~/.config)
 MODE="$4"        # "generate" or "restore"
 IS_LIGHT="$5"    # "true" for light mode, "false" for dark mode
 ICON_THEME="$6"  # Icon theme name
+GTK_THEMING="$7" # "true" to enable GTK theming, "false" to disable
+QT_THEMING="$8"  # "true" to enable Qt theming, "false" to disable
 
-if [ -z "$SHELL_DIR" ] || [ -z "$HOME_DIR" ]; then
-    echo "Usage: $0 <wallpaper_path> <shell_dir> <home_dir> [mode] [is_light] [icon_theme]" >&2
+if [ -z "$SHELL_DIR" ] || [ -z "$CONFIG_DIR" ]; then
+    echo "Usage: $0 <wallpaper_path> <shell_dir> <config_dir> [mode] [is_light] [icon_theme] [gtk_theming] [qt_theming]" >&2
     echo "  For restore mode, wallpaper_path can be empty" >&2
     exit 1
 fi
@@ -20,6 +22,8 @@ fi
 MODE=${MODE:-"generate"}
 IS_LIGHT=${IS_LIGHT:-"false"}
 ICON_THEME=${ICON_THEME:-"System Default"}
+GTK_THEMING=${GTK_THEMING:-"false"}
+QT_THEMING=${QT_THEMING:-"false"}
 
 update_theme_settings() {
     local color_scheme="$1"
@@ -51,13 +55,13 @@ update_theme_settings() {
 }
 
 update_gtk_css() {
-    local home_dir="$1"
-    local import_line="@import url(\"$home_dir/.config/gtk-4.0/dank-colors.css\");"
+    local config_dir="$1"
+    local import_line="@import url(\"$config_dir/gtk-4.0/dank-colors.css\");"
     
     echo "Updating GTK CSS imports..."
     
     # Update GTK-4.0
-    local gtk4_css="$home_dir/.config/gtk-4.0/gtk.css"
+    local gtk4_css="$config_dir/gtk-4.0/gtk.css"
     if [ -f "$gtk4_css" ]; then
         # Remove existing import if present
         sed -i '/^@import url.*dank-colors\.css.*);$/d' "$gtk4_css"
@@ -70,8 +74,8 @@ update_gtk_css() {
     echo "Updated GTK-4.0 CSS import"
     
     # Update GTK-3.0 with its own path
-    local gtk3_import="@import url(\"$home_dir/.config/gtk-3.0/dank-colors.css\");"
-    local gtk3_css="$home_dir/.config/gtk-3.0/gtk.css"
+    local gtk3_import="@import url(\"$config_dir/gtk-3.0/dank-colors.css\");"
+    local gtk3_css="$config_dir/gtk-3.0/gtk.css"
     if [ -f "$gtk3_css" ]; then
         # Remove existing import if present
         sed -i '/^@import url.*dank-colors\.css.*);$/d' "$gtk3_css"
@@ -82,6 +86,97 @@ update_gtk_css() {
         echo "$gtk3_import" > "$gtk3_css"
     fi
     echo "Updated GTK-3.0 CSS import"
+}
+
+update_qt_config() {
+    local config_dir="$1"
+    
+    echo "Updating Qt configuration..."
+    
+    # Function to update Qt config files with color scheme settings
+    update_qt_color_config() {
+        local config_file="$1"
+        local version="$2"
+        local color_scheme_path="$config_dir/qt${version}ct/colors/matugen.conf"
+        
+        if [ -f "$config_file" ]; then
+            # Read the entire file and carefully update only what we need
+            python3 -c "
+import sys
+import re
+
+config_file = '$config_file'
+color_scheme_path = '$color_scheme_path'
+
+try:
+    with open(config_file, 'r') as f:
+        content = f.read()
+    
+    lines = content.split('\n')
+    result = []
+    in_appearance = False
+    custom_palette_found = False
+    color_scheme_found = False
+    
+    for line in lines:
+        stripped = line.strip()
+        
+        if stripped == '[Appearance]':
+            in_appearance = True
+            result.append(line)
+        elif stripped.startswith('[') and stripped != '[Appearance]':
+            # End of [Appearance] section, add missing settings if needed
+            if in_appearance:
+                if not custom_palette_found:
+                    result.append('custom_palette=true')
+                if not color_scheme_found:
+                    result.append('color_scheme_path=' + color_scheme_path)
+            in_appearance = False
+            result.append(line)
+        elif in_appearance and stripped.startswith('custom_palette='):
+            custom_palette_found = True
+            result.append('custom_palette=true')
+        elif in_appearance and stripped.startswith('color_scheme_path='):
+            color_scheme_found = True
+            result.append('color_scheme_path=' + color_scheme_path)
+        else:
+            result.append(line)
+    
+    # Handle case where [Appearance] is the last section
+    if in_appearance:
+        if not custom_palette_found:
+            result.append('custom_palette=true')
+        if not color_scheme_found:
+            result.append('color_scheme_path=' + color_scheme_path)
+    
+    # If no [Appearance] section exists, create one
+    if not any('[Appearance]' in line for line in lines):
+        result.extend(['', '[Appearance]', 'custom_palette=true', 'color_scheme_path=' + color_scheme_path])
+    
+    with open(config_file, 'w') as f:
+        f.write('\n'.join(result))
+        
+except Exception as e:
+    print(f'Error updating {config_file}: {e}', file=sys.stderr)
+    sys.exit(1)
+"
+        else
+            # Create new config file
+            printf '[Appearance]\ncustom_palette=true\ncolor_scheme_path=%s\n' "$color_scheme_path" > "$config_file"
+        fi
+    }
+    
+    # Update Qt5ct if available
+    if command -v qt5ct >/dev/null 2>&1; then
+        update_qt_color_config "$config_dir/qt5ct/qt5ct.conf" "5"
+        echo "Updated Qt5ct configuration"
+    fi
+    
+    # Update Qt6ct if available  
+    if command -v qt6ct >/dev/null 2>&1; then
+        update_qt_color_config "$config_dir/qt6ct/qt6ct.conf" "6"
+        echo "Updated Qt6ct configuration"
+    fi
 }
 
 # Handle restore mode
@@ -112,7 +207,7 @@ if [ ! -d "$SHELL_DIR" ]; then
 fi
 
 # Create necessary directories
-mkdir -p "$HOME_DIR/.config/gtk-3.0" "$HOME_DIR/.config/gtk-4.0" "$HOME_DIR/.config/qt5ct/colors" "$HOME_DIR/.config/qt6ct/colors" "$HOME_DIR/.local/share/color-schemes"
+mkdir -p "$CONFIG_DIR/gtk-3.0" "$CONFIG_DIR/gtk-4.0" "$CONFIG_DIR/qt5ct/colors" "$CONFIG_DIR/qt6ct/colors" "$(dirname "$CONFIG_DIR")/.local/share/color-schemes"
 
 # Change to shell directory where matugen-config.toml is located
 cd "$SHELL_DIR" || exit 1
@@ -143,8 +238,26 @@ fi
 
 update_theme_settings "$color_scheme" "$ICON_THEME"
 
-# Update GTK CSS imports
-update_gtk_css "$HOME_DIR"
+# Update GTK CSS imports if GTK theming is enabled
+if [ "$GTK_THEMING" = "true" ]; then
+    update_gtk_css "$CONFIG_DIR"
+    echo "GTK theming updated"
+else
+    echo "GTK theming disabled - skipping GTK CSS updates"
+fi
+
+# Update Qt configuration if Qt theming is enabled
+if [ "$QT_THEMING" = "true" ]; then
+    update_qt_config "$CONFIG_DIR"
+    echo "Qt theming updated"
+else
+    echo "Qt theming disabled - skipping Qt configuration updates"
+fi
 
 echo "System theme files generated successfully"
-echo "dank-colors.css files should be available in $HOME_DIR/.config/gtk-3.0/ and $HOME_DIR/.config/gtk-4.0/"
+if [ "$GTK_THEMING" = "true" ]; then
+    echo "dank-colors.css files should be available in $CONFIG_DIR/gtk-3.0/ and $CONFIG_DIR/gtk-4.0/"
+fi
+if [ "$QT_THEMING" = "true" ]; then
+    echo "Qt color schemes should be available in $CONFIG_DIR/qt5ct/colors/ and $CONFIG_DIR/qt6ct/colors/"
+fi

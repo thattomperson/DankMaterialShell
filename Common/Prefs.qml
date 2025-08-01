@@ -88,6 +88,8 @@ Singleton {
     readonly property string defaultMonoFontFamily: "Fira Code"
     
     readonly property string _homeUrl: StandardPaths.writableLocation(StandardPaths.HomeLocation)
+    readonly property string _configUrl: StandardPaths.writableLocation(StandardPaths.ConfigLocation)
+    readonly property string _configDir: _configUrl.startsWith("file://") ? _configUrl.substring(7) : _configUrl
     
     Timer {
         id: fontCheckTimer
@@ -590,10 +592,10 @@ Singleton {
                 "fi\n" +
                 "\n" +
                 "# Ensure config directories exist\n" +
-                "mkdir -p ~/.config/gtk-3.0 ~/.config/gtk-4.0\n" +
+                "mkdir -p " + _configDir + "/gtk-3.0 " + _configDir + "/gtk-4.0\n" +
                 "\n" +
                 "# Update settings.ini files (keep existing gtk-theme-name)\n" +
-                "for config_dir in ~/.config/gtk-3.0 ~/.config/gtk-4.0; do\n" +
+                "for config_dir in " + _configDir + "/gtk-3.0 " + _configDir + "/gtk-4.0; do\n" +
                 "    settings_file=\"$config_dir/settings.ini\"\n" +
                 "    if [ -f \"$settings_file\" ]; then\n" +
                 "        # Update existing icon-theme-name line or add it\n" +
@@ -642,9 +644,9 @@ Singleton {
                 "    ' \"$config_file\" > \"$config_file.tmp\" && mv \"$config_file.tmp\" \"$config_file\"\n" +
                 "  fi\n" +
                 "}\n" +
-                "remove_icon_theme " + home + "/.config/qt5ct/qt5ct.conf\n" +
-                "remove_icon_theme " + home + "/.config/qt6ct/qt6ct.conf\n" +
-                "rm -f " + home + "/.config/environment.d/95-qtct.conf 2>/dev/null || true\n" +
+                "remove_icon_theme " + _configDir + "/qt5ct/qt5ct.conf\n" +
+                "remove_icon_theme " + _configDir + "/qt6ct/qt6ct.conf\n" +
+                "rm -f " + _configDir + "/environment.d/95-qtct.conf 2>/dev/null || true\n" +
                 "systemctl --user import-environment --unset=QT_QPA_PLATFORMTHEME --unset=QT_QPA_PLATFORMTHEME_QT6 2>/dev/null || true\n" +
                 "dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME= QT_QPA_PLATFORMTHEME_QT6= 2>/dev/null || true\n" +
                 "rm -rf " + home + "/.cache/icon-cache " + home + "/.cache/thumbnails 2>/dev/null || true\n";
@@ -654,7 +656,7 @@ Singleton {
         }
 
         var script =
-            "mkdir -p " + home + "/.config/qt5ct " + home + "/.config/qt6ct " + home + "/.config/environment.d 2>/dev/null || true\n" +
+            "mkdir -p " + _configDir + "/qt5ct " + _configDir + "/qt6ct " + _configDir + "/environment.d 2>/dev/null || true\n" +
             "update_qt_config() {\n" +
             "  local config_file=\"$1\"\n" +
             "  local theme_name=\"$2\"\n" +
@@ -685,15 +687,15 @@ Singleton {
             "    printf '[Appearance]\\nicon_theme=%s\\n' \"$theme_name\" > \"$config_file\"\n" +
             "  fi\n" +
             "}\n" +
-            "update_qt_config " + home + "/.config/qt5ct/qt5ct.conf " + _shq(qtThemeName) + "\n" +
-            "update_qt_config " + home + "/.config/qt6ct/qt6ct.conf " + _shq(qtThemeName) + "\n" +
+            "update_qt_config " + _configDir + "/qt5ct/qt5ct.conf " + _shq(qtThemeName) + "\n" +
+            "update_qt_config " + _configDir + "/qt6ct/qt6ct.conf " + _shq(qtThemeName) + "\n" +
             "if command -v qt5ct >/dev/null 2>&1; then\n" +
-            "  printf 'QT_QPA_PLATFORMTHEME=qt5ct\\n' > " + home + "/.config/environment.d/95-qtct.conf\n" +
+            "  printf 'QT_QPA_PLATFORMTHEME=qt5ct\\n' > " + _configDir + "/environment.d/95-qtct.conf\n" +
             "  if command -v qt6ct >/dev/null 2>&1; then\n" +
-            "    printf 'QT_QPA_PLATFORMTHEME_QT6=qt6ct\\n' >> " + home + "/.config/environment.d/95-qtct.conf\n" +
+            "    printf 'QT_QPA_PLATFORMTHEME_QT6=qt6ct\\n' >> " + _configDir + "/environment.d/95-qtct.conf\n" +
             "  fi\n" +
             "else\n" +
-            "  rm -f " + home + "/.config/environment.d/95-qtct.conf 2>/dev/null || true\n" +
+            "  rm -f " + _configDir + "/environment.d/95-qtct.conf 2>/dev/null || true\n" +
             "fi\n" +
             "systemctl --user import-environment QT_QPA_PLATFORMTHEME QT_QPA_PLATFORMTHEME_QT6 2>/dev/null || true\n" +
             "dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME QT_QPA_PLATFORMTHEME_QT6 2>/dev/null || true\n" +
@@ -701,6 +703,7 @@ Singleton {
 
         Quickshell.execDetached(["sh", "-lc", script]);
     }
+
 
     function applyStoredIconTheme() {
         updateGtkIconTheme(iconTheme);
