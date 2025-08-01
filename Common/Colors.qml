@@ -292,12 +292,16 @@ palette = 15=${fg_b}`;
         // Get current theme preferences
         const isLight = (typeof Theme !== "undefined" && Theme.isLightMode) ? "true" : "false";
         const iconTheme = (typeof Prefs !== "undefined" && Prefs.iconTheme) ? Prefs.iconTheme : "System Default";
+        const gtkTheming = (typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) ? "true" : "false";
+        const qtTheming = (typeof Prefs !== "undefined" && Prefs.qtThemingEnabled) ? "true" : "false";
         
         console.log("Theme mode:", isLight === "true" ? "light" : "dark");
         console.log("Icon theme:", iconTheme);
+        console.log("GTK theming enabled:", gtkTheming);
+        console.log("Qt theming enabled:", qtTheming);
         
         systemThemeGenerationInProgress = true;
-        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, homeDir, "generate", isLight, iconTheme];
+        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, homeDir, "generate", isLight, iconTheme, gtkTheming, qtTheming];
         systemThemeGenerator.running = true;
     }
     
@@ -323,11 +327,15 @@ palette = 15=${fg_b}`;
         // Get current theme preferences
         const isLight = (typeof Theme !== "undefined" && Theme.isLightMode) ? "true" : "false";
         const iconTheme = (typeof Prefs !== "undefined" && Prefs.iconTheme) ? Prefs.iconTheme : "System Default";
+        const gtkTheming = (typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) ? "true" : "false";
+        const qtTheming = (typeof Prefs !== "undefined" && Prefs.qtThemingEnabled) ? "true" : "false";
         
         console.log("Restoring to theme mode:", isLight === "true" ? "light" : "dark");
         console.log("Icon theme:", iconTheme);
+        console.log("GTK theming enabled:", gtkTheming);
+        console.log("Qt theming enabled:", qtTheming);
         
-        systemThemeRestoreProcess.command = [shellDir + "/generate-themes.sh", "", shellDir, homeDir, "restore", isLight, iconTheme];
+        systemThemeRestoreProcess.command = [shellDir + "/generate-themes.sh", "", shellDir, homeDir, "restore", isLight, iconTheme, gtkTheming, qtTheming];
         systemThemeRestoreProcess.running = true;
     }
 

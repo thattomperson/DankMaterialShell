@@ -545,6 +545,7 @@ Singleton {
         Quickshell.execDetached(["sh", "-lc", script]);
     }
 
+
     function applyStoredIconTheme() {
         updateGtkIconTheme(iconTheme);
         updateQtIconTheme(iconTheme);

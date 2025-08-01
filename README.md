@@ -96,6 +96,12 @@ sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 gtk-theme-name=Colloid
 ```
 
+**Recommended QT base them:** Breeze is recommended, on arch it can be installed with `pacman -S breeze breeze5` and then in `~/.confg/qt6ct/qt6ct.conf` and `~/.confg/qt5ct/qt5ct.conf` set the following:
+```
+[Appearance]
+style=Breeze
+```
+
 Enable these features in Settings → Appearance → System App Theming after installing the dependencies.
 
 3. Install DankMaterialShell
