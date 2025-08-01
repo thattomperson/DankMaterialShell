@@ -297,7 +297,7 @@ palette = 15=${fg_b}`;
         console.log("Icon theme:", iconTheme);
         
         systemThemeGenerationInProgress = true;
-        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, "generate", isLight, iconTheme];
+        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, homeDir, "generate", isLight, iconTheme];
         systemThemeGenerator.running = true;
     }
     
@@ -327,7 +327,7 @@ palette = 15=${fg_b}`;
         console.log("Restoring to theme mode:", isLight === "true" ? "light" : "dark");
         console.log("Icon theme:", iconTheme);
         
-        systemThemeRestoreProcess.command = [shellDir + "/generate-themes.sh", "", shellDir, "restore", isLight, iconTheme];
+        systemThemeRestoreProcess.command = [shellDir + "/generate-themes.sh", "", shellDir, homeDir, "restore", isLight, iconTheme];
         systemThemeRestoreProcess.running = true;
     }
 

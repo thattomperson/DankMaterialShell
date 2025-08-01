@@ -5,12 +5,13 @@
 
 WALLPAPER_PATH="$1"
 SHELL_DIR="$2"
-MODE="$3"        # "generate" or "restore"
-IS_LIGHT="$4"    # "true" for light mode, "false" for dark mode
-ICON_THEME="$5"  # Icon theme name
+HOME_DIR="$3"
+MODE="$4"        # "generate" or "restore"
+IS_LIGHT="$5"    # "true" for light mode, "false" for dark mode
+ICON_THEME="$6"  # Icon theme name
 
-if [ -z "$SHELL_DIR" ]; then
-    echo "Usage: $0 <wallpaper_path> <shell_dir> [mode] [is_light] [icon_theme]" >&2
+if [ -z "$SHELL_DIR" ] || [ -z "$HOME_DIR" ]; then
+    echo "Usage: $0 <wallpaper_path> <shell_dir> <home_dir> [mode] [is_light] [icon_theme]" >&2
     echo "  For restore mode, wallpaper_path can be empty" >&2
     exit 1
 fi
@@ -49,6 +50,40 @@ update_theme_settings() {
     fi
 }
 
+update_gtk_css() {
+    local home_dir="$1"
+    local import_line="@import url(\"$home_dir/.config/gtk-4.0/dank-colors.css\");"
+    
+    echo "Updating GTK CSS imports..."
+    
+    # Update GTK-4.0
+    local gtk4_css="$home_dir/.config/gtk-4.0/gtk.css"
+    if [ -f "$gtk4_css" ]; then
+        # Remove existing import if present
+        sed -i '/^@import url.*dank-colors\.css.*);$/d' "$gtk4_css"
+        # Add import at the top
+        sed -i "1i\\$import_line" "$gtk4_css"
+    else
+        # Create new gtk.css with import
+        echo "$import_line" > "$gtk4_css"
+    fi
+    echo "Updated GTK-4.0 CSS import"
+    
+    # Update GTK-3.0 with its own path
+    local gtk3_import="@import url(\"$home_dir/.config/gtk-3.0/dank-colors.css\");"
+    local gtk3_css="$home_dir/.config/gtk-3.0/gtk.css"
+    if [ -f "$gtk3_css" ]; then
+        # Remove existing import if present
+        sed -i '/^@import url.*dank-colors\.css.*);$/d' "$gtk3_css"
+        # Add import at the top
+        sed -i "1i\\$gtk3_import" "$gtk3_css"
+    else
+        # Create new gtk.css with import
+        echo "$gtk3_import" > "$gtk3_css"
+    fi
+    echo "Updated GTK-3.0 CSS import"
+}
+
 # Handle restore mode
 if [ "$MODE" = "restore" ]; then
     echo "Restoring default theme settings..."
@@ -77,7 +112,7 @@ if [ ! -d "$SHELL_DIR" ]; then
 fi
 
 # Create necessary directories
-mkdir -p ~/.config/gtk-3.0 ~/.config/gtk-4.0 ~/.config/qt5ct/colors ~/.config/qt6ct/colors ~/.local/share/color-schemes
+mkdir -p "$HOME_DIR/.config/gtk-3.0" "$HOME_DIR/.config/gtk-4.0" "$HOME_DIR/.config/qt5ct/colors" "$HOME_DIR/.config/qt6ct/colors" "$HOME_DIR/.local/share/color-schemes"
 
 # Change to shell directory where matugen-config.toml is located
 cd "$SHELL_DIR" || exit 1
@@ -108,5 +143,8 @@ fi
 
 update_theme_settings "$color_scheme" "$ICON_THEME"
 
+# Update GTK CSS imports
+update_gtk_css "$HOME_DIR"
+
 echo "System theme files generated successfully"
-echo "Colors.css files should be available in ~/.config/gtk-3.0/ and ~/.config/gtk-4.0/"
+echo "dank-colors.css files should be available in $HOME_DIR/.config/gtk-3.0/ and $HOME_DIR/.config/gtk-4.0/"
