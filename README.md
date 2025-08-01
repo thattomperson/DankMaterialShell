@@ -88,8 +88,15 @@ sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 **Note on networking:** This shell requires NetworkManager for WiFi functionality.
 
 **Note on system app theming:** DankMaterialShell can automatically theme GTK and Qt applications to match your dynamic wallpaper colors. This requires:
-- For GTK apps: `adw-gtk3` theme and `gsettings`
+- For GTK apps: `Colloid` theme and `gsettings`
 - For Qt apps: `qt5ct` and/or `qt6ct`
+
+**Recommended GTK base theme:** Use [Colloid](https://github.com/vinceliuice/Colloid-gtk-theme). Install with `./install.sh -s standard -l`. Configure in `~/.config/gtk-3.0/settings.ini` and `~/.config/gtk-4.0/settings.ini` and set Colloid as the theme:
+
+```
+[Settings]
+gtk-theme-name=Colloid
+```
 
 Enable these features in Settings → Appearance → System App Theming after installing the dependencies.
 
