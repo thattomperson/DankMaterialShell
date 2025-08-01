@@ -13,7 +13,6 @@ ScrollView {
     property alias profileBrowser: profileBrowserLoader.item
     property alias wallpaperBrowser: wallpaperBrowserLoader.item
 
-    contentWidth: availableWidth
     contentHeight: column.implicitHeight
     clip: true
 

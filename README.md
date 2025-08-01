@@ -1,250 +1,337 @@
-# DankMaterialShell (Quickshell)
+# DankMaterialShell
 
-A [Quickshell](https://quickshell.org/) built shell designed to be highly functional, in Material 3 style.
+A [Quickshell](https://quickshell.org/)-based desktop shell with Material 3 design principles, built for functionality and modern aesthetics.
 
-Specifically created for [niri](https://github.com/YaLTeR/niri).
+Specifically optimized for the [niri](https://github.com/YaLTeR/niri) compositor, but compatible with other Wayland compositors.
 
-<image>
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+  - [Core Dependencies](#core-dependencies)
+  - [Optional Dependencies](#optional-dependencies)
+  - [Shell Installation](#shell-installation)
+- [Configuration](#configuration)
+  - [Theme Configuration](#theme-configuration)
+  - [App Theming Setup](#app-theming-setup)
+- [Usage](#usage)
+  - [Basic Controls](#basic-controls)
+  - [IPC Commands](#ipc-commands)
+- [Calendar Integration](#calendar-integration)
+- [Troubleshooting](#troubleshooting)
+
+## Features
+
+- **Material 3 Design**: Modern, clean interface following Google's latest design language
+- **Dynamic Theming**: Automatic color extraction from wallpapers using matugen
+- **System Integration**: Built-in audio controls, brightness management, and media controls
+- **Application Launcher**: Spotlight-style launcher for quick app access
+- **Clipboard History**: Visual clipboard manager with search functionality
+- **Process Manager**: Built-in task manager for system monitoring
+- **Notification Center**: Centralized notification management
+- **Calendar Support**: Integration with various calendar services
+- **Lockscreen**: Secure screen locking functionality
+
+## Requirements
+
+**Base Requirements:**
+- Wayland compositor (niri recommended)
+- NetworkManager (for WiFi functionality)
+- Material Symbols font
+- Inter and Fira Code fonts (recommended)
+
+**Distribution Support:**
+- Compatible with any Linux distribution
+- Installation examples provided for Arch Linux and Fedora
 
 ## Installation
 
-1. Install required dependencies
+### Core Dependencies
 
-This shell was primarily built for [niri](https://github.com/YaLTeR/niri), but only for workspaces and the active window widget in TopBar. So it could be used on any other wayland compositor with minimal changes.
+#### Material Symbols Font
 
+**Manual Installation:**
 ```bash
-# 1 --- Material Symbols Font (if not present)
-mkdir -p ~/.local/share/fonts && curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf && fc-cache -f
-# Arch: paru -S ttf-material-symbols-variable-git
-# Fedora: Use manual installation (Fedora packages contain legacy Material Icons, not Material Symbols)
+mkdir -p ~/.local/share/fonts
+curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf
+fc-cache -f
+```
 
-# 2 --- Inter Variable (recommended font)
-mkdir -p ~/.local/share/fonts && curl -L "https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip" -o /tmp/Inter.zip && unzip -j /tmp/Inter.zip "InterVariable.ttf" "InterVariable-Italic.ttf" -d ~/.local/share/fonts/ && rm /tmp/Inter.zip && fc-cache -f
-# Arch: pacman -S inter-font
-# Fedora: sudo dnf install rsms-inter-fonts
-
-# 3 --- Fira Code (recommended monospace font)
-mkdir -p ~/.local/share/fonts && curl -L "https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip" -o /tmp/FiraCode.zip && unzip -j /tmp/FiraCode.zip "ttf/*.ttf" -d ~/.local/share/fonts/ && rm /tmp/FiraCode.zip && fc-cache -f
-# Arch: pacman -S ttf-fira-code
-# Fedora: sudo dnf install fira-code-fonts
-
-# 4 --- QuickShell (recommended to use a git build)
-# Arch
-paru -S quickshell-git
+**Package Installation:**
+```bash
+# Arch Linux
+paru -S ttf-material-symbols-variable-git
 
 # Fedora
+# Use manual installation - Fedora packages contain legacy Material Icons
+```
+
+#### Typography
+
+**Inter Variable Font:**
+```bash
+# Manual
+mkdir -p ~/.local/share/fonts
+curl -L "https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip" -o /tmp/Inter.zip
+unzip -j /tmp/Inter.zip "InterVariable.ttf" "InterVariable-Italic.ttf" -d ~/.local/share/fonts/
+rm /tmp/Inter.zip && fc-cache -f
+
+# Package managers
+# Arch: pacman -S inter-font
+# Fedora: sudo dnf install rsms-inter-fonts
+```
+
+**Fira Code Font:**
+```bash
+# Manual
+mkdir -p ~/.local/share/fonts
+curl -L "https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip" -o /tmp/FiraCode.zip
+unzip -j /tmp/FiraCode.zip "ttf/*.ttf" -d ~/.local/share/fonts/
+rm /tmp/FiraCode.zip && fc-cache -f
+
+# Package managers
+# Arch: pacman -S ttf-fira-code
+# Fedora: sudo dnf install fira-code-fonts
+```
+
+#### Quickshell
+
+**Arch Linux:**
+```bash
+paru -S quickshell-git
+```
+
+**Fedora:**
+```bash
 sudo dnf copr enable errornointernet/quickshell
 sudo dnf install quickshell
-# or
+# or for git version
 sudo dnf install quickshell-git
 ```
 
-2. Install optional dependencies to unlock certain features
+### Optional Dependencies
 
-| Dependency | Purpose | If Missing |
-|------------|---------|------------|
-| matugen | Allows dynamic themes based on wallpaper and system app theming | Just can choose from preconfigured themes instead of dynamic colors |
-| ddcutil | Allows controlling brightness of external monitors via DDC/CI | No external monitor brightness control |
-| brightnessctl | Allows controlling brightness of laptop displays via backlight | No laptop display brightness control |
-| wl-clipboard | Unlocks copy functionality of certain elements, such as process PIDs | No copy |
-| qt5ct + qt6ct | Icon theme and Qt app theming | Setting icon theme in settings won't work for QT5 or QT6 applications, no Qt theming |
-| gsettings | GTK theme management | No GTK theming |
+| Component | Purpose | Missing Functionality |
+|-----------|---------|----------------------|
+| matugen | Dynamic wallpaper-based theming | Limited to preconfigured themes |
+| ddcutil | External monitor brightness control | No DDC/CI brightness control |
+| brightnessctl | Laptop display brightness control | No backlight control |
+| wl-clipboard | Copy functionality for PIDs and other elements | No clipboard operations |
+| qt5ct + qt6ct | Qt application theming | No Qt theme integration |
+| gsettings | GTK application theming | No GTK theme integration |
 
+#### Installation by Distribution
+
+**Arch Linux:**
 ```bash
-# Arch
-# Core dependencies
-pacman -S inter-font ttf-fira-code cava wl-clipboard cliphist
-paru -S ttf-material-symbols-variable-git    # AUR package
+# Core optional packages
+pacman -S cava wl-clipboard cliphist ddcutil brightnessctl gsettings-desktop-schemas qt5ct qt6ct
 
-# Optional: Brightness control
-pacman -S ddcutil          # For external monitors
-pacman -S brightnessctl    # For laptop displays
-
-# Optional: App theming (only if you use GTK/Qt applications)
-pacman -S qt5ct qt6ct gsettings-desktop-schemas
-
-# Third-party packages (AUR)
+# AUR packages
 paru -S matugen
+```
 
-# Fedora
-# Core dependencies
-sudo dnf install cava wl-clipboard
+**Fedora:**
+```bash
+# Core packages
+sudo dnf install cava wl-clipboard ddcutil brightnessctl gsettings-desktop-schemas qt5ct qt6ct
 
-# COPR packages (core dependencies from third-party repositories)
+# COPR repositories
 sudo dnf copr enable wef/cliphist && sudo dnf install cliphist
-
-# Optional: Brightness control
-sudo dnf install ddcutil          # For external monitors
-sudo dnf install brightnessctl    # For laptop displays
-
-# Optional: App theming (only if you use GTK/Qt applications)
-sudo dnf install theme qt5ct qt6ct gsettings-desktop-schemas
-
-# Optional third-party packages (COPR repositories)
 sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 ```
 
-**Note on networking:** This shell requires NetworkManager for WiFi functionality.
+### Shell Installation
 
-**Note on system app theming:** DankMaterialShell can automatically theme GTK and Qt applications to match your dynamic wallpaper colors. This requires:
-- For GTK apps: A compatible theme and `gsettings`, a compatible theme is one that respects standard color definitions - e.g. [Colloid](https://github.com/vinceliuice/Colloid-gtk-theme).
-- For Qt apps: `qt5ct` and/or `qt6ct`
+1. **Create configuration directory:**
+   ```bash
+   mkdir -p ~/.config/quickshell
+   ```
 
-**Recommended GTK base theme:** Use [Colloid](https://github.com/vinceliuice/Colloid-gtk-theme). Install with your preferences, e.g. `./install.sh -s standard -l --tweaks normal`. Configure in `~/.config/gtk-3.0/settings.ini` and `~/.config/gtk-4.0/settings.ini` and set Colloid as the theme:
+2. **Clone the repository:**
+   ```bash
+   git clone https://github.com/bbedward/DankMaterialShell.git ~/.config/quickshell/DankMaterialShell
+   ```
+
+3. **Launch the shell:**
+   ```bash
+   qs -c DankMaterialShell
+   ```
+
+## Configuration
+
+### Theme Configuration
+
+#### GTK Applications
+
+Install a compatible theme like [Colloid](https://github.com/vinceliuice/Colloid-gtk-theme):
+
+```bash
+# Install Colloid theme
+./install.sh -s standard -l --tweaks normal
 ```
+
+Configure in `~/.config/gtk-3.0/settings.ini` and `~/.config/gtk-4.0/settings.ini`:
+```ini
 [Settings]
 gtk-theme-name=Colloid
 ```
 
-**Recommended QT base them:** Breeze is recommended, on arch it can be installed with `pacman -S breeze breeze5` and then in `~/.confg/qt6ct/qt6ct.conf` and `~/.confg/qt5ct/qt5ct.conf` set the following:
+#### Qt Applications
+
+**Install Breeze theme:**
+```bash
+# Arch
+pacman -S breeze breeze5
 ```
+
+**Configure Qt5 and Qt6:**
+
+In `~/.config/qt5ct/qt5ct.conf` and `~/.config/qt6ct/qt6ct.conf`:
+```ini
 [Appearance]
 style=Breeze
 ```
 
-Enable these features in Settings → Appearance → System App Theming after installing the dependencies.
+#### KDE Applications
 
-3. Install DankMaterialShell
-
-```
-mkdir -p ~/.config/quickshell
-git clone https://github.com/bbedward/DankMaterialShell.git ~/.config/quickshell/DankMaterialShell
-```
-
-4. Enable
-
-```
-qs -c DankMaterialShell
-
-# In niri config
-spawn-at-startup "qs" "-c" "DankMaterialShell"
-
-# Optionally at bindings for spotlight launcher and clipboard history
-Mod+Space hotkey-overlay-title="Run an Application: Spotlight" { spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "spotlight" "toggle"; }
-Mod+V hotkey-overlay-title="Open Clipboard History" { spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "clipboard" "toggle"; }
+Create `~/.config/kdeglobals`:
+```ini
+[UiSettings]
+ColorScheme=qt6ct
 ```
 
-# Available IPC Events
+### App Theming Setup
 
-IPC Events are events that can be triggered with `qs` cli.
+Enable system app theming in **Settings → Appearance → System App Theming** after installing the required dependencies.
+
+## Usage
+
+### Basic Controls
+
+#### Niri Configuration
+
+Add to your niri configuration:
 
 ```bash
-qs -c DankMaterialShell ipc call <target> <function>
+# Auto-start
+spawn-at-startup "qs" "-c" "DankMaterialShell"
+
+# Key bindings
+Mod+Space hotkey-overlay-title="Run an Application: Spotlight" { 
+    spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "spotlight" "toggle"; 
+}
+
+Mod+V hotkey-overlay-title="Open Clipboard History" { 
+    spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "clipboard" "toggle"; 
+}
 ```
 
-## System Controls
+### IPC Commands
 
-| Target | Function | Parameters | Description |
-|--------|----------|------------|-------------|
-| audio | setvolume | percentage (string) | Set audio volume to specific percentage (0-100) |
-| audio | increment | step (string, default: "5") | Increase volume by step percentage |
-| audio | decrement | step (string, default: "5") | Decrease volume by step percentage |
-| audio | mute | none | Toggle audio mute |
-| audio | setmic | percentage (string) | Set microphone volume to specific percentage |
-| audio | micmute | none | Toggle microphone mute |
-| audio | status | none | Get current audio status (output/input levels and mute states) |
+The shell provides extensive IPC (Inter-Process Communication) functionality:
 
-## Application Controls
-
-| Target | Function | Parameters | Description |
-|--------|----------|------------|-------------|
-| spotlight | open | none | Open spotlight (app launcher) |
-| spotlight | close | none | Close spotlight (app launcher) |
-| spotlight | toggle | none | Toggle spotlight (app launcher) |
-| clipboard | open | none | Open clipboard history view |
-| clipboard | close | none | Close clipboard history view |
-| clipboard | toggle | none | Toggle clipboard history view |
-| processlist | open | none | Open process list (task manager) |  
-| processlist | close | none | Close process list (task manager) |
-| processlist | toggle | none | Toggle process list (task manager) |
-| lock | lock | none | Activate lockscreen |
-| lock | demo | none | Show lockscreen in demo mode |
-| lock | isLocked | none | Returns whether screen is currently locked |
-
-## Media Controls
-
-| Target | Function | Parameters | Description |
-|--------|----------|------------|-------------|
-| mpris | list | none | Get list of available media players |
-| mpris | play | none | Start media playback on active player |
-| mpris | pause | none | Pause media playback on active player |
-| mpris | playPause | none | Toggle play/pause state on active player |
-| mpris | previous | none | Skip to previous track on active player |
-| mpris | next | none | Skip to next track on active player |
-| mpris | stop | none | Stop media playback on active player |
-
-## System Services
-
-| Target | Function | Parameters | Description |
-|--------|----------|------------|-------------|
-| wallpaper | get | none | Get current wallpaper path |
-| wallpaper | set | path (string) | Set wallpaper to image path and refresh theme |
-| wallpaper | clear | none | Clear current wallpaper |
-| theme | get | none | Get current theme mode (light/dark) |
-| theme | toggle | none | Toggle between light and dark mode |
-| theme | light | none | Set theme to light mode |
-| theme | dark | none | Set theme to dark mode |
-| notifs | clear | none | Clear all notifications |
-
-
-## (Optional) Setup Calendar events (Google, Microsoft, other Caldev, etc.)
-
-1. Install [khal](https://github.com/pimutils/khal), [vdirsyncer](https://github.com/pimutils/vdirsyncer), and `aiohttp-oauthlib`
-
+```bash
+qs -c DankMaterialShell ipc call <target> <function> [parameters]
 ```
-# Arch
+
+#### Audio Controls
+
+| Command | Function |
+|---------|----------|
+| `audio setvolume 50` | Set volume to 50% |
+| `audio increment 10` | Increase volume by 10% |
+| `audio decrement 5` | Decrease volume by 5% |
+| `audio mute` | Toggle audio mute |
+| `audio setmic 75` | Set microphone to 75% |
+| `audio micmute` | Toggle microphone mute |
+| `audio status` | Get current audio status |
+
+#### Application Controls
+
+| Command | Function |
+|---------|----------|
+| `spotlight toggle` | Toggle application launcher |
+| `clipboard toggle` | Toggle clipboard history |
+| `processlist toggle` | Toggle process manager |
+| `lock lock` | Activate lockscreen |
+
+#### Media Controls
+
+| Command | Function |
+|---------|----------|
+| `mpris list` | List available media players |
+| `mpris playPause` | Toggle play/pause |
+| `mpris next` | Next track |
+| `mpris previous` | Previous track |
+
+#### System Services
+
+| Command | Function |
+|---------|----------|
+| `wallpaper set /path/to/image.jpg` | Set wallpaper and refresh theme |
+| `theme toggle` | Toggle light/dark mode |
+| `notifs clear` | Clear all notifications |
+
+## Calendar Integration
+
+### Prerequisites
+
+Install required packages:
+
+```bash
+# Arch Linux
 pacman -S vdirsyncer khal python-aiohttp-oauthlib
 
 # Fedora
 sudo dnf install python3-vdirsyncer khal python3-aiohttp-oauthlib
 ```
 
-2. Configure vdirsyncer
+### Configuration
 
-Follow the [documentation](https://vdirsyncer.pimutils.org/en/stable/config.html), you will have different steps depending on which calendars you want to sync with.
+1. **Create vdirsyncer directory:**
+   ```bash
+   mkdir -p ~/.vdirsyncer
+   ```
 
-```
-mkdir -p ~/.vdirsyncer
+2. **Configure calendar sync** in `~/.vdirsyncer/config`:
+   ```ini
+   [general]
+   status_path = "~/.calendars/status"
 
-# Create ~/.vdirsyncer/config (a single google calendar would look like)
-[general]
-status_path = "~/.calendars/status"
+   [pair personal_sync]
+   a = "personal"
+   b = "personallocal"
+   collections = ["from a", "from b"]
+   conflict_resolution = "a wins"
+   metadata = ["color"]
 
-[pair personal_sync]
-a = "personal"
-b = "personallocal"
-collections = ["from a", "from b"]
-conflict_resolution = "a wins"
-metadata = ["color"]
+   [storage personal]
+   type = "google_calendar"
+   token_file = "~/.vdirsyncer/google_calendar_token"
+   client_id = "your_client_id"
+   client_secret = "your_client_secret"
 
-[storage personal]
-type = "google_calendar"
-token_file = "~/.vdirsyncer/google_calendar_token"
-client_id = "...."
-client_secret = "...."
+   [storage personallocal]
+   type = "filesystem"
+   path = "~/.calendars/Personal"
+   fileext = ".ics"
+   ```
 
-[storage personallocal]
-type = "filesystem"
-path = "~/.calendars/Personal"
-fileext = ".ics"
+3. **Initial sync:**
+   ```bash
+   vdirsyncer sync
+   ```
 
-# Sync
-vdirsyncer sync
+4. **Configure automatic sync:**
+   ```bash
+   crontab -e
+   # Add: */5 * * * * /usr/bin/vdirsyncer sync
+   ```
 
-# Create crontab
-crontab -e 
-# e.g., this syncs every 5 minutes
-*/5 * * * * /usr/bin/vdirsyncer sync
-```
-
-3. Configure khal
-
-```
-# Run this
-khal configure
-
-# Choose option 2 for month/day/year
-# Time format, doesnt matter
-# Choose option 1 for use calendar already on this computer
-```
-
+5. **Configure khal:**
+   ```bash
+   khal configure
+   # Follow the interactive setup
+   ```
