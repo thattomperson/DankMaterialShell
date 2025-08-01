@@ -28,13 +28,31 @@ PanelWindow {
         let fonts = Qt.fontFamilies();
         if (fonts.indexOf("Material Symbols Rounded") === -1)
             ToastService.showError("Please install Material Symbols Rounded and Restart your Shell. See README.md for instructions");
-
+        
+        // Connect to the force refresh signal
+        Prefs.forceTopBarLayoutRefresh.connect(function() {
+            console.log("TopBar: Forcing layout refresh");
+            // Force layout recalculation by toggling visibility briefly
+            Qt.callLater(() => {
+                leftSection.visible = false;
+                centerSection.visible = false;
+                rightSection.visible = false;
+                Qt.callLater(() => {
+                    leftSection.visible = true;
+                    centerSection.visible = true;
+                    rightSection.visible = true;
+                    console.log("TopBar: Layout refresh completed");
+                });
+            });
+        });
     }
 
     Connections {
         function onTopBarTransparencyChanged() {
             root.backgroundTransparency = Prefs.topBarTransparency;
         }
+
+        // Remove old manual refresh handlers - ListModel updates are automatic
 
         target: Prefs
     }
@@ -116,12 +134,12 @@ PanelWindow {
             // Use estimated fixed widths to break circular dependencies
             readonly property int launcherButtonWidth: 40
             readonly property int workspaceSwitcherWidth: 120 // Approximate
-            readonly property int focusedAppMaxWidth: focusedApp.visible ? 456 : 0
+            readonly property int focusedAppMaxWidth: 456 // Fixed width since we don't have focusedApp reference
             readonly property int estimatedLeftSectionWidth: launcherButtonWidth + workspaceSwitcherWidth + focusedAppMaxWidth + (Theme.spacingXS * 2)
             readonly property int rightSectionWidth: rightSection.width
-            readonly property int clockWidth: clock.width
-            readonly property int mediaMaxWidth: media.visible ? 280 : 0 // Normal max width
-            readonly property int weatherWidth: weather.visible ? weather.width : 0
+            readonly property int clockWidth: 120 // Approximate clock width
+            readonly property int mediaMaxWidth: 280 // Normal max width
+            readonly property int weatherWidth: 80 // Approximate weather width
             readonly property bool validLayout: availableWidth > 100 && estimatedLeftSectionWidth > 0 && rightSectionWidth > 0
             readonly property int clockLeftEdge: (availableWidth - clockWidth) / 2
             readonly property int clockRightEdge: clockLeftEdge + clockWidth
@@ -135,6 +153,79 @@ PanelWindow {
             readonly property bool spacingTight: validLayout && (leftToMediaGap < 150 || clockToRightGap < 100)
             readonly property bool overlapping: validLayout && (leftToMediaGap < 100 || clockToRightGap < 50)
 
+            // Helper functions
+            function getWidgetEnabled(widgetId) {
+                switch (widgetId) {
+                    case "launcherButton": return Prefs.showLauncherButton
+                    case "workspaceSwitcher": return Prefs.showWorkspaceSwitcher
+                    case "focusedWindow": return Prefs.showFocusedWindow
+                    case "clock": return Prefs.showClock
+                    case "music": return Prefs.showMusic
+                    case "weather": return Prefs.showWeather
+                    case "systemTray": return Prefs.showSystemTray
+                    case "clipboard": return Prefs.showClipboard
+                    case "systemResources": return Prefs.showSystemResources
+                    case "notificationButton": return Prefs.showNotificationButton
+                    case "battery": return Prefs.showBattery
+                    case "controlCenterButton": return Prefs.showControlCenterButton
+                    default: return false
+                }
+            }
+            
+            function getWidgetVisible(widgetId) {
+                // Some widgets have additional visibility conditions
+                switch (widgetId) {
+                    case "launcherButton": return true
+                    case "workspaceSwitcher": return true // Simplified - was NiriService.niriAvailable
+                    case "focusedWindow": return true
+                    case "clock": return true
+                    case "music": return true // Simplified - was MprisController.activePlayer
+                    case "weather": return true // Simplified - was complex weather condition
+                    case "systemTray": return true
+                    case "clipboard": return true
+                    case "systemResources": return true
+                    case "notificationButton": return true
+                    case "battery": return true
+                    case "controlCenterButton": return true
+                    default: return false
+                }
+            }
+            
+            function getWidgetComponent(widgetId) {
+                switch (widgetId) {
+                    case "launcherButton":
+                        return launcherButtonComponent
+                    case "workspaceSwitcher":
+                        return workspaceSwitcherComponent
+                    case "focusedWindow":
+                        return focusedWindowComponent
+                    case "clock":
+                        return clockComponent
+                    case "music":
+                        return mediaComponent
+                    case "weather":
+                        return weatherComponent
+                    case "systemTray":
+                        return systemTrayComponent
+                    case "clipboard":
+                        return clipboardComponent
+                    case "systemResources":
+                        return systemResourcesComponent
+                    case "notificationButton":
+                        return notificationButtonComponent
+                    case "battery":
+                        return batteryComponent
+                    case "controlCenterButton":
+                        return controlCenterButtonComponent
+                    case "spacer":
+                        return spacerComponent
+                    case "separator":
+                        return separatorComponent
+                    default:
+                        return null
+                }
+            }
+
             anchors.fill: parent
             anchors.leftMargin: Theme.spacingM
             anchors.rightMargin: Theme.spacingM
@@ -142,6 +233,7 @@ PanelWindow {
             anchors.bottomMargin: Theme.spacingXS
             clip: true
 
+            // Dynamic left section
             Row {
                 id: leftSection
 
@@ -150,67 +242,45 @@ PanelWindow {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
 
-                LauncherButton {
-                    anchors.verticalCenter: parent.verticalCenter
-                    isActive: appDrawerPopout ? appDrawerPopout.isVisible : false
-                    onClicked: {
-                        if (appDrawerPopout)
-                            appDrawerPopout.toggle();
-
+                Repeater {
+                    model: Prefs.topBarLeftWidgetsModel
+                    
+                    Loader {
+                        anchors.verticalCenter: parent ? parent.verticalCenter : undefined
+                        active: topBarContent.getWidgetEnabled(model.widgetId) && topBarContent.getWidgetVisible(model.widgetId)
+                        sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
+                        
+                        property string widgetId: model.widgetId
                     }
                 }
-
-                WorkspaceSwitcher {
-                    anchors.verticalCenter: parent.verticalCenter
-                    screenName: root.screenName
-                }
-
-                FocusedApp {
-                    id: focusedApp
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: Prefs.showFocusedWindow
-                    compactMode: topBarContent.spacingTight
-                    availableWidth: topBarContent.leftToMediaGap
-                }
-
             }
 
-            Clock {
-                id: clock
+            // Dynamic center section
+            Row {
+                id: centerSection
 
+                height: parent.height
+                spacing: Theme.spacingS
                 anchors.centerIn: parent
-                compactMode: topBarContent.overlapping
-                onClockClicked: {
-                    centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
+
+                Component.onCompleted: {
+                    console.log("Center widgets model count:", Prefs.topBarCenterWidgetsModel.count)
+                }
+
+                Repeater {
+                    model: Prefs.topBarCenterWidgetsModel
+                    
+                    Loader {
+                        anchors.verticalCenter: parent ? parent.verticalCenter : undefined
+                        active: topBarContent.getWidgetEnabled(model.widgetId) && topBarContent.getWidgetVisible(model.widgetId)
+                        sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
+                        
+                        property string widgetId: model.widgetId
+                    }
                 }
             }
 
-            Media {
-                id: media
-
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.right: clock.left
-                anchors.rightMargin: Theme.spacingS
-                visible: Prefs.showMusic && MprisController.activePlayer
-                compactMode: topBarContent.spacingTight || topBarContent.overlapping
-                onClicked: {
-                    centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
-                }
-            }
-
-            Weather {
-                id: weather
-
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: clock.right
-                anchors.leftMargin: Theme.spacingS
-                visible: Prefs.showWeather && WeatherService.weather.available && WeatherService.weather.temp > 0 && WeatherService.weather.tempF > 0
-                onClicked: {
-                    centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
-                }
-            }
-
+            // Dynamic right section
             Row {
                 id: rightSection
 
@@ -219,9 +289,82 @@ PanelWindow {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
 
+                Component.onCompleted: {
+                    console.log("Right widgets model count:", Prefs.topBarRightWidgetsModel.count)
+                }
+
+                Repeater {
+                    model: Prefs.topBarRightWidgetsModel
+                    
+                    Loader {
+                        anchors.verticalCenter: parent ? parent.verticalCenter : undefined
+                        active: topBarContent.getWidgetEnabled(model.widgetId) && topBarContent.getWidgetVisible(model.widgetId)
+                        sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
+                        
+                        property string widgetId: model.widgetId
+                    }
+                }
+            }
+
+            // Widget Components
+            Component {
+                id: launcherButtonComponent
+                LauncherButton {
+                    isActive: appDrawerPopout ? appDrawerPopout.isVisible : false
+                    onClicked: {
+                        if (appDrawerPopout)
+                            appDrawerPopout.toggle();
+                    }
+                }
+            }
+
+            Component {
+                id: workspaceSwitcherComponent
+                WorkspaceSwitcher {
+                    screenName: root.screenName
+                }
+            }
+
+            Component {
+                id: focusedWindowComponent
+                FocusedApp {
+                    compactMode: topBarContent.spacingTight
+                    availableWidth: topBarContent.leftToMediaGap
+                }
+            }
+
+            Component {
+                id: clockComponent
+                Clock {
+                    compactMode: topBarContent.overlapping
+                    onClockClicked: {
+                        centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
+                    }
+                }
+            }
+
+            Component {
+                id: mediaComponent
+                Media {
+                    compactMode: topBarContent.spacingTight || topBarContent.overlapping
+                    onClicked: {
+                        centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
+                    }
+                }
+            }
+
+            Component {
+                id: weatherComponent
+                Weather {
+                    onClicked: {
+                        centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
+                    }
+                }
+            }
+
+            Component {
+                id: systemTrayComponent
                 SystemTrayBar {
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: Prefs.showSystemTray
                     onMenuRequested: (menu, item, x, y) => {
                         systemTrayContextMenu.currentTrayMenu = menu;
                         systemTrayContextMenu.currentTrayItem = item;
@@ -231,7 +374,10 @@ PanelWindow {
                         menu.menuVisible = true;
                     }
                 }
+            }
 
+            Component {
+                id: clipboardComponent
                 Rectangle {
                     width: 40
                     height: 30
@@ -240,8 +386,6 @@ PanelWindow {
                         const baseColor = clipboardArea.containsMouse ? Theme.primaryHover : Theme.secondaryHover;
                         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
                     }
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: Prefs.showClipboard
 
                     DankIcon {
                         anchors.centerIn: parent
@@ -252,7 +396,6 @@ PanelWindow {
 
                     MouseArea {
                         id: clipboardArea
-
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
@@ -266,71 +409,80 @@ PanelWindow {
                             duration: Theme.shortDuration
                             easing.type: Theme.standardEasing
                         }
-
                     }
-
                 }
+            }
 
-                Loader {
-                    anchors.verticalCenter: parent.verticalCenter
-                    active: Prefs.showSystemResources
-
-                    sourceComponent: Component {
-                        CpuMonitor {
-                            toggleProcessList: () => {
-                                return processListPopout.toggle();
-                            }
+            Component {
+                id: systemResourcesComponent
+                Row {
+                    spacing: Theme.spacingXS
+                    
+                    CpuMonitor {
+                        toggleProcessList: () => {
+                            return processListPopout.toggle();
                         }
-
                     }
 
-                }
-
-                Loader {
-                    anchors.verticalCenter: parent.verticalCenter
-                    active: Prefs.showSystemResources
-
-                    sourceComponent: Component {
-                        RamMonitor {
-                            toggleProcessList: () => {
-                                return processListPopout.toggle();
-                            }
+                    RamMonitor {
+                        toggleProcessList: () => {
+                            return processListPopout.toggle();
                         }
-
                     }
-
                 }
+            }
 
+            Component {
+                id: notificationButtonComponent
                 NotificationCenterButton {
-                    anchors.verticalCenter: parent.verticalCenter
                     hasUnread: root.notificationCount > 0
                     isActive: notificationCenter.notificationHistoryVisible
                     onClicked: {
                         notificationCenter.notificationHistoryVisible = !notificationCenter.notificationHistoryVisible;
                     }
                 }
+            }
 
+            Component {
+                id: batteryComponent
                 Battery {
-                    anchors.verticalCenter: parent.verticalCenter
                     batteryPopupVisible: batteryPopout.batteryPopupVisible
                     onToggleBatteryPopup: {
                         batteryPopout.batteryPopupVisible = !batteryPopout.batteryPopupVisible;
                     }
                 }
+            }
 
+            Component {
+                id: controlCenterButtonComponent
                 ControlCenterButton {
-                    anchors.verticalCenter: parent.verticalCenter
                     isActive: controlCenterPopout.controlCenterVisible
                     onClicked: {
                         controlCenterPopout.controlCenterVisible = !controlCenterPopout.controlCenterVisible;
                         if (controlCenterPopout.controlCenterVisible) {
                             if (NetworkService.wifiEnabled)
                                 NetworkService.scanWifi();
-
                         }
                     }
                 }
+            }
 
+            Component {
+                id: spacerComponent
+                Item {
+                    width: 20
+                    height: 30
+                }
+            }
+
+            Component {
+                id: separatorComponent
+                Rectangle {
+                    width: 1
+                    height: 20
+                    color: Theme.outline
+                    opacity: 0.3
+                }
             }
 
         }

@@ -24,14 +24,43 @@ Singleton {
     property string profileImage: ""
     property string weatherLocation: "New York, NY"
     property string weatherCoordinates: "40.7128,-74.0060"
+    property bool showLauncherButton: true
+    property bool showWorkspaceSwitcher: true
     property bool showFocusedWindow: true
     property bool showWeather: true
     property bool showMusic: true
     property bool showClipboard: true
     property bool showSystemResources: true
     property bool showSystemTray: true
+    property bool showClock: true
+    property bool showNotificationButton: true
+    property bool showBattery: true
+    property bool showControlCenterButton: true
     property bool showWorkspaceIndex: false
     property bool showWorkspacePadding: false
+    property var topBarLeftWidgets: ["launcherButton", "workspaceSwitcher", "focusedWindow"]
+    property var topBarCenterWidgets: ["clock", "music", "weather"]
+    property var topBarRightWidgets: ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"]
+    
+    // Reactive ListModel properties for TopBar
+    property alias topBarLeftWidgetsModel: leftWidgetsModel
+    property alias topBarCenterWidgetsModel: centerWidgetsModel
+    property alias topBarRightWidgetsModel: rightWidgetsModel
+    
+    // Signal to force immediate TopBar layout refresh
+    signal forceTopBarLayoutRefresh()
+    
+    ListModel {
+        id: leftWidgetsModel
+    }
+    
+    ListModel {
+        id: centerWidgetsModel
+    }
+    
+    ListModel {
+        id: rightWidgetsModel
+    }
     property string appLauncherViewMode: "list"
     property string spotlightModalViewMode: "list"
     property string networkPreference: "auto"
@@ -85,7 +114,14 @@ Singleton {
     
     Component.onCompleted: {
         loadSettings();
-        fontCheckTimer.start()
+        fontCheckTimer.start();
+        initializeListModels();
+    }
+    
+    function initializeListModels() {
+        updateListModel(leftWidgetsModel, topBarLeftWidgets);
+        updateListModel(centerWidgetsModel, topBarCenterWidgets);
+        updateListModel(rightWidgetsModel, topBarRightWidgets);
     }
 
     function loadSettings() {
@@ -109,14 +145,38 @@ Singleton {
                 profileImage = settings.profileImage !== undefined ? settings.profileImage : "";
                 weatherLocation = settings.weatherLocation !== undefined ? settings.weatherLocation : "New York, NY";
                 weatherCoordinates = settings.weatherCoordinates !== undefined ? settings.weatherCoordinates : "40.7128,-74.0060";
+                showLauncherButton = settings.showLauncherButton !== undefined ? settings.showLauncherButton : true;
+                showWorkspaceSwitcher = settings.showWorkspaceSwitcher !== undefined ? settings.showWorkspaceSwitcher : true;
                 showFocusedWindow = settings.showFocusedWindow !== undefined ? settings.showFocusedWindow : true;
                 showWeather = settings.showWeather !== undefined ? settings.showWeather : true;
                 showMusic = settings.showMusic !== undefined ? settings.showMusic : true;
                 showClipboard = settings.showClipboard !== undefined ? settings.showClipboard : true;
                 showSystemResources = settings.showSystemResources !== undefined ? settings.showSystemResources : true;
                 showSystemTray = settings.showSystemTray !== undefined ? settings.showSystemTray : true;
+                showClock = settings.showClock !== undefined ? settings.showClock : true;
+                showNotificationButton = settings.showNotificationButton !== undefined ? settings.showNotificationButton : true;
+                showBattery = settings.showBattery !== undefined ? settings.showBattery : true;
+                showControlCenterButton = settings.showControlCenterButton !== undefined ? settings.showControlCenterButton : true;
                 showWorkspaceIndex = settings.showWorkspaceIndex !== undefined ? settings.showWorkspaceIndex : false;
                 showWorkspacePadding = settings.showWorkspacePadding !== undefined ? settings.showWorkspacePadding : false;
+                if (settings.topBarWidgetOrder) {
+                    // Migrate from old single list to new three-list system
+                    topBarLeftWidgets = settings.topBarWidgetOrder.filter(w => ["launcherButton", "workspaceSwitcher", "focusedWindow"].includes(w));
+                    topBarCenterWidgets = settings.topBarWidgetOrder.filter(w => ["clock", "music", "weather"].includes(w));
+                    topBarRightWidgets = settings.topBarWidgetOrder.filter(w => ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"].includes(w));
+                } else {
+                    var leftWidgets = settings.topBarLeftWidgets !== undefined ? settings.topBarLeftWidgets : ["launcherButton", "workspaceSwitcher", "focusedWindow"];
+                    var centerWidgets = settings.topBarCenterWidgets !== undefined ? settings.topBarCenterWidgets : ["clock", "music", "weather"];
+                    var rightWidgets = settings.topBarRightWidgets !== undefined ? settings.topBarRightWidgets : ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"];
+                    
+                    topBarLeftWidgets = leftWidgets;
+                    topBarCenterWidgets = centerWidgets;
+                    topBarRightWidgets = rightWidgets;
+                    
+                    updateListModel(leftWidgetsModel, leftWidgets);
+                    updateListModel(centerWidgetsModel, centerWidgets);
+                    updateListModel(rightWidgetsModel, rightWidgets);
+                }
                 appLauncherViewMode = settings.appLauncherViewMode !== undefined ? settings.appLauncherViewMode : "list";
                 spotlightModalViewMode = settings.spotlightModalViewMode !== undefined ? settings.spotlightModalViewMode : "list";
                 networkPreference = settings.networkPreference !== undefined ? settings.networkPreference : "auto";
@@ -163,14 +223,23 @@ Singleton {
             "profileImage": profileImage,
             "weatherLocation": weatherLocation,
             "weatherCoordinates": weatherCoordinates,
+            "showLauncherButton": showLauncherButton,
+            "showWorkspaceSwitcher": showWorkspaceSwitcher,
             "showFocusedWindow": showFocusedWindow,
             "showWeather": showWeather,
             "showMusic": showMusic,
             "showClipboard": showClipboard,
             "showSystemResources": showSystemResources,
             "showSystemTray": showSystemTray,
+            "showClock": showClock,
+            "showNotificationButton": showNotificationButton,
+            "showBattery": showBattery,
+            "showControlCenterButton": showControlCenterButton,
             "showWorkspaceIndex": showWorkspaceIndex,
             "showWorkspacePadding": showWorkspacePadding,
+            "topBarLeftWidgets": topBarLeftWidgets,
+            "topBarCenterWidgets": topBarCenterWidgets,
+            "topBarRightWidgets": topBarRightWidgets,
             "appLauncherViewMode": appLauncherViewMode,
             "spotlightModalViewMode": spotlightModalViewMode,
             "networkPreference": networkPreference,
@@ -340,6 +409,16 @@ Singleton {
     }
 
     // Widget visibility setters
+    function setShowLauncherButton(enabled) {
+        showLauncherButton = enabled;
+        saveSettings();
+    }
+
+    function setShowWorkspaceSwitcher(enabled) {
+        showWorkspaceSwitcher = enabled;
+        saveSettings();
+    }
+
     function setShowFocusedWindow(enabled) {
         showFocusedWindow = enabled;
         saveSettings();
@@ -367,6 +446,84 @@ Singleton {
 
     function setShowSystemTray(enabled) {
         showSystemTray = enabled;
+        saveSettings();
+    }
+
+    function setShowClock(enabled) {
+        showClock = enabled;
+        saveSettings();
+    }
+
+    function setShowNotificationButton(enabled) {
+        showNotificationButton = enabled;
+        saveSettings();
+    }
+
+    function setShowBattery(enabled) {
+        showBattery = enabled;
+        saveSettings();
+    }
+
+    function setShowControlCenterButton(enabled) {
+        showControlCenterButton = enabled;
+        saveSettings();
+    }
+
+    function setTopBarWidgetOrder(order) {
+        topBarWidgetOrder = order;
+        saveSettings();
+    }
+
+    function setTopBarLeftWidgets(order) {
+        topBarLeftWidgets = order;
+        updateListModel(leftWidgetsModel, order);
+        saveSettings();
+    }
+
+    function setTopBarCenterWidgets(order) {
+        topBarCenterWidgets = order;
+        updateListModel(centerWidgetsModel, order);
+        saveSettings();
+    }
+
+    function setTopBarRightWidgets(order) {
+        topBarRightWidgets = order;
+        updateListModel(rightWidgetsModel, order);
+        saveSettings();
+    }
+    
+    function updateListModel(listModel, order) {
+        listModel.clear();
+        for (var i = 0; i < order.length; i++) {
+            listModel.append({"widgetId": order[i]});
+        }
+    }
+
+    function resetTopBarWidgetsToDefault() {
+        var defaultLeft = ["launcherButton", "workspaceSwitcher", "focusedWindow"];
+        var defaultCenter = ["clock", "music", "weather"];
+        var defaultRight = ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"];
+        
+        topBarLeftWidgets = defaultLeft;
+        topBarCenterWidgets = defaultCenter;
+        topBarRightWidgets = defaultRight;
+        
+        updateListModel(leftWidgetsModel, defaultLeft);
+        updateListModel(centerWidgetsModel, defaultCenter);
+        updateListModel(rightWidgetsModel, defaultRight);
+        
+        showLauncherButton = true;
+        showWorkspaceSwitcher = true;
+        showFocusedWindow = true;
+        showWeather = true;
+        showMusic = true;
+        showClipboard = true;
+        showSystemResources = true;
+        showSystemTray = true;
+        showClock = true;
+        showNotificationButton = true;
+        showBattery = true;
+        showControlCenterButton = true;
         saveSettings();
     }
 

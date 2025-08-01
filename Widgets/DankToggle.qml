@@ -10,23 +10,24 @@ Item {
     property bool toggling: false
     property string text: ""
     property string description: ""
+    property bool hideText: false
 
     signal clicked()
     signal toggled(bool checked)
 
-    width: text ? parent.width : 48
-    height: text ? 60 : 24
+    width: (text && !hideText) ? parent.width : 48
+    height: (text && !hideText) ? 60 : 24
 
     StyledRect {
         id: background
 
         anchors.fill: parent
-        radius: toggle.text ? Theme.cornerRadius : 0
-        color: toggle.text ? Theme.surfaceHover : "transparent"
-        visible: toggle.text
+        radius: (toggle.text && !toggle.hideText) ? Theme.cornerRadius : 0
+        color: (toggle.text && !toggle.hideText) ? Theme.surfaceHover : "transparent"
+        visible: (toggle.text && !toggle.hideText)
 
         StateLayer {
-            visible: toggle.text
+            visible: (toggle.text && !toggle.hideText)
             disabled: !toggle.enabled
             stateColor: Theme.primary
             cornerRadius: parent.radius
@@ -50,7 +51,7 @@ Item {
         anchors.leftMargin: Theme.spacingM
         anchors.rightMargin: Theme.spacingM
         spacing: Theme.spacingXS
-        visible: toggle.text
+        visible: (toggle.text && !toggle.hideText)
 
         Column {
             anchors.verticalCenter: parent.verticalCenter

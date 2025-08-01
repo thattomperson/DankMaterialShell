@@ -208,7 +208,7 @@ Rectangle {
                     if (selectedIndex >= 0 && selectedIndex < filteredOptions.length) {
                         root.currentValue = filteredOptions[selectedIndex];
                         root.valueChanged(filteredOptions[selectedIndex]);
-                        dropdownMenu.close();
+                        close();
                     }
                 }
 
@@ -256,17 +256,17 @@ Rectangle {
                                 anchors.fill: parent
                                 anchors.margins: 1
                                 placeholderText: "Search..."
-                                text: dropdownMenu.searchQuery
+                                text: searchQuery
                                 topPadding: Theme.spacingS
                                 bottomPadding: Theme.spacingS
                                 onTextChanged: {
-                                    dropdownMenu.searchQuery = text;
-                                    dropdownMenu.updateFilteredOptions();
+                                    searchQuery = text;
+                                    updateFilteredOptions();
                                 }
-                                Keys.onDownPressed: dropdownMenu.selectNext()
-                                Keys.onUpPressed: dropdownMenu.selectPrevious()
-                                Keys.onReturnPressed: dropdownMenu.selectCurrent()
-                                Keys.onEnterPressed: dropdownMenu.selectCurrent()
+                                Keys.onDownPressed: selectNext()
+                                Keys.onUpPressed: selectPrevious()
+                                Keys.onReturnPressed: selectCurrent()
+                                Keys.onEnterPressed: selectCurrent()
                             }
 
                         }
@@ -286,7 +286,7 @@ Rectangle {
                             width: parent.width
                             height: parent.height - (root.enableFuzzySearch ? searchContainer.height + Theme.spacingXS : 0)
                             clip: true
-                            model: dropdownMenu.filteredOptions
+                            model: filteredOptions
                             spacing: 2
 
                             WheelHandler {
@@ -311,7 +311,7 @@ Rectangle {
                             }
 
                             delegate: Rectangle {
-                                property bool isSelected: dropdownMenu.selectedIndex === index
+                                property bool isSelected: selectedIndex === index
                                 property bool isCurrentValue: root.currentValue === modelData
                                 property int optionIndex: root.options.indexOf(modelData)
 
@@ -354,7 +354,7 @@ Rectangle {
                                     onClicked: {
                                         root.currentValue = modelData;
                                         root.valueChanged(modelData);
-                                        dropdownMenu.close();
+                                        close();
                                     }
                                 }
 
