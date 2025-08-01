@@ -255,6 +255,7 @@ qs -c DankMaterialShell ipc call <target> <function> [parameters]
 | `spotlight toggle` | Toggle application launcher |
 | `clipboard toggle` | Toggle clipboard history |
 | `processlist toggle` | Toggle process manager |
+| `settings toggle` | Toggle settings |
 | `lock lock` | Activate lockscreen |
 
 #### Media Controls

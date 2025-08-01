@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import Quickshell.Io
 import QtQuick
 import QtQuick.Controls
 import qs.Common
@@ -112,7 +113,7 @@ DankModal {
                             anchors.fill: parent
                             active: settingsTabBar.currentIndex === 0
                             visible: active
-                            asynchronous: true
+                            asynchronous: false
                             sourceComponent: Component {
                                 PersonalizationTab {}
                             }
@@ -169,4 +170,25 @@ DankModal {
 
     }
 
+    IpcHandler {
+        function open() {
+            console.log("SettingsModal: IPC open() called");
+            settingsModal.settingsVisible = true;
+            return "SETTINGS_OPEN_SUCCESS";
+        }
+
+        function close() {
+            console.log("SettingsModal: IPC close() called");
+            settingsModal.settingsVisible = false;
+            return "SETTINGS_CLOSE_SUCCESS";
+        }
+
+        function toggle() {
+            console.log("SettingsModal: IPC toggle() called");
+            settingsModal.settingsVisible = !settingsModal.settingsVisible;
+            return "SETTINGS_TOGGLE_SUCCESS";
+        }
+
+        target: "settings"
+    }
 }

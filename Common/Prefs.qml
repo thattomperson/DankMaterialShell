@@ -973,7 +973,7 @@ Singleton {
             return "dark"  
         }
 
-        function get(): string {
+        function getMode(): string {
             return root.isLightMode ? "light" : "dark"
         }
     }
