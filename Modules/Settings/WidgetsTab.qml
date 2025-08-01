@@ -113,7 +113,7 @@ ScrollView {
     // Default widget configurations for each section
     property var defaultLeftWidgets: ["launcherButton", "workspaceSwitcher", "focusedWindow"]
     property var defaultCenterWidgets: ["music", "clock", "weather"]
-    property var defaultRightWidgets: ["clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"]
+    property var defaultRightWidgets: ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"]
 
     Component.onCompleted: {
         // Initialize sections with defaults if they're empty

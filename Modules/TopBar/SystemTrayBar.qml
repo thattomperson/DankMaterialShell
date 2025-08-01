@@ -7,21 +7,21 @@ Rectangle {
 
     signal menuRequested(var menu, var item, real x, real y)
 
-    readonly property int calculatedWidth: systemTrayRow.children.length > 1 ? 
-        (systemTrayRow.children.length - 1) * 24 + (systemTrayRow.children.length - 2) * Theme.spacingXS + Theme.spacingS * 2 : 0
+    readonly property int calculatedWidth: SystemTray.items.values.length > 0 ? 
+        SystemTray.items.values.length * 24 + (SystemTray.items.values.length - 1) * Theme.spacingXS + Theme.spacingS * 2 : 0
     
     width: calculatedWidth
     height: 30
     radius: Theme.cornerRadius
     color: {
         // Only show background when there are system tray items to display
-        if (!SystemTray.items || SystemTray.items.length === 0)
+        if (SystemTray.items.values.length === 0)
             return "transparent";
 
         const baseColor = Theme.secondaryHover;
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
     }
-    visible: SystemTray.items && SystemTray.items.length > 0
+    visible: SystemTray.items.values.length > 0
 
     Row {
         id: systemTrayRow
@@ -30,7 +30,7 @@ Rectangle {
         spacing: Theme.spacingXS
 
         Repeater {
-            model: SystemTray.items
+            model: SystemTray.items.values
 
             delegate: Item {
                 property var trayItem: modelData
