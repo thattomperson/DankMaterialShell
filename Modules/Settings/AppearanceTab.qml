@@ -809,7 +809,7 @@ ScrollView {
                 DankToggle {
                     width: parent.width
                     text: "Theme GTK Applications"
-                    description: Colors.gtkThemingEnabled ? "File managers, text editors, and system dialogs will match your theme" : "GTK theming not available (install gsettings and adw-gtk3)"
+                    description: Colors.gtkThemingEnabled ? "File managers, text editors, and system dialogs will match your theme" : "GTK theming not available (install gsettings)"
                     enabled: Colors.gtkThemingEnabled
                     checked: Colors.gtkThemingEnabled && Prefs.gtkThemingEnabled
                     onToggled: function(checked) {

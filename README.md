@@ -48,7 +48,6 @@ sudo dnf install quickshell-git
 | brightnessctl | Allows controlling brightness of laptop displays via backlight | No laptop display brightness control |
 | wl-clipboard | Unlocks copy functionality of certain elements, such as process PIDs | No copy |
 | qt5ct + qt6ct | Icon theme and Qt app theming | Setting icon theme in settings won't work for QT5 or QT6 applications, no Qt theming |
-| adw-gtk3 | GTK app theming | No GTK theming |
 | gsettings | GTK theme management | No GTK theming |
 
 ```bash
@@ -62,7 +61,7 @@ pacman -S ddcutil          # For external monitors
 pacman -S brightnessctl    # For laptop displays
 
 # Optional: App theming (only if you use GTK/Qt applications)
-pacman -S adw-gtk3 qt5ct qt6ct gsettings-desktop-schemas
+pacman -S qt5ct qt6ct gsettings-desktop-schemas
 
 # Third-party packages (AUR)
 paru -S matugen
@@ -79,7 +78,7 @@ sudo dnf install ddcutil          # For external monitors
 sudo dnf install brightnessctl    # For laptop displays
 
 # Optional: App theming (only if you use GTK/Qt applications)
-sudo dnf install adw-gtk3-theme qt5ct qt6ct gsettings-desktop-schemas
+sudo dnf install theme qt5ct qt6ct gsettings-desktop-schemas
 
 # Optional third-party packages (COPR repositories)
 sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
@@ -88,11 +87,10 @@ sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 **Note on networking:** This shell requires NetworkManager for WiFi functionality.
 
 **Note on system app theming:** DankMaterialShell can automatically theme GTK and Qt applications to match your dynamic wallpaper colors. This requires:
-- For GTK apps: `Colloid` theme and `gsettings`
+- For GTK apps: A compatible theme and `gsettings`, a compatible theme is one that respects standard color definitions - e.g. [Colloid](https://github.com/vinceliuice/Colloid-gtk-theme).
 - For Qt apps: `qt5ct` and/or `qt6ct`
 
-**Recommended GTK base theme:** Use [Colloid](https://github.com/vinceliuice/Colloid-gtk-theme). Install with `./install.sh -s standard -l`. Configure in `~/.config/gtk-3.0/settings.ini` and `~/.config/gtk-4.0/settings.ini` and set Colloid as the theme:
-
+**Recommended GTK base theme:** Use [Colloid](https://github.com/vinceliuice/Colloid-gtk-theme). Install with your preferences, e.g. `./install.sh -s standard -l --tweaks normal`. Configure in `~/.config/gtk-3.0/settings.ini` and `~/.config/gtk-4.0/settings.ini` and set Colloid as the theme:
 ```
 [Settings]
 gtk-theme-name=Colloid
