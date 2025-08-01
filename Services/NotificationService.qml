@@ -4,6 +4,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
+import Quickshell.Widgets
 import qs.Services
 import qs.Common
 import "../Common/markdown2html.js" as Markdown2Html
@@ -121,7 +122,16 @@ Singleton {
             return Markdown2Html.markdownToHtml(body);
         }
         readonly property string appIcon: notification.appIcon
-        readonly property string appName: notification.appName
+        readonly property string appName: {
+            if (notification.appName == "") {
+                // try to get the app name from the desktop entry
+                const entry = DesktopEntries.byId(notification.desktopEntry);
+                if (entry && entry.name) {
+                    return entry.name.toLowerCase();
+                }
+            }
+            return notification.appName || "app";
+        }
         readonly property string desktopEntry: notification.desktopEntry
         readonly property string image: notification.image
         readonly property string cleanImage: {
