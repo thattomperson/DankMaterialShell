@@ -22,7 +22,6 @@ ScrollView {
         width: parent.width
         spacing: Theme.spacingXL
 
-        // Profile Section
         StyledRect {
             width: parent.width
             height: profileSection.implicitHeight + Theme.spacingL * 2
@@ -63,7 +62,6 @@ ScrollView {
                     width: parent.width
                     spacing: Theme.spacingL
 
-                    // Circular profile image preview
                     Item {
                         id: avatarContainer
 
@@ -264,7 +262,6 @@ ScrollView {
 
         }
 
-        // Wallpaper Section
         StyledRect {
             width: parent.width
             height: wallpaperSection.implicitHeight + Theme.spacingL * 2
@@ -305,7 +302,6 @@ ScrollView {
                     width: parent.width
                     spacing: Theme.spacingL
 
-                    // Wallpaper Preview
                     StyledRect {
                         width: 160
                         height: 90
@@ -463,7 +459,6 @@ ScrollView {
 
         }
 
-        // Dynamic Theming Section
         StyledRect {
             width: parent.width
             height: dynamicThemeSection.implicitHeight + Theme.spacingL * 2

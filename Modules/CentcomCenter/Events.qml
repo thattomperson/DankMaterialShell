@@ -5,7 +5,6 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 
-// Events widget for selected date - Material Design 3 style
 Rectangle {
     id: events
 
@@ -17,7 +16,6 @@ Rectangle {
     function updateSelectedDateEvents() {
         if (CalendarService && CalendarService.khalAvailable) {
             let events = CalendarService.getEventsForDate(selectedDate);
-            console.log("Events: Updating events for", Qt.formatDate(selectedDate, "yyyy-MM-dd"), "found", events.length, "events");
             selectedDateEvents = events;
         } else {
             selectedDateEvents = [];
@@ -25,7 +23,6 @@ Rectangle {
     }
 
     onSelectedDateEventsChanged: {
-        console.log("Events: selectedDateEvents changed, count:", selectedDateEvents.length);
         eventsList.model = selectedDateEvents;
     }
     width: parent.width
@@ -35,7 +32,6 @@ Rectangle {
     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
     border.width: 1
     visible: shouldShow
-    // Material elevation shadow
     layer.enabled: true
     Component.onCompleted: {
         updateSelectedDateEvents();
@@ -44,7 +40,6 @@ Rectangle {
         updateSelectedDateEvents();
     }
 
-    // Update events when selected date or events change
     Connections {
         function onEventsByDateChanged() {
             updateSelectedDateEvents();
@@ -58,7 +53,6 @@ Rectangle {
         enabled: CalendarService !== null
     }
 
-    // Header - always visible when widget is shown
     Row {
         id: headerRow
 
@@ -85,7 +79,6 @@ Rectangle {
 
     }
 
-    // No events placeholder - centered in entire widget (not just content area)
     Column {
         anchors.centerIn: parent
         spacing: Theme.spacingXS
@@ -108,7 +101,6 @@ Rectangle {
 
     }
 
-    // Events list - positioned below header when there are events
     ListView {
         id: eventsList
 
@@ -157,7 +149,6 @@ Rectangle {
             }
             border.width: 1
 
-            // Event indicator strip
             Rectangle {
                 width: 4
                 height: parent.height - 8
@@ -270,7 +261,7 @@ Rectangle {
                 onClicked: {
                     if (modelData.url && modelData.url !== "") {
                         if (Qt.openUrlExternally(modelData.url) === false)
-                            console.warn("Couldn't open", modelData.url);
+                            console.warn("Failed to open URL: " + modelData.url);
 
                     }
                 }

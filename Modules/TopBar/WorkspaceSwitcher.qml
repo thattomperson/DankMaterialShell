@@ -83,10 +83,8 @@ Rectangle {
         target: NiriService
     }
 
-    // Force update when padding preference changes
     Connections {
         function onShowWorkspacePaddingChanged() {
-            // Force re-evaluation by updating the property
             var baseList = root.getDisplayWorkspaces();
             root.workspaceList = Prefs.showWorkspacePadding ? root.padWorkspaces(baseList) : baseList;
         }
@@ -128,7 +126,6 @@ Rectangle {
                     }
                 }
 
-                // Show index for placeholders if Prefs.showWorkspaceIndex is true, otherwise show a subtle dot
                 StyledText {
                     visible: Prefs.showWorkspaceIndex
                     anchors.centerIn: parent

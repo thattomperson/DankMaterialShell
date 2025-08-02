@@ -19,7 +19,6 @@ DankModal {
             closingModal();
 
     }
-    // DankModal configuration
     visible: settingsVisible
     width: 750
     height: 750
@@ -28,7 +27,6 @@ DankModal {
         settingsVisible = false;
     }
 
-    // Keyboard focus and shortcuts
     FocusScope {
         anchors.fill: parent
         focus: settingsModal.settingsVisible
@@ -41,7 +39,6 @@ DankModal {
             anchors.margins: Theme.spacingM
             spacing: Theme.spacingS
 
-            // Header
             Row {
                 width: parent.width
                 spacing: Theme.spacingM
@@ -66,7 +63,6 @@ DankModal {
                     height: 1
                 }
 
-                // Close button
                 DankActionButton {
                     circular: false
                     iconName: "close"
@@ -78,7 +74,6 @@ DankModal {
 
             }
 
-            // Tabbed Settings
             Column {
                 width: parent.width
                 height: parent.height - 50
@@ -102,13 +97,11 @@ DankModal {
                     width: parent.width
                     height: parent.height - settingsTabBar.height
                     
-                    // Content container with proper padding
                     Rectangle {
                         anchors.fill: parent
                         anchors.margins: Theme.spacingL
                         color: "transparent"
                         
-                        // Personalization Tab
                         Loader {
                             anchors.fill: parent
                             active: settingsTabBar.currentIndex === 0
@@ -119,7 +112,6 @@ DankModal {
                             }
                         }
                         
-                        // Time & Weather Tab
                         Loader {
                             anchors.fill: parent
                             active: settingsTabBar.currentIndex === 1
@@ -130,7 +122,6 @@ DankModal {
                             }
                         }
                         
-                        // Widgets Tab
                         Loader {
                             anchors.fill: parent
                             active: settingsTabBar.currentIndex === 2
@@ -141,7 +132,6 @@ DankModal {
                             }
                         }
                         
-                        // Launcher Tab
                         Loader {
                             anchors.fill: parent
                             active: settingsTabBar.currentIndex === 3
@@ -152,7 +142,6 @@ DankModal {
                             }
                         }
                         
-                        // Appearance Tab
                         Loader {
                             anchors.fill: parent
                             active: settingsTabBar.currentIndex === 4
@@ -172,19 +161,19 @@ DankModal {
 
     IpcHandler {
         function open() {
-            console.log("SettingsModal: IPC open() called");
+            
             settingsModal.settingsVisible = true;
             return "SETTINGS_OPEN_SUCCESS";
         }
 
         function close() {
-            console.log("SettingsModal: IPC close() called");
+            
             settingsModal.settingsVisible = false;
             return "SETTINGS_CLOSE_SUCCESS";
         }
 
         function toggle() {
-            console.log("SettingsModal: IPC toggle() called");
+            
             settingsModal.settingsVisible = !settingsModal.settingsVisible;
             return "SETTINGS_TOGGLE_SUCCESS";
         }

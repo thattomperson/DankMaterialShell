@@ -77,35 +77,7 @@ Singleton {
         return "bluetooth";
     }
 
-    function getDeviceType(device) {
-        if (!device)
-            return "bluetooth";
 
-        var name = (device.name || device.deviceName || "").toLowerCase();
-        var icon = (device.icon || "").toLowerCase();
-        if (icon.includes("headset") || icon.includes("audio") || name.includes("headphone") || name.includes("airpod") || name.includes("headset") || name.includes("arctis"))
-            return "headset";
-
-        if (icon.includes("mouse") || name.includes("mouse"))
-            return "mouse";
-
-        if (icon.includes("keyboard") || name.includes("keyboard"))
-            return "keyboard";
-
-        if (icon.includes("phone") || name.includes("phone") || name.includes("iphone") || name.includes("android") || name.includes("samsung"))
-            return "phone";
-
-        if (icon.includes("watch") || name.includes("watch"))
-            return "watch";
-
-        if (icon.includes("speaker") || name.includes("speaker"))
-            return "speaker";
-
-        if (icon.includes("display") || name.includes("tv"))
-            return "tv";
-
-        return "bluetooth";
-    }
 
     function canConnect(device) {
         if (!device)

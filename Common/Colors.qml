@@ -52,20 +52,16 @@ Singleton {
 
     function onLightModeChanged() {
         if (matugenColors && Object.keys(matugenColors).length > 0) {
-            console.log("Light mode changed - updating dynamic colors");
             colorUpdateTrigger++;
             colorsUpdated();
             
-            // If dynamic theme is active, regenerate system themes with new light/dark mode
             if (typeof Theme !== "undefined" && Theme.isDynamicTheme) {
-                console.log("Regenerating system themes for new light/dark mode");
                 generateSystemThemes();
             }
         }
     }
 
     function extractColors() {
-        console.log("Colors.extractColors() called, matugenAvailable:", matugenAvailable);
         extractionRequested = true;
         if (matugenAvailable)
             fileChecker.running = true;
@@ -91,7 +87,6 @@ Singleton {
     }
 
     Component.onCompleted: {
-        console.log("Colors.qml → home =", homeDir);
         matugenCheck.running = true;
         checkGtkThemingAvailability();
         checkQtThemingAvailability();
@@ -105,15 +100,12 @@ Singleton {
         command: ["which", "matugen"]
         onExited: (code) => {
             matugenAvailable = (code === 0);
-            console.log("Matugen in PATH:", matugenAvailable);
             if (!matugenAvailable) {
-                console.warn("Matugen missing → dynamic theme disabled");
                 ToastService.wallpaperErrorStatus = "matugen_missing";
                 ToastService.showWarning("matugen not found - dynamic theming disabled");
                 return ;
             }
             if (extractionRequested) {
-                console.log("Continuing with color extraction");
                 fileChecker.running = true;
             }
         }
@@ -127,8 +119,6 @@ Singleton {
             if (code === 0) {
                 matugenProcess.running = true;
             } else {
-                console.error("code", code);
-                console.error("Wallpaper not found:", wallpaperPath);
                 ToastService.wallpaperErrorStatus = "error";
                 ToastService.showError("Wallpaper processing failed");
             }
@@ -146,7 +136,6 @@ Singleton {
             onStreamFinished: {
                 const out = matugenCollector.text;
                 if (!out.length) {
-                    console.error("matugen produced zero bytes\nstderr:", matugenProcess.stderr);
                     ToastService.wallpaperErrorStatus = "error";
                     ToastService.showError("Wallpaper Processing Failed");
                     return ;
@@ -158,7 +147,6 @@ Singleton {
                     generateAppConfigs();
                     ToastService.clearWallpaperError();
                 } catch (e) {
-                    console.error("JSON parse failed:", e);
                     ToastService.wallpaperErrorStatus = "error";
                     ToastService.showError("Wallpaper Processing Failed");
                 }
@@ -173,7 +161,6 @@ Singleton {
 
     function generateAppConfigs() {
         if (!matugenColors || !matugenColors.colors) {
-            console.warn("No matugen colors available for app config generation");
             return;
         }
 
@@ -197,8 +184,7 @@ Singleton {
         var secondary = dark.secondary || "#8ab4f8";
         var inverse = dark.inverse_primary || "#6200ea";
 
-        var content = `// AUTO-GENERATED on ${new Date().toISOString()}
-layout {
+        var content = `layout {
     border {
         active-color   "${primary}"
         inactive-color "${secondary}"
@@ -209,8 +195,7 @@ layout {
     background-color "${bg}"
 }`;
 
-        niriConfigWriter.command = ["bash", "-c", `echo '${content}' > niri-colors.generated.kdl`];
-        niriConfigWriter.running = true;
+        Quickshell.execDetached(["bash", "-c", `echo '${content}' > niri-colors.generated.kdl`]);
     }
 
     function generateGhosttyConfig() {
@@ -236,8 +221,7 @@ layout {
         var error_b = light.error || "#b00020";
         var inverse_b = light.inverse_primary || "#bb86fc";
 
-        var content = `# AUTO-GENERATED on ${new Date().toISOString()}
-background = ${bg}
+        var content = `background = ${bg}
 foreground = ${fg}
 cursor-color = ${inverse}
 selection-background = ${secondary}
@@ -259,8 +243,10 @@ palette = 13=${tertiary_ctr_b}
 palette = 14=${inverse_b}
 palette = 15=${fg_b}`;
 
-        ghosttyConfigWriter.command = ["bash", "-c", `echo '${content}' > ghostty-colors.generated.conf`];
-        ghosttyConfigWriter.running = true;
+        var ghosttyConfigDir = configDir + "/ghostty";
+        var ghosttyConfigPath = ghosttyConfigDir + "/config-colors";
+        
+        Quickshell.execDetached(["bash", "-c", `mkdir -p '${ghosttyConfigDir}' && echo '${content}' > '${ghosttyConfigPath}'`]);
     }
     
     function checkGtkThemingAvailability() {
@@ -273,34 +259,21 @@ palette = 15=${fg_b}`;
     
     function generateSystemThemes() {
         if (systemThemeGenerationInProgress) {
-            console.log("System theme generation already in progress, skipping");
             return;
         }
         
         if (!matugenAvailable) {
-            console.warn("Matugen not available, cannot generate system themes");
             return;
         }
         
         if (!wallpaperPath || wallpaperPath === "") {
-            console.warn("No wallpaper path set, cannot generate system themes");
             return;
         }
         
-        console.log("Generating system themes using matugen templates");
-        console.log("Wallpaper:", wallpaperPath);
-        console.log("Shell directory:", shellDir);
-        
-        // Get current theme preferences
         const isLight = (typeof Theme !== "undefined" && Theme.isLightMode) ? "true" : "false";
         const iconTheme = (typeof Prefs !== "undefined" && Prefs.iconTheme) ? Prefs.iconTheme : "System Default";
         const gtkTheming = (typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) ? "true" : "false";
         const qtTheming = (typeof Prefs !== "undefined" && Prefs.qtThemingEnabled) ? "true" : "false";
-        
-        console.log("Theme mode:", isLight === "true" ? "light" : "dark");
-        console.log("Icon theme:", iconTheme);
-        console.log("GTK theming enabled:", gtkTheming);
-        console.log("Qt theming enabled:", qtTheming);
         
         systemThemeGenerationInProgress = true;
         systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme, gtkTheming, qtTheming];
@@ -308,61 +281,26 @@ palette = 15=${fg_b}`;
     }
     
     function generateGtkThemes() {
-        console.log("Generating GTK themes using matugen templates");
         generateSystemThemes();
     }
     
     function generateQtThemes() {
-        console.log("Generating Qt themes using matugen templates");
         generateSystemThemes();
     }
     
     function restoreSystemThemes() {
-        console.log("Restoring original system themes");
-        
         const shellDir = root.shellDir;
         if (!shellDir) {
-            console.warn("Shell directory not available, cannot restore system themes");
             return;
         }
         
-        // Get current theme preferences
         const isLight = (typeof Theme !== "undefined" && Theme.isLightMode) ? "true" : "false";
         const iconTheme = (typeof Prefs !== "undefined" && Prefs.iconTheme) ? Prefs.iconTheme : "System Default";
         const gtkTheming = (typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) ? "true" : "false";
         const qtTheming = (typeof Prefs !== "undefined" && Prefs.qtThemingEnabled) ? "true" : "false";
         
-        console.log("Restoring to theme mode:", isLight === "true" ? "light" : "dark");
-        console.log("Icon theme:", iconTheme);
-        console.log("GTK theming enabled:", gtkTheming);
-        console.log("Qt theming enabled:", qtTheming);
-        
         systemThemeRestoreProcess.command = [shellDir + "/generate-themes.sh", "", shellDir, configDir, "restore", isLight, iconTheme, gtkTheming, qtTheming];
         systemThemeRestoreProcess.running = true;
-    }
-
-    Process {
-        id: niriConfigWriter
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode === 0) {
-                console.log("Generated niri-colors.generated.kdl");
-            } else {
-                console.warn("Failed to generate niri config, exit code:", exitCode);
-            }
-        }
-    }
-
-    Process {
-        id: ghosttyConfigWriter
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode === 0) {
-                console.log("Generated ghostty-colors.generated.conf");
-            } else {
-                console.warn("Failed to generate ghostty config, exit code:", exitCode);
-            }
-        }
     }
     
     Process {
@@ -371,7 +309,6 @@ palette = 15=${fg_b}`;
         running: false
         onExited: (exitCode) => {
             gtkThemingEnabled = (exitCode === 0);
-            console.log("GTK theming available:", gtkThemingEnabled);
         }
     }
     
@@ -381,7 +318,6 @@ palette = 15=${fg_b}`;
         running: false
         onExited: (exitCode) => {
             qtThemingEnabled = (exitCode === 0);
-            console.log("Qt theming available:", qtThemingEnabled);
         }
     }
     
@@ -397,21 +333,10 @@ palette = 15=${fg_b}`;
             id: systemThemeStderr
         }
         
-        onStarted: {
-            console.log("System theme generation process started with command:", command);
-        }
-        
         onExited: (exitCode) => {
             systemThemeGenerationInProgress = false;
-            console.log("System theme generation process exited with code:", exitCode);
             
-            if (exitCode === 0) {
-                console.log("System themes generated successfully");
-                console.log("stdout:", systemThemeStdout.text);
-            } else {
-                console.error("System theme generation failed, exit code:", exitCode);
-                console.error("stdout:", systemThemeStdout.text);
-                console.error("stderr:", systemThemeStderr.text);
+            if (exitCode !== 0) {
                 ToastService.showError("Failed to generate system themes: " + systemThemeStderr.text);
             }
         }
@@ -429,21 +354,10 @@ palette = 15=${fg_b}`;
             id: restoreThemeStderr
         }
         
-        onStarted: {
-            console.log("System theme restoration process started with command:", command);
-        }
-        
         onExited: (exitCode) => {
-            console.log("System theme restoration process exited with code:", exitCode);
-            
             if (exitCode === 0) {
-                console.log("System themes restored successfully");
-                console.log("stdout:", restoreThemeStdout.text);
                 ToastService.showInfo("System themes restored to default");
             } else {
-                console.error("System theme restoration failed, exit code:", exitCode);
-                console.error("stdout:", restoreThemeStdout.text);
-                console.error("stderr:", restoreThemeStderr.text);
                 ToastService.showWarning("Failed to restore system themes: " + restoreThemeStderr.text);
             }
         }

@@ -29,7 +29,6 @@ GridView {
     signal itemClicked(int index, var modelData)
     signal itemHovered(int index)
 
-    // Ensure the current item is visible
     function ensureVisible(index) {
         if (index < 0 || index >= gridView.count)
             return ;
@@ -157,7 +156,6 @@ GridView {
                 itemHovered(index);
             }
             onPositionChanged: {
-                // Signal parent to reset keyboard navigation flag when mouse moves
                 keyboardNavigationReset();
             }
             onClicked: {

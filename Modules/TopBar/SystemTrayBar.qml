@@ -13,7 +13,6 @@ Rectangle {
     height: 30
     radius: Theme.cornerRadius
     color: {
-        // Only show background when there are system tray items to display
         if (SystemTray.items.values.length === 0)
             return "transparent";
 

@@ -8,7 +8,6 @@ import qs.Services
 import qs.Widgets
 
 DankModal {
-    // Don't hide the interface, just show toast
 
     id: clipboardHistoryModal
 
@@ -18,8 +17,6 @@ DankModal {
     property bool showClearConfirmation: false
     property var clipboardEntries: []
     property string searchText: ""
-    property bool imagemagickAvailable: false
-    property string thumbnailCacheDir: ""
 
     function updateFilteredModel() {
         filteredClipboardModel.clear();
@@ -52,7 +49,7 @@ DankModal {
         clipboardHistoryModal.isVisible = true;
         initializeThumbnailSystem();
         refreshClipboard();
-        console.log("ClipboardHistoryModal: Opening and refreshing");
+        
     }
 
     function hide() {
@@ -62,34 +59,17 @@ DankModal {
     }
 
     function initializeThumbnailSystem() {
-        getCacheDirProcess.running = true;
+        // No initialization needed - using direct image display
     }
 
     function cleanupTempFiles() {
-        cleanupProcess.command = ["sh", "-c", "rm -f /tmp/clipboard_preview_*.png"];
-        cleanupProcess.running = true;
+        Quickshell.execDetached(["sh", "-c", "rm -f /tmp/clipboard_*.png"]);
     }
 
     function generateThumbnails() {
-        if (!imagemagickAvailable)
-            return ;
-
-        for (let i = 0; i < clipboardModel.count; i++) {
-            const entry = clipboardModel.get(i).entry;
-            const entryType = getEntryType(entry);
-            if (entryType === "image") {
-                const entryId = entry.split('\t')[0];
-                const thumbnailPath = `${thumbnailCacheDir}/${entryId}.png`;
-                thumbnailGenProcess.command = ["sh", "-c", `mkdir -p "${thumbnailCacheDir}" && cliphist decode ${entryId} | magick - -resize '128x128>' "${thumbnailPath}"`];
-                thumbnailGenProcess.running = true;
-            }
-        }
+        // No thumbnail generation needed - using direct image display
     }
 
-    function getThumbnailPath(entry) {
-        const entryId = entry.split('\t')[0];
-        return `${thumbnailCacheDir}/${entryId}.png`;
-    }
 
     function refreshClipboard() {
         clipboardProcess.running = true;
@@ -97,15 +77,14 @@ DankModal {
 
     function copyEntry(entry) {
         const entryId = entry.split('\t')[0];
-        copyProcess.command = ["sh", "-c", `cliphist decode ${entryId} | wl-copy`];
-        copyProcess.running = true;
-        console.log("ClipboardHistoryModal: Entry copied, showing toast");
+        Quickshell.execDetached(["sh", "-c", `cliphist decode ${entryId} | wl-copy`]);
+        
         ToastService.showInfo("Copied to clipboard");
         clipboardHistoryModal.hide();
     }
 
     function deleteEntry(entry) {
-        console.log("Deleting entry:", entry);
+        
         deleteProcess.command = ["sh", "-c", `echo '${entry.replace(/'/g, "'\\''")}' | cliphist delete`];
         deleteProcess.running = true;
     }
@@ -143,7 +122,7 @@ DankModal {
         return "text";
     }
 
-    // DankModal configuration
+
     visible: isVisible
     width: 650
     height: 550
@@ -157,7 +136,6 @@ DankModal {
         hide();
     }
 
-    // Clear confirmation dialog
     DankModal {
         id: clearConfirmDialog
 
@@ -264,7 +242,6 @@ DankModal {
 
     }
 
-    // Data models
     ListModel {
         id: clipboardModel
     }
@@ -273,7 +250,6 @@ DankModal {
         id: filteredClipboardModel
     }
 
-    // Processes
     Process {
         id: clipboardProcess
 
@@ -292,21 +268,9 @@ DankModal {
 
                 }
                 updateFilteredModel();
-                generateThumbnails();
             }
         }
 
-    }
-
-    Process {
-        id: copyProcess
-
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode !== 0)
-                console.error("Copy failed with exit code:", exitCode);
-
-        }
     }
 
     Process {
@@ -317,9 +281,10 @@ DankModal {
             if (exitCode === 0)
                 refreshClipboard();
             else
-                console.error("Delete failed with exit code:", exitCode);
+                console.warn("Failed to delete clipboard entry");
         }
     }
+
 
     Process {
         id: clearProcess
@@ -332,71 +297,31 @@ DankModal {
                 filteredClipboardModel.clear();
                 totalCount = 0;
             } else {
-                console.error("Clear failed with exit code:", exitCode);
+                
             }
         }
     }
 
-    Process {
-        id: cleanupProcess
 
-        running: false
-    }
 
-    Process {
-        id: getCacheDirProcess
 
-        command: ["sh", "-c", "echo ${XDG_CACHE_HOME:-$HOME/.cache}/cliphist/thumbs"]
-        running: false
 
-        stdout: StdioCollector {
-            onStreamFinished: {
-                thumbnailCacheDir = text.trim();
-                checkImageMagickProcess.running = true;
-            }
-        }
-
-    }
-
-    Process {
-        id: checkImageMagickProcess
-
-        command: ["which", "magick"]
-        running: false
-        onExited: (exitCode) => {
-            imagemagickAvailable = (exitCode === 0);
-            if (!imagemagickAvailable)
-                console.warn("ClipboardHistoryModal: ImageMagick not available, thumbnails disabled");
-
-        }
-    }
-
-    Process {
-        id: thumbnailGenProcess
-
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode !== 0)
-                console.warn("ClipboardHistoryModal: Thumbnail generation failed with exit code:", exitCode);
-
-        }
-    }
 
     IpcHandler {
         function open() {
-            console.log("ClipboardHistoryModal: IPC open() called");
+            
             clipboardHistoryModal.show();
             return "CLIPBOARD_OPEN_SUCCESS";
         }
 
         function close() {
-            console.log("ClipboardHistoryModal: IPC close() called");
+            
             clipboardHistoryModal.hide();
             return "CLIPBOARD_CLOSE_SUCCESS";
         }
 
         function toggle() {
-            console.log("ClipboardHistoryModal: IPC toggle() called");
+            
             clipboardHistoryModal.toggle();
             return "CLIPBOARD_TOGGLE_SUCCESS";
         }
@@ -559,7 +484,6 @@ DankModal {
                             anchors.rightMargin: Theme.spacingS // Reduced right margin
                             spacing: Theme.spacingL
 
-                            // Index number
                             Rectangle {
                                 width: 24
                                 height: 24
@@ -577,63 +501,49 @@ DankModal {
 
                             }
 
-                            // Content thumbnail/icon and text
                             Row {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: parent.width - 68 // Account for index (24) + spacing (16) + delete button (32) - small margin
                                 spacing: Theme.spacingM
 
-                                // Thumbnail or icon container
                                 Item {
                                     width: entryType === "image" ? 48 : Theme.iconSize
                                     height: entryType === "image" ? 48 : Theme.iconSize
                                     anchors.verticalCenter: parent.verticalCenter
 
-                                    // Image thumbnail
                                     CachingImage {
                                         id: thumbnailImageSource
-
                                         anchors.fill: parent
-                                        source: entryType === "image" && imagemagickAvailable ? "file://" + getThumbnailPath(model.entry) : ""
+                                        property string entryId: model.entry.split('\t')[0]
+                                        source: entryType === "image" && imageLoader.imageData ? `data:image/png;base64,${imageLoader.imageData}` : ""
                                         fillMode: Image.PreserveAspectCrop
                                         smooth: true
                                         cache: true
-                                        visible: false
+                                        visible: false // Hide the original image
                                         asynchronous: true
-                                        // Handle loading errors gracefully and retry once
-                                        onStatusChanged: {
-                                            if (status === Image.Error && source !== "") {
-                                                // Clear source to prevent repeated error attempts
-                                                const originalSource = source;
-                                                source = "";
-                                                // Retry once after 2 seconds to allow thumbnail generation
-                                                retryTimer.originalSource = originalSource;
-                                                retryTimer.start();
+                                        
+                                        Process {
+                                            id: imageLoader
+                                            property string imageData: ""
+                                            
+                                            command: ["sh", "-c", `cliphist decode ${thumbnailImageSource.entryId} | base64 -w 0`]
+                                            running: entryType === "image"
+                                            
+                                            stdout: StdioCollector {
+                                                onStreamFinished: {
+                                                    imageLoader.imageData = text.trim();
+                                                }
                                             }
                                         }
-
-                                        Timer {
-                                            id: retryTimer
-
-                                            property string originalSource: ""
-
-                                            interval: 2000
-                                            repeat: false
-                                            onTriggered: {
-                                                if (originalSource !== "" && thumbnailImageSource.source === "")
-                                                    thumbnailImageSource.source = originalSource;
-
-                                            }
-                                        }
-
                                     }
 
                                     MultiEffect {
                                         anchors.fill: parent
+                                        anchors.margins: 2
                                         source: thumbnailImageSource
                                         maskEnabled: true
                                         maskSource: clipboardCircularMask
-                                        visible: entryType === "image" && imagemagickAvailable && thumbnailImageSource.status === Image.Ready
+                                        visible: entryType === "image" && thumbnailImageSource.status === Image.Ready
                                         maskThresholdMin: 0.5
                                         maskSpreadAtMin: 1
                                     }
@@ -641,8 +551,8 @@ DankModal {
                                     Item {
                                         id: clipboardCircularMask
 
-                                        width: 48
-                                        height: 48
+                                        width: 48 - 4
+                                        height: 48 - 4
                                         layer.enabled: true
                                         layer.smooth: true
                                         visible: false
@@ -656,9 +566,8 @@ DankModal {
 
                                     }
 
-                                    // Fallback icon
                                     DankIcon {
-                                        visible: !(entryType === "image" && imagemagickAvailable && thumbnailImageSource.status === Image.Ready)
+                                        visible: !(entryType === "image" && thumbnailImageSource.status === Image.Ready)
                                         name: {
                                             if (entryType === "image")
                                                 return "image";
@@ -716,7 +625,6 @@ DankModal {
 
                         }
 
-                        // Delete button
                         DankActionButton {
                             anchors.right: parent.right
                             anchors.rightMargin: Theme.spacingM
@@ -726,12 +634,11 @@ DankModal {
                             iconColor: Theme.error
                             hoverColor: Theme.errorHover
                             onClicked: {
-                                console.log("Delete clicked for entry:", model.entry);
+                                
                                 deleteEntry(model.entry);
                             }
                         }
 
-                        // Main click area - explicitly excludes delete button area
                         MouseArea {
                             id: mouseArea
 

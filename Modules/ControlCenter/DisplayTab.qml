@@ -19,7 +19,7 @@ ScrollView {
         interval: BrightnessService.ddcAvailable ? 500 : 50 // 500ms for slow DDC (i2c), 50ms for fast laptop backlight
         repeat: false
         onTriggered: {
-            console.log("Debounce timer fired, setting brightness to:", pendingValue);
+            
             BrightnessService.setBrightness(pendingValue);
         }
     }
@@ -29,7 +29,6 @@ ScrollView {
         width: parent.width
         spacing: Theme.spacingL
 
-        // Brightness Control
         Column {
             width: parent.width
             spacing: Theme.spacingM
@@ -49,12 +48,12 @@ ScrollView {
                 rightIcon: "brightness_high"
                 enabled: BrightnessService.brightnessAvailable
                 onSliderValueChanged: function(newValue) {
-                    console.log("Slider changed to:", newValue);
+                    
                     brightnessDebounceTimer.pendingValue = newValue;
                     brightnessDebounceTimer.restart();
                 }
                 onSliderDragFinished: function(finalValue) {
-                    console.log("Drag finished, immediate set:", finalValue);
+                    
                     brightnessDebounceTimer.stop();
                     BrightnessService.setBrightness(finalValue);
                 }
@@ -70,7 +69,6 @@ ScrollView {
 
         }
 
-        // Display settings
         Column {
             width: parent.width
             spacing: Theme.spacingM
@@ -82,12 +80,10 @@ ScrollView {
                 font.weight: Font.Medium
             }
 
-            // Mode toggles row (Night Mode + Light/Dark Mode)
             Row {
                 width: parent.width
                 spacing: Theme.spacingM
 
-                // Night mode toggle
                 Rectangle {
                     width: (parent.width - Theme.spacingM) / 2
                     height: 80
@@ -125,11 +121,9 @@ ScrollView {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             if (Prefs.nightModeEnabled) {
-                                // Disable night mode - kill any running color temperature processes
                                 nightModeDisableProcess.running = true;
                                 Prefs.setNightModeEnabled(false);
                             } else {
-                                // Enable night mode using wlsunset or redshift
                                 nightModeEnableProcess.running = true;
                                 Prefs.setNightModeEnabled(true);
                             }
@@ -138,7 +132,6 @@ ScrollView {
 
                 }
 
-                // Light/Dark mode toggle
                 Rectangle {
                     width: (parent.width - Theme.spacingM) / 2
                     height: 80
@@ -195,7 +188,6 @@ ScrollView {
 
     }
 
-    // Night mode processes
     Process {
         id: nightModeEnableProcess
 
@@ -203,7 +195,7 @@ ScrollView {
         running: false
         onExited: (exitCode) => {
             if (exitCode !== 0) {
-                console.warn("Failed to enable night mode");
+                
                 Prefs.setNightModeEnabled(false);
             }
         }
@@ -216,7 +208,7 @@ ScrollView {
         running: false
         onExited: (exitCode) => {
             if (exitCode !== 0)
-                console.warn("Failed to disable night mode");
+                
 
         }
     }

@@ -53,7 +53,6 @@ DankModal {
                 anchors.margins: Theme.spacingL
                 spacing: Theme.spacingL
 
-                // Header
                 Row {
                     width: parent.width
 
@@ -90,7 +89,6 @@ DankModal {
 
                 }
 
-                // Network Details
                 Flickable {
                     property real wheelMultiplier: 1.8
                     property int wheelBaseStep: 160
@@ -148,7 +146,6 @@ DankModal {
 
                 }
 
-                // Close Button
                 Item {
                     width: parent.width
                     height: 40

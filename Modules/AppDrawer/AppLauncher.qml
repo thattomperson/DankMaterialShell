@@ -8,7 +8,6 @@ import qs.Widgets
 Item {
     id: root
 
-    // Public interface
     property string searchQuery: ""
     property string selectedCategory: "All"
     property string viewMode: "list" // "list" or "grid"
@@ -18,7 +17,6 @@ Item {
     property bool debounceSearch: true
     property int debounceInterval: 50
     property bool keyboardNavigationActive: false
-    // Categories (computed from AppSearchService)
     property var categories: {
         var allCategories = AppSearchService.getAllCategories().filter((cat) => {
             return cat !== "Education" && cat !== "Science";
@@ -28,18 +26,13 @@ Item {
             return cat !== "All";
         }));
     }
-    // Category icons (computed from AppSearchService)
     property var categoryIcons: categories.map((category) => {
         return AppSearchService.getCategoryIcon(category);
     })
-    // App usage ranking helper
     property var appUsageRanking: Prefs.appUsageRanking
-    // Internal model
     property alias model: filteredModel
-    // Watch AppSearchService.applications changes via property binding
     property var _watchApplications: AppSearchService.applications
 
-    // Signals
     signal appLaunched(var app)
     signal categorySelected(string category)
     signal viewModeSelected(string mode)
@@ -50,7 +43,6 @@ Item {
         keyboardNavigationActive = false;
         var apps = [];
         if (searchQuery.length === 0) {
-            // Show apps from category
             if (selectedCategory === "All") {
                 apps = AppSearchService.applications || [];
             } else {
@@ -58,7 +50,6 @@ Item {
                 apps = categoryApps.slice(0, maxResults);
             }
         } else {
-            // Search with category filter
             if (selectedCategory === "All") {
                 apps = AppSearchService.searchApplications(searchQuery);
             } else {
@@ -88,7 +79,6 @@ Item {
             return (a.name || "").localeCompare(b.name || "");
         });
 
-        // Convert to model format and populate
         apps.forEach((app) => {
             if (app)
                 filteredModel.append({
@@ -103,7 +93,6 @@ Item {
         });
     }
 
-    // Keyboard navigation functions
     function selectNext() {
         if (filteredModel.count > 0) {
             keyboardNavigationActive = true;
@@ -142,7 +131,6 @@ Item {
         }
     }
 
-    // App launching
     function launchSelected() {
         if (filteredModel.count > 0 && selectedIndex >= 0 && selectedIndex < filteredModel.count) {
             var selectedApp = filteredModel.get(selectedIndex);
@@ -151,28 +139,24 @@ Item {
     }
 
     function launchApp(appData) {
-        if (!appData) {
-            console.warn("AppLauncher: No app data provided");
+        if (!appData)
             return ;
-        }
+
         appData.desktopEntry.execute();
         appLaunched(appData);
         Prefs.addAppUsage(appData.desktopEntry);
     }
 
-    // Category management
     function setCategory(category) {
         selectedCategory = category;
         categorySelected(category);
     }
 
-    // View mode management
     function setViewMode(mode) {
         viewMode = mode;
         viewModeSelected(mode);
     }
 
-    // Watch for changes
     onSearchQueryChanged: {
         if (debounceSearch)
             searchDebounceTimer.restart();
@@ -182,7 +166,6 @@ Item {
     onSelectedCategoryChanged: updateFilteredModel()
     onAppUsageRankingChanged: updateFilteredModel()
     on_WatchApplicationsChanged: updateFilteredModel()
-    // Initialize
     Component.onCompleted: {
         updateFilteredModel();
     }
@@ -191,7 +174,6 @@ Item {
         id: filteredModel
     }
 
-    // Search debouncing
     Timer {
         id: searchDebounceTimer
 

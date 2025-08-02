@@ -25,7 +25,6 @@ DankModal {
         wifiPasswordInput = "";
     }
 
-    // Auto-reopen dialog on invalid password
     Connections {
         function onPasswordDialogShouldReopenChanged() {
             if (NetworkService.passwordDialogShouldReopen && NetworkService.connectingSSID !== "") {
@@ -48,7 +47,6 @@ DankModal {
                 width: parent.width - Theme.spacingM * 2
                 spacing: Theme.spacingM
 
-                // Header
                 Row {
                     width: parent.width
 
@@ -86,7 +84,6 @@ DankModal {
 
                 }
 
-                // Password input
                 Rectangle {
                     width: parent.width
                     height: 50
@@ -133,7 +130,6 @@ DankModal {
 
                 }
 
-                // Show password checkbox
                 Row {
                     spacing: Theme.spacingS
 
@@ -177,7 +173,6 @@ DankModal {
 
                 }
 
-                // Buttons
                 Item {
                     width: parent.width
                     height: 40

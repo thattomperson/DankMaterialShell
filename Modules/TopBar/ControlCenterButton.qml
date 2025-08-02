@@ -10,7 +10,6 @@ Rectangle {
 
     signal clicked()
 
-    // Helper function for consistent WiFi signal icons
     function getWiFiSignalIcon(signalStrength) {
         switch (signalStrength) {
         case "excellent":
@@ -40,7 +39,6 @@ Rectangle {
         anchors.centerIn: parent
         spacing: Theme.spacingXS
 
-        // Network Status Icon
         DankIcon {
             name: {
                 if (NetworkService.networkStatus === "ethernet")
@@ -56,7 +54,6 @@ Rectangle {
             visible: true
         }
 
-        // Bluetooth Icon (when available and enabled) - moved next to network
         DankIcon {
             name: "bluetooth"
             size: Theme.iconSize - 8
@@ -65,7 +62,6 @@ Rectangle {
             visible: BluetoothService.available && BluetoothService.enabled
         }
 
-        // Audio Icon with scroll wheel support
         Rectangle {
             width: audioIcon.implicitWidth + 4
             height: audioIcon.implicitHeight + 4
@@ -82,9 +78,6 @@ Rectangle {
             }
 
             MouseArea {
-                // Scroll up - increase volume
-                // Scroll down - decrease volume
-
                 id: audioWheelArea
 
                 anchors.fill: parent
@@ -108,7 +101,6 @@ Rectangle {
 
         }
 
-        // Microphone Icon (when active)
         DankIcon {
             name: "mic"
             size: Theme.iconSize - 8

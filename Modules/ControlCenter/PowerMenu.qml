@@ -31,7 +31,6 @@ PanelWindow {
         bottom: true
     }
 
-    // Click outside to dismiss overlay
     MouseArea {
         anchors.fill: parent
         onClicked: {
@@ -51,9 +50,7 @@ PanelWindow {
         opacity: powerMenuVisible ? 1 : 0
         scale: powerMenuVisible ? 1 : 0.85
 
-        // Prevent click-through to background
         MouseArea {
-            // Consume the click to prevent it from reaching the background
 
             anchors.fill: parent
             onClicked: {
@@ -65,7 +62,6 @@ PanelWindow {
             anchors.margins: Theme.spacingL
             spacing: Theme.spacingM
 
-            // Header
             Row {
                 width: parent.width
 
@@ -94,12 +90,10 @@ PanelWindow {
 
             }
 
-            // Power options
             Column {
                 width: parent.width
                 spacing: Theme.spacingS
 
-                // Log Out
                 Rectangle {
                     width: parent.width
                     height: 50
@@ -146,7 +140,6 @@ PanelWindow {
 
                 }
 
-                // Suspend
                 Rectangle {
                     width: parent.width
                     height: 50
@@ -193,7 +186,6 @@ PanelWindow {
 
                 }
 
-                // Reboot
                 Rectangle {
                     width: parent.width
                     height: 50
@@ -240,7 +232,6 @@ PanelWindow {
 
                 }
 
-                // Power Off
                 Rectangle {
                     width: parent.width
                     height: 50

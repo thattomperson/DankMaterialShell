@@ -19,7 +19,6 @@ PanelWindow {
 
     function hide() {
         isVisible = false;
-        // Close any open context menus
         if (processContextMenu.visible)
             processContextMenu.close();
 
@@ -58,7 +57,6 @@ PanelWindow {
     MouseArea {
         anchors.fill: parent
         onClicked: function(mouse) {
-            // Only close if click is outside the content loader
             var localPos = mapToItem(contentLoader, mouse.x, mouse.y);
             if (localPos.x < 0 || localPos.x > contentLoader.width || localPos.y < 0 || localPos.y > contentLoader.height)
                 processListPopout.hide();
@@ -78,7 +76,6 @@ PanelWindow {
         height: targetHeight
         y: Theme.barHeight + Theme.spacingXS
         x: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
-        // GPU-accelerated scale + opacity animation
         opacity: processListPopout.isVisible ? 1 : 0
         scale: processListPopout.isVisible ? 1 : 0.9
 
@@ -108,7 +105,6 @@ PanelWindow {
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
             border.width: 1
             clip: true
-            // Remove layer rendering for better performance
             antialiasing: true
             smooth: true
 

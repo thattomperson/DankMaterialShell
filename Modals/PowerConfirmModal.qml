@@ -13,7 +13,7 @@ DankModal {
     property string powerConfirmMessage: ""
 
     function executePowerAction(action) {
-        console.log("Executing power action:", action);
+        
         let command = [];
         switch (action) {
         case "logout":
@@ -30,12 +30,10 @@ DankModal {
             break;
         }
         if (command.length > 0) {
-            powerActionProcess.command = command;
-            powerActionProcess.running = true;
+            Quickshell.execDetached(command);
         }
     }
 
-    // DankModal configuration
     visible: powerConfirmVisible
     width: 350
     height: 160
@@ -43,17 +41,6 @@ DankModal {
     enableShadow: false
     onBackgroundClicked: {
         powerConfirmVisible = false;
-    }
-
-    Process {
-        id: powerActionProcess
-
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode !== 0)
-                console.error("Power action failed with exit code:", exitCode);
-
-        }
     }
 
     content: Component {
@@ -65,7 +52,6 @@ DankModal {
                 width: parent.width - Theme.spacingM * 2
                 spacing: Theme.spacingM
 
-                // Title
                 StyledText {
                     text: powerConfirmTitle
                     font.pixelSize: Theme.fontSizeLarge
@@ -84,7 +70,6 @@ DankModal {
                     horizontalAlignment: Text.AlignHCenter
                 }
 
-                // Message
                 StyledText {
                     text: powerConfirmMessage
                     font.pixelSize: Theme.fontSizeMedium
@@ -98,12 +83,10 @@ DankModal {
                     height: Theme.spacingS
                 }
 
-                // Buttons
                 Row {
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: Theme.spacingM
 
-                    // Cancel button
                     Rectangle {
                         width: 120
                         height: 40
@@ -131,7 +114,6 @@ DankModal {
 
                     }
 
-                    // Confirm button
                     Rectangle {
                         width: 120
                         height: 40

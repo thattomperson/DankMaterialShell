@@ -57,7 +57,6 @@ Rectangle {
         visible = false;
     }
 
-    // Drop shadow
     Rectangle {
         anchors.fill: parent
         anchors.topMargin: 4
@@ -76,7 +75,6 @@ Rectangle {
         anchors.margins: Theme.spacingS
         spacing: 1
 
-        // Connect/Disconnect option
         Rectangle {
             width: parent.width
             height: 32
@@ -145,7 +143,6 @@ Rectangle {
 
         }
 
-        // Separator
         Rectangle {
             width: parent.width - Theme.spacingS * 2
             height: 5
@@ -161,7 +158,6 @@ Rectangle {
 
         }
 
-        // Forget Network option (only for saved networks)
         Rectangle {
             width: parent.width
             height: 32
@@ -217,7 +213,6 @@ Rectangle {
 
         }
 
-        // Network Info option
         Rectangle {
             width: parent.width
             height: 32

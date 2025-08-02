@@ -41,7 +41,7 @@ Singleton {
         running: false
         onExited: (exitCode) => {
             if (exitCode !== 0) {
-                console.warn("UserInfoService: Failed to get user info");
+                
                 root.username = "User";
                 root.fullName = "User";
                 root.hostname = "System";
@@ -55,7 +55,7 @@ Singleton {
                     root.username = parts[0] || "";
                     root.fullName = parts[1] || parts[0] || "";
                     root.hostname = parts[2] || "";
-                    console.log("UserInfoService: User info loaded -", root.username, root.fullName, root.hostname);
+                    
                 }
             }
         }
@@ -70,7 +70,7 @@ Singleton {
         running: false
         onExited: (exitCode) => {
             if (exitCode !== 0) {
-                console.warn("UserInfoService: Failed to get uptime");
+                
                 root.uptime = "Unknown";
             }
         }

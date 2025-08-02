@@ -37,7 +37,6 @@ Column {
     visible: NetworkService.wifiEnabled
     spacing: Theme.spacingS
 
-    // Available Networks Section with refresh button (spanning version)
     Row {
         width: parent.width
         spacing: Theme.spacingS
@@ -55,7 +54,6 @@ Column {
             height: 1
         }
 
-        // WiFi refresh button (spanning version)
         Rectangle {
             width: 28
             height: 28
@@ -99,7 +97,6 @@ Column {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     if (!NetworkService.isScanning) {
-                        // Immediate visual feedback
                         refreshIconSpan.rotation += 30;
                         NetworkService.scanWifi();
                     }
@@ -110,7 +107,6 @@ Column {
 
     }
 
-    // Scrollable networks container
     Flickable {
         width: parent.width
         height: parent.height - 40
@@ -143,7 +139,6 @@ Column {
                         anchors.margins: Theme.spacingXS
                         anchors.rightMargin: Theme.spacingM // Extra right margin for scrollbar
 
-                        // Signal strength icon
                         DankIcon {
                             id: signalIcon2
 
@@ -154,7 +149,6 @@ Column {
                             color: modelData.connected ? Theme.primary : Theme.surfaceText
                         }
 
-                        // Network info
                         Column {
                             anchors.left: signalIcon2.right
                             anchors.leftMargin: Theme.spacingXS
@@ -204,7 +198,6 @@ Column {
 
                         }
 
-                        // Right side icons
                         Row {
                             id: rightIcons2
 
@@ -212,7 +205,6 @@ Column {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: Theme.spacingXS
 
-                            // Lock icon (if secured)
                             DankIcon {
                                 name: "lock"
                                 size: Theme.iconSize - 8
@@ -221,7 +213,6 @@ Column {
                                 anchors.verticalCenter: parent.verticalCenter
                             }
 
-                            // Context menu button
                             Rectangle {
                                 id: wifiMenuButton
 

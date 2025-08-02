@@ -42,12 +42,10 @@ Singleton {
     property var topBarCenterWidgets: ["clock", "music", "weather"]
     property var topBarRightWidgets: ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"]
     
-    // Reactive ListModel properties for TopBar
     property alias topBarLeftWidgetsModel: leftWidgetsModel
     property alias topBarCenterWidgetsModel: centerWidgetsModel
     property alias topBarRightWidgetsModel: rightWidgetsModel
     
-    // Signal to force immediate TopBar layout refresh
     signal forceTopBarLayoutRefresh()
     
     ListModel {
@@ -108,7 +106,6 @@ Singleton {
             
             if (missingFonts.length > 0) {
                 var message = "Missing fonts: " + missingFonts.join(", ") + ". Using system defaults."
-                console.warn("Prefs: " + message)
                 ToastService.showWarning(message)
             }
         }
@@ -162,7 +159,6 @@ Singleton {
                 showWorkspaceIndex = settings.showWorkspaceIndex !== undefined ? settings.showWorkspaceIndex : false;
                 showWorkspacePadding = settings.showWorkspacePadding !== undefined ? settings.showWorkspacePadding : false;
                 if (settings.topBarWidgetOrder) {
-                    // Migrate from old single list to new three-list system
                     topBarLeftWidgets = settings.topBarWidgetOrder.filter(w => ["launcherButton", "workspaceSwitcher", "focusedWindow"].includes(w));
                     topBarCenterWidgets = settings.topBarWidgetOrder.filter(w => ["clock", "music", "weather"].includes(w));
                     topBarRightWidgets = settings.topBarWidgetOrder.filter(w => ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"].includes(w));
@@ -497,7 +493,6 @@ Singleton {
     function updateListModel(listModel, order) {
         listModel.clear();
         for (var i = 0; i < order.length; i++) {
-            // Handle both old string format and new object format
             var widgetId = typeof order[i] === "string" ? order[i] : order[i].id;
             var enabled = typeof order[i] === "string" ? true : order[i].enabled;
             var size = typeof order[i] === "string" ? undefined : order[i].size;
@@ -577,21 +572,16 @@ Singleton {
         updateQtIconTheme(themeName);
         saveSettings();
         
-        // If dynamic theme is active, regenerate system themes with new icon theme
         if (typeof Theme !== "undefined" && Theme.isDynamicTheme && typeof Colors !== "undefined") {
-            console.log("Icon theme changed during dynamic theming - regenerating system themes");
             Colors.generateSystemThemes();
         }
     }
     
     function updateGtkIconTheme(themeName) {
-        console.log("Updating GTK icon theme to:", themeName);
         var gtkThemeName = (themeName === "System Default") ? systemDefaultIconTheme : themeName;
 
-        // Update icon theme via dconf/gsettings AND settings.ini files
         if (gtkThemeName !== "System Default" && gtkThemeName !== "") {
-            var script = 
-                "# Update dconf/gsettings with multiple fallbacks for Fedora\n" +
+            var script =
                 "if command -v gsettings >/dev/null 2>&1 && gsettings list-schemas | grep -q org.gnome.desktop.interface; then\n" +
                 "    gsettings set org.gnome.desktop.interface icon-theme '" + gtkThemeName + "'\n" +
                 "    echo 'Updated via gsettings'\n" +
@@ -635,7 +625,6 @@ Singleton {
     }
 
     function updateQtIconTheme(themeName) {
-        console.log("Updating Qt icon theme to:", themeName);
         var qtThemeName = (themeName === "System Default") ? "" : themeName;
 
         var home = _shq(root._homeUrl.replace("file://", ""));
@@ -743,7 +732,6 @@ Singleton {
         wallpaperPath = path;
         saveSettings();
         
-        // Trigger dynamic theming if enabled
         if (wallpaperDynamicTheming && path && typeof Theme !== "undefined") {
             Theme.switchTheme(themeIndex, true, true);
         }
@@ -753,7 +741,6 @@ Singleton {
         wallpaperDynamicTheming = enabled;
         saveSettings();
         
-        // If enabled and we have a wallpaper, trigger dynamic theming
         if (enabled && wallpaperPath && typeof Theme !== "undefined") {
             Theme.switchTheme(themeIndex, true, true);
         }
@@ -763,7 +750,6 @@ Singleton {
         wallpaperPath = imagePath;
         saveSettings();
         
-        // Trigger color extraction if dynamic theming is enabled
         if (wallpaperDynamicTheming && typeof Colors !== "undefined") {
             Colors.extractColors();
         }
@@ -799,7 +785,6 @@ Singleton {
         saveSettings();
     }
 
-    // Helper to safely single-quote shell strings
     function _shq(s) {
         return "'" + String(s).replace(/'/g, "'\\''") + "'";
     }
@@ -819,64 +804,7 @@ Singleton {
         }
     }
 
-    Process {
-        id: gtk3Process
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode === 0) {
-            } else {
-                console.warn("Failed to update GTK 3 settings, exit code:", exitCode);
-            }
-        }
-    }
-    
-    Process {
-        id: gtk4Process
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode === 0) {
-            } else {
-                console.warn("Failed to update GTK 4 settings, exit code:", exitCode);
-            }
-        }
-    }
-    
-    Process {
-        id: reloadThemeProcess
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode === 0) {
-            } else {
-                console.log("GTK theme reload failed (this is normal if gsettings is not available), exit code:", exitCode);
-            }
-        }
-    }
-    
-    Process {
-        id: qtThemeProcess
-        running: false
-        onExited: (exitCode) => {
-            // Qt theme reload signal sent
-        }
-    }
-    
-    Process {
-        id: envCheckProcess
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode !== 0) {
-                console.warn("Environment check failed, exit code:", exitCode);
-            }
-        }
-    }
-    
-    
-    Process {
-        id: envSetProcess
-        running: false
-        onExited: (exitCode) => {
-        }
-    }
+
     
     Process {
         id: systemDefaultDetectionProcess

@@ -294,7 +294,6 @@ Column {
         }
         onModelChanged: {
             if (model && model.length > 0 && !isUserScrolling && stableY > 40)
-                // Preserve scroll position when model updates
                 Qt.callLater(function() {
                     contentY = stableY;
                 });

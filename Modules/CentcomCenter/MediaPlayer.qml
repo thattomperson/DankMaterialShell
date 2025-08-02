@@ -17,7 +17,6 @@ Rectangle {
     property string lastValidArtUrl: ""
     property real currentPosition: 0
 
-    // Simple progress ratio calculation
     function ratio() {
         return activePlayer && activePlayer.length > 0 ? currentPosition / activePlayer.length : 0;
     }
@@ -41,26 +40,22 @@ Rectangle {
 
         interval: 2000
         running: {
-            // Run when no active player (for cache clearing) OR when playing (for position updates)
             return (!activePlayer) || (activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing && activePlayer.length > 0 && !progressMouseArea.isSeeking);
         }
         repeat: true
         onTriggered: {
             if (!activePlayer) {
-                // Clear cache when no player
                 lastValidTitle = "";
                 lastValidArtist = "";
                 lastValidAlbum = "";
                 lastValidArtUrl = "";
                 stop(); // Stop after clearing cache
             } else if (activePlayer.playbackState === MprisPlaybackState.Playing && !progressMouseArea.isSeeking) {
-                // Update position when playing
                 currentPosition = activePlayer.position;
             }
         }
     }
 
-    // Backend events
     Connections {
         function onPositionChanged() {
             if (!progressMouseArea.isSeeking)
@@ -83,7 +78,6 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: Theme.spacingS
 
-        // Placeholder when no media - centered in entire widget
         Column {
             anchors.centerIn: parent
             spacing: Theme.spacingS
@@ -105,19 +99,16 @@ Rectangle {
 
         }
 
-        // Active content in a column
         Column {
             anchors.fill: parent
             spacing: Theme.spacingS
             visible: activePlayer && activePlayer.trackTitle !== "" || lastValidTitle !== ""
 
-            // Normal media info when playing
             Row {
                 width: parent.width
                 height: 60
                 spacing: Theme.spacingM
 
-                // Album Art
                 Rectangle {
                     width: 60
                     height: 60
@@ -161,7 +152,6 @@ Rectangle {
 
                 }
 
-                // Track Info
                 Column {
                     width: parent.width - 60 - Theme.spacingM
                     height: parent.height
@@ -218,7 +208,6 @@ Rectangle {
 
             }
 
-            // Progress bar
             Item {
                 id: progressBarContainer
 
@@ -252,7 +241,6 @@ Rectangle {
 
                     }
 
-                    // Drag handle
                     Rectangle {
                         id: progressHandle
 
@@ -318,7 +306,6 @@ Rectangle {
                     }
                 }
 
-                // Global mouse area for drag tracking
                 MouseArea {
                     id: progressGlobalMouseArea
 
@@ -345,7 +332,6 @@ Rectangle {
 
             }
 
-            // Control buttons - always visible
             Item {
                 width: parent.width
                 height: 32
@@ -356,7 +342,6 @@ Rectangle {
                     spacing: Theme.spacingM
                     height: parent.height
 
-                    // Previous button
                     Rectangle {
                         width: 28
                         height: 28
@@ -380,7 +365,6 @@ Rectangle {
                                 if (!activePlayer)
                                     return ;
 
-                                // >8 s → jump to start, otherwise previous track
                                 if (currentPosition > 8 && activePlayer.canSeek) {
                                     activePlayer.position = 0;
                                     currentPosition = 0;
@@ -392,7 +376,6 @@ Rectangle {
 
                     }
 
-                    // Play/Pause button
                     Rectangle {
                         width: 32
                         height: 32
@@ -415,7 +398,6 @@ Rectangle {
 
                     }
 
-                    // Next button
                     Rectangle {
                         width: 28
                         height: 28

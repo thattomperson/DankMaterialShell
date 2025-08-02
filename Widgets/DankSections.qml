@@ -21,7 +21,6 @@ Column {
     width: parent.width
     spacing: Theme.spacingM
 
-    // Header
     Row {
         width: parent.width
         spacing: Theme.spacingM
@@ -48,7 +47,6 @@ Column {
 
     }
 
-    // Widget Items
     Column {
         id: itemsList
 
@@ -252,7 +250,6 @@ Column {
 
     }
 
-    // Add Widget Control
     Rectangle {
         width: 200
         height: 40

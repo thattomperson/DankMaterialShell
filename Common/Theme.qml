@@ -9,7 +9,6 @@ import Quickshell.Services.UPower
 Singleton {
     id: root
 
-    // Theme definitions with complete Material 3 expressive color palettes
     property var themes: [{
         "name": "Blue",
         "primary": "#42a5f5",
@@ -171,7 +170,6 @@ Singleton {
         "surfaceContainer": "#201a19",
         "surfaceContainerHigh": "#2b2221"
     }]
-    // Light theme variants
     property var lightThemes: [{
         "name": "Blue Light",
         "primary": "#1976d2",
@@ -333,11 +331,9 @@ Singleton {
         "surfaceContainer": "#f3f3f3",
         "surfaceContainerHigh": "#ececec"
     }]
-    // Current theme index (10 = Auto/Dynamic)
     property int currentThemeIndex: 0
     property bool isDynamicTheme: false
     property bool isLightMode: false
-    // Dynamic color properties that change based on current theme
     property color primary: isDynamicTheme ? Colors.accentHi : getCurrentTheme().primary
     property color primaryText: isDynamicTheme ? Colors.primaryText : getCurrentTheme().primaryText
     property color primaryContainer: isDynamicTheme ? Colors.primaryContainer : getCurrentTheme().primaryContainer
@@ -352,25 +348,20 @@ Singleton {
     property color outline: isDynamicTheme ? Colors.outline : getCurrentTheme().outline
     property color surfaceContainer: isDynamicTheme ? Colors.surfaceContainer : getCurrentTheme().surfaceContainer
     property color surfaceContainerHigh: isDynamicTheme ? Colors.surfaceContainerHigh : getCurrentTheme().surfaceContainerHigh
-    // Static colors that don't change with themes
     property color archBlue: "#1793D1"
     property color success: "#4CAF50"
     property color warning: "#FF9800"
     property color info: "#2196F3"
     property color error: "#F2B8B5"
     
-    // Common alpha color variants for consistency
-    // Primary colors with alpha
     property color primaryHover: Qt.rgba(primary.r, primary.g, primary.b, 0.12)
     property color primaryHoverLight: Qt.rgba(primary.r, primary.g, primary.b, 0.08)
     property color primaryPressed: Qt.rgba(primary.r, primary.g, primary.b, 0.16)
     property color primarySelected: Qt.rgba(primary.r, primary.g, primary.b, 0.3)
     property color primaryBackground: Qt.rgba(primary.r, primary.g, primary.b, 0.04)
     
-    // Secondary colors with alpha
     property color secondaryHover: Qt.rgba(secondary.r, secondary.g, secondary.b, 0.08)
     
-    // Surface colors with alpha
     property color surfaceHover: Qt.rgba(surfaceVariant.r, surfaceVariant.g, surfaceVariant.b, 0.08)
     property color surfacePressed: Qt.rgba(surfaceVariant.r, surfaceVariant.g, surfaceVariant.b, 0.12)
     property color surfaceSelected: Qt.rgba(surfaceVariant.r, surfaceVariant.g, surfaceVariant.b, 0.15)
@@ -382,7 +373,6 @@ Singleton {
     property color surfaceTextLight: Qt.rgba(surfaceText.r, surfaceText.g, surfaceText.b, 0.06)
     property color surfaceTextMedium: Qt.rgba(surfaceText.r, surfaceText.g, surfaceText.b, 0.7)
     
-    // Outline colors with alpha
     property color outlineLight: Qt.rgba(outline.r, outline.g, outline.b, 0.05)
     property color outlineMedium: Qt.rgba(outline.r, outline.g, outline.b, 0.08)
     property color outlineStrong: Qt.rgba(outline.r, outline.g, outline.b, 0.12)
@@ -390,14 +380,11 @@ Singleton {
     property color outlineHeavy: Qt.rgba(outline.r, outline.g, outline.b, 0.3)
     property color outlineButton: Qt.rgba(outline.r, outline.g, outline.b, 0.5)
     
-    // Error colors with alpha
     property color errorHover: Qt.rgba(error.r, error.g, error.b, 0.12)
     property color errorPressed: Qt.rgba(error.r, error.g, error.b, 0.9)
     
-    // Warning colors with alpha
     property color warningHover: Qt.rgba(warning.r, warning.g, warning.b, 0.12)
     
-    // Shadow colors
     property color shadowLight: Qt.rgba(0, 0, 0, 0.05)
     property color shadowMedium: Qt.rgba(0, 0, 0, 0.08)
     property color shadowDark: Qt.rgba(0, 0, 0, 0.1)
@@ -429,80 +416,51 @@ Singleton {
     property real opacityMedium: 0.6
     property real opacityHigh: 0.87
     property real opacityFull: 1
-    // Transparency system - can be overridden by Prefs
     property real panelTransparency: 0.85
     property real widgetTransparency: 0.85
     property real popupTransparency: 0.92
 
-    // Handle successful color extraction
     function onColorsUpdated() {
-        console.log("Colors updated successfully - switching to dynamic theme");
-        // Only switch to dynamic theme if we're already in dynamic mode
         if (isDynamicTheme) {
             currentThemeIndex = 10;
             isDynamicTheme = true;
-            console.log("Dynamic theme activated. Theme.primary should now be:", primary);
-            // Save preference after successful switch
             if (typeof Prefs !== "undefined")
                 Prefs.setTheme(currentThemeIndex, isDynamicTheme);
-
-        } else {
-            console.log("Color extraction completed, but staying with static theme");
         }
     }
 
-    // Function to switch themes
     function switchTheme(themeIndex, isDynamic = false, savePrefs = true) {
-        console.log("Theme.switchTheme called:", themeIndex, isDynamic, "savePrefs:", savePrefs);
         if (isDynamic && themeIndex === 10) {
-            console.log("Attempting to switch to dynamic theme - checking colors first");
-            // Set dynamic theme flag immediately so onColorsUpdated works
             isDynamicTheme = true;
-            // Don't change theme index yet - wait for color extraction to succeed
             if (typeof Colors !== "undefined") {
-                console.log("Calling Colors.extractColors()");
                 Colors.extractColors();
-            } else {
-                console.error("Colors singleton not available");
             }
         } else if (themeIndex >= 0 && themeIndex < themes.length) {
-            // If switching away from dynamic theme, restore system themes
             if (isDynamicTheme && typeof Colors !== "undefined") {
-                console.log("Switching away from dynamic theme, restoring system themes");
                 Colors.restoreSystemThemes();
             }
             currentThemeIndex = themeIndex;
             isDynamicTheme = false;
         }
-        // Save preference (unless this is a startup restoration)
         if (savePrefs && typeof Prefs !== "undefined")
             Prefs.setTheme(currentThemeIndex, isDynamicTheme);
-
     }
 
-    // Function to toggle light/dark mode
     function toggleLightMode(savePrefs = true) {
-        console.log("Theme.toggleLightMode called, current isLightMode:", isLightMode);
         isLightMode = !isLightMode;
-        console.log("Light mode toggled to:", isLightMode);
-        // Save preference
         if (savePrefs && typeof Prefs !== "undefined")
             Prefs.setLightMode(isLightMode);
-
     }
 
-    // Helper function to get current theme array
     function getCurrentThemeArray() {
         return isLightMode ? lightThemes : themes;
     }
 
-    // Helper function to get current theme
     function getCurrentTheme() {
         var themeArray = getCurrentThemeArray();
         return currentThemeIndex < themeArray.length ? themeArray[currentThemeIndex] : themeArray[0];
     }
 
-    // Smart transparency functions for content-aware backgrounds
     function getPopupBackgroundAlpha() {
         return popupTransparency;
     }
@@ -511,7 +469,6 @@ Singleton {
         return popupTransparency;
     }
 
-    // Convenience functions for themed backgrounds with transparency
     function popupBackground() {
         return Qt.rgba(surfaceContainer.r, surfaceContainer.g, surfaceContainer.b, popupTransparency);
     }
@@ -606,7 +563,6 @@ Singleton {
     }
 
     function getPowerProfileLabel(profile) {
-        console.log("Theme.getPowerProfileLabel called with profile:", profile);
         switch (profile) {
         case PowerProfile.PowerSaver:
             return "Power Saver";
@@ -632,14 +588,10 @@ Singleton {
         }
     }
 
-    // Initialize theme system
     Component.onCompleted: {
-        console.log("Theme Component.onCompleted");
-        // Connect to Colors signal
         if (typeof Colors !== "undefined")
             Colors.colorsUpdated.connect(root.onColorsUpdated);
 
-        // Initialize transparency values from Prefs
         if (typeof Prefs !== "undefined") {
             if (Prefs.popupTransparency !== undefined)
                 root.popupTransparency = Prefs.popupTransparency;
@@ -647,23 +599,18 @@ Singleton {
             if (Prefs.topBarWidgetTransparency !== undefined)
                 root.widgetTransparency = Prefs.topBarWidgetTransparency;
 
-            // Connect to transparency changes
             if (Prefs.popupTransparencyChanged)
                 Prefs.popupTransparencyChanged.connect(function() {
                     if (typeof Prefs !== "undefined" && Prefs.popupTransparency !== undefined)
                         root.popupTransparency = Prefs.popupTransparency;
-
                 });
             
             if (Prefs.topBarWidgetTransparencyChanged)
                 Prefs.topBarWidgetTransparencyChanged.connect(function() {
                     if (typeof Prefs !== "undefined" && Prefs.topBarWidgetTransparency !== undefined)
                         root.widgetTransparency = Prefs.topBarWidgetTransparency;
-
                 });
-
         }
-        console.log("Theme initialized, waiting for Prefs to load settings and apply theme");
     }
 
 

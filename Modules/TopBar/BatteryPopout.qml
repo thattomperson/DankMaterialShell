@@ -46,11 +46,9 @@ PanelWindow {
         bottom: true
     }
 
-    // Click outside to dismiss overlay
     MouseArea {
         anchors.fill: parent
         onClicked: function(mouse) {
-            // Only close if click is outside the content loader
             var localPos = mapToItem(contentLoader, mouse.x, mouse.y);
             if (localPos.x < 0 || localPos.x > contentLoader.width || localPos.y < 0 || localPos.y > contentLoader.height)
                 batteryPopupVisible = false;
@@ -70,7 +68,6 @@ PanelWindow {
         height: targetHeight
         x: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
         y: Theme.barHeight + Theme.spacingS
-        // GPU-accelerated scale + opacity animation
         opacity: batteryPopupVisible ? 1 : 0
         scale: batteryPopupVisible ? 1 : 0.9
 
@@ -97,11 +94,9 @@ PanelWindow {
             radius: Theme.cornerRadiusLarge
             border.color: Theme.outlineMedium
             border.width: 1
-            // Remove layer rendering for better performance
             antialiasing: true
             smooth: true
 
-            // Material 3 elevation with multiple layers
             Rectangle {
                 anchors.fill: parent
                 anchors.margins: -3
@@ -273,7 +268,6 @@ PanelWindow {
 
                     }
 
-                    // No battery info card
                     Rectangle {
                         width: parent.width
                         height: 80
@@ -317,7 +311,6 @@ PanelWindow {
 
                     }
 
-                    // Battery details
                     Column {
                         width: parent.width
                         spacing: Theme.spacingM
@@ -334,7 +327,6 @@ PanelWindow {
                             width: parent.width
                             spacing: Theme.spacingXL
 
-                            // Health
                             Column {
                                 spacing: 2
                                 width: (parent.width - Theme.spacingXL) / 2
@@ -360,7 +352,6 @@ PanelWindow {
 
                             }
 
-                            // Capacity
                             Column {
                                 spacing: 2
                                 width: (parent.width - Theme.spacingXL) / 2
@@ -384,7 +375,6 @@ PanelWindow {
 
                     }
 
-                    // Power profiles
                     Column {
                         width: parent.width
                         spacing: Theme.spacingM
@@ -465,7 +455,6 @@ PanelWindow {
 
                     }
 
-                    // Degradation reason warning
                     Rectangle {
                         width: parent.width
                         height: 60

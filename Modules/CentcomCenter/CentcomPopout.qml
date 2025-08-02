@@ -21,10 +21,7 @@ PanelWindow {
         if (calendarVisible) {
             internalVisible = true;
             Qt.callLater(() => {
-                // This ensures opacity changes after window is visible
                 internalVisible = true;
-                // Force re-trigger if needed
-                // Ensure events are loaded for current display month
                 calendarGrid.loadEventsForMonth();
             });
         } else {
@@ -51,8 +48,6 @@ PanelWindow {
     }
 
     Rectangle {
-        // Animation finished, now we can safely resize
-
         id: mainContainer
 
         readonly property real targetWidth: Math.min(Screen.width * 0.9, 600)
@@ -67,21 +62,16 @@ PanelWindow {
 
         function calculateHeight() {
             let contentHeight = Theme.spacingM * 2; // margins
-            // Main row with widgets and calendar
             let widgetHeight = 160;
-            // Media widget always present
             widgetHeight += 140 + Theme.spacingM;
-            // Weather widget always present
             let calendarHeight = 300;
             let mainRowHeight = Math.max(widgetHeight, calendarHeight);
             contentHeight += mainRowHeight + Theme.spacingM;
-            // Add events widget height - use calculated height instead of actual
             if (CalendarService && CalendarService.khalAvailable) {
                 let hasEvents = events.selectedDateEvents && events.selectedDateEvents.length > 0;
                 let eventsHeight = hasEvents ? Math.min(300, 80 + events.selectedDateEvents.length * 60) : 120;
                 contentHeight += eventsHeight;
             } else {
-                // When no khal, reduce bottom margin to match top
                 contentHeight -= Theme.spacingM;
             }
             return Math.min(contentHeight, parent.height * 0.9);
@@ -98,7 +88,6 @@ PanelWindow {
         scale: calendarVisible ? 1 : 0.9
         x: (Screen.width - targetWidth) / 2
         y: Theme.barHeight + 4
-        // Only resize after animation is complete
         onOpacityChanged: {
             if (opacity === 1)
                 Qt.callLater(() => {
@@ -165,7 +154,6 @@ PanelWindow {
             anchors.margins: Theme.spacingM
             spacing: Theme.spacingM
 
-            // Main row with widgets and calendar - improved spacing and proportions
             Row {
                 width: parent.width
                 height: {
@@ -176,7 +164,6 @@ PanelWindow {
                 }
                 spacing: Theme.spacingM
 
-                // Left section for widgets - improved visual hierarchy
                 Column {
                     id: leftWidgets
 
@@ -200,7 +187,6 @@ PanelWindow {
 
                 }
 
-                // Right section for calendar - enhanced container
                 Rectangle {
                     width: leftWidgets.hasAnyWidgets ? parent.width * 0.55 - Theme.spacingM : parent.width
                     height: parent.height
@@ -263,7 +249,6 @@ PanelWindow {
         z: -1
         enabled: calendarVisible
         onClicked: function(mouse) {
-            // Only close if click is outside the main container
             var localPos = mapToItem(mainContainer, mouse.x, mouse.y);
             if (localPos.x < 0 || localPos.x > mainContainer.width || localPos.y < 0 || localPos.y > mainContainer.height)
                 calendarVisible = false;

@@ -1,4 +1,3 @@
-//@ pragma UseQApplication
 
 import QtQuick
 import Quickshell
@@ -30,7 +29,6 @@ ShellRoot {
         anchors.fill: parent
     }
 
-    // Multi-monitor support using Variants
     Variants {
         model: Quickshell.screens
 
@@ -103,7 +101,6 @@ ShellRoot {
         id: settingsModal
     }
 
-    // Application and clipboard components
     AppDrawerPopout {
         id: appDrawerPopout
     }

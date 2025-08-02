@@ -19,13 +19,11 @@ StyledRect {
     property alias validator: textInput.validator
     property alias inputMethodHints: textInput.inputMethodHints
     property alias maximumLength: textInput.maximumLength
-    // Icon properties
     property string leftIconName: ""
     property int leftIconSize: Theme.iconSize
     property color leftIconColor: Theme.surfaceVariantText
     property color leftIconFocusedColor: Theme.primary
     property bool showClearButton: false
-    // Custom properties
     property color backgroundColor: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.9)
     property color focusedBorderColor: Theme.primary
     property color normalBorderColor: Theme.outlineStrong
@@ -33,22 +31,18 @@ StyledRect {
     property int borderWidth: 1
     property int focusedBorderWidth: 2
     property real cornerRadius: Theme.cornerRadius
-    // Internal padding calculations
     readonly property real leftPadding: Theme.spacingM + (leftIconName ? leftIconSize + Theme.spacingM : 0)
     readonly property real rightPadding: Theme.spacingM + (showClearButton && text.length > 0 ? 24 + Theme.spacingM : 0)
     property real topPadding: Theme.spacingM
     property real bottomPadding: Theme.spacingM
-    // Behavior control
     property bool ignoreLeftRightKeys: false
     property var keyForwardTargets: []
 
-    // Signals
     signal textEdited()
     signal editingFinished()
     signal accepted()
     signal focusStateChanged(bool hasFocus)
 
-    // Access to inner TextInput properties via functions
     function getActiveFocus() {
         return textInput.activeFocus;
     }
@@ -61,7 +55,6 @@ StyledRect {
         textInput.focus = value;
     }
 
-    // Functions
     function forceActiveFocus() {
         textInput.forceActiveFocus();
     }
@@ -94,7 +87,6 @@ StyledRect {
         textInput.focus = false;
     }
 
-    // Default styling
     width: 200
     height: 48
     radius: cornerRadius
@@ -102,7 +94,6 @@ StyledRect {
     border.color: textInput.activeFocus ? focusedBorderColor : normalBorderColor
     border.width: textInput.activeFocus ? focusedBorderWidth : borderWidth
 
-    // Left icon
     DankIcon {
         id: leftIcon
 
@@ -153,7 +144,6 @@ StyledRect {
 
     }
 
-    // Clear button
     StyledRect {
         id: clearButton
 

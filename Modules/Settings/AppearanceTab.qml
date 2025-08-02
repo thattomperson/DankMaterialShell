@@ -20,7 +20,6 @@ ScrollView {
         topPadding: Theme.spacingL
         bottomPadding: Theme.spacingXL
 
-        // Display Settings Section
         StyledRect {
             width: parent.width
             height: displaySection.implicitHeight + Theme.spacingL * 2
@@ -91,7 +90,6 @@ ScrollView {
                     popupWidthOffset: 100
                     maxPopupHeight: 400
                     options: {
-                        // Force refresh of icon themes to prevent stale data
                         Prefs.detectAvailableIconThemes();
                         return Prefs.availableIconThemes;
                     }
@@ -108,7 +106,6 @@ ScrollView {
                     text: "Font Family"
                     description: "Select system font family"
                     currentValue: {
-                        // Always show the font name in parentheses for clarity
                         if (Prefs.fontFamily === Prefs.defaultFontFamily)
                             return "Default (" + Prefs.defaultFontFamily + ")";
                         else
@@ -122,19 +119,15 @@ ScrollView {
                         var availableFonts = Qt.fontFamilies();
                         var rootFamilies = [];
                         var seenFamilies = new Set();
-                        // Filter to root family names by removing common weight/style suffixes
                         for (var i = 0; i < availableFonts.length; i++) {
                             var fontName = availableFonts[i];
-                            // Skip fonts beginning with . (like .AppleSystem)
                             if (fontName.startsWith("."))
                                 continue;
 
-                            // Skip the default font since we already added it as recommended
                             if (fontName === Prefs.defaultFontFamily)
                                 continue;
 
                             var rootName = fontName.replace(/ (Thin|Extra Light|Light|Regular|Medium|Semi Bold|Demi Bold|Bold|Extra Bold|Black|Heavy)$/i, "").replace(/ (Italic|Oblique|Condensed|Extended|Narrow|Wide)$/i, "").replace(/ (UI|Display|Text|Mono|Sans|Serif)$/i, function(match, suffix) {
-                                // Keep these suffixes as they're part of the family name
                                 return match;
                             }).trim();
                             if (!seenFamilies.has(rootName) && rootName !== "") {
@@ -237,18 +230,14 @@ ScrollView {
                         var availableFonts = Qt.fontFamilies();
                         var monoFamilies = [];
                         var seenFamilies = new Set();
-                        // Filter to likely monospace fonts
                         for (var i = 0; i < availableFonts.length; i++) {
                             var fontName = availableFonts[i];
-                            // Skip fonts beginning with .
                             if (fontName.startsWith("."))
                                 continue;
 
-                            // Skip the default mono font since we already added it as recommended
                             if (fontName === Prefs.defaultMonoFontFamily)
                                 continue;
 
-                            // Look for common monospace indicators
                             var lowerName = fontName.toLowerCase();
                             if (lowerName.includes("mono") || lowerName.includes("code") || lowerName.includes("console") || lowerName.includes("terminal") || lowerName.includes("courier") || lowerName.includes("dejavu sans mono") || lowerName.includes("jetbrains") || lowerName.includes("fira") || lowerName.includes("hack") || lowerName.includes("source code") || lowerName.includes("ubuntu mono") || lowerName.includes("cascadia")) {
                                 var rootName = fontName.replace(/ (Thin|Extra Light|Light|Regular|Medium|Semi Bold|Demi Bold|Bold|Extra Bold|Black|Heavy)$/i, "").replace(/ (Italic|Oblique|Condensed|Extended|Narrow|Wide)$/i, "").trim();
@@ -272,7 +261,6 @@ ScrollView {
 
         }
 
-        // Transparency Settings Section
         StyledRect {
             width: parent.width
             height: transparencySection.implicitHeight + Theme.spacingL * 2
@@ -391,7 +379,6 @@ ScrollView {
 
         }
 
-        // Theme Picker Section
         StyledRect {
             width: parent.width
             height: themeSection.implicitHeight + Theme.spacingL * 2
@@ -458,12 +445,10 @@ ScrollView {
 
                 }
 
-                // Theme Grid
                 Column {
                     spacing: Theme.spacingS
                     anchors.horizontalCenter: parent.horizontalCenter
 
-                    // First row - Blue, Deep Blue, Purple, Green, Orange
                     Row {
                         spacing: Theme.spacingM
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -480,7 +465,6 @@ ScrollView {
                                 border.width: (Theme.currentThemeIndex === index && !Theme.isDynamicTheme) ? 2 : 1
                                 scale: (Theme.currentThemeIndex === index && !Theme.isDynamicTheme) ? 1.1 : 1
 
-                                // Theme name tooltip
                                 Rectangle {
                                     width: nameText.contentWidth + Theme.spacingS * 2
                                     height: nameText.contentHeight + Theme.spacingXS * 2
@@ -537,7 +521,6 @@ ScrollView {
 
                     }
 
-                    // Second row - Red, Cyan, Pink, Amber, Coral
                     Row {
                         spacing: Theme.spacingM
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -557,7 +540,6 @@ ScrollView {
                                 visible: themeIndex < Theme.themes.length
                                 scale: Theme.currentThemeIndex === themeIndex ? 1.1 : 1
 
-                                // Theme name tooltip
                                 Rectangle {
                                     width: nameText2.contentWidth + Theme.spacingS * 2
                                     height: nameText2.contentHeight + Theme.spacingXS * 2
@@ -616,13 +598,11 @@ ScrollView {
 
                     }
 
-                    // Spacer
                     Item {
                         width: 1
                         height: Theme.spacingM
                     }
 
-                    // Auto theme button
                     Rectangle {
                         width: 120
                         height: 40
@@ -704,7 +684,6 @@ ScrollView {
                             }
                         }
 
-                        // Tooltip for Auto button
                         Rectangle {
                             width: autoTooltipText.contentWidth + Theme.spacingM * 2
                             height: autoTooltipText.contentHeight + Theme.spacingS * 2
@@ -768,7 +747,6 @@ ScrollView {
 
         }
 
-        // System App Theming Section
         StyledRect {
             width: parent.width
             height: systemThemingSection.implicitHeight + Theme.spacingL * 2
@@ -840,17 +818,15 @@ ScrollView {
 
     }
 
-    // Night mode processes
     Process {
         id: nightModeEnableProcess
 
         command: ["bash", "-c", "if command -v wlsunset > /dev/null; then pkill wlsunset; wlsunset -t 3000 & elif command -v redshift > /dev/null; then pkill redshift; redshift -P -O 3000 & else echo 'No night mode tool available'; fi"]
         running: false
         onExited: (exitCode) => {
-            if (exitCode !== 0) {
-                console.warn("Failed to enable night mode");
-                Prefs.setNightModeEnabled(false);
-            }
+            if (exitCode !== 0)
+                Prefs.setNightModeEnabled(true);
+
         }
     }
 
@@ -861,7 +837,7 @@ ScrollView {
         running: false
         onExited: (exitCode) => {
             if (exitCode !== 0)
-                console.warn("Failed to disable night mode");
+                Prefs.setNightModeEnabled(false);
 
         }
     }

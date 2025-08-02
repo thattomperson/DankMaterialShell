@@ -5,8 +5,6 @@ import qs.Common
 import qs.Widgets
 
 Rectangle {
-    // Force recreate popup when component becomes visible
-
     id: root
 
     property string text: ""
@@ -26,7 +24,6 @@ Rectangle {
     radius: Theme.cornerRadius
     color: Theme.surfaceHover
     Component.onCompleted: {
-        // Force a small delay to ensure proper initialization
         forceRecreateTimer.start();
     }
     Component.onDestruction: {
@@ -104,7 +101,6 @@ Rectangle {
                     popup.close();
                 } else if (popup) {
                     var pos = dropdown.mapToItem(Overlay.overlay, 0, dropdown.height + 4);
-                    // Center the wider popup over the dropdown button
                     popup.x = pos.x - (root.popupWidthOffset / 2);
                     popup.y = pos.y;
                     popup.open();
@@ -112,7 +108,6 @@ Rectangle {
             }
         }
 
-        // Use a Row for the left-aligned content (icon + text)
         Row {
             id: contentRow
 
@@ -135,14 +130,12 @@ Rectangle {
                 text: root.currentValue
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.surfaceText
-                // Constrain width for proper eliding
                 width: dropdown.width - contentRow.x - expandIcon.width - Theme.spacingM - Theme.spacingS
                 elide: Text.ElideRight
             }
 
         }
 
-        // Anchor the expand icon to the right, outside of the Row
         DankIcon {
             id: expandIcon
 
@@ -163,7 +156,6 @@ Rectangle {
 
         active: true
         onRecreateFlagChanged: {
-            // Force recreation by toggling active
             active = false;
             active = true;
         }
@@ -241,7 +233,6 @@ Rectangle {
                         anchors.fill: parent
                         anchors.margins: Theme.spacingS
 
-                        // Search field
                         Rectangle {
                             id: searchContainer
 

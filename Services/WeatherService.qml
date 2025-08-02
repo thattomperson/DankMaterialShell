@@ -100,7 +100,7 @@ Singleton {
     
     function addRef() {
         refCount++;
-        console.log("WeatherService: addRef, refCount now:", refCount);
+        
         if (refCount === 1 && !weather.available) {
             // Start fetching when first consumer appears
             fetchWeather();
@@ -109,13 +109,13 @@ Singleton {
     
     function removeRef() {
         refCount = Math.max(0, refCount - 1);
-        console.log("WeatherService: removeRef, refCount now:", refCount);
+        
     }
     
     function fetchWeather() {
         // Only fetch if someone is consuming the data
         if (root.refCount === 0) {
-            console.log("WeatherService: Skipping fetch - no consumers");
+            
             return;
         }
         

@@ -22,7 +22,7 @@ Singleton {
             laptopBrightnessProcess.command = ["brightnessctl", "set", brightnessLevel + "%"];
             laptopBrightnessProcess.running = true;
         } else if (ddcAvailable) {
-            console.log("Setting DDC brightness to:", brightnessLevel);
+            
             Quickshell.execDetached(["ddcutil", "setvcp", "10", brightnessLevel.toString()]);
         }
     }
@@ -66,7 +66,7 @@ Singleton {
         
         onExited: function(exitCode) {
             if (exitCode !== 0) {
-                console.warn("Failed to set laptop brightness, exit code:", exitCode);
+                
             }
         }
     }
@@ -87,7 +87,7 @@ Singleton {
         
         onExited: function(exitCode) {
             if (exitCode !== 0) {
-                console.warn("Failed to get laptop brightness, exit code:", exitCode);
+                
             }
         }
     }
@@ -108,7 +108,7 @@ Singleton {
         
         onExited: function(exitCode) {
             if (exitCode !== 0) {
-                console.warn("Failed to get max laptop brightness, exit code:", exitCode);
+                
             }
         }
     }
@@ -133,7 +133,7 @@ Singleton {
         
         onExited: function(exitCode) {
             if (exitCode !== 0) {
-                console.warn("Failed to get DDC brightness, exit code:", exitCode);
+                
                 brightnessLevel = 75;
             }
         }

@@ -61,7 +61,6 @@ Rectangle {
 
     }
 
-    // Loading spinner for preference changes
     DankIcon {
         id: ethernetLoadingSpinner
 
@@ -86,7 +85,6 @@ Rectangle {
 
     }
 
-    // Ethernet toggle switch (matching WiFi style)
     DankToggle {
         id: ethernetToggle
 
@@ -100,7 +98,6 @@ Rectangle {
         }
     }
 
-    // MouseArea for network preference (excluding toggle area)
     MouseArea {
         id: ethernetPreferenceArea
 
@@ -111,7 +108,7 @@ Rectangle {
         enabled: NetworkService.ethernetConnected && NetworkService.wifiEnabled && NetworkService.networkStatus !== "ethernet" && !NetworkService.changingNetworkPreference
         onClicked: {
             if (NetworkService.ethernetConnected && NetworkService.wifiEnabled) {
-                console.log("Ethernet card clicked for preference");
+                
                 if (NetworkService.networkStatus !== "ethernet")
                     NetworkService.setNetworkPreference("ethernet");
                 else

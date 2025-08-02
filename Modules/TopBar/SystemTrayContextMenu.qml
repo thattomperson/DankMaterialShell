@@ -39,11 +39,9 @@ PanelWindow {
         radius: Theme.cornerRadiusLarge
         border.color: Theme.outlineMedium
         border.width: 1
-        // Material 3 animations
         opacity: showContextMenu ? 1 : 0
         scale: showContextMenu ? 1 : 0.85
 
-        // Material 3 drop shadow
         Rectangle {
             anchors.fill: parent
             anchors.topMargin: 4
@@ -65,11 +63,9 @@ PanelWindow {
                 menu: currentTrayItem && currentTrayItem.hasMenu ? currentTrayItem.menu : null
             }
 
-            // Custom menu styling using ListView
             ListView {
                 id: menuList
 
-                // Calculate maximum text width for dynamic menu sizing
                 property real maxTextWidth: {
                     let maxWidth = 0;
                     if (model && model.values) {
@@ -101,7 +97,6 @@ PanelWindow {
                     radius: modelData.isSeparator ? 0 : Theme.cornerRadiusSmall
                     color: modelData.isSeparator ? "transparent" : (menuItemArea.containsMouse ? Theme.primaryHover : "transparent")
 
-                    // Separator line
                     Rectangle {
                         visible: modelData.isSeparator
                         anchors.centerIn: parent
@@ -110,7 +105,6 @@ PanelWindow {
                         color: Theme.surfaceVariantAlpha
                     }
 
-                    // Menu item content
                     Row {
                         visible: !modelData.isSeparator
                         anchors.left: parent.left
@@ -176,7 +170,6 @@ PanelWindow {
 
     }
 
-    // Click outside to close
     MouseArea {
         anchors.fill: parent
         z: -1

@@ -100,7 +100,6 @@ Rectangle {
 
     }
 
-    // Loading spinner for preference changes
     DankIcon {
         id: wifiLoadingSpinner
 
@@ -125,7 +124,6 @@ Rectangle {
 
     }
 
-    // WiFi toggle switch
     DankToggle {
         id: wifiToggle
 
@@ -137,7 +135,6 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         onClicked: {
             if (NetworkService.wifiEnabled) {
-                // When turning WiFi off, clear all cached WiFi data
                 NetworkService.currentWifiSSID = "";
                 NetworkService.wifiSignalStrength = "excellent";
                 NetworkService.wifiNetworks = [];
@@ -154,7 +151,6 @@ Rectangle {
         }
     }
 
-    // MouseArea for network preference (excluding toggle area)
     MouseArea {
         id: wifiPreferenceArea
 
@@ -165,7 +161,7 @@ Rectangle {
         enabled: NetworkService.ethernetConnected && NetworkService.wifiEnabled && NetworkService.networkStatus !== "wifi" && !NetworkService.changingNetworkPreference
         onClicked: {
             if (NetworkService.ethernetConnected && NetworkService.wifiEnabled) {
-                console.log("WiFi card clicked for preference");
+                
                 if (NetworkService.networkStatus !== "wifi")
                     NetworkService.setNetworkPreference("wifi");
                 else

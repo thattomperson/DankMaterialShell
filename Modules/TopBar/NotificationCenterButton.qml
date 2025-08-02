@@ -25,7 +25,6 @@ Rectangle {
         color: Prefs.doNotDisturb ? Theme.error : (notificationArea.containsMouse || root.isActive ? Theme.primary : Theme.surfaceText)
     }
 
-    // Notification dot indicator
     Rectangle {
         width: 8
         height: 8

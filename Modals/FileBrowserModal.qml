@@ -44,9 +44,7 @@ DankModal {
             lastPath = Prefs.profileLastPath;
         }
         
-        // Check if last path exists, otherwise use home
         if (lastPath && lastPath !== "") {
-            // TODO: Could add directory existence check here
             return lastPath;
         }
         return homeDir;
@@ -81,13 +79,11 @@ DankModal {
     }
     
     onCurrentPathChanged: {
-        // Path changed, model will update automatically
     }
     
     function navigateUp() {
         var path = currentPath;
         
-        // Don't go above home directory
         if (path === homeDir) {
             return;
         }
@@ -95,7 +91,6 @@ DankModal {
         var lastSlash = path.lastIndexOf('/');
         if (lastSlash > 0) {
             var newPath = path.substring(0, lastSlash);
-            // Don't go above home directory
             if (newPath.length < homeDir.length) {
                 currentPath = homeDir;
                 saveLastPath(homeDir);
@@ -117,7 +112,6 @@ DankModal {
             anchors.margins: Theme.spacingM
             spacing: Theme.spacingS
 
-            // Header
             Item {
                 width: parent.width
                 height: 40
@@ -142,7 +136,6 @@ DankModal {
                     }
                 }
 
-                // Close button positioned at right
                 DankActionButton {
                     circular: false
                     iconName: "close"
@@ -155,7 +148,6 @@ DankModal {
                 }
             }
 
-            // Current path display and navigation
             Row {
                 width: parent.width
                 spacing: Theme.spacingS
@@ -197,7 +189,6 @@ DankModal {
                 }
             }
 
-            // File grid
             GridView {
                 id: fileGrid
                 
@@ -251,7 +242,6 @@ DankModal {
                             anchors.centerIn: parent
                             spacing: Theme.spacingXS
 
-                            // Image preview or folder icon
                             Item {
                                 width: 80
                                 height: 60
@@ -282,7 +272,6 @@ DankModal {
                                 }
                             }
 
-                            // File name
                             StyledText {
                                 text: delegateRoot.fileName || ""
                                 font.pixelSize: Theme.fontSizeSmall

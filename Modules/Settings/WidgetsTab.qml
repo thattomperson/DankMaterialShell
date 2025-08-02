@@ -91,7 +91,6 @@ ScrollView {
         "icon": "remove",
         "enabled": true
     }]
-    // Default widget configurations for each section (with enabled states)
     property var defaultLeftWidgets: [{
         "id": "launcherButton",
         "enabled": true
@@ -295,7 +294,6 @@ ScrollView {
         if (!Prefs.topBarRightWidgets || Prefs.topBarRightWidgets.length === 0)
             Prefs.setTopBarRightWidgets(defaultRightWidgets);
 
-        // Ensure existing spacers have default sizes
         ["left", "center", "right"].forEach((sectionId) => {
             var widgets = [];
             if (sectionId === "left")
@@ -334,7 +332,6 @@ ScrollView {
         topPadding: Theme.spacingL
         bottomPadding: Theme.spacingXL
 
-        // Header section
         Row {
             width: parent.width
             spacing: Theme.spacingM
@@ -446,12 +443,10 @@ ScrollView {
 
         }
 
-        // Widget sections
         Column {
             width: parent.width
             spacing: Theme.spacingL
 
-            // Left Section
             DankSections {
                 width: parent.width
                 title: "Left Section"
@@ -478,7 +473,6 @@ ScrollView {
                 }
             }
 
-            // Center Section
             DankSections {
                 width: parent.width
                 title: "Center Section"
@@ -505,7 +499,6 @@ ScrollView {
                 }
             }
 
-            // Right Section
             DankSections {
                 width: parent.width
                 title: "Right Section"
@@ -534,7 +527,6 @@ ScrollView {
 
         }
 
-        // Workspace Section
         StyledRect {
             width: parent.width
             height: workspaceSection.implicitHeight + Theme.spacingL * 2
@@ -597,7 +589,6 @@ ScrollView {
 
     }
 
-    // Tooltip for reset button (positioned above the button)
     Rectangle {
         width: tooltipText.contentWidth + Theme.spacingM * 2
         height: tooltipText.contentHeight + Theme.spacingS * 2
@@ -630,7 +621,6 @@ ScrollView {
 
     }
 
-    // Widget selection popup
     DankWidgetSelectionPopup {
         id: widgetSelectionPopup
 

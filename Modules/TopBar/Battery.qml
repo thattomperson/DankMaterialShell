@@ -96,7 +96,6 @@ Rectangle {
         }
     }
 
-    // Tooltip on hover
     Rectangle {
         id: batteryTooltip
 

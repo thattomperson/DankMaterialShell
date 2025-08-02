@@ -24,7 +24,6 @@ DankModal {
 
     function hide() {
         processListModal.visible = false;
-        // Close any open context menus
         if (processContextMenu.visible)
             processContextMenu.close();
 

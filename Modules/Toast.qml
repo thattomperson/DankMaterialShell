@@ -130,7 +130,6 @@ PanelWindow {
 
     }
 
-    // Makes the background transparent to mouse events
     mask: Region {
         item: toast
     }

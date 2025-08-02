@@ -125,7 +125,6 @@ PanelWindow {
             id: topBarContent
 
             readonly property int availableWidth: width
-            // Use estimated fixed widths to break circular dependencies
             readonly property int launcherButtonWidth: 40
             readonly property int workspaceSwitcherWidth: 120 // Approximate
             readonly property int focusedAppMaxWidth: 456 // Fixed width since we don't have focusedApp reference
@@ -228,7 +227,6 @@ PanelWindow {
             anchors.bottomMargin: Theme.spacingXS
             clip: true
 
-            // Dynamic left section
             Row {
                 id: leftSection
 
@@ -357,8 +355,8 @@ PanelWindow {
                                 item.onWidthChanged.connect(centerSection.updateLayout);
                                 if (model.widgetId === "spacer")
                                     item.spacerSize = Qt.binding(() => {
-                                        return model.size || 20;
-                                    });
+                                    return model.size || 20;
+                                });
 
                                 Qt.callLater(centerSection.updateLayout);
                             }

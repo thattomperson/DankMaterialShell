@@ -29,7 +29,6 @@ Image {
     }
     onCachePathChanged: {
         if (imageHash && cachePath) {
-            // Ensure cache directory exists before trying to load from cache
             Paths.mkdir(Paths.imagecache);
             source = cachePath;
         }

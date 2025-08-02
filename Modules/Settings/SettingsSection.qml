@@ -22,7 +22,6 @@ Column {
 
     }
 
-    // Section header
     MouseArea {
         width: parent.width
         height: headerRow.height
@@ -85,7 +84,6 @@ Column {
 
     }
 
-    // Divider
     Rectangle {
         width: parent.width
         height: 1
@@ -93,7 +91,6 @@ Column {
         visible: expanded || !collapsible
     }
 
-    // Content
     Loader {
         id: contentLoader
 

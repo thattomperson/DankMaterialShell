@@ -14,13 +14,11 @@ Item {
     property var wifiPasswordModalRef: wifiPasswordModal
     property var networkInfoModalRef: networkInfoModal
 
-    // Properly sorted WiFi networks with connected networks first
     property var sortedWifiNetworks: {
         if (!NetworkService.wifiAvailable || !NetworkService.wifiEnabled) {
             return [];
         }
         
-        // Explicitly reference both arrays to ensure reactivity
         var allNetworks = NetworkService.wifiNetworks;
         var savedNetworks = NetworkService.savedWifiNetworks;
         var currentSSID = NetworkService.currentWifiSSID;
@@ -29,32 +27,25 @@ Item {
         
         var networks = [...allNetworks];
         
-        // Update connected status, saved status and signal strength based on current state
         networks.forEach(function(network) {
             network.connected = (network.ssid === currentSSID);
-            // Update saved status based on savedWifiNetworks
             network.saved = savedNetworks.some(function(saved) {
                 return saved.ssid === network.ssid;
             });
-            // Use current connection's signal strength for connected network
             if (network.connected && signalStrength) {
                 network.signalStrength = signalStrength;
             }
         });
         
-        // Sort: connected networks first, then by signal strength
         networks.sort(function(a, b) {
-            // Connected networks always come first
             if (a.connected && !b.connected) return -1;
             if (!a.connected && b.connected) return 1;
-            // If both connected or both not connected, sort by signal strength
             return b.signal - a.signal;
         });
         
         return networks;
     }
 
-    // Force refresh of sortedWifiNetworks when networks are updated
     property int forceRefresh: 0
     
     Connections {
@@ -64,13 +55,11 @@ Item {
         }
     }
     
-    // Auto-enable WiFi auto-refresh when network tab is visible
     Component.onCompleted: {
         NetworkService.addRef();
         NetworkService.autoRefreshEnabled = true;
         if (NetworkService.wifiEnabled)
             NetworkService.scanWifi();
-        // Start smart monitoring
         wifiMonitorTimer.start();
     }
     
@@ -79,18 +68,15 @@ Item {
         NetworkService.autoRefreshEnabled = false;
     }
 
-    // Two-column layout for WiFi and Ethernet (WiFi on left, Ethernet on right)
     Row {
         anchors.fill: parent
         spacing: Theme.spacingM
 
-        // WiFi Column (left side)
         Column {
             width: (parent.width - Theme.spacingM) / 2
             height: parent.height
             spacing: Theme.spacingS
 
-            // WiFi Content in Flickable
             Flickable {
                 width: parent.width
                 height: parent.height - 30
@@ -106,7 +92,6 @@ Item {
                     width: parent.width
                     spacing: Theme.spacingM
 
-                    // Current WiFi connection status card
                     WiFiCard {
                         refreshTimer: refreshTimer
                     }
@@ -118,13 +103,11 @@ Item {
             }
         }
 
-        // Ethernet Column (right side)
         Column {
             width: (parent.width - Theme.spacingM) / 2
             height: parent.height
             spacing: Theme.spacingS
 
-            // Ethernet Content in Flickable
             Flickable {
                 width: parent.width
                 height: parent.height - 30
@@ -140,7 +123,6 @@ Item {
                     width: parent.width
                     spacing: Theme.spacingM
 
-                    // Ethernet connection status card (matching WiFi height)
                     EthernetCard {
                     }
                 }
@@ -152,7 +134,6 @@ Item {
         }
     }
 
-    // WiFi disabled message spanning across both columns
     Rectangle {
         anchors.top: parent.top
         anchors.topMargin: 100
@@ -190,14 +171,12 @@ Item {
         }
     }
 
-    // WiFi networks spanning across both columns when WiFi is enabled
     WiFiNetworksList {
         wifiContextMenuWindow: wifiContextMenuWindow
         sortedWifiNetworks: networkTab.sortedWifiNetworks
         wifiPasswordModalRef: networkTab.wifiPasswordModalRef
     }
 
-    // Timer for refreshing network status after WiFi toggle
     Timer {
         id: refreshTimer
         interval: 2000
@@ -212,18 +191,13 @@ Item {
         }
     }
 
-    // Auto-refresh when WiFi state changes
     Connections {
         target: NetworkService
         function onWifiEnabledChanged() {
             if (NetworkService.wifiEnabled && visible) {
-                // When WiFi is enabled, scan and update info (only if tab is visible)
-                // Add a small delay to ensure WiFi service is ready
                 wifiScanDelayTimer.start();
-                // Start monitoring when WiFi comes back on
                 wifiMonitorTimer.start();
             } else {
-                // When WiFi is disabled, clear all cached WiFi data
                 NetworkService.currentWifiSSID = "";
                 NetworkService.wifiSignalStrength = "excellent";
                 NetworkService.wifiNetworks = [];
@@ -232,13 +206,11 @@ Item {
                 NetworkService.connectingSSID = "";
                 NetworkService.isScanning = false;
                 NetworkService.refreshNetworkStatus();
-                // Stop monitoring when WiFi is off
                 wifiMonitorTimer.stop();
             }
         }
     }
 
-    // Delayed WiFi scan timer to ensure service is ready
     Timer {
         id: wifiScanDelayTimer
         interval: 1500
@@ -249,14 +221,12 @@ Item {
                 if (!NetworkService.isScanning) {
                     NetworkService.scanWifi();
                 } else {
-                    // If still scanning, try again in a bit
                     wifiRetryTimer.start();
                 }
             }
         }
     }
 
-    // Retry timer for when WiFi is still scanning
     Timer {
         id: wifiRetryTimer
         interval: 2000
@@ -271,7 +241,6 @@ Item {
         }
     }
 
-    // Smart WiFi monitoring - only runs when tab visible and conditions met
     Timer {
         id: wifiMonitorTimer
         interval: 8000 // Check every 8 seconds
@@ -279,21 +248,17 @@ Item {
         repeat: true
         onTriggered: {
             if (!visible || !NetworkService.wifiEnabled) {
-                // Stop monitoring when not needed
                 running = false;
                 return;
             }
 
-            // Monitor connection changes and refresh networks when disconnected
             var shouldScan = false;
             var reason = "";
 
-            // Always scan if not connected to WiFi
             if (NetworkService.networkStatus !== "wifi") {
                 shouldScan = true;
                 reason = "not connected to WiFi";
             }
-            // Also scan occasionally even when connected to keep networks fresh
             else if (NetworkService.wifiNetworks.length === 0) {
                 shouldScan = true;
                 reason = "no networks cached";
@@ -305,7 +270,6 @@ Item {
         }
     }
 
-    // Monitor tab visibility to start/stop smart monitoring
     onVisibleChanged: {
         if (visible && NetworkService.wifiEnabled) {
             wifiMonitorTimer.start();
@@ -314,7 +278,6 @@ Item {
         }
     }
 
-    // WiFi Context Menu Window
     WiFiContextMenu {
         id: wifiContextMenuWindow
         parentItem: networkTab
@@ -322,7 +285,6 @@ Item {
         networkInfoModalRef: networkTab.networkInfoModalRef
     }
 
-    // Background MouseArea to close the context menu
     MouseArea {
         anchors.fill: parent
         visible: wifiContextMenuWindow.visible
@@ -336,7 +298,6 @@ Item {
             width: wifiContextMenuWindow.width
             height: wifiContextMenuWindow.height
             onClicked: {
-                // Prevent clicks on menu from closing it
             }
         }
     }

@@ -45,27 +45,18 @@ Singleton {
     
     function addRef() {
         refCount++;
-        console.log("NetworkService: addRef, refCount now:", refCount);
-        // Reference counting affects WiFi scanning operations only
-        // Basic network status monitoring always runs
     }
     
     function removeRef() {
         refCount = Math.max(0, refCount - 1);
-        console.log("NetworkService: removeRef, refCount now:", refCount);
-        // Stop intensive WiFi operations when no consumers
         if (refCount === 0) {
             autoRefreshTimer.running = false;
         }
     }
     
-    // Load saved preference on startup
     Component.onCompleted: {
-        // Load preference from Prefs system
         root.userPreference = Prefs.networkPreference
-        console.log("NetworkService: Loaded network preference from Prefs:", root.userPreference)
         
-        // Trigger immediate WiFi info update if WiFi is connected and enabled
         if (root.networkStatus === "wifi" && root.wifiEnabled) {
             updateCurrentWifiInfo()
         }
@@ -582,7 +573,7 @@ Singleton {
                         return b.signal - a.signal;
                     });
                     root.wifiNetworks = networks;
-                    console.log("Found", networks.length, "WiFi networks");
+                    
                     // Stop scanning once we have results
                     if (networks.length > 0) {
                         root.isScanning = false;
@@ -615,7 +606,7 @@ Singleton {
 
                     }
                     root.savedWifiNetworks = saved;
-                    console.log("Found", saved.length, "saved WiFi networks");
+                    
                 }
             }
         }
@@ -902,14 +893,14 @@ Singleton {
                 
                 root.networkInfoDetails = details;
                 root.networkInfoLoading = false;
-                console.log("Network info fetched for:", root.networkInfoSSID);
+                
             }
         }
         
         onExited: (exitCode) => {
             root.networkInfoLoading = false;
             if (exitCode !== 0) {
-                console.log("Failed to fetch network info, exit code:", exitCode);
+                
                 root.networkInfoDetails = "Failed to fetch network information";
             }
         }
@@ -917,7 +908,7 @@ Singleton {
         stderr: SplitParser {
             splitMarker: "\\n"
             onRead: (data) => {
-                console.log("WiFi info stderr:", data);
+                
             }
         }
     }

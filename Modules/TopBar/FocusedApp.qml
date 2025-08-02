@@ -16,7 +16,6 @@ Rectangle {
     height: 30
     radius: Theme.cornerRadius
     color: {
-        // Only show background when there's content to display
         if (!FocusedWindowService.focusedAppName && !FocusedWindowService.focusedWindowTitle)
             return "transparent";
 

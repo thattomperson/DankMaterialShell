@@ -15,7 +15,6 @@ ScrollView {
         width: parent.width
         spacing: Theme.spacingXL
 
-        // Time Settings Section
         StyledRect {
             width: parent.width
             height: timeSection.implicitHeight + Theme.spacingL * 2
@@ -66,7 +65,6 @@ ScrollView {
 
         }
 
-        // Weather Settings Section
         StyledRect {
             width: parent.width
             height: weatherSection.implicitHeight + Theme.spacingL * 2

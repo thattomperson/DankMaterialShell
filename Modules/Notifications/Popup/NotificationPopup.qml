@@ -66,7 +66,7 @@ PanelWindow {
     onScreenYChanged: margins.top = Theme.barHeight + 4 + screenY
     onHasValidDataChanged: {
         if (!hasValidData && !exiting && !_isDestroying) {
-            console.warn("NotificationPopup: Data became invalid, forcing exit");
+            
             forceExit();
         }
     }
@@ -76,7 +76,7 @@ PanelWindow {
                 return enterX.restart();
             });
         } else {
-            console.warn("NotificationPopup created with invalid data");
+            
             forceExit();
         }
     }

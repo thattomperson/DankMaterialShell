@@ -23,13 +23,10 @@ PanelWindow {
 
     visible: controlCenterVisible
     onVisibleChanged: {
-        // Enable/disable WiFi auto-refresh based on control center visibility
         NetworkService.autoRefreshEnabled = visible && NetworkService.wifiEnabled;
-        // Stop bluetooth scanning when control center is closed
         if (!visible && BluetoothService.adapter && BluetoothService.adapter.discovering)
             BluetoothService.adapter.discovering = false;
 
-        // Refresh uptime when opened
         if (visible && UserInfoService)
             UserInfoService.getUptime();
 
@@ -59,7 +56,6 @@ PanelWindow {
         height: root.powerOptionsExpanded ? 570 : 500
         y: Theme.barHeight + Theme.spacingXS
         x: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
-        // GPU-accelerated scale + opacity animation
         opacity: controlCenterVisible ? 1 : 0
         scale: controlCenterVisible ? 1 : 0.9
 
@@ -86,7 +82,6 @@ PanelWindow {
             radius: Theme.cornerRadiusLarge
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
             border.width: 1
-            // Remove layer rendering for better performance
             antialiasing: true
             smooth: true
 
@@ -95,7 +90,6 @@ PanelWindow {
                 anchors.margins: Theme.spacingL
                 spacing: Theme.spacingM
 
-                // Elegant User Header
                 Column {
                     width: parent.width
                     spacing: Theme.spacingL
@@ -115,7 +109,6 @@ PanelWindow {
                             anchors.rightMargin: Theme.spacingL
                             spacing: Theme.spacingL
 
-                            // Profile Picture Container
                             Item {
                                 id: avatarContainer
 
@@ -124,7 +117,6 @@ PanelWindow {
                                 width: 64
                                 height: 64
 
-                                // This rectangle provides the themed ring via its border.
                                 Rectangle {
                                     anchors.fill: parent
                                     radius: width / 2
@@ -134,7 +126,6 @@ PanelWindow {
                                     visible: parent.hasImage
                                 }
 
-                                // Hidden Image loader. Its only purpose is to load the texture.
                                 Image {
                                     id: profileImageLoader
 
@@ -183,7 +174,6 @@ PanelWindow {
 
                                 }
 
-                                // Fallback for when there is no image.
                                 Rectangle {
                                     anchors.fill: parent
                                     radius: width / 2
@@ -199,7 +189,6 @@ PanelWindow {
 
                                 }
 
-                                // Error icon for when the image fails to load.
                                 DankIcon {
                                     anchors.centerIn: parent
                                     name: "warning"
@@ -210,7 +199,6 @@ PanelWindow {
 
                             }
 
-                            // User Info Text
                             Column {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: Theme.spacingXS
@@ -233,14 +221,12 @@ PanelWindow {
 
                         }
 
-                        // Action Buttons - Lock, Power and Settings
                         Row {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.rightMargin: Theme.spacingL
                             spacing: Theme.spacingS
 
-                            // Lock Button
                             DankActionButton {
                                 buttonSize: 40
                                 iconName: "lock"
@@ -254,7 +240,6 @@ PanelWindow {
                                 }
                             }
 
-                            // Power Button
                             Rectangle {
                                 width: 40
                                 height: 40
@@ -278,7 +263,6 @@ PanelWindow {
                                         color: powerButton.containsMouse || root.powerOptionsExpanded ? Theme.error : Theme.surfaceText
 
                                         Behavior on name {
-                                            // Smooth icon transition
                                             SequentialAnimation {
                                                 NumberAnimation {
                                                     target: dankIcon
@@ -330,7 +314,6 @@ PanelWindow {
 
                             }
 
-                            // Settings Button
                             DankActionButton {
                                 buttonSize: 40
                                 iconName: "settings"
@@ -348,7 +331,6 @@ PanelWindow {
 
                     }
 
-                    // Animated Collapsible Power Options (optimized)
                     Rectangle {
                         width: parent.width
                         height: root.powerOptionsExpanded ? 60 : 0
@@ -364,7 +346,6 @@ PanelWindow {
                             spacing: Theme.spacingL
                             visible: root.powerOptionsExpanded
 
-                            // Logout
                             Rectangle {
                                 width: 100
                                 height: 34
@@ -414,7 +395,6 @@ PanelWindow {
 
                             }
 
-                            // Reboot
                             Rectangle {
                                 width: 100
                                 height: 34
@@ -464,7 +444,6 @@ PanelWindow {
 
                             }
 
-                            // Suspend
                             Rectangle {
                                 width: 100
                                 height: 34
@@ -514,7 +493,6 @@ PanelWindow {
 
                             }
 
-                            // Shutdown
                             Rectangle {
                                 width: 100
                                 height: 34
@@ -566,7 +544,6 @@ PanelWindow {
 
                         }
 
-                        // Single coordinated animation for power options
                         Behavior on height {
                             NumberAnimation {
                                 duration: Theme.shortDuration
@@ -689,7 +666,6 @@ PanelWindow {
                         anchors.margins: Theme.spacingS
                         visible: root.currentTab === "display"
                         spacing: Theme.spacingL
-                        // Brightness Control
                         Column {
                             width: parent.width
                             spacing: Theme.spacingS
@@ -765,7 +741,6 @@ PanelWindow {
 
             }
 
-            // Power menu height animation
             Behavior on height {
                 NumberAnimation {
                     duration: Theme.shortDuration // Faster for height changes
@@ -778,12 +753,10 @@ PanelWindow {
 
     }
 
-    // Click outside to close
     MouseArea {
         anchors.fill: parent
         z: -1
         onClicked: function(mouse) {
-            // Only close if click is outside the content loader
             var localPos = mapToItem(contentLoader, mouse.x, mouse.y);
             if (localPos.x < 0 || localPos.x > contentLoader.width || localPos.y < 0 || localPos.y > contentLoader.height)
                 controlCenterVisible = false;

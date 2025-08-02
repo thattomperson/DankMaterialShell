@@ -14,9 +14,9 @@ DankModal {
     property bool spotlightOpen: false
 
     function show() {
-        console.log("SpotlightModal: show() called");
+        
         spotlightOpen = true;
-        console.log("SpotlightModal: spotlightOpen set to", spotlightOpen);
+        
         appLauncher.searchQuery = "";
     }
 
@@ -34,7 +34,6 @@ DankModal {
             show();
     }
 
-    // DankModal configuration
     visible: spotlightOpen
     width: 550
     height: 600
@@ -45,7 +44,7 @@ DankModal {
     borderWidth: 1
     enableShadow: true
     onVisibleChanged: {
-        console.log("SpotlightModal visibility changed to:", visible);
+        
         if (visible && !spotlightOpen)
             show();
 
@@ -54,10 +53,9 @@ DankModal {
         spotlightOpen = false;
     }
     Component.onCompleted: {
-        console.log("SpotlightModal: Component.onCompleted called - component loaded successfully!");
+        
     }
 
-    // App launcher logic
     AppLauncher {
         id: appLauncher
 
@@ -71,19 +69,19 @@ DankModal {
 
     IpcHandler {
         function open() {
-            console.log("SpotlightModal: IPC open() called");
+            
             spotlightModal.show();
             return "SPOTLIGHT_OPEN_SUCCESS";
         }
 
         function close() {
-            console.log("SpotlightModal: IPC close() called");
+            
             spotlightModal.hide();
             return "SPOTLIGHT_CLOSE_SUCCESS";
         }
 
         function toggle() {
-            console.log("SpotlightModal: IPC toggle() called");
+            
             spotlightModal.toggle();
             return "SPOTLIGHT_TOGGLE_SUCCESS";
         }
@@ -97,7 +95,6 @@ DankModal {
 
             anchors.fill: parent
             focus: true
-            // Handle keyboard shortcuts
             Keys.onPressed: function(event) {
                 if (event.key === Qt.Key_Escape) {
                     hide();
@@ -153,7 +150,6 @@ DankModal {
 
                 }
 
-                // Search field with view toggle buttons
                 Row {
                     width: parent.width
                     spacing: Theme.spacingM
@@ -211,13 +207,11 @@ DankModal {
 
                     }
 
-                    // View mode toggle buttons next to search bar
                     Row {
                         spacing: Theme.spacingXS
                         visible: appLauncher.model.count > 0
                         anchors.verticalCenter: parent.verticalCenter
 
-                        // List view button
                         Rectangle {
                             width: 36
                             height: 36
@@ -246,7 +240,6 @@ DankModal {
 
                         }
 
-                        // Grid view button
                         Rectangle {
                             width: 36
                             height: 36

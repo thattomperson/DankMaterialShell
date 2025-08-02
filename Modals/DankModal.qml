@@ -7,44 +7,31 @@ import qs.Common
 PanelWindow {
     id: root
 
-    // Core properties
     property alias content: contentLoader.sourceComponent
-    // Sizing - can use fixed or relative to screen
     property real width: 400
     property real height: 300
-    // Screen-relative sizing helpers
     readonly property real screenWidth: screen ? screen.width : 1920
     readonly property real screenHeight: screen ? screen.height : 1080
-    // Background behavior
     property bool showBackground: true
     property real backgroundOpacity: 0.5
-    // Positioning
     property string positioning: "center"
-    // "center", "top-right", "custom"
     property point customPosition: Qt.point(0, 0)
-    // Focus management
     property string keyboardFocus: "ondemand"
-    // "ondemand", "exclusive", "none"
     property bool closeOnEscapeKey: true
     property bool closeOnBackgroundClick: true
-    // Animation
     property string animationType: "scale"
-    // "scale", "slide", "fade"
     property int animationDuration: Theme.mediumDuration
     property var animationEasing: Theme.emphasizedEasing
-    // Styling
     property color backgroundColor: Theme.surfaceContainer
     property color borderColor: Theme.outlineMedium
     property real borderWidth: 1
     property real cornerRadius: Theme.cornerRadiusLarge
     property bool enableShadow: false
 
-    // Signals
     signal opened()
     signal dialogClosed()
     signal backgroundClicked()
 
-    // Convenience functions
     function open() {
         visible = true;
     }
@@ -57,8 +44,6 @@ PanelWindow {
         visible = !visible;
     }
 
-    // PanelWindow configuration
-    // visible property is inherited from PanelWindow
     color: "transparent"
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
@@ -76,7 +61,6 @@ PanelWindow {
         if (root.visible) {
             opened();
         } else {
-            // Properly cleanup text input surfaces
             if (Qt.inputMethod) {
                 Qt.inputMethod.hide();
                 Qt.inputMethod.reset();
@@ -92,7 +76,6 @@ PanelWindow {
         bottom: true
     }
 
-    // Background overlay
     Rectangle {
         id: background
 
@@ -122,13 +105,11 @@ PanelWindow {
 
     }
 
-    // Main content container
     Rectangle {
         id: contentContainer
 
         width: root.width
         height: root.height
-        // Positioning
         anchors.centerIn: positioning === "center" ? parent : undefined
         x: {
             if (positioning === "top-right")
@@ -149,7 +130,6 @@ PanelWindow {
         border.color: root.borderColor
         border.width: root.borderWidth
         layer.enabled: root.enableShadow
-        // Animation properties
         opacity: root.visible ? 1 : 0
         scale: {
             if (root.animationType === "scale")
@@ -157,7 +137,6 @@ PanelWindow {
 
             return 1;
         }
-        // Transform for slide animation
         transform: root.animationType === "slide" ? slideTransform : null
 
         Translate {
@@ -167,7 +146,6 @@ PanelWindow {
             y: root.visible ? 0 : -30
         }
 
-        // Content area
         Loader {
             id: contentLoader
 
@@ -176,7 +154,6 @@ PanelWindow {
             asynchronous: false
         }
 
-        // Animations
         Behavior on opacity {
             NumberAnimation {
                 duration: root.animationDuration
@@ -195,7 +172,6 @@ PanelWindow {
 
         }
 
-        // Shadow effect
         layer.effect: MultiEffect {
             shadowEnabled: true
             shadowHorizontalOffset: 0
@@ -207,7 +183,6 @@ PanelWindow {
 
     }
 
-    // Keyboard handling
     FocusScope {
         id: focusScope
 

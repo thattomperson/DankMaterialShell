@@ -31,7 +31,6 @@ PanelWindow {
             show();
     }
 
-    // Proper layer shell configuration
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: isVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
@@ -39,7 +38,6 @@ PanelWindow {
     visible: isVisible
     color: "transparent"
 
-    // Full screen overlay setup for proper focus
     anchors {
         top: true
         left: true
@@ -47,7 +45,6 @@ PanelWindow {
         bottom: true
     }
 
-    // App launcher logic
     AppLauncher {
         id: appLauncher
 
@@ -59,12 +56,10 @@ PanelWindow {
         }
     }
 
-    // Background click to close (no visual background)
     MouseArea {
         anchors.fill: parent
         enabled: appDrawerPopout.isVisible
         onClicked: function(mouse) {
-            // Only close if click is outside the launcher panel
             var localPos = mapToItem(launcherLoader, mouse.x, mouse.y);
             if (localPos.x < 0 || localPos.x > launcherLoader.width || localPos.y < 0 || localPos.y > launcherLoader.height)
                 appDrawerPopout.hide();
@@ -72,7 +67,6 @@ PanelWindow {
         }
     }
 
-    // Main launcher panel with asynchronous loading
     Loader {
         id: launcherLoader
 
@@ -108,11 +102,9 @@ PanelWindow {
 
             color: Theme.popupBackground()
             radius: Theme.cornerRadiusXLarge
-            // Remove layer rendering for better performance
             antialiasing: true
             smooth: true
 
-            // Material 3 elevation with multiple layers
             Rectangle {
                 anchors.fill: parent
                 anchors.margins: -3
@@ -142,7 +134,6 @@ PanelWindow {
                 z: -1
             }
 
-            // Content with focus management
             Item {
                 id: keyHandler
 
@@ -153,7 +144,6 @@ PanelWindow {
                         forceActiveFocus();
 
                 }
-                // Handle keyboard shortcuts
                 Keys.onPressed: function(event) {
                     if (event.key === Qt.Key_Escape) {
                         appDrawerPopout.hide();
@@ -174,7 +164,6 @@ PanelWindow {
                         appLauncher.launchSelected();
                         event.accepted = true;
                     } else if (!searchField.activeFocus && event.text && event.text.length > 0 && event.text.match(/[a-zA-Z0-9\\s]/)) {
-                        // User started typing, focus search field and pass the character
                         searchField.forceActiveFocus();
                         searchField.insertText(event.text);
                         event.accepted = true;
@@ -214,7 +203,6 @@ PanelWindow {
 
                     }
 
-                    // Enhanced search field
                     DankTextField {
                         id: searchField
 
@@ -333,7 +321,6 @@ PanelWindow {
 
                     }
 
-                    // App grid/list container with enhanced styling
                     Rectangle {
                         width: parent.width
                         height: {
@@ -347,7 +334,6 @@ PanelWindow {
                         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
                         border.width: 1
 
-                        // List view
                         DankListView {
                             id: appList
 
@@ -372,7 +358,6 @@ PanelWindow {
                             }
                         }
 
-                        // Grid view
                         DankGridView {
                             id: appGrid
 

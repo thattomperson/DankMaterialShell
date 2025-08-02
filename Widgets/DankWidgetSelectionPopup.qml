@@ -12,7 +12,6 @@ Popup {
 
     signal widgetSelected(string widgetId, string targetSection)
 
-    // Prevent multiple openings
     function safeOpen() {
         if (!isOpening && !visible) {
             isOpening = true;
@@ -29,7 +28,6 @@ Popup {
     }
     onClosed: {
         isOpening = false;
-        // Clear references to prevent memory leaks
         allWidgets = [];
         targetSection = "";
     }
@@ -44,7 +42,6 @@ Popup {
     contentItem: Item {
         anchors.fill: parent
 
-        // Close button in top-right
         DankActionButton {
             iconName: "close"
             iconSize: Theme.iconSize - 2
@@ -65,7 +62,6 @@ Popup {
             anchors.margins: Theme.spacingL
             anchors.topMargin: Theme.spacingL + 30 // Space for close button
 
-            // Header
             Row {
                 width: parent.width
                 spacing: Theme.spacingM
@@ -95,7 +91,6 @@ Popup {
                 wrapMode: Text.WordWrap
             }
 
-            // Widget List
             ScrollView {
                 width: parent.width
                 height: parent.height - 120 // Leave space for header and description
@@ -120,7 +115,6 @@ Popup {
                             anchors.margins: Theme.spacingM
                             spacing: Theme.spacingM
 
-                            // Widget icon
                             DankIcon {
                                 name: modelData.icon
                                 size: Theme.iconSize
@@ -128,7 +122,6 @@ Popup {
                                 anchors.verticalCenter: parent.verticalCenter
                             }
 
-                            // Widget info
                             Column {
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: 2
@@ -154,7 +147,6 @@ Popup {
 
                             }
 
-                            // Add icon
                             DankIcon {
                                 name: "add"
                                 size: Theme.iconSize - 4

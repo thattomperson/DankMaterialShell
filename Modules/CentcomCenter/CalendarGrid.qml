@@ -15,7 +15,6 @@ Column {
         if (!CalendarService || !CalendarService.khalAvailable)
             return ;
 
-        // Calculate date range with padding
         let firstDay = new Date(displayDate.getFullYear(), displayDate.getMonth(), 1);
         let dayOfWeek = firstDay.getDay();
         let startDate = new Date(firstDay);
@@ -27,7 +26,6 @@ Column {
     }
 
     spacing: Theme.spacingM
-    // Load events when display date changes
     onDisplayDateChanged: {
         loadEventsForMonth();
     }
@@ -35,7 +33,6 @@ Column {
         loadEventsForMonth();
     }
 
-    // Load events when calendar service becomes available
     Connections {
         function onKhalAvailableChanged() {
             if (CalendarService && CalendarService.khalAvailable)
@@ -47,7 +44,6 @@ Column {
         enabled: CalendarService !== null
     }
 
-    // Month navigation header
     Row {
         width: parent.width
         height: 40
@@ -121,7 +117,6 @@ Column {
 
     }
 
-    // Days of week header
     Row {
         width: parent.width
         height: 32
@@ -148,7 +143,6 @@ Column {
 
     }
 
-    // Calendar grid
     Grid {
         property date firstDay: {
             let date = new Date(displayDate.getFullYear(), displayDate.getMonth(), 1);
@@ -196,7 +190,6 @@ Column {
                         font.weight: isToday || isSelected ? Font.Medium : Font.Normal
                     }
 
-                    // Event indicator - bottom fill effect
                     Rectangle {
                         id: eventIndicator
 

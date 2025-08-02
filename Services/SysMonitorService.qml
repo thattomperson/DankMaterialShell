@@ -180,7 +180,7 @@ Singleton {
         try {
             data = JSON.parse(text);
         } catch (error) {
-            console.error("SysMonitorService: Failed to parse JSON:", error, "Raw text:", text.slice(0, 300));
+            
             isUpdating = false;
             return;
         }
@@ -535,7 +535,7 @@ printf "}\\n"`
         running: false
         onExited: (exitCode) => {
             if (exitCode !== 0) {
-                console.warn("Unified stats process failed with exit code:", exitCode);
+                
                 isUpdating = false;
             }
         }
@@ -545,7 +545,7 @@ printf "}\\n"`
                     const fullText = text.trim();
                     const lastBraceIndex = fullText.lastIndexOf('}');
                     if (lastBraceIndex === -1) {
-                        console.error("SysMonitorService: No JSON object found in output.", fullText);
+                        
                         isUpdating = false;
                         return;
                     }

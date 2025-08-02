@@ -14,7 +14,6 @@ Item {
 
     height: compact ? 36 : (72 + Theme.spacingS) // Single row vs two rows
 
-    // Compact single-row layout (for SpotlightModal style)
     Row {
         visible: compact
         width: parent.width
@@ -55,13 +54,11 @@ Item {
 
     }
 
-    // Two-row layout (for SpotlightModal organized style)
     Column {
         visible: !compact
         width: parent.width
         spacing: Theme.spacingS
 
-        // Top row: All, Development, Graphics, Games (4 items)
         Row {
             property var topRowCategories: ["All", "Development", "Graphics", "Games"]
 
@@ -105,7 +102,6 @@ Item {
 
         }
 
-        // Bottom row: Internet, Media, Office, Settings, System (5 items)
         Row {
             property var bottomRowCategories: ["Internet", "Media", "Office", "Settings", "System"]
 

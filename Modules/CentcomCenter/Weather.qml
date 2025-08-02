@@ -20,7 +20,6 @@ Rectangle {
         service: WeatherService
     }
 
-    // Placeholder when no weather - centered in entire widget
     Column {
         anchors.centerIn: parent
         spacing: Theme.spacingS
@@ -42,14 +41,12 @@ Rectangle {
 
     }
 
-    // Weather content when available - original Column structure
     Column {
         anchors.fill: parent
         anchors.margins: Theme.spacingL
         spacing: Theme.spacingS
         visible: WeatherService.weather.available && WeatherService.weather.temp !== 0
 
-        // Weather header info
         Item {
             width: parent.width
             height: 60
@@ -58,7 +55,6 @@ Rectangle {
                 anchors.centerIn: parent
                 spacing: Theme.spacingL
 
-                // Weather icon
                 DankIcon {
                     name: WeatherService.getWeatherIcon(WeatherService.weather.wCode)
                     size: Theme.iconSize + 8
@@ -103,7 +99,6 @@ Rectangle {
 
         }
 
-        // Weather details grid
         Grid {
             columns: 2
             spacing: Theme.spacingM

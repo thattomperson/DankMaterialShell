@@ -12,28 +12,6 @@ Singleton {
     
     property var applications: DesktopEntries.applications.values
     
-    property var applicationsByName: {
-        var byName = {}
-        for (var i = 0; i < applications.length; i++) {
-            var app = applications[i]
-            byName[app.name.toLowerCase()] = app
-        }
-        return byName
-    }
-    
-    property var applicationsByExec: {
-        var byExec = {}
-        for (var i = 0; i < applications.length; i++) {
-            var app = applications[i]
-            var execProp = app.execString || ""
-            var cleanExec = execProp ? execProp.replace(/%[fFuU]/g, "").trim() : ""
-            if (cleanExec) {
-                byExec[cleanExec] = app
-            }
-        }
-        return byExec
-    }
-    
     property var preppedApps: applications.map(app => ({
         name: Fuzzy.prepare(app.name || ""),
         comment: Fuzzy.prepare(app.comment || ""),
@@ -89,14 +67,7 @@ Singleton {
         return results.map(r => r.obj.entry)
     }
     
-    function getAppByName(name) {
-        return applicationsByName[name.toLowerCase()] || null
-    }
-    
-    function getAppByExec(exec) {
-        var cleanExec = exec.replace(/%[fFuU]/g, "").trim()
-        return applicationsByExec[cleanExec] || null
-    }
+
     
     function getCategoriesForApp(app) {
         if (!app || !app.categories) return []

@@ -18,7 +18,6 @@ StyledText {
     color: Theme.surfaceText
     verticalAlignment: Text.AlignVCenter
     horizontalAlignment: Text.AlignHCenter
-    // Material Icons variable font axes support
     font.variableAxes: ({
         "FILL": fill.toFixed(1),
         "GRAD": grade,
@@ -26,7 +25,6 @@ StyledText {
         "wght": weight
     })
 
-    // Smooth transitions for variable axes
     Behavior on fill {
         NumberAnimation {
             duration: Appearance.anim.durations.quick
