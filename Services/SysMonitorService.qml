@@ -1,6 +1,5 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
-
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -8,18 +7,15 @@ import qs.Services
 
 Singleton {
     id: root
-
     property int refCount: 0
     property int updateInterval: refCount > 0 ? 2000 : 30000
     property int maxProcesses: 100
     property bool isUpdating: false
-
-    // Process data
+    
     property var processes: []
     property string sortBy: "cpu"
     property bool sortDescending: true
-
-    // System stats 
+    
     property real cpuUsage: 0
     property real totalCpuUsage: 0
     property int cpuCores: 1
@@ -29,7 +25,9 @@ Singleton {
     property real cpuTemperature: 0
     property var perCoreCpuUsage: []
     
-    // Memory stats
+    property var lastCpuStats: null
+    property var lastPerCoreStats: null
+    
     property real memoryUsage: 0
     property real totalMemoryMB: 0
     property real usedMemoryMB: 0
@@ -40,18 +38,15 @@ Singleton {
     property int totalSwapKB: 0
     property int usedSwapKB: 0
     
-    // Network stats
     property real networkRxRate: 0
     property real networkTxRate: 0
     property var lastNetworkStats: null
     
-    // Disk stats
     property real diskReadRate: 0
     property real diskWriteRate: 0
     property var lastDiskStats: null
     property var diskMounts: []
     
-    // History
     property int historySize: 60
     property var cpuHistory: []
     property var memoryHistory: []
@@ -64,7 +59,6 @@ Singleton {
         "write": []
     })
     
-    // System info
     property string kernelVersion: ""
     property string distribution: ""
     property string hostname: ""
@@ -82,7 +76,7 @@ Singleton {
             updateAllStats();
         }
     }
-
+    
     function removeRef() {
         refCount = Math.max(0, refCount - 1);
     }
@@ -100,7 +94,7 @@ Singleton {
             sortProcessesInPlace();
         }
     }
-
+    
     function toggleSortOrder() {
         sortDescending = !sortDescending;
         sortProcessesInPlace();
@@ -151,13 +145,32 @@ Singleton {
             Quickshell.execDetached("kill", [pid.toString()]);
         }
     }
-
+    
     function addToHistory(array, value) {
         array.push(value);
         if (array.length > historySize)
             array.shift();
     }
 
+    function calculateCpuUsage(currentStats, lastStats) {
+        if (!lastStats || !currentStats || currentStats.length < 4) {
+            return 0;
+        }
+        
+        const currentTotal = currentStats.reduce((sum, val) => sum + val, 0);
+        const lastTotal = lastStats.reduce((sum, val) => sum + val, 0);
+        
+        const totalDiff = currentTotal - lastTotal;
+        if (totalDiff <= 0) return 0;
+        
+        const currentIdle = currentStats[3];
+        const lastIdle = lastStats[3];
+        const idleDiff = currentIdle - lastIdle;
+        
+        const usedDiff = totalDiff - idleDiff;
+        return Math.max(0, Math.min(100, (usedDiff / totalDiff) * 100));
+    }
+    
     function parseUnifiedStats(text) {
         function num(x) {
             return (typeof x === "number" && !isNaN(x)) ? x : 0;
@@ -172,25 +185,23 @@ Singleton {
             return;
         }
         
-        // Memory
         if (data.memory) {
             const m = data.memory;
             totalMemoryKB = num(m.total);
             const free   = num(m.free);
             const buf    = num(m.buffers);
             const cached = num(m.cached);
+            const shared = num(m.shared);
             usedMemoryKB = totalMemoryKB - free - buf - cached;
             totalSwapKB  = num(m.swaptotal);
             usedSwapKB   = num(m.swaptotal) - num(m.swapfree);
-
             totalMemoryMB    = totalMemoryKB / 1024;
             usedMemoryMB     = usedMemoryKB  / 1024;
             freeMemoryMB     = (totalMemoryKB - usedMemoryKB) / 1024;
-            availableMemoryMB= (free + buf + cached) / 1024;
+            availableMemoryMB= num(m.available) ? num(m.available) / 1024 : (free + buf + cached) / 1024;
             memoryUsage      = totalMemoryKB > 0 ? (usedMemoryKB / totalMemoryKB) * 100 : 0;
         }
         
-        // CPU
         if (data.cpu) {
             cpuCores = data.cpu.count || 1;
             cpuCount = data.cpu.count || 1;
@@ -199,42 +210,36 @@ Singleton {
             cpuTemperature = data.cpu.temperature || 0;
             
             if (data.cpu.total && data.cpu.total.length >= 8) {
-                const user = data.cpu.total[0];
-                const nice = data.cpu.total[1];
-                const system = data.cpu.total[2];
-                const idle = data.cpu.total[3];
-                const iowait = data.cpu.total[4];
-                const irq = data.cpu.total[5];
-                const softirq = data.cpu.total[6];
-                const total = user + nice + system + idle + iowait + irq + softirq;
-                const used = total - idle - iowait;
-                const usage = total > 0 ? (used / total) * 100 : 0;
+                const currentStats = data.cpu.total;
+                const usage = calculateCpuUsage(currentStats, lastCpuStats);
                 cpuUsage = usage;
                 totalCpuUsage = usage;
+                lastCpuStats = [...currentStats];
             }
             
             if (data.cpu.cores) {
                 const coreUsages = [];
-                for (const coreStats of data.cpu.cores) {
-                    if (coreStats && coreStats.length >= 8) {
-                        const user = coreStats[0];
-                        const nice = coreStats[1];
-                        const system = coreStats[2];
-                        const idle = coreStats[3];
-                        const iowait = coreStats[4];
-                        const irq = coreStats[5];
-                        const softirq = coreStats[6];
-                        const total = user + nice + system + idle + iowait + irq + softirq;
-                        const used = total - idle - iowait;
-                        const usage = total > 0 ? (used / total) * 100 : 0;
+                for (let i = 0; i < data.cpu.cores.length; i++) {
+                    const currentCoreStats = data.cpu.cores[i];
+                    if (currentCoreStats && currentCoreStats.length >= 8) {
+                        let lastCoreStats = null;
+                        if (lastPerCoreStats && lastPerCoreStats[i]) {
+                            lastCoreStats = lastPerCoreStats[i];
+                        }
+                        
+                        const usage = calculateCpuUsage(currentCoreStats, lastCoreStats);
                         coreUsages.push(usage);
                     }
                 }
-                perCoreCpuUsage = coreUsages;
+                
+                if (JSON.stringify(perCoreCpuUsage) !== JSON.stringify(coreUsages)) {
+                    perCoreCpuUsage = coreUsages;
+                }
+                
+                lastPerCoreStats = data.cpu.cores.map(core => [...core]);
             }
         }
         
-        // Network
         if (data.network) {
             let totalRx = 0;
             let totalTx = 0;
@@ -254,7 +259,6 @@ Singleton {
             lastNetworkStats = { "rx": totalRx, "tx": totalTx };
         }
         
-        // Disk
         if (data.disk) {
             let totalRead = 0;
             let totalWrite = 0;
@@ -274,7 +278,6 @@ Singleton {
             lastDiskStats = { "read": totalRead, "write": totalWrite };
         }
         
-        // Processes
         if (data.processes) {
             const newProcesses = [];
             for (const proc of data.processes) {
@@ -293,7 +296,6 @@ Singleton {
             sortProcessesInPlace();
         }
         
-        // System info
         if (data.system) {
             kernelVersion = data.system.kernel || "";
             distribution = data.system.distro || "";
@@ -311,14 +313,12 @@ Singleton {
             diskMounts = data.diskmounts;
         }
         
-        // Update history
         addToHistory(cpuHistory, cpuUsage);
         addToHistory(memoryHistory, memoryUsage);
         
         isUpdating = false;
     }
 
-    // Utility functions
     function getProcessIcon(command) {
         const cmd = command.toLowerCase();
         if (cmd.includes("firefox") || cmd.includes("chrome") || cmd.includes("browser"))
@@ -335,11 +335,11 @@ Singleton {
             return "settings";
         return "memory";
     }
-
+    
     function formatCpuUsage(cpu) {
         return (cpu || 0).toFixed(1) + "%";
     }
-
+    
     function formatMemoryUsage(memoryKB) {
         const mem = memoryKB || 0;
         if (mem < 1024)
@@ -349,7 +349,7 @@ Singleton {
         else
             return (mem / (1024 * 1024)).toFixed(1) + " GB";
     }
-
+    
     function formatSystemMemory(memoryKB) {
         const mem = memoryKB || 0;
         if (mem < 1024 * 1024)
@@ -375,7 +375,6 @@ Singleton {
             } else {
                 console.log("SysMonitorService: System active, resuming monitoring")
                 if (root.refCount > 0) {
-                    // Trigger immediate update when coming back from idle
                     root.updateAllStats()
                 }
             }
@@ -384,6 +383,7 @@ Singleton {
 
     readonly property string scriptBody: `set -Eeuo pipefail
 trap 'echo "ERR at line $LINENO: $BASH_COMMAND (exit $?)" >&2' ERR
+
 sort_key=\${1:-cpu}
 max_procs=\${2:-20}
 
@@ -393,15 +393,16 @@ printf "{"
 
 mem_line="$(awk '/^MemTotal:/{t=$2}
                  /^MemFree:/{f=$2}
+                 /^MemAvailable:/{a=$2}
                  /^Buffers:/{b=$2}
                  /^Cached:/{c=$2}
+                 /^Shmem:/{s=$2}
                  /^SwapTotal:/{st=$2}
                  /^SwapFree:/{sf=$2}
-                 END{printf "%d %d %d %d %d %d",t,f,b,c,st,sf}' /proc/meminfo)"
-read -r MT MF BU CA ST SF <<< "$mem_line"
-
-printf '"memory":{"total":%d,"free":%d,"buffers":%d,"cached":%d,"swaptotal":%d,"swapfree":%d},' \\
-       "$MT" "$MF" "$BU" "$CA" "$ST" "$SF"
+                 END{printf "%d %d %d %d %d %d %d %d",t,f,a,b,c,s,st,sf}' /proc/meminfo)"
+read -r MT MF MA BU CA SH ST SF <<< "$mem_line"
+printf '"memory":{"total":%d,"free":%d,"available":%d,"buffers":%d,"cached":%d,"shared":%d,"swaptotal":%d,"swapfree":%d},' \\
+       "$MT" "$MF" "$MA" "$BU" "$CA" "$SH" "$ST" "$SF"
 
 cpu_count=$(nproc)
 cpu_model=$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ *//' | json_escape || echo 'Unknown')
@@ -457,7 +458,7 @@ while IFS= read -r line; do
     dfirst=0
 done < "$tmp_disk"
 rm -f "$tmp_disk" 
-printf ']',
+printf '],'
 
 printf '"processes":['
 case "$sort_key" in
@@ -470,7 +471,6 @@ esac
 
 tmp_ps=$(mktemp)
 ps -eo pid,ppid,pcpu,pmem,rss,comm,cmd --no-headers $SORT_OPT | head -n "$max_procs" > "$tmp_ps" || true
-
 pfirst=1
 while IFS=' ' read -r pid ppid cpu memp memk comm rest; do
     [ -z "$pid" ] && continue
@@ -481,7 +481,7 @@ while IFS=' ' read -r pid ppid cpu memp memk comm rest; do
     pfirst=0
 done < "$tmp_ps"
 rm -f "$tmp_ps"
-printf ']',
+printf '],'
 
 dmip="/sys/class/dmi/id"
 [ -d "$dmip" ] || dmip="/sys/devices/virtual/dmi/id"
@@ -539,26 +539,22 @@ printf "}\\n"`
                 isUpdating = false;
             }
         }
-
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.trim()) {
                     const fullText = text.trim();
                     const lastBraceIndex = fullText.lastIndexOf('}');
-
                     if (lastBraceIndex === -1) {
                         console.error("SysMonitorService: No JSON object found in output.", fullText);
                         isUpdating = false;
                         return;
                     }
-
                     const jsonText = fullText.substring(0, lastBraceIndex + 1);
                     
                     try {
                         const data = JSON.parse(jsonText);
                         parseUnifiedStats(jsonText);
                     } catch (e) {
-                        console.error("BROKEN JSON:", e, "Cleaned Text:", jsonText);
                         isUpdating = false;
                         return;
                     }

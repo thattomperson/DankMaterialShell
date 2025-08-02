@@ -29,12 +29,8 @@ Column {
     spacing: Theme.spacingM
     Component.onCompleted: {
         SysMonitorService.addRef();
-        SysMonitorService.addRef();
-        // Trigger immediate updates for both services
-        SysMonitorService.updateAllStats();
     }
     Component.onDestruction: {
-        SysMonitorService.removeRef();
         SysMonitorService.removeRef();
     }
 
@@ -107,7 +103,7 @@ Column {
                     spacing: 6
 
                     Repeater {
-                        model: SysMonitorService.perCoreCpuUsage.length
+                        model: SysMonitorService.perCoreCpuUsage
 
                         Row {
                             width: parent.width
@@ -130,11 +126,11 @@ Column {
                                 anchors.verticalCenter: parent.verticalCenter
 
                                 Rectangle {
-                                    width: parent.width * Math.min(1, SysMonitorService.perCoreCpuUsage[index] / 100)
+                                    width: parent.width * Math.min(1, modelData / 100)
                                     height: parent.height
                                     radius: parent.radius
                                     color: {
-                                        const usage = SysMonitorService.perCoreCpuUsage[index];
+                                        const usage = modelData;
                                         if (usage > 80)
                                             return Theme.error;
 
@@ -156,7 +152,7 @@ Column {
                             }
 
                             StyledText {
-                                text: SysMonitorService.perCoreCpuUsage[index] ? SysMonitorService.perCoreCpuUsage[index].toFixed(0) + "%" : "0%"
+                                text: modelData ? modelData.toFixed(0) + "%" : "0%"
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.Medium
                                 color: Theme.surfaceText
