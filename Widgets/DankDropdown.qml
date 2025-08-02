@@ -214,7 +214,7 @@ Rectangle {
 
                 parent: Overlay.overlay
                 width: dropdown.width + root.popupWidthOffset
-                height: Math.min(root.maxPopupHeight, (root.enableFuzzySearch ? 48 : 0) + Math.min(filteredOptions.length, 10) * 36 + 16)
+                height: Math.min(root.maxPopupHeight, (root.enableFuzzySearch ? 54 : 0) + Math.min(filteredOptions.length, 10) * 36 + 16)
                 padding: 0
                 modal: true
                 closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
@@ -245,7 +245,7 @@ Rectangle {
                             id: searchContainer
 
                             width: parent.width
-                            height: 36
+                            height: 42
                             visible: root.enableFuzzySearch
                             radius: Theme.cornerRadiusSmall
                             color: Theme.surfaceVariantAlpha

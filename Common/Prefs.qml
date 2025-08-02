@@ -497,7 +497,10 @@ Singleton {
     function updateListModel(listModel, order) {
         listModel.clear();
         for (var i = 0; i < order.length; i++) {
-            listModel.append({"widgetId": order[i]});
+            // Handle both old string format and new object format
+            var widgetId = typeof order[i] === "string" ? order[i] : order[i].id;
+            var enabled = typeof order[i] === "string" ? true : order[i].enabled;
+            listModel.append({"widgetId": widgetId, "enabled": enabled});
         }
     }
 

@@ -108,16 +108,18 @@ ScrollView {
                     text: "Font Family"
                     description: "Select system font family"
                     currentValue: {
-                        if (Prefs.fontFamily === Prefs.defaultFontFamily)
-                            return "Default";
-
-                        return Prefs.fontFamily || "Default";
+                        // Always show the font name in parentheses for clarity
+                        if (Prefs.fontFamily === Prefs.defaultFontFamily) {
+                            return "Default (" + Prefs.defaultFontFamily + ")";
+                        } else {
+                            return Prefs.fontFamily || "Default (" + Prefs.defaultFontFamily + ")";
+                        }
                     }
                     enableFuzzySearch: true
                     popupWidthOffset: 100
                     maxPopupHeight: 400
                     options: {
-                        var fonts = ["Default"];
+                        var fonts = ["Default (" + Prefs.defaultFontFamily + ")"];
                         var availableFonts = Qt.fontFamilies();
                         var rootFamilies = [];
                         var seenFamilies = new Set();
@@ -144,7 +146,7 @@ ScrollView {
                         return fonts.concat(rootFamilies.sort());
                     }
                     onValueChanged: (value) => {
-                        if (value === "Default")
+                        if (value.startsWith("Default ("))
                             Prefs.setFontFamily(Prefs.defaultFontFamily);
                         else
                             Prefs.setFontFamily(value);

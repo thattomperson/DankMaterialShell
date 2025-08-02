@@ -12,7 +12,7 @@ Column {
     property string titleIcon: "widgets"
     property string sectionId: ""
 
-    signal itemEnabledChanged(string itemId, bool enabled)
+    signal itemEnabledChanged(string sectionId, string itemId, bool enabled)
     signal itemOrderChanged(var newOrder)
     signal addWidget(string sectionId)
     signal removeLastWidget(string sectionId)
@@ -142,7 +142,7 @@ Column {
                         hideText: true
                         checked: modelData.enabled
                         onToggled: (checked) => {
-                            root.itemEnabledChanged(modelData.id, checked)
+                            root.itemEnabledChanged(root.sectionId, modelData.id, checked)
                         }
                     }
 
@@ -183,7 +183,7 @@ Column {
                                     var draggedItem = newItems.splice(index, 1)[0]
                                     newItems.splice(newIndex, 0, draggedItem)
                                     
-                                    root.itemOrderChanged(newItems.map(item => item.id))
+                                    root.itemOrderChanged(newItems.map(item => ({id: item.id, enabled: item.enabled})))
                                 }
                             }
                             

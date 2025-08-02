@@ -110,10 +110,25 @@ ScrollView {
         }
     ]
 
-    // Default widget configurations for each section
-    property var defaultLeftWidgets: ["launcherButton", "workspaceSwitcher", "focusedWindow"]
-    property var defaultCenterWidgets: ["music", "clock", "weather"]
-    property var defaultRightWidgets: ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"]
+    // Default widget configurations for each section (with enabled states)
+    property var defaultLeftWidgets: [
+        {id: "launcherButton", enabled: true},
+        {id: "workspaceSwitcher", enabled: true},
+        {id: "focusedWindow", enabled: true}
+    ]
+    property var defaultCenterWidgets: [
+        {id: "music", enabled: true},
+        {id: "clock", enabled: true},
+        {id: "weather", enabled: true}
+    ]
+    property var defaultRightWidgets: [
+        {id: "systemTray", enabled: true},
+        {id: "clipboard", enabled: true},
+        {id: "systemResources", enabled: true},
+        {id: "notificationButton", enabled: true},
+        {id: "battery", enabled: true},
+        {id: "controlCenterButton", enabled: true}
+    ]
 
     Component.onCompleted: {
         // Initialize sections with defaults if they're empty
@@ -133,14 +148,17 @@ ScrollView {
         var centerWidgets = Prefs.topBarCenterWidgets.slice()
         var rightWidgets = Prefs.topBarRightWidgets.slice()
 
+        // Create widget object with enabled state
+        var widgetObj = {id: widgetId, enabled: true}
+
         if (targetSection === "left") {
-            leftWidgets.push(widgetId)
+            leftWidgets.push(widgetObj)
             Prefs.setTopBarLeftWidgets(leftWidgets)
         } else if (targetSection === "center") {
-            centerWidgets.push(widgetId)
+            centerWidgets.push(widgetObj)
             Prefs.setTopBarCenterWidgets(centerWidgets)
         } else if (targetSection === "right") {
-            rightWidgets.push(widgetId)
+            rightWidgets.push(widgetObj)
             Prefs.setTopBarRightWidgets(rightWidgets)
         }
     }
@@ -162,34 +180,44 @@ ScrollView {
         }
     }
 
-    function handleItemEnabledChanged(itemId, enabled) {
-        // Update the widget's enabled state in preferences
-        if (itemId === "focusedWindow") {
-            Prefs.setShowFocusedWindow(enabled)
-        } else if (itemId === "weather") {
-            Prefs.setShowWeather(enabled)
-        } else if (itemId === "music") {
-            Prefs.setShowMusic(enabled)
-        } else if (itemId === "clipboard") {
-            Prefs.setShowClipboard(enabled)
-        } else if (itemId === "systemResources") {
-            Prefs.setShowSystemResources(enabled)
-        } else if (itemId === "systemTray") {
-            Prefs.setShowSystemTray(enabled)
-        } else if (itemId === "clock") {
-            Prefs.setShowClock(enabled)
-        } else if (itemId === "notificationButton") {
-            Prefs.setShowNotificationButton(enabled)
-        } else if (itemId === "controlCenterButton") {
-            Prefs.setShowControlCenterButton(enabled)
-        } else if (itemId === "battery") {
-            Prefs.setShowBattery(enabled)
-        } else if (itemId === "launcherButton") {
-            Prefs.setShowLauncherButton(enabled)
-        } else if (itemId === "workspaceSwitcher") {
-            Prefs.setShowWorkspaceSwitcher(enabled)
+    function handleItemEnabledChanged(sectionId, itemId, enabled) {
+        // Update the specific widget instance's enabled state in the section
+        var widgets = []
+        
+        if (sectionId === "left") {
+            widgets = Prefs.topBarLeftWidgets.slice()
+        } else if (sectionId === "center") {
+            widgets = Prefs.topBarCenterWidgets.slice()
+        } else if (sectionId === "right") {
+            widgets = Prefs.topBarRightWidgets.slice()
         }
-        // Note: spacer and separator don't need preference handling as they're always enabled
+        
+        // Find and update the specific widget instance
+        for (var i = 0; i < widgets.length; i++) {
+            // Handle both old string format and new object format for backward compatibility
+            var widget = widgets[i]
+            var widgetId = typeof widget === "string" ? widget : widget.id
+            
+            // Update the enabled state for this specific instance
+            if (widgetId === itemId) {
+                if (typeof widget === "string") {
+                    // Convert old string format to object format
+                    widgets[i] = {id: widget, enabled: enabled}
+                } else {
+                    widgets[i] = {id: widget.id, enabled: enabled}
+                }
+                break
+            }
+        }
+        
+        // Save the updated widgets array
+        if (sectionId === "left") {
+            Prefs.setTopBarLeftWidgets(widgets)
+        } else if (sectionId === "center") {
+            Prefs.setTopBarCenterWidgets(widgets)
+        } else if (sectionId === "right") {
+            Prefs.setTopBarRightWidgets(widgets)
+        }
     }
 
     function handleItemOrderChanged(sectionId, newOrder) {
@@ -204,47 +232,26 @@ ScrollView {
 
     function getItemsForSection(sectionId) {
         var widgets = []
-        var widgetIds = []
+        var widgetData = []
         
         if (sectionId === "left") {
-            widgetIds = Prefs.topBarLeftWidgets || []
+            widgetData = Prefs.topBarLeftWidgets || []
         } else if (sectionId === "center") {
-            widgetIds = Prefs.topBarCenterWidgets || []
+            widgetData = Prefs.topBarCenterWidgets || []
         } else if (sectionId === "right") {
-            widgetIds = Prefs.topBarRightWidgets || []
+            widgetData = Prefs.topBarRightWidgets || []
         }
         
-        widgetIds.forEach(widgetId => {
+        widgetData.forEach(widget => {
+            // Handle both old string format and new object format for backward compatibility
+            var widgetId = typeof widget === "string" ? widget : widget.id
+            var widgetEnabled = typeof widget === "string" ? true : widget.enabled
+            
             var widgetDef = baseWidgetDefinitions.find(w => w.id === widgetId)
             if (widgetDef) {
                 var item = Object.assign({}, widgetDef)
-                // Set enabled state based on preferences
-                if (widgetId === "focusedWindow") {
-                    item.enabled = Prefs.showFocusedWindow
-                } else if (widgetId === "weather") {
-                    item.enabled = Prefs.showWeather
-                } else if (widgetId === "music") {
-                    item.enabled = Prefs.showMusic
-                } else if (widgetId === "clipboard") {
-                    item.enabled = Prefs.showClipboard
-                } else if (widgetId === "systemResources") {
-                    item.enabled = Prefs.showSystemResources
-                } else if (widgetId === "systemTray") {
-                    item.enabled = Prefs.showSystemTray
-                } else if (widgetId === "clock") {
-                    item.enabled = Prefs.showClock
-                } else if (widgetId === "notificationButton") {
-                    item.enabled = Prefs.showNotificationButton
-                } else if (widgetId === "controlCenterButton") {
-                    item.enabled = Prefs.showControlCenterButton
-                } else if (widgetId === "battery") {
-                    item.enabled = Prefs.showBattery
-                } else if (widgetId === "launcherButton") {
-                    item.enabled = Prefs.showLauncherButton
-                } else if (widgetId === "workspaceSwitcher") {
-                    item.enabled = Prefs.showWorkspaceSwitcher
-                }
-                // spacer and separator are always enabled (no preference toggle needed)
+                // Use the per-instance enabled state
+                item.enabled = widgetEnabled
                 widgets.push(item)
             }
         })
@@ -320,24 +327,10 @@ ScrollView {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        // Reset all sections to defaults
+                        // Reset all sections to defaults (with per-instance enabled states)
                         Prefs.setTopBarLeftWidgets(defaultLeftWidgets)
                         Prefs.setTopBarCenterWidgets(defaultCenterWidgets)
                         Prefs.setTopBarRightWidgets(defaultRightWidgets)
-                        
-                        // Reset all widget enabled states to defaults (all enabled)
-                        Prefs.setShowFocusedWindow(true)
-                        Prefs.setShowWeather(true)
-                        Prefs.setShowMusic(true)
-                        Prefs.setShowClipboard(true)
-                        Prefs.setShowSystemResources(true)
-                        Prefs.setShowSystemTray(true)
-                        Prefs.setShowClock(true)
-                        Prefs.setShowNotificationButton(true)
-                        Prefs.setShowControlCenterButton(true)
-                        Prefs.setShowBattery(true)
-                        Prefs.setShowLauncherButton(true)
-                        Prefs.setShowWorkspaceSwitcher(true)
                     }
                 }
                 
@@ -393,8 +386,8 @@ ScrollView {
                 allWidgets: widgetsTab.baseWidgetDefinitions
                 items: widgetsTab.getItemsForSection("left")
 
-                onItemEnabledChanged: (itemId, enabled) => {
-                    widgetsTab.handleItemEnabledChanged(itemId, enabled)
+                onItemEnabledChanged: (sectionId, itemId, enabled) => {
+                    widgetsTab.handleItemEnabledChanged(sectionId, itemId, enabled)
                 }
 
                 onItemOrderChanged: (newOrder) => {
@@ -421,8 +414,8 @@ ScrollView {
                 allWidgets: widgetsTab.baseWidgetDefinitions
                 items: widgetsTab.getItemsForSection("center")
 
-                onItemEnabledChanged: (itemId, enabled) => {
-                    widgetsTab.handleItemEnabledChanged(itemId, enabled)
+                onItemEnabledChanged: (sectionId, itemId, enabled) => {
+                    widgetsTab.handleItemEnabledChanged(sectionId, itemId, enabled)
                 }
 
                 onItemOrderChanged: (newOrder) => {
@@ -449,8 +442,8 @@ ScrollView {
                 allWidgets: widgetsTab.baseWidgetDefinitions
                 items: widgetsTab.getItemsForSection("right")
 
-                onItemEnabledChanged: (itemId, enabled) => {
-                    widgetsTab.handleItemEnabledChanged(itemId, enabled)
+                onItemEnabledChanged: (sectionId, itemId, enabled) => {
+                    widgetsTab.handleItemEnabledChanged(sectionId, itemId, enabled)
                 }
 
                 onItemOrderChanged: (newOrder) => {
