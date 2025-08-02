@@ -5,6 +5,8 @@ import qs.Common
 import qs.Widgets
 
 Rectangle {
+    // Force recreate popup when component becomes visible
+
     id: root
 
     property string text: ""
@@ -38,7 +40,6 @@ Rectangle {
         if (!visible && popup && popup.visible)
             popup.close();
         else if (visible)
-            // Force recreate popup when component becomes visible
             forceRecreateTimer.start();
     }
 

@@ -4,30 +4,32 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
+import qs.Modals
 import qs.Modules
-import qs.Modules.TopBar
 import qs.Modules.AppDrawer
 import qs.Modules.CentcomCenter
 import qs.Modules.ControlCenter
-import qs.Modules.Settings
-import qs.Modules.ProcessList
 import qs.Modules.ControlCenter.Network
 import qs.Modules.Lock
 import qs.Modules.Notifications.Center
 import qs.Modules.Notifications.Popup
-import qs.Modals
+import qs.Modules.ProcessList
+import qs.Modules.Settings
+import qs.Modules.TopBar
 import qs.Services
 
 ShellRoot {
     id: root
 
-    WallpaperBackground {}
-    
+    WallpaperBackground {
+    }
+
     Lock {
         id: lock
+
         anchors.fill: parent
     }
-    
+
     // Multi-monitor support using Variants
     Variants {
         model: Quickshell.screens
@@ -35,17 +37,16 @@ ShellRoot {
         delegate: TopBar {
             modelData: item
         }
+
     }
 
     CentcomPopout {
         id: centcomPopout
     }
 
-
     SystemTrayContextMenu {
         id: systemTrayContextMenu
     }
-
 
     NotificationCenterPopout {
         id: notificationCenter
@@ -57,10 +58,12 @@ ShellRoot {
         delegate: NotificationPopupManager {
             modelData: item
         }
+
     }
 
     ControlCenterPopout {
         id: controlCenterPopout
+
         onPowerActionRequested: (action, title, message) => {
             powerConfirmModal.powerConfirmAction = action;
             powerConfirmModal.powerConfirmTitle = title;
@@ -115,33 +118,36 @@ ShellRoot {
 
     LazyLoader {
         id: processListModalLoader
+
         active: false
-        
+
         ProcessListModal {
             id: processListModal
         }
+
     }
+
     IpcHandler {
         function open() {
             processListModalLoader.active = true;
-            if (processListModalLoader.item) {
+            if (processListModalLoader.item)
                 processListModalLoader.item.show();
-            }
+
             return "PROCESSLIST_OPEN_SUCCESS";
         }
 
         function close() {
-            if (processListModalLoader.item) {
+            if (processListModalLoader.item)
                 processListModalLoader.item.hide();
-            }
+
             return "PROCESSLIST_CLOSE_SUCCESS";
         }
 
         function toggle() {
             processListModalLoader.active = true;
-            if (processListModalLoader.item) {
+            if (processListModalLoader.item)
                 processListModalLoader.item.toggle();
-            }
+
             return "PROCESSLIST_TOGGLE_SUCCESS";
         }
 
@@ -154,6 +160,7 @@ ShellRoot {
         delegate: Toast {
             modelData: item
         }
+
     }
 
     Variants {
@@ -162,5 +169,7 @@ ShellRoot {
         delegate: VolumePopup {
             modelData: item
         }
+
     }
+
 }

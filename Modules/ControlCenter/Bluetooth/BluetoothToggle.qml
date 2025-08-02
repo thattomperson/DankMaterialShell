@@ -10,7 +10,7 @@ import qs.Widgets
 
 Rectangle {
     id: root
-    
+
     width: parent.width
     height: 60
     radius: Theme.cornerRadius
@@ -47,7 +47,9 @@ Rectangle {
                 font.pixelSize: Theme.fontSizeSmall
                 color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
             }
+
         }
+
     }
 
     MouseArea {
@@ -57,9 +59,10 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            if (BluetoothService.adapter) {
+            if (BluetoothService.adapter)
                 BluetoothService.adapter.enabled = !BluetoothService.adapter.enabled;
-            }
+
         }
     }
+
 }

@@ -10,9 +10,9 @@ import qs.Widgets
 
 Column {
     id: root
-    
+
     property string currentSourceDisplayName: AudioService.source ? AudioService.displayName(AudioService.source) : ""
-    
+
     width: parent.width
     spacing: Theme.spacingM
 
@@ -50,21 +50,27 @@ Column {
                 color: Theme.primary
                 font.weight: Font.Medium
             }
+
         }
+
     }
 
     Repeater {
         model: {
-            if (!Pipewire.ready || !Pipewire.nodes || !Pipewire.nodes.values) return []
-            let sources = []
+            if (!Pipewire.ready || !Pipewire.nodes || !Pipewire.nodes.values)
+                return [];
+
+            let sources = [];
             for (let i = 0; i < Pipewire.nodes.values.length; i++) {
-                let node = Pipewire.nodes.values[i]
-                if (!node || node.isStream) continue
-                if ((node.type & PwNodeType.AudioSource) === PwNodeType.AudioSource && !node.name.includes(".monitor")) {
-                    sources.push(node)
-                }
+                let node = Pipewire.nodes.values[i];
+                if (!node || node.isStream)
+                    continue;
+
+                if ((node.type & PwNodeType.AudioSource) === PwNodeType.AudioSource && !node.name.includes(".monitor"))
+                    sources.push(node);
+
             }
-            return sources
+            return sources;
         }
 
         Rectangle {
@@ -117,7 +123,9 @@ Column {
                         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                         visible: text !== ""
                     }
+
                 }
+
             }
 
             MouseArea {
@@ -129,8 +137,12 @@ Column {
                 onClicked: {
                     if (modelData)
                         Pipewire.preferredDefaultAudioSource = modelData;
+
                 }
             }
+
         }
+
     }
+
 }

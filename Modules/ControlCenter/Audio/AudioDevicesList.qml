@@ -10,9 +10,9 @@ import qs.Widgets
 
 Column {
     id: root
-    
+
     property string currentSinkDisplayName: AudioService.sink ? AudioService.displayName(AudioService.sink) : ""
-    
+
     width: parent.width
     spacing: Theme.spacingM
 
@@ -50,21 +50,27 @@ Column {
                 color: Theme.primary
                 font.weight: Font.Medium
             }
+
         }
+
     }
 
     Repeater {
         model: {
-            if (!Pipewire.ready || !Pipewire.nodes || !Pipewire.nodes.values) return []
-            let sinks = []
+            if (!Pipewire.ready || !Pipewire.nodes || !Pipewire.nodes.values)
+                return [];
+
+            let sinks = [];
             for (let i = 0; i < Pipewire.nodes.values.length; i++) {
-                let node = Pipewire.nodes.values[i]
-                if (!node || node.isStream) continue
-                if ((node.type & PwNodeType.AudioSink) === PwNodeType.AudioSink) {
-                    sinks.push(node)
-                }
+                let node = Pipewire.nodes.values[i];
+                if (!node || node.isStream)
+                    continue;
+
+                if ((node.type & PwNodeType.AudioSink) === PwNodeType.AudioSink)
+                    sinks.push(node);
+
             }
-            return sinks
+            return sinks;
         }
 
         Rectangle {
@@ -119,7 +125,9 @@ Column {
                         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                         visible: text !== ""
                     }
+
                 }
+
             }
 
             MouseArea {
@@ -131,8 +139,12 @@ Column {
                 onClicked: {
                     if (modelData)
                         Pipewire.preferredDefaultAudioSink = modelData;
+
                 }
             }
+
         }
+
     }
+
 }

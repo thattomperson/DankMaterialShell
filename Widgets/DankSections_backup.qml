@@ -44,30 +44,33 @@ Column {
             width: parent.width - 60
             height: 1
         }
+
     }
 
     // Widget Items
     Column {
         id: itemsList
+
         width: parent.width
         spacing: Theme.spacingS
 
         Repeater {
             model: root.items
-            
+
             delegate: Item {
                 id: delegateItem
-                width: itemsList.width
-                height: 70
-                
+
                 property int visualIndex: index
                 property bool held: dragArea.pressed
                 property string itemId: modelData.id
-                
+
+                width: itemsList.width
+                height: 70
                 z: held ? 2 : 1
-                
+
                 Rectangle {
                     id: itemBackground
+
                     anchors.fill: parent
                     anchors.margins: 2
                     radius: Theme.cornerRadius
@@ -86,7 +89,7 @@ Column {
                             height: parent.height
                             color: "transparent"
                             anchors.verticalCenter: parent.verticalCenter
-                            
+
                             DankIcon {
                                 name: "drag_indicator"
                                 size: Theme.iconSize - 4
@@ -94,6 +97,7 @@ Column {
                                 anchors.centerIn: parent
                                 opacity: 0.8
                             }
+
                         }
 
                         // Widget icon
@@ -127,6 +131,7 @@ Column {
                                 width: parent.width
                                 wrapMode: Text.WordWrap
                             }
+
                         }
 
                         // Spacer to push toggle to right
@@ -143,70 +148,73 @@ Column {
                             hideText: true
                             checked: modelData.enabled
                             onToggled: (checked) => {
-                                root.itemEnabledChanged(modelData.id, checked)
+                                root.itemEnabledChanged(modelData.id, checked);
                             }
                         }
+
                     }
 
                     // Drag functionality
                     MouseArea {
                         id: dragArea
+
+                        property bool validDragStart: false
+
                         anchors.fill: parent
                         hoverEnabled: true
-                        
-                        property bool validDragStart: false
-                        
                         drag.target: held && validDragStart ? delegateItem : undefined
                         drag.axis: Drag.YAxis
                         drag.minimumY: -delegateItem.height
                         drag.maximumY: itemsList.height
-                        
                         onPressed: (mouse) => {
                             // Only allow dragging from the drag handle area (first 60px)
                             if (mouse.x <= 60) {
-                                validDragStart = true
-                                delegateItem.z = 2
+                                validDragStart = true;
+                                delegateItem.z = 2;
                             } else {
-                                validDragStart = false
-                                mouse.accepted = false
+                                validDragStart = false;
+                                mouse.accepted = false;
                             }
                         }
-                        
                         onReleased: {
-                            delegateItem.z = 1
-                            
+                            delegateItem.z = 1;
                             if (drag.active && validDragStart) {
                                 // Calculate new index based on position
-                                var newIndex = Math.round(delegateItem.y / (delegateItem.height + itemsList.spacing))
-                                newIndex = Math.max(0, Math.min(newIndex, root.items.length - 1))
-                                
+                                var newIndex = Math.round(delegateItem.y / (delegateItem.height + itemsList.spacing));
+                                newIndex = Math.max(0, Math.min(newIndex, root.items.length - 1));
                                 if (newIndex !== index) {
-                                    var newItems = root.items.slice()
-                                    var draggedItem = newItems.splice(index, 1)[0]
-                                    newItems.splice(newIndex, 0, draggedItem)
-                                    
-                                    root.itemOrderChanged(newItems.map(item => item.id))
+                                    var newItems = root.items.slice();
+                                    var draggedItem = newItems.splice(index, 1)[0];
+                                    newItems.splice(newIndex, 0, draggedItem);
+                                    root.itemOrderChanged(newItems.map((item) => {
+                                        return item.id;
+                                    }));
                                 }
                             }
-                            
                             // Reset position
-                            delegateItem.x = 0
-                            delegateItem.y = 0
-                            validDragStart = false
+                            delegateItem.x = 0;
+                            delegateItem.y = 0;
+                            validDragStart = false;
                         }
                     }
 
                     // Animations for drag
                     Behavior on y {
                         enabled: !dragArea.held && !dragArea.drag.active
+
                         NumberAnimation {
                             duration: Theme.shortDuration
                             easing.type: Theme.standardEasing
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
 
     // Add/Remove Controls
@@ -252,14 +260,18 @@ Column {
                     iconColor: Theme.error
                     hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.1)
                     enabled: root.items.length > 0
-                    opacity: root.items.length > 0 ? 1.0 : 0.5
+                    opacity: root.items.length > 0 ? 1 : 0.5
                     onClicked: {
-                        if (root.items.length > 0) {
+                        if (root.items.length > 0)
                             root.removeLastWidget(root.sectionId);
-                        }
+
                     }
                 }
+
             }
+
         }
+
     }
+
 }

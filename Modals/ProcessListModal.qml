@@ -7,9 +7,9 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
+import qs.Modules.ProcessList
 import qs.Services
 import qs.Widgets
-import qs.Modules.ProcessList
 
 DankModal {
     id: processListModal
@@ -25,9 +25,9 @@ DankModal {
     function hide() {
         processListModal.visible = false;
         // Close any open context menus
-        if (processContextMenu.visible) {
+        if (processContextMenu.visible)
             processContextMenu.close();
-        }
+
     }
 
     function toggle() {
@@ -44,13 +44,40 @@ DankModal {
     backgroundColor: Theme.popupBackground()
     cornerRadius: Theme.cornerRadiusXLarge
     enableShadow: true
-    
+    onBackgroundClicked: hide()
+
     Ref {
         service: SysMonitorService
     }
-    
 
-    onBackgroundClicked: hide()
+    Component {
+        id: processesTabComponent
+
+        ProcessesTab {
+            contextMenu: processContextMenu
+        }
+
+    }
+
+    Component {
+        id: performanceTabComponent
+
+        PerformanceTab {
+        }
+
+    }
+
+    Component {
+        id: systemTabComponent
+
+        SystemTab {
+        }
+
+    }
+
+    ProcessContextMenu {
+        id: processContextMenu
+    }
 
     content: Component {
         Item {
@@ -102,6 +129,7 @@ DankModal {
                         onClicked: processListModal.hide()
                         Layout.alignment: Qt.AlignVCenter
                     }
+
                 }
 
                 Rectangle {
@@ -234,7 +262,9 @@ DankModal {
                                 duration: Theme.mediumDuration
                                 easing.type: Theme.emphasizedEasing
                             }
+
                         }
+
                     }
 
                     Loader {
@@ -252,7 +282,9 @@ DankModal {
                                 duration: Theme.mediumDuration
                                 easing.type: Theme.emphasizedEasing
                             }
+
                         }
+
                     }
 
                     Loader {
@@ -270,33 +302,17 @@ DankModal {
                                 duration: Theme.mediumDuration
                                 easing.type: Theme.emphasizedEasing
                             }
+
                         }
+
                     }
+
                 }
 
             }
+
         }
-    }
 
-    Component {
-        id: processesTabComponent
-        ProcessesTab {
-            contextMenu: processContextMenu
-        }
-    }
-
-    Component {
-        id: performanceTabComponent
-        PerformanceTab {}
-    }
-
-    Component {
-        id: systemTabComponent
-        SystemTab {}
-    }
-
-    ProcessContextMenu {
-        id: processContextMenu
     }
 
 }

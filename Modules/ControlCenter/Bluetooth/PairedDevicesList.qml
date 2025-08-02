@@ -10,9 +10,9 @@ import qs.Widgets
 
 Column {
     id: root
-    
+
     property var bluetoothContextMenuWindow
-    
+
     width: parent.width
     spacing: Theme.spacingM
     visible: BluetoothService.adapter && BluetoothService.adapter.enabled
@@ -84,8 +84,11 @@ Column {
                             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                             visible: text.length > 0
                         }
+
                     }
+
                 }
+
             }
 
             Rectangle {
@@ -126,7 +129,9 @@ Column {
                     ColorAnimation {
                         duration: Theme.shortDuration
                     }
+
                 }
+
             }
 
             MouseArea {
@@ -138,13 +143,15 @@ Column {
                 enabled: !BluetoothService.isDeviceBusy(modelData)
                 cursorShape: enabled ? Qt.PointingHandCursor : Qt.BusyCursor
                 onClicked: {
-                    if (modelData.connected) {
+                    if (modelData.connected)
                         modelData.disconnect();
-                    } else {
+                    else
                         BluetoothService.connectDeviceWithTrust(modelData);
-                    }
                 }
             }
+
         }
+
     }
+
 }

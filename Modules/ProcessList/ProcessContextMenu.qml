@@ -12,24 +12,20 @@ Popup {
     property var processData: null
 
     function show(x, y) {
-        if (!processContextMenu.parent && typeof Overlay !== "undefined" && Overlay.overlay) {
+        if (!processContextMenu.parent && typeof Overlay !== "undefined" && Overlay.overlay)
             processContextMenu.parent = Overlay.overlay;
-        }
-        
+
         const menuWidth = 180;
         const menuHeight = menuColumn.implicitHeight + Theme.spacingS * 2;
         const screenWidth = Screen.width;
         const screenHeight = Screen.height;
-
         let finalX = x;
         let finalY = y;
-
-        if (x + menuWidth > screenWidth - 20) {
+        if (x + menuWidth > screenWidth - 20)
             finalX = x - menuWidth;
-        }
-        if (y + menuHeight > screenHeight - 20) {
+
+        if (y + menuHeight > screenHeight - 20)
             finalY = y - menuHeight;
-        }
 
         processContextMenu.x = Math.max(20, finalX);
         processContextMenu.y = Math.max(20, finalY);
@@ -41,29 +37,29 @@ Popup {
     padding: 0
     modal: false
     closePolicy: Popup.CloseOnEscape
-    
     onClosed: {
         closePolicy = Popup.CloseOnEscape;
     }
-    
     onOpened: {
         outsideClickTimer.start();
     }
-    
+
     Timer {
         id: outsideClickTimer
+
         interval: 100
         onTriggered: {
             processContextMenu.closePolicy = Popup.CloseOnEscape | Popup.CloseOnPressOutside;
         }
     }
-    
+
     background: Rectangle {
         color: "transparent"
     }
 
     contentItem: Rectangle {
         id: menuContent
+
         color: Theme.popupBackground()
         radius: Theme.cornerRadiusLarge
         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
@@ -71,6 +67,7 @@ Popup {
 
         Column {
             id: menuColumn
+
             anchors.fill: parent
             anchors.margins: Theme.spacingS
             spacing: 1
@@ -93,16 +90,18 @@ Popup {
 
                 MouseArea {
                     id: copyPidArea
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        if (processContextMenu.processData) {
+                        if (processContextMenu.processData)
                             Quickshell.execDetached(["wl-copy", processContextMenu.processData.pid.toString()]);
-                        }
+
                         processContextMenu.close();
                     }
                 }
+
             }
 
             Rectangle {
@@ -123,6 +122,7 @@ Popup {
 
                 MouseArea {
                     id: copyNameArea
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
@@ -134,6 +134,7 @@ Popup {
                         processContextMenu.close();
                     }
                 }
+
             }
 
             Rectangle {
@@ -148,6 +149,7 @@ Popup {
                     height: 1
                     color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                 }
+
             }
 
             Rectangle {
@@ -170,17 +172,19 @@ Popup {
 
                 MouseArea {
                     id: killArea
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: parent.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     enabled: parent.enabled
                     onClicked: {
-                        if (processContextMenu.processData) {
+                        if (processContextMenu.processData)
                             Quickshell.execDetached(["kill", processContextMenu.processData.pid.toString()]);
-                        }
+
                         processContextMenu.close();
                     }
                 }
+
             }
 
             Rectangle {
@@ -203,18 +207,23 @@ Popup {
 
                 MouseArea {
                     id: forceKillArea
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: parent.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     enabled: parent.enabled
                     onClicked: {
-                        if (processContextMenu.processData) {
+                        if (processContextMenu.processData)
                             Quickshell.execDetached(["kill", "-9", processContextMenu.processData.pid.toString()]);
-                        }
+
                         processContextMenu.close();
                     }
                 }
+
             }
+
         }
+
     }
+
 }

@@ -31,7 +31,6 @@ StyledRect {
         stateColor: Theme.primary
         cornerRadius: root.radius
         onClicked: {
-            console.log("StateLayer clicked for button:", root.iconName);
             root.clicked();
         }
     }

@@ -6,11 +6,9 @@ import qs.Widgets
 Row {
     width: parent.width
     spacing: Theme.spacingM
-
     Component.onCompleted: {
         SysMonitorService.addRef();
     }
-
     Component.onDestruction: {
         SysMonitorService.removeRef();
     }

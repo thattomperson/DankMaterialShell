@@ -30,7 +30,6 @@ PanelWindow {
             ToastService.showError("Please install Material Symbols Rounded and Restart your Shell. See README.md for instructions");
 
         Prefs.forceTopBarLayoutRefresh.connect(function() {
-            console.log("TopBar: Forcing layout refresh");
             Qt.callLater(() => {
                 leftSection.visible = false;
                 centerSection.visible = false;
@@ -39,14 +38,12 @@ PanelWindow {
                     leftSection.visible = true;
                     centerSection.visible = true;
                     rightSection.visible = true;
-                    console.log("TopBar: Layout refresh completed");
                 });
             });
         });
     }
 
     Connections {
-
         function onTopBarTransparencyChanged() {
             root.backgroundTransparency = Prefs.topBarTransparency;
         }
@@ -180,6 +177,10 @@ PanelWindow {
                     return true;
                 case "controlCenterButton":
                     return true;
+                case "spacer":
+                    return true;
+                case "separator":
+                    return true;
                 default:
                     return false;
                 }
@@ -241,10 +242,13 @@ PanelWindow {
 
                     Loader {
                         property string widgetId: model.widgetId
+                        property var widgetData: model
+                        property int spacerSize: model.size || 20
 
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                        active: topBarContent.getWidgetEnabled(model.enabled) && topBarContent.getWidgetVisible(model.widgetId)
+                        active: topBarContent.getWidgetVisible(model.widgetId)
                         sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
+                        opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
                     }
 
                 }
@@ -263,26 +267,14 @@ PanelWindow {
                     centerWidgets = [];
                     totalWidgets = 0;
                     totalWidth = 0;
-                    
-                    let allItemsReady = true;
                     for (let i = 0; i < centerRepeater.count; i++) {
                         let item = centerRepeater.itemAt(i);
                         if (item && item.active && item.item) {
-                            if (item.item.width <= 0) {
-                                allItemsReady = false;
-                                break;
-                            }
                             centerWidgets.push(item.item);
                             totalWidgets++;
                             totalWidth += item.item.width;
                         }
                     }
-                    
-                    if (!allItemsReady) {
-                        Qt.callLater(updateLayout);
-                        return;
-                    }
-                    
                     if (totalWidgets > 1)
                         totalWidth += spacing * (totalWidgets - 1);
 
@@ -341,7 +333,6 @@ PanelWindow {
                 width: parent.width
                 anchors.centerIn: parent
                 Component.onCompleted: {
-                    console.log("Center widgets model count:", Prefs.topBarCenterWidgetsModel.count);
                     Qt.callLater(() => {
                         Qt.callLater(updateLayout);
                     });
@@ -354,13 +345,21 @@ PanelWindow {
 
                     Loader {
                         property string widgetId: model.widgetId
+                        property var widgetData: model
+                        property int spacerSize: model.size || 20
 
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                        active: topBarContent.getWidgetEnabled(model.enabled) && topBarContent.getWidgetVisible(model.widgetId)
+                        active: topBarContent.getWidgetVisible(model.widgetId)
                         sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
+                        opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
                         onLoaded: {
                             if (item) {
                                 item.onWidthChanged.connect(centerSection.updateLayout);
+                                if (model.widgetId === "spacer")
+                                    item.spacerSize = Qt.binding(() => {
+                                        return model.size || 20;
+                                    });
+
                                 Qt.callLater(centerSection.updateLayout);
                             }
                         }
@@ -388,19 +387,19 @@ PanelWindow {
                 spacing: Theme.spacingXS
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                Component.onCompleted: {
-                    console.log("Right widgets model count:", Prefs.topBarRightWidgetsModel.count);
-                }
 
                 Repeater {
                     model: Prefs.topBarRightWidgetsModel
 
                     Loader {
                         property string widgetId: model.widgetId
+                        property var widgetData: model
+                        property int spacerSize: model.size || 20
 
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                        active: topBarContent.getWidgetEnabled(model.enabled) && topBarContent.getWidgetVisible(model.widgetId)
+                        active: topBarContent.getWidgetVisible(model.widgetId)
                         sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
+                        opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
                     }
 
                 }
@@ -601,8 +600,26 @@ PanelWindow {
                 id: spacerComponent
 
                 Item {
-                    width: 20
+                    width: parent.spacerSize || 20
                     height: 30
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: "transparent"
+                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.1)
+                        border.width: 1
+                        radius: 2
+                        visible: false
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onEntered: parent.visible = true
+                            onExited: parent.visible = false
+                        }
+
+                    }
+
                 }
 
             }

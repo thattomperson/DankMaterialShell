@@ -48,79 +48,73 @@ DankModal {
         Item {
             anchors.fill: parent
 
-        Column {
-            anchors.fill: parent
-            anchors.margins: Theme.spacingL
-            spacing: Theme.spacingL
+            Column {
+                anchors.fill: parent
+                anchors.margins: Theme.spacingL
+                spacing: Theme.spacingL
 
-            // Header
-            Row {
-                width: parent.width
+                // Header
+                Row {
+                    width: parent.width
 
-                Column {
-                    width: parent.width - 40
-                    spacing: Theme.spacingXS
+                    Column {
+                        width: parent.width - 40
+                        spacing: Theme.spacingXS
 
-                    StyledText {
-                        text: "Network Information"
-                        font.pixelSize: Theme.fontSizeLarge
-                        color: Theme.surfaceText
-                        font.weight: Font.Medium
+                        StyledText {
+                            text: "Network Information"
+                            font.pixelSize: Theme.fontSizeLarge
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
+                        }
+
+                        StyledText {
+                            text: "Details for \"" + networkSSID + "\""
+                            font.pixelSize: Theme.fontSizeMedium
+                            color: Theme.surfaceTextMedium
+                            width: parent.width
+                            elide: Text.ElideRight
+                        }
+
                     }
 
-                    StyledText {
-                        text: "Details for \"" + networkSSID + "\""
-                        font.pixelSize: Theme.fontSizeMedium
-                        color: Theme.surfaceTextMedium
-                        width: parent.width
-                        elide: Text.ElideRight
+                    DankActionButton {
+                        iconName: "close"
+                        iconSize: Theme.iconSize - 4
+                        iconColor: Theme.surfaceText
+                        hoverColor: Theme.errorHover
+                        onClicked: {
+                            root.hideDialog();
+                        }
                     }
 
                 }
 
-                DankActionButton {
-                    iconName: "close"
-                    iconSize: Theme.iconSize - 4
-                    iconColor: Theme.surfaceText
-                    hoverColor: Theme.errorHover
-                    onClicked: {
-                        root.hideDialog();
+                // Network Details
+                Flickable {
+                    property real wheelMultiplier: 1.8
+                    property int wheelBaseStep: 160
+
+                    width: parent.width
+                    height: parent.height - 140
+                    clip: true
+                    contentWidth: width
+                    contentHeight: detailsRect.height
+
+                    WheelHandler {
+                        target: null
+                        onWheel: (ev) => {
+                            let dy = ev.pixelDelta.y !== 0 ? ev.pixelDelta.y : (ev.angleDelta.y / 120) * parent.wheelBaseStep;
+                            if (ev.inverted)
+                                dy = -dy;
+
+                            const maxY = Math.max(0, parent.contentHeight - parent.height);
+                            parent.contentY = Math.max(0, Math.min(maxY, parent.contentY - dy * parent.wheelMultiplier));
+                            ev.accepted = true;
+                        }
                     }
-                }
 
-            }
-
-            // Network Details
-            Flickable {
-                width: parent.width
-                height: parent.height - 140
-                clip: true
-                contentWidth: width
-                contentHeight: detailsRect.height
-
-                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
-                ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
-
-                property real wheelMultiplier: 1.8
-                property int wheelBaseStep: 160
-
-                WheelHandler {
-                    target: null
-                    onWheel: (ev) => {
-                        let dy = ev.pixelDelta.y !== 0
-                                 ? ev.pixelDelta.y
-                                 : (ev.angleDelta.y / 120) * parent.wheelBaseStep;
-                        if (ev.inverted) dy = -dy;
-
-                        const maxY = Math.max(0, parent.contentHeight - parent.height);
-                        parent.contentY = Math.max(0, Math.min(maxY,
-                            parent.contentY - dy * parent.wheelMultiplier));
-
-                        ev.accepted = true;
-                    }
-                }
-
-                Rectangle {
+                    Rectangle {
                         id: detailsRect
 
                         width: parent.width
@@ -142,48 +136,58 @@ DankModal {
                             lineHeight: 1.5
                         }
 
+                    }
+
+                    ScrollBar.vertical: ScrollBar {
+                        policy: ScrollBar.AsNeeded
+                    }
+
+                    ScrollBar.horizontal: ScrollBar {
+                        policy: ScrollBar.AlwaysOff
+                    }
+
                 }
 
-            }
+                // Close Button
+                Item {
+                    width: parent.width
+                    height: 40
 
-            // Close Button
-            Item {
-                width: parent.width
-                height: 40
+                    Rectangle {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Math.max(70, closeText.contentWidth + Theme.spacingM * 2)
+                        height: 36
+                        radius: Theme.cornerRadius
+                        color: closeArea.containsMouse ? Qt.darker(Theme.primary, 1.1) : Theme.primary
 
-                Rectangle {
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: Math.max(70, closeText.contentWidth + Theme.spacingM * 2)
-                    height: 36
-                    radius: Theme.cornerRadius
-                    color: closeArea.containsMouse ? Qt.darker(Theme.primary, 1.1) : Theme.primary
+                        StyledText {
+                            id: closeText
 
-                    StyledText {
-                        id: closeText
-
-                        anchors.centerIn: parent
-                        text: "Close"
-                        font.pixelSize: Theme.fontSizeMedium
-                        color: Theme.background
-                        font.weight: Font.Medium
-                    }
-
-                    MouseArea {
-                        id: closeArea
-
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            root.hideDialog();
+                            anchors.centerIn: parent
+                            text: "Close"
+                            font.pixelSize: Theme.fontSizeMedium
+                            color: Theme.background
+                            font.weight: Font.Medium
                         }
-                    }
 
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: Theme.shortDuration
-                            easing.type: Theme.standardEasing
+                        MouseArea {
+                            id: closeArea
+
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                root.hideDialog();
+                            }
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: Theme.shortDuration
+                                easing.type: Theme.standardEasing
+                            }
+
                         }
 
                     }
@@ -193,7 +197,7 @@ DankModal {
             }
 
         }
-        }
+
     }
 
 }

@@ -25,6 +25,7 @@ Item {
 
         DankActionButton {
             id: doNotDisturbButton
+
             iconName: Prefs.doNotDisturb ? "notifications_off" : "notifications"
             iconColor: Prefs.doNotDisturb ? Theme.error : Theme.surfaceText
             buttonSize: 28
@@ -62,13 +63,18 @@ Item {
                         duration: Theme.shortDuration
                         easing.type: Theme.standardEasing
                     }
+
                 }
+
             }
+
         }
+
     }
 
     Rectangle {
         id: clearAllButton
+
         width: 120
         height: 28
         radius: Theme.cornerRadiusLarge

@@ -71,20 +71,16 @@ DankModal {
     }
 
     function generateThumbnails() {
-        if (!imagemagickAvailable) return;
-        
+        if (!imagemagickAvailable)
+            return ;
+
         for (let i = 0; i < clipboardModel.count; i++) {
             const entry = clipboardModel.get(i).entry;
             const entryType = getEntryType(entry);
-            
             if (entryType === "image") {
                 const entryId = entry.split('\t')[0];
                 const thumbnailPath = `${thumbnailCacheDir}/${entryId}.png`;
-                
-                thumbnailGenProcess.command = [
-                    "sh", "-c", 
-                    `mkdir -p "${thumbnailCacheDir}" && cliphist decode ${entryId} | magick - -resize '128x128>' "${thumbnailPath}"`
-                ];
+                thumbnailGenProcess.command = ["sh", "-c", `mkdir -p "${thumbnailCacheDir}" && cliphist decode ${entryId} | magick - -resize '128x128>' "${thumbnailPath}"`];
                 thumbnailGenProcess.running = true;
             }
         }
@@ -94,7 +90,6 @@ DankModal {
         const entryId = entry.split('\t')[0];
         return `${thumbnailCacheDir}/${entryId}.png`;
     }
-
 
     function refreshClipboard() {
         clipboardProcess.running = true;
@@ -157,7 +152,7 @@ DankModal {
     cornerRadius: Theme.cornerRadiusLarge
     borderColor: Theme.outlineMedium
     borderWidth: 1
-    enableShadow: true 
+    enableShadow: true
     onBackgroundClicked: {
         hide();
     }
@@ -292,8 +287,8 @@ DankModal {
                 for (const line of lines) {
                     if (line.trim().length > 0)
                         clipboardModel.append({
-                            "entry": line
-                        });
+                        "entry": line
+                    });
 
                 }
                 updateFilteredModel();
@@ -360,6 +355,7 @@ DankModal {
                 checkImageMagickProcess.running = true;
             }
         }
+
     }
 
     Process {
@@ -367,12 +363,11 @@ DankModal {
 
         command: ["which", "magick"]
         running: false
-
         onExited: (exitCode) => {
             imagemagickAvailable = (exitCode === 0);
-            if (!imagemagickAvailable) {
+            if (!imagemagickAvailable)
                 console.warn("ClipboardHistoryModal: ImageMagick not available, thumbnails disabled");
-            }
+
         }
     }
 
@@ -380,14 +375,12 @@ DankModal {
         id: thumbnailGenProcess
 
         running: false
-
         onExited: (exitCode) => {
-            if (exitCode !== 0) {
+            if (exitCode !== 0)
                 console.warn("ClipboardHistoryModal: Thumbnail generation failed with exit code:", exitCode);
-            }
+
         }
     }
-
 
     IpcHandler {
         function open() {
@@ -440,6 +433,7 @@ DankModal {
                         font.weight: Font.Medium
                         anchors.verticalCenter: parent.verticalCenter
                     }
+
                 }
 
                 Row {
@@ -464,7 +458,9 @@ DankModal {
                         hoverColor: Theme.errorHover
                         onClicked: hide()
                     }
+
                 }
+
             }
 
             DankTextField {
@@ -490,6 +486,7 @@ DankModal {
 
                     target: clipboardHistoryModal
                 }
+
             }
 
             Rectangle {
@@ -504,30 +501,24 @@ DankModal {
                 ListView {
                     id: clipboardListView
 
+                    property real wheelMultiplier: 1.8
+                    property int wheelBaseStep: 160
+
                     anchors.fill: parent
                     anchors.margins: Theme.spacingS
                     clip: true
                     model: filteredClipboardModel
                     spacing: Theme.spacingXS
 
-                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
-                    ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
-
-                    property real wheelMultiplier: 1.8
-                    property int wheelBaseStep: 160
-
                     WheelHandler {
                         target: null
                         onWheel: (ev) => {
-                            let dy = ev.pixelDelta.y !== 0
-                                     ? ev.pixelDelta.y
-                                     : (ev.angleDelta.y / 120) * clipboardListView.wheelBaseStep;
-                            if (ev.inverted) dy = -dy;
+                            let dy = ev.pixelDelta.y !== 0 ? ev.pixelDelta.y : (ev.angleDelta.y / 120) * clipboardListView.wheelBaseStep;
+                            if (ev.inverted)
+                                dy = -dy;
 
                             const maxY = Math.max(0, clipboardListView.contentHeight - clipboardListView.height);
-                            clipboardListView.contentY = Math.max(0, Math.min(maxY,
-                                clipboardListView.contentY - dy * clipboardListView.wheelMultiplier));
-
+                            clipboardListView.contentY = Math.max(0, Math.min(maxY, clipboardListView.contentY - dy * clipboardListView.wheelMultiplier));
                             ev.accepted = true;
                         }
                     }
@@ -540,211 +531,227 @@ DankModal {
                         visible: filteredClipboardModel.count === 0
                     }
 
+                    ScrollBar.vertical: ScrollBar {
+                        policy: ScrollBar.AsNeeded
+                    }
+
+                    ScrollBar.horizontal: ScrollBar {
+                        policy: ScrollBar.AlwaysOff
+                    }
+
                     delegate: Rectangle {
-                            property string entryType: getEntryType(model.entry)
-                            property string entryPreview: getEntryPreview(model.entry)
-                            property int entryIndex: index + 1
-                            property string entryData: model.entry
-                            property alias thumbnailImageSource: thumbnailImageSource
+                        property string entryType: getEntryType(model.entry)
+                        property string entryPreview: getEntryPreview(model.entry)
+                        property int entryIndex: index + 1
+                        property string entryData: model.entry
+                        property alias thumbnailImageSource: thumbnailImageSource
 
-                            width: clipboardListView.width
-                            height: Math.max(entryType === "image" ? 72 : 60, contentText.contentHeight + Theme.spacingL)
-                            radius: Theme.cornerRadius
-                            color: mouseArea.containsMouse ? Theme.primaryHover : Theme.primaryBackground
-                            border.color: Theme.outlineStrong
-                            border.width: 1
+                        width: clipboardListView.width
+                        height: Math.max(entryType === "image" ? 72 : 60, contentText.contentHeight + Theme.spacingL)
+                        radius: Theme.cornerRadius
+                        color: mouseArea.containsMouse ? Theme.primaryHover : Theme.primaryBackground
+                        border.color: Theme.outlineStrong
+                        border.width: 1
 
+                        Row {
+                            anchors.fill: parent
+                            anchors.margins: Theme.spacingM
+                            anchors.rightMargin: Theme.spacingS // Reduced right margin
+                            spacing: Theme.spacingL
+
+                            // Index number
+                            Rectangle {
+                                width: 24
+                                height: 24
+                                radius: 12
+                                color: Theme.primarySelected
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                StyledText {
+                                    anchors.centerIn: parent
+                                    text: entryIndex.toString()
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    font.weight: Font.Bold
+                                    color: Theme.primary
+                                }
+
+                            }
+
+                            // Content thumbnail/icon and text
                             Row {
-                                anchors.fill: parent
-                                anchors.margins: Theme.spacingM
-                                anchors.rightMargin: Theme.spacingS // Reduced right margin
-                                spacing: Theme.spacingL
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: parent.width - 68 // Account for index (24) + spacing (16) + delete button (32) - small margin
+                                spacing: Theme.spacingM
 
-                                // Index number
-                                Rectangle {
-                                    width: 24
-                                    height: 24
-                                    radius: 12
-                                    color: Theme.primarySelected
+                                // Thumbnail or icon container
+                                Item {
+                                    width: entryType === "image" ? 48 : Theme.iconSize
+                                    height: entryType === "image" ? 48 : Theme.iconSize
                                     anchors.verticalCenter: parent.verticalCenter
+
+                                    // Image thumbnail
+                                    CachingImage {
+                                        id: thumbnailImageSource
+
+                                        anchors.fill: parent
+                                        source: entryType === "image" && imagemagickAvailable ? "file://" + getThumbnailPath(model.entry) : ""
+                                        fillMode: Image.PreserveAspectCrop
+                                        smooth: true
+                                        cache: true
+                                        visible: false
+                                        asynchronous: true
+                                        // Handle loading errors gracefully and retry once
+                                        onStatusChanged: {
+                                            if (status === Image.Error && source !== "") {
+                                                // Clear source to prevent repeated error attempts
+                                                const originalSource = source;
+                                                source = "";
+                                                // Retry once after 2 seconds to allow thumbnail generation
+                                                retryTimer.originalSource = originalSource;
+                                                retryTimer.start();
+                                            }
+                                        }
+
+                                        Timer {
+                                            id: retryTimer
+
+                                            property string originalSource: ""
+
+                                            interval: 2000
+                                            repeat: false
+                                            onTriggered: {
+                                                if (originalSource !== "" && thumbnailImageSource.source === "")
+                                                    thumbnailImageSource.source = originalSource;
+
+                                            }
+                                        }
+
+                                    }
+
+                                    MultiEffect {
+                                        anchors.fill: parent
+                                        source: thumbnailImageSource
+                                        maskEnabled: true
+                                        maskSource: clipboardCircularMask
+                                        visible: entryType === "image" && imagemagickAvailable && thumbnailImageSource.status === Image.Ready
+                                        maskThresholdMin: 0.5
+                                        maskSpreadAtMin: 1
+                                    }
+
+                                    Item {
+                                        id: clipboardCircularMask
+
+                                        width: 48
+                                        height: 48
+                                        layer.enabled: true
+                                        layer.smooth: true
+                                        visible: false
+
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            radius: width / 2
+                                            color: "black"
+                                            antialiasing: true
+                                        }
+
+                                    }
+
+                                    // Fallback icon
+                                    DankIcon {
+                                        visible: !(entryType === "image" && imagemagickAvailable && thumbnailImageSource.status === Image.Ready)
+                                        name: {
+                                            if (entryType === "image")
+                                                return "image";
+
+                                            if (entryType === "long_text")
+                                                return "subject";
+
+                                            return "content_copy";
+                                        }
+                                        size: Theme.iconSize
+                                        color: Theme.primary
+                                        anchors.centerIn: parent
+                                    }
+
+                                }
+
+                                Column {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: parent.width - (entryType === "image" ? 48 : Theme.iconSize) - Theme.spacingM
+                                    spacing: Theme.spacingXS
 
                                     StyledText {
-                                        anchors.centerIn: parent
-                                        text: entryIndex.toString()
+                                        text: {
+                                            switch (entryType) {
+                                            case "image":
+                                                return "Image • " + entryPreview;
+                                            case "long_text":
+                                                return "Long Text";
+                                            default:
+                                                return "Text";
+                                            }
+                                        }
                                         font.pixelSize: Theme.fontSizeSmall
-                                        font.weight: Font.Bold
                                         color: Theme.primary
+                                        font.weight: Font.Medium
+                                        width: parent.width
+                                        elide: Text.ElideRight
                                     }
 
-                                }
+                                    StyledText {
+                                        id: contentText
 
-                                // Content thumbnail/icon and text
-                                Row {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    width: parent.width - 68 // Account for index (24) + spacing (16) + delete button (32) - small margin
-                                    spacing: Theme.spacingM
-
-                                    // Thumbnail or icon container
-                                    Item {
-                                        width: entryType === "image" ? 48 : Theme.iconSize
-                                        height: entryType === "image" ? 48 : Theme.iconSize
-                                        anchors.verticalCenter: parent.verticalCenter
-
-                                        // Image thumbnail
-                                        CachingImage {
-                                            id: thumbnailImageSource
-                                            anchors.fill: parent
-                                            source: entryType === "image" && imagemagickAvailable ? "file://" + getThumbnailPath(model.entry) : ""
-                                            fillMode: Image.PreserveAspectCrop
-                                            smooth: true
-                                            cache: true
-                                            visible: false
-                                            asynchronous: true
-                                            
-                                            // Handle loading errors gracefully and retry once
-                                            onStatusChanged: {
-                                                if (status === Image.Error && source !== "") {
-                                                    // Clear source to prevent repeated error attempts
-                                                    const originalSource = source;
-                                                    source = "";
-                                                    
-                                                    // Retry once after 2 seconds to allow thumbnail generation
-                                                    retryTimer.originalSource = originalSource;
-                                                    retryTimer.start();
-                                                }
-                                            }
-                                            
-                                            Timer {
-                                                id: retryTimer
-                                                interval: 2000
-                                                repeat: false
-                                                property string originalSource: ""
-                                                
-                                                onTriggered: {
-                                                    if (originalSource !== "" && thumbnailImageSource.source === "") {
-                                                        thumbnailImageSource.source = originalSource;
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        MultiEffect {
-                                            anchors.fill: parent
-                                            source: thumbnailImageSource
-                                            maskEnabled: true
-                                            maskSource: clipboardCircularMask
-                                            visible: entryType === "image" && imagemagickAvailable && thumbnailImageSource.status === Image.Ready
-                                            maskThresholdMin: 0.5
-                                            maskSpreadAtMin: 1
-                                        }
-
-                                        Item {
-                                            id: clipboardCircularMask
-                                            width: 48
-                                            height: 48
-                                            layer.enabled: true
-                                            layer.smooth: true
-                                            visible: false
-
-                                            Rectangle {
-                                                anchors.fill: parent
-                                                radius: width / 2
-                                                color: "black"
-                                                antialiasing: true
-                                            }
-                                        }
-
-                                        // Fallback icon
-                                        DankIcon {
-                                            visible: !(entryType === "image" && imagemagickAvailable && thumbnailImageSource.status === Image.Ready)
-                                            name: {
-                                                if (entryType === "image")
-                                                    return "image";
-                                                if (entryType === "long_text")
-                                                    return "subject";
-                                                return "content_copy";
-                                            }
-                                            size: Theme.iconSize
-                                            color: Theme.primary
-                                            anchors.centerIn: parent
-                                        }
-                                    }
-
-                                    Column {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        width: parent.width - (entryType === "image" ? 48 : Theme.iconSize) - Theme.spacingM
-                                        spacing: Theme.spacingXS
-
-                                        StyledText {
-                                            text: {
-                                                switch (entryType) {
-                                                case "image":
-                                                    return "Image • " + entryPreview;
-                                                case "long_text":
-                                                    return "Long Text";
-                                                default:
-                                                    return "Text";
-                                                }
-                                            }
-                                            font.pixelSize: Theme.fontSizeSmall
-                                            color: Theme.primary
-                                            font.weight: Font.Medium
-                                            width: parent.width
-                                            elide: Text.ElideRight
-                                        }
-
-                                        StyledText {
-                                            id: contentText
-
-                                            text: entryPreview
-                                            font.pixelSize: Theme.fontSizeMedium
-                                            color: Theme.surfaceText
-                                            width: parent.width
-                                            wrapMode: Text.WordWrap
-                                            maximumLineCount: entryType === "long_text" ? 3 : 1
-                                            elide: Text.ElideRight
-                                        }
-
+                                        text: entryPreview
+                                        font.pixelSize: Theme.fontSizeMedium
+                                        color: Theme.surfaceText
+                                        width: parent.width
+                                        wrapMode: Text.WordWrap
+                                        maximumLineCount: entryType === "long_text" ? 3 : 1
+                                        elide: Text.ElideRight
                                     }
 
                                 }
 
                             }
 
-                            // Delete button
-                            DankActionButton {
-                                anchors.right: parent.right
-                                anchors.rightMargin: Theme.spacingM
-                                anchors.verticalCenter: parent.verticalCenter
-                                iconName: "close"
-                                iconSize: Theme.iconSize - 6
-                                iconColor: Theme.error
-                                hoverColor: Theme.errorHover
-                                onClicked: {
-                                    console.log("Delete clicked for entry:", model.entry);
-                                    deleteEntry(model.entry);
-                                }
-                            }
+                        }
 
-                            // Main click area - explicitly excludes delete button area
-                            MouseArea {
-                                id: mouseArea
-                                anchors.fill: parent
-                                anchors.rightMargin: 40 // Enough space to avoid delete button (32 + 8 margin)
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: copyEntry(model.entry)
+                        // Delete button
+                        DankActionButton {
+                            anchors.right: parent.right
+                            anchors.rightMargin: Theme.spacingM
+                            anchors.verticalCenter: parent.verticalCenter
+                            iconName: "close"
+                            iconSize: Theme.iconSize - 6
+                            iconColor: Theme.error
+                            hoverColor: Theme.errorHover
+                            onClicked: {
+                                console.log("Delete clicked for entry:", model.entry);
+                                deleteEntry(model.entry);
                             }
+                        }
 
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.shortDuration
-                                }
+                        // Main click area - explicitly excludes delete button area
+                        MouseArea {
+                            id: mouseArea
+
+                            anchors.fill: parent
+                            anchors.rightMargin: 40 // Enough space to avoid delete button (32 + 8 margin)
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: copyEntry(model.entry)
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: Theme.shortDuration
                             }
 
                         }
 
                     }
+
+                }
 
             }
 

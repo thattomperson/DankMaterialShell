@@ -4,25 +4,27 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
 import qs.Common
-import qs.Services
 import qs.Modules
+import qs.Services
 import qs.Widgets
 
 ScrollView {
     id: displayTab
 
-    clip: true
-    
-    property var brightnessDebounceTimer: Timer {
-        interval: BrightnessService.ddcAvailable ? 500 : 50  // 500ms for slow DDC (i2c), 50ms for fast laptop backlight
-        repeat: false
+    property var brightnessDebounceTimer
+
+    brightnessDebounceTimer: Timer {
         property int pendingValue: 0
+
+        interval: BrightnessService.ddcAvailable ? 500 : 50 // 500ms for slow DDC (i2c), 50ms for fast laptop backlight
+        repeat: false
         onTriggered: {
             console.log("Debounce timer fired, setting brightness to:", pendingValue);
             BrightnessService.setBrightness(pendingValue);
         }
     }
 
+    clip: true
     Column {
         width: parent.width
         spacing: Theme.spacingL

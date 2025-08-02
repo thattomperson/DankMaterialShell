@@ -94,6 +94,7 @@ DankModal {
     content: Component {
         Item {
             id: spotlightKeyHandler
+
             anchors.fill: parent
             focus: true
             // Handle keyboard shortcuts
@@ -139,6 +140,7 @@ DankModal {
 
                     CategorySelector {
                         id: categorySelector
+
                         anchors.centerIn: parent
                         width: parent.width - Theme.spacingM * 2
                         categories: appLauncher.categories
@@ -148,6 +150,7 @@ DankModal {
                             return appLauncher.setCategory(category);
                         }
                     }
+
                 }
 
                 // Search field with view toggle buttons
@@ -184,11 +187,10 @@ DankModal {
                                 hide();
                                 event.accepted = true;
                             } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length > 0) {
-                                if (appLauncher.keyboardNavigationActive && appLauncher.model.count > 0) {
+                                if (appLauncher.keyboardNavigationActive && appLauncher.model.count > 0)
                                     appLauncher.launchSelected();
-                                } else if (appLauncher.model.count > 0) {
+                                else if (appLauncher.model.count > 0)
                                     appLauncher.launchApp(appLauncher.model.get(0));
-                                }
                                 event.accepted = true;
                             } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || event.key === Qt.Key_Left || event.key === Qt.Key_Right || ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
                                 event.accepted = false;

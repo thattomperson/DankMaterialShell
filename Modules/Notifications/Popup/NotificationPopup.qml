@@ -12,9 +12,50 @@ PanelWindow {
 
     required property var notificationData
     required property string notificationId
-
     readonly property bool hasValidData: notificationData && notificationData.notification
-    
+    property int screenY: 0
+    property bool exiting: false
+    property bool _isDestroying: false
+    property bool _finalized: false
+
+    signal entered()
+    signal exitFinished()
+
+    function startExit() {
+        if (exiting || _isDestroying)
+            return ;
+
+        exiting = true;
+        exitAnim.restart();
+        exitWatchdog.restart();
+        if (NotificationService.removeFromVisibleNotifications)
+            NotificationService.removeFromVisibleNotifications(win.notificationData);
+
+    }
+
+    function forceExit() {
+        if (_isDestroying)
+            return ;
+
+        _isDestroying = true;
+        exiting = true;
+        visible = false;
+        exitWatchdog.stop();
+        finalizeExit("forced");
+    }
+
+    function finalizeExit(reason) {
+        if (_finalized)
+            return ;
+
+        _finalized = true;
+        _isDestroying = true;
+        exitWatchdog.stop();
+        wrapperConn.enabled = false;
+        wrapperConn.target = null;
+        win.exitFinished();
+    }
+
     visible: hasValidData
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
@@ -22,6 +63,41 @@ PanelWindow {
     color: "transparent"
     implicitWidth: 400
     implicitHeight: 122
+    onScreenYChanged: margins.top = Theme.barHeight + 4 + screenY
+    onHasValidDataChanged: {
+        if (!hasValidData && !exiting && !_isDestroying) {
+            console.warn("NotificationPopup: Data became invalid, forcing exit");
+            forceExit();
+        }
+    }
+    Component.onCompleted: {
+        if (hasValidData) {
+            Qt.callLater(() => {
+                return enterX.restart();
+            });
+        } else {
+            console.warn("NotificationPopup created with invalid data");
+            forceExit();
+        }
+    }
+    onNotificationDataChanged: {
+        if (!_isDestroying) {
+            wrapperConn.target = win.notificationData || null;
+            notificationConn.target = (win.notificationData && win.notificationData.notification && win.notificationData.notification.Retainable) || null;
+        }
+    }
+    onEntered: {
+        if (!_isDestroying)
+            enterDelay.start();
+
+    }
+    Component.onDestruction: {
+        _isDestroying = true;
+        exitWatchdog.stop();
+        if (notificationData && notificationData.timer)
+            notificationData.timer.stop();
+
+    }
 
     anchors {
         top: true
@@ -33,37 +109,11 @@ PanelWindow {
         right: 12
     }
 
-    property int screenY: 0
-    onScreenYChanged: margins.top = Theme.barHeight + 4 + screenY
-    Behavior on screenY {
-        id: screenYAnim
-        enabled: !exiting && !_isDestroying
-        NumberAnimation { 
-            duration: Anims.durShort
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Anims.standardDecel
-        }
-    }
-
-    property bool exiting: false
-    property bool _isDestroying: false
-    property bool _finalized: false
-    signal entered()
-    signal exitFinished()
-    onHasValidDataChanged: {
-        if (!hasValidData && !exiting && !_isDestroying) {
-            console.warn("NotificationPopup: Data became invalid, forcing exit");
-            forceExit();
-        }
-    }
-
     Item {
         id: content
+
         anchors.fill: parent
         visible: win.hasValidData
-
-        transform: Translate { id: tx; x: Anims.slidePx }
-
         layer.enabled: (enterX.running || exitAnim.running)
         layer.smooth: true
 
@@ -80,6 +130,7 @@ PanelWindow {
 
             Rectangle {
                 id: shadowLayer1
+
                 anchors.fill: parent
                 anchors.margins: -3
                 color: "transparent"
@@ -91,6 +142,7 @@ PanelWindow {
 
             Rectangle {
                 id: shadowLayer2
+
                 anchors.fill: parent
                 anchors.margins: -2
                 color: "transparent"
@@ -102,6 +154,7 @@ PanelWindow {
 
             Rectangle {
                 id: shadowLayer3
+
                 anchors.fill: parent
                 color: "transparent"
                 border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
@@ -133,11 +186,14 @@ PanelWindow {
                         position: 0.021
                         color: "transparent"
                     }
+
                 }
+
             }
 
             Item {
                 id: notificationContent
+
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -148,6 +204,7 @@ PanelWindow {
 
                 Rectangle {
                     id: iconContainer
+
                     readonly property bool hasNotificationImage: notificationData && notificationData.image && notificationData.image !== ""
 
                     width: 55
@@ -161,12 +218,14 @@ PanelWindow {
 
                     IconImage {
                         id: iconImage
+
                         anchors.fill: parent
                         anchors.margins: 2
                         asynchronous: true
                         source: {
-                            if (!notificationData) return "";
-                            
+                            if (!notificationData)
+                                return "";
+
                             if (parent.hasNotificationImage)
                                 return notificationData.cleanImage || "";
 
@@ -193,10 +252,12 @@ PanelWindow {
                         font.weight: Font.Bold
                         color: Theme.primaryText
                     }
+
                 }
 
                 Rectangle {
                     id: textContainer
+
                     anchors.left: iconContainer.right
                     anchors.leftMargin: 12
                     anchors.right: parent.right
@@ -219,7 +280,9 @@ PanelWindow {
                             StyledText {
                                 width: parent.width
                                 text: {
-                                    if (!notificationData) return "";
+                                    if (!notificationData)
+                                        return "";
+
                                     const appName = notificationData.appName || "";
                                     const timeStr = notificationData.timeStr || "";
                                     if (timeStr.length > 0)
@@ -255,22 +318,29 @@ PanelWindow {
                                 wrapMode: Text.WordWrap
                                 visible: text.length > 0
                                 linkColor: Theme.primary
-                                onLinkActivated: (link) => Qt.openUrlExternally(link)
+                                onLinkActivated: (link) => {
+                                    return Qt.openUrlExternally(link);
+                                }
+
                                 MouseArea {
                                     anchors.fill: parent
-                                    acceptedButtons: Qt.NoButton 
+                                    acceptedButtons: Qt.NoButton
                                     cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
 
-
             }
-            
+
             DankActionButton {
                 id: closeButton
+
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.topMargin: 12
@@ -282,6 +352,7 @@ PanelWindow {
                 onClicked: {
                     if (notificationData && !win.exiting)
                         notificationData.popup = false;
+
                 }
             }
 
@@ -292,20 +363,21 @@ PanelWindow {
                 anchors.bottomMargin: 8
                 spacing: 8
                 z: 20
-                
+
                 Repeater {
                     model: notificationData ? (notificationData.actions || []) : []
-                    
+
                     Rectangle {
                         property bool isHovered: false
-                        
+
                         width: Math.max(actionText.implicitWidth + 12, 50)
                         height: 24
                         radius: 4
                         color: isHovered ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : "transparent"
-                        
+
                         StyledText {
                             id: actionText
+
                             text: modelData.text || ""
                             color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
                             font.pixelSize: Theme.fontSizeSmall
@@ -313,7 +385,7 @@ PanelWindow {
                             anchors.centerIn: parent
                             elide: Text.ElideRight
                         }
-                        
+
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
@@ -322,20 +394,24 @@ PanelWindow {
                             onEntered: parent.isHovered = true
                             onExited: parent.isHovered = false
                             onClicked: {
-                                if (modelData && modelData.invoke) {
+                                if (modelData && modelData.invoke)
                                     modelData.invoke();
-                                }
-                                if (notificationData && !win.exiting) {
+
+                                if (notificationData && !win.exiting)
                                     notificationData.popup = false;
-                                }
+
                             }
                         }
+
                     }
+
                 }
+
             }
 
             Rectangle {
                 id: clearButton
+
                 property bool isHovered: false
 
                 anchors.right: parent.right
@@ -350,6 +426,7 @@ PanelWindow {
 
                 StyledText {
                     id: clearText
+
                     text: "Clear"
                     color: clearButton.isHovered ? Theme.primary : Theme.surfaceVariantText
                     font.pixelSize: Theme.fontSizeSmall
@@ -365,15 +442,17 @@ PanelWindow {
                     onEntered: clearButton.isHovered = true
                     onExited: clearButton.isHovered = false
                     onClicked: {
-                        if (notificationData && !win.exiting) {
+                        if (notificationData && !win.exiting)
                             NotificationService.dismissNotification(notificationData);
-                        }
+
                     }
                 }
+
             }
 
             MouseArea {
                 id: cardHoverArea
+
                 anchors.fill: parent
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
@@ -382,153 +461,146 @@ PanelWindow {
                 onEntered: {
                     if (notificationData && notificationData.timer)
                         notificationData.timer.stop();
+
                 }
                 onExited: {
                     if (notificationData && notificationData.popup && notificationData.timer)
                         notificationData.timer.restart();
+
                 }
                 onClicked: {
                     if (notificationData && !win.exiting)
                         notificationData.popup = false;
+
                 }
             }
+
         }
+
+        transform: Translate {
+            id: tx
+
+            x: Anims.slidePx
+        }
+
     }
 
     NumberAnimation {
         id: enterX
-        target: tx; property: "x"; from: Anims.slidePx; to: 0
+
+        target: tx
+        property: "x"
+        from: Anims.slidePx
+        to: 0
         duration: Anims.durMed
         easing.type: Easing.BezierSpline
         easing.bezierCurve: Anims.emphasizedDecel
-        onStopped: if (!win.exiting && !win._isDestroying && Math.abs(tx.x) < 0.5) win.entered();
+        onStopped: {
+            if (!win.exiting && !win._isDestroying && Math.abs(tx.x) < 0.5) {
+                win.entered();
+            }
+        }
     }
 
     ParallelAnimation {
         id: exitAnim
-        PropertyAnimation { 
-            target: tx; property: "x"; from: 0; to: Anims.slidePx
+
+        onStopped: finalizeExit("animStopped")
+
+        PropertyAnimation {
+            target: tx
+            property: "x"
+            from: 0
+            to: Anims.slidePx
             duration: Anims.durShort
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Anims.emphasizedAccel
         }
-        NumberAnimation { 
-            target: content; property: "opacity"; from: 1; to: 0
+
+        NumberAnimation {
+            target: content
+            property: "opacity"
+            from: 1
+            to: 0
             duration: Anims.durShort
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Anims.standardAccel
         }
-        NumberAnimation { 
-            target: content; property: "scale"; from: 1; to: 0.98
+
+        NumberAnimation {
+            target: content
+            property: "scale"
+            from: 1
+            to: 0.98
             duration: Anims.durShort
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Anims.emphasizedAccel
         }
-        onStopped: finalizeExit("animStopped")
-    }
 
-    Component.onCompleted: {
-        if (hasValidData) {
-            Qt.callLater(() => enterX.restart())
-        } else {
-            console.warn("NotificationPopup created with invalid data");
-            forceExit();
-        }
     }
 
     Connections {
         id: wrapperConn
+
+        function onPopupChanged() {
+            if (!win.notificationData || win._isDestroying)
+                return ;
+
+            if (!win.notificationData.popup && !win.exiting)
+                startExit();
+
+        }
+
         target: win.notificationData || null
         ignoreUnknownSignals: true
         enabled: !win._isDestroying
-        
-        function onPopupChanged() {
-            if (!win.notificationData || win._isDestroying) return;
-            if (!win.notificationData.popup && !win.exiting) {
-                startExit();
-            }
-        }
     }
 
     Connections {
         id: notificationConn
+
+        function onDropped() {
+            if (!win._isDestroying && !win.exiting)
+                forceExit();
+
+        }
+
         target: (win.notificationData && win.notificationData.notification && win.notificationData.notification.Retainable) || null
         ignoreUnknownSignals: true
         enabled: !win._isDestroying
-        
-        function onDropped() {
-            if (!win._isDestroying && !win.exiting) {
-                forceExit();
-            }
-        }
-    }
-    onNotificationDataChanged: {
-        if (!_isDestroying) {
-            wrapperConn.target = win.notificationData || null;
-            notificationConn.target = (win.notificationData && win.notificationData.notification && win.notificationData.notification.Retainable) || null;
-        }
     }
 
     Timer {
         id: enterDelay
+
         interval: 160
         repeat: false
         onTriggered: {
             if (notificationData && notificationData.timer && !exiting && !_isDestroying)
                 notificationData.timer.start();
+
         }
     }
 
-    onEntered: {
-        if (!_isDestroying) enterDelay.start();
-    }
-
-    function startExit() {
-        if (exiting || _isDestroying) return;
-        
-        exiting = true;
-        exitAnim.restart();
-        exitWatchdog.restart();
-        
-        if (NotificationService.removeFromVisibleNotifications) {
-            NotificationService.removeFromVisibleNotifications(win.notificationData);
-        }
-    }
-
-    function forceExit() {
-        if (_isDestroying) return;
-        
-        _isDestroying = true;
-        exiting = true;
-        visible = false;
-        exitWatchdog.stop();
-        finalizeExit("forced");
-    }
-
-    function finalizeExit(reason) {
-        if (_finalized) return;
-        _finalized = true;
-        _isDestroying = true;
-        exitWatchdog.stop();
-        
-        wrapperConn.enabled = false;
-        wrapperConn.target = null;
-        
-        win.exitFinished();
-    }
-    
-    Timer { 
+    Timer {
         id: exitWatchdog
+
         interval: 600
         repeat: false
         onTriggered: finalizeExit("watchdog")
     }
 
-    Component.onDestruction: {
-        _isDestroying = true;
-        exitWatchdog.stop();
-        if (notificationData && notificationData.timer) {
-            notificationData.timer.stop();
+    Behavior on screenY {
+        id: screenYAnim
+
+        enabled: !exiting && !_isDestroying
+
+        NumberAnimation {
+            duration: Anims.durShort
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Anims.standardDecel
         }
+
     }
+
 }

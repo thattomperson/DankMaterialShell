@@ -144,10 +144,10 @@ Rectangle {
                     if (process && process.memoryKB > 1024 * 1024)
                         return Theme.error;
 
-                        if (process && process.memoryKB > 512 * 1024)
+                    if (process && process.memoryKB > 512 * 1024)
                         return Theme.warning;
 
-                        return Theme.surfaceText;
+                    return Theme.surfaceText;
                 }
                 anchors.centerIn: parent
             }

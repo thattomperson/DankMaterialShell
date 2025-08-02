@@ -10,7 +10,7 @@ import qs.Widgets
 
 Column {
     id: root
-    
+
     width: parent.width
     spacing: Theme.spacingM
     visible: BluetoothService.adapter && BluetoothService.adapter.enabled
@@ -34,6 +34,7 @@ Column {
 
         Rectangle {
             id: scanButton
+
             width: Math.max(100, scanText.contentWidth + Theme.spacingL * 2)
             height: 32
             radius: Theme.cornerRadius
@@ -61,6 +62,7 @@ Column {
                     font.weight: Font.Medium
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
             }
 
             MouseArea {
@@ -70,12 +72,14 @@ Column {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    if (BluetoothService.adapter) {
+                    if (BluetoothService.adapter)
                         BluetoothService.adapter.discovering = !BluetoothService.adapter.discovering;
-                    }
+
                 }
             }
+
         }
+
     }
 
     Rectangle {
@@ -88,6 +92,7 @@ Column {
 
         Column {
             id: noteColumn
+
             anchors.fill: parent
             anchors.margins: Theme.spacingM
             spacing: Theme.spacingS
@@ -110,6 +115,7 @@ Column {
                     font.weight: Font.Medium
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
             }
 
             StyledText {
@@ -119,14 +125,16 @@ Column {
                 wrapMode: Text.WordWrap
                 width: parent.width
             }
+
         }
+
     }
 
     Repeater {
         model: {
             if (!BluetoothService.adapter || !BluetoothService.adapter.discovering || !Bluetooth.devices)
                 return [];
-            
+
             var filtered = Bluetooth.devices.values.filter((dev) => {
                 return dev && !dev.paired && !dev.pairing && !dev.blocked && (dev.signalStrength === undefined || dev.signalStrength > 0);
             });
@@ -213,8 +221,10 @@ Column {
                                 text: {
                                     if (modelData.pairing)
                                         return "Pairing...";
+
                                     if (modelData.blocked)
                                         return "Blocked";
+
                                     return BluetoothService.getSignalStrength(modelData);
                                 }
                                 font.pixelSize: Theme.fontSizeSmall
@@ -242,9 +252,13 @@ Column {
                                 color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
                                 visible: modelData.signalStrength !== undefined && modelData.signalStrength > 0 && !modelData.pairing && !modelData.blocked
                             }
+
                         }
+
                     }
+
                 }
+
             }
 
             Rectangle {
@@ -292,11 +306,12 @@ Column {
                     cursorShape: canConnect && !isBusy ? Qt.PointingHandCursor : (isBusy ? Qt.BusyCursor : Qt.ArrowCursor)
                     enabled: canConnect && !isBusy
                     onClicked: {
-                        if (modelData) {
+                        if (modelData)
                             BluetoothService.connectDeviceWithTrust(modelData);
-                        }
+
                     }
                 }
+
             }
 
             MouseArea {
@@ -308,12 +323,14 @@ Column {
                 cursorShape: canConnect && !isBusy ? Qt.PointingHandCursor : (isBusy ? Qt.BusyCursor : Qt.ArrowCursor)
                 enabled: canConnect && !isBusy
                 onClicked: {
-                    if (modelData) {
+                    if (modelData)
                         BluetoothService.connectDeviceWithTrust(modelData);
-                    }
+
                 }
             }
+
         }
+
     }
 
     Column {
@@ -322,11 +339,10 @@ Column {
         visible: {
             if (!BluetoothService.adapter || !BluetoothService.adapter.discovering || !Bluetooth.devices)
                 return false;
-            
+
             var availableCount = Bluetooth.devices.values.filter((dev) => {
                 return dev && !dev.paired && !dev.pairing && !dev.blocked && (dev.signalStrength === undefined || dev.signalStrength > 0);
             }).length;
-            
             return availableCount === 0;
         }
 
@@ -347,6 +363,7 @@ Column {
                     to: 360
                     duration: 2000
                 }
+
             }
 
             StyledText {
@@ -356,6 +373,7 @@ Column {
                 font.weight: Font.Medium
                 anchors.verticalCenter: parent.verticalCenter
             }
+
         }
 
         StyledText {
@@ -364,6 +382,7 @@ Column {
             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
             anchors.horizontalCenter: parent.horizontalCenter
         }
+
     }
 
     StyledText {
@@ -373,15 +392,15 @@ Column {
         visible: {
             if (!BluetoothService.adapter || !Bluetooth.devices)
                 return true;
-            
+
             var availableCount = Bluetooth.devices.values.filter((dev) => {
                 return dev && !dev.paired && !dev.pairing && !dev.blocked && (dev.signalStrength === undefined || dev.signalStrength > 0);
             }).length;
-            
             return availableCount === 0 && !BluetoothService.adapter.discovering;
         }
         wrapMode: Text.WordWrap
         width: parent.width
         horizontalAlignment: Text.AlignHCenter
     }
+
 }

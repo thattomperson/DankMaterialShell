@@ -1,15 +1,16 @@
 import QtQuick
 import QtQuick.Layouts
 import qs.Common
-import qs.Services
 import qs.Modules.ProcessList
+import qs.Services
 
 ColumnLayout {
     id: processesTab
+
+    property var contextMenu: null
+
     anchors.fill: parent
     spacing: Theme.spacingM
-    
-    property var contextMenu: null
 
     SystemOverview {
         Layout.fillWidth: true
@@ -24,4 +25,5 @@ ColumnLayout {
     ProcessContextMenu {
         id: localContextMenu
     }
+
 }

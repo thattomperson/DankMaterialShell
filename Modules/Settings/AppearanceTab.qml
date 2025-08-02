@@ -109,11 +109,10 @@ ScrollView {
                     description: "Select system font family"
                     currentValue: {
                         // Always show the font name in parentheses for clarity
-                        if (Prefs.fontFamily === Prefs.defaultFontFamily) {
+                        if (Prefs.fontFamily === Prefs.defaultFontFamily)
                             return "Default (" + Prefs.defaultFontFamily + ")";
-                        } else {
+                        else
                             return Prefs.fontFamily || "Default (" + Prefs.defaultFontFamily + ")";
-                        }
                     }
                     enableFuzzySearch: true
                     popupWidthOffset: 100
@@ -757,17 +756,16 @@ ScrollView {
                             ColorAnimation {
                                 duration: Theme.mediumDuration
                                 easing.type: Theme.standardEasing
+                            }
+
                         }
 
                     }
-
-
 
                 }
 
             }
 
-        }
         }
 
         // System App Theming Section
@@ -816,9 +814,9 @@ ScrollView {
                     checked: Colors.gtkThemingEnabled && Prefs.gtkThemingEnabled
                     onToggled: function(checked) {
                         Prefs.setGtkThemingEnabled(checked);
-                        if (checked && Theme.isDynamicTheme) {
+                        if (checked && Theme.isDynamicTheme)
                             Colors.generateGtkThemes();
-                        }
+
                     }
                 }
 
@@ -830,9 +828,9 @@ ScrollView {
                     checked: Colors.qtThemingEnabled && Prefs.qtThemingEnabled
                     onToggled: function(checked) {
                         Prefs.setQtThemingEnabled(checked);
-                        if (checked && Theme.isDynamicTheme) {
+                        if (checked && Theme.isDynamicTheme)
                             Colors.generateQtThemes();
-                        }
+
                     }
                 }
 

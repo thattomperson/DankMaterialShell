@@ -6,257 +6,324 @@ import qs.Widgets
 ScrollView {
     id: widgetsTab
 
-    contentHeight: column.implicitHeight + Theme.spacingXL
-    clip: true
-
-    property var baseWidgetDefinitions: [
-        {
-            id: "launcherButton",
-            text: "App Launcher",
-            description: "Quick access to application launcher",
-            icon: "apps",
-            enabled: true
-        },
-        {
-            id: "workspaceSwitcher", 
-            text: "Workspace Switcher",
-            description: "Shows current workspace and allows switching",
-            icon: "view_module",
-            enabled: true
-        },
-        {
-            id: "focusedWindow",
-            text: "Focused Window",
-            description: "Display currently focused application title",
-            icon: "window",
-            enabled: true
-        },
-        {
-            id: "clock",
-            text: "Clock",
-            description: "Current time and date display",
-            icon: "schedule",
-            enabled: true
-        },
-        {
-            id: "weather",
-            text: "Weather Widget",
-            description: "Current weather conditions and temperature",
-            icon: "wb_sunny",
-            enabled: true
-        },
-        {
-            id: "music",
-            text: "Media Controls",
-            description: "Control currently playing media",
-            icon: "music_note",
-            enabled: true
-        },
-        {
-            id: "clipboard",
-            text: "Clipboard Manager",
-            description: "Access clipboard history",
-            icon: "content_paste",
-            enabled: true
-        },
-        {
-            id: "systemResources",
-            text: "System Resources",
-            description: "CPU and memory usage indicators",
-            icon: "memory",
-            enabled: true
-        },
-        {
-            id: "systemTray",
-            text: "System Tray",
-            description: "System notification area icons",
-            icon: "notifications",
-            enabled: true
-        },
-        {
-            id: "controlCenterButton",
-            text: "Control Center",
-            description: "Access to system controls and settings",
-            icon: "settings",
-            enabled: true
-        },
-        {
-            id: "notificationButton",
-            text: "Notification Center",
-            description: "Access to notifications and do not disturb",
-            icon: "notifications",
-            enabled: true
-        },
-        {
-            id: "battery",
-            text: "Battery",
-            description: "Battery level and power management",
-            icon: "battery_std",
-            enabled: true
-        },
-        {
-            id: "spacer",
-            text: "Spacer",
-            description: "Empty space to separate widgets",
-            icon: "more_horiz",
-            enabled: true
-        },
-        {
-            id: "separator",
-            text: "Separator",
-            description: "Visual divider between widgets",
-            icon: "remove",
-            enabled: true
-        }
-    ]
-
+    property var baseWidgetDefinitions: [{
+        "id": "launcherButton",
+        "text": "App Launcher",
+        "description": "Quick access to application launcher",
+        "icon": "apps",
+        "enabled": true
+    }, {
+        "id": "workspaceSwitcher",
+        "text": "Workspace Switcher",
+        "description": "Shows current workspace and allows switching",
+        "icon": "view_module",
+        "enabled": true
+    }, {
+        "id": "focusedWindow",
+        "text": "Focused Window",
+        "description": "Display currently focused application title",
+        "icon": "window",
+        "enabled": true
+    }, {
+        "id": "clock",
+        "text": "Clock",
+        "description": "Current time and date display",
+        "icon": "schedule",
+        "enabled": true
+    }, {
+        "id": "weather",
+        "text": "Weather Widget",
+        "description": "Current weather conditions and temperature",
+        "icon": "wb_sunny",
+        "enabled": true
+    }, {
+        "id": "music",
+        "text": "Media Controls",
+        "description": "Control currently playing media",
+        "icon": "music_note",
+        "enabled": true
+    }, {
+        "id": "clipboard",
+        "text": "Clipboard Manager",
+        "description": "Access clipboard history",
+        "icon": "content_paste",
+        "enabled": true
+    }, {
+        "id": "systemResources",
+        "text": "System Resources",
+        "description": "CPU and memory usage indicators",
+        "icon": "memory",
+        "enabled": true
+    }, {
+        "id": "systemTray",
+        "text": "System Tray",
+        "description": "System notification area icons",
+        "icon": "notifications",
+        "enabled": true
+    }, {
+        "id": "controlCenterButton",
+        "text": "Control Center",
+        "description": "Access to system controls and settings",
+        "icon": "settings",
+        "enabled": true
+    }, {
+        "id": "notificationButton",
+        "text": "Notification Center",
+        "description": "Access to notifications and do not disturb",
+        "icon": "notifications",
+        "enabled": true
+    }, {
+        "id": "battery",
+        "text": "Battery",
+        "description": "Battery level and power management",
+        "icon": "battery_std",
+        "enabled": true
+    }, {
+        "id": "spacer",
+        "text": "Spacer",
+        "description": "Customizable empty space",
+        "icon": "more_horiz",
+        "enabled": true
+    }, {
+        "id": "separator",
+        "text": "Separator",
+        "description": "Visual divider between widgets",
+        "icon": "remove",
+        "enabled": true
+    }]
     // Default widget configurations for each section (with enabled states)
-    property var defaultLeftWidgets: [
-        {id: "launcherButton", enabled: true},
-        {id: "workspaceSwitcher", enabled: true},
-        {id: "focusedWindow", enabled: true}
-    ]
-    property var defaultCenterWidgets: [
-        {id: "music", enabled: true},
-        {id: "clock", enabled: true},
-        {id: "weather", enabled: true}
-    ]
-    property var defaultRightWidgets: [
-        {id: "systemTray", enabled: true},
-        {id: "clipboard", enabled: true},
-        {id: "systemResources", enabled: true},
-        {id: "notificationButton", enabled: true},
-        {id: "battery", enabled: true},
-        {id: "controlCenterButton", enabled: true}
-    ]
-
-    Component.onCompleted: {
-        // Initialize sections with defaults if they're empty
-        if (!Prefs.topBarLeftWidgets || Prefs.topBarLeftWidgets.length === 0) {
-            Prefs.setTopBarLeftWidgets(defaultLeftWidgets)
-        }
-        if (!Prefs.topBarCenterWidgets || Prefs.topBarCenterWidgets.length === 0) {
-            Prefs.setTopBarCenterWidgets(defaultCenterWidgets)
-        }
-        if (!Prefs.topBarRightWidgets || Prefs.topBarRightWidgets.length === 0) {
-            Prefs.setTopBarRightWidgets(defaultRightWidgets)
-        }
-    }
+    property var defaultLeftWidgets: [{
+        "id": "launcherButton",
+        "enabled": true
+    }, {
+        "id": "workspaceSwitcher",
+        "enabled": true
+    }, {
+        "id": "focusedWindow",
+        "enabled": true
+    }]
+    property var defaultCenterWidgets: [{
+        "id": "music",
+        "enabled": true
+    }, {
+        "id": "clock",
+        "enabled": true
+    }, {
+        "id": "weather",
+        "enabled": true
+    }]
+    property var defaultRightWidgets: [{
+        "id": "systemTray",
+        "enabled": true
+    }, {
+        "id": "clipboard",
+        "enabled": true
+    }, {
+        "id": "systemResources",
+        "enabled": true
+    }, {
+        "id": "notificationButton",
+        "enabled": true
+    }, {
+        "id": "battery",
+        "enabled": true
+    }, {
+        "id": "controlCenterButton",
+        "enabled": true
+    }]
 
     function addWidgetToSection(widgetId, targetSection) {
-        var leftWidgets = Prefs.topBarLeftWidgets.slice()
-        var centerWidgets = Prefs.topBarCenterWidgets.slice()
-        var rightWidgets = Prefs.topBarRightWidgets.slice()
+        var widgetObj = {
+            "id": widgetId,
+            "enabled": true
+        };
+        if (widgetId === "spacer")
+            widgetObj.size = 20;
 
-        // Create widget object with enabled state
-        var widgetObj = {id: widgetId, enabled: true}
-
+        var widgets = [];
         if (targetSection === "left") {
-            leftWidgets.push(widgetObj)
-            Prefs.setTopBarLeftWidgets(leftWidgets)
+            widgets = Prefs.topBarLeftWidgets.slice();
+            widgets.push(widgetObj);
+            Prefs.setTopBarLeftWidgets(widgets);
         } else if (targetSection === "center") {
-            centerWidgets.push(widgetObj)
-            Prefs.setTopBarCenterWidgets(centerWidgets)
+            widgets = Prefs.topBarCenterWidgets.slice();
+            widgets.push(widgetObj);
+            Prefs.setTopBarCenterWidgets(widgets);
         } else if (targetSection === "right") {
-            rightWidgets.push(widgetObj)
-            Prefs.setTopBarRightWidgets(rightWidgets)
+            widgets = Prefs.topBarRightWidgets.slice();
+            widgets.push(widgetObj);
+            Prefs.setTopBarRightWidgets(widgets);
         }
     }
 
-    function removeLastWidgetFromSection(sectionId) {
-        var leftWidgets = Prefs.topBarLeftWidgets.slice()
-        var centerWidgets = Prefs.topBarCenterWidgets.slice()
-        var rightWidgets = Prefs.topBarRightWidgets.slice()
-
-        if (sectionId === "left" && leftWidgets.length > 0) {
-            leftWidgets.pop()
-            Prefs.setTopBarLeftWidgets(leftWidgets)
-        } else if (sectionId === "center" && centerWidgets.length > 0) {
-            centerWidgets.pop()
-            Prefs.setTopBarCenterWidgets(centerWidgets)
-        } else if (sectionId === "right" && rightWidgets.length > 0) {
-            rightWidgets.pop()
-            Prefs.setTopBarRightWidgets(rightWidgets)
+    function removeWidgetFromSection(sectionId, itemId) {
+        var widgets = [];
+        if (sectionId === "left") {
+            widgets = Prefs.topBarLeftWidgets.slice();
+            widgets = widgets.filter((widget) => {
+                var widgetId = typeof widget === "string" ? widget : widget.id;
+                return widgetId !== itemId;
+            });
+            Prefs.setTopBarLeftWidgets(widgets);
+        } else if (sectionId === "center") {
+            widgets = Prefs.topBarCenterWidgets.slice();
+            widgets = widgets.filter((widget) => {
+                var widgetId = typeof widget === "string" ? widget : widget.id;
+                return widgetId !== itemId;
+            });
+            Prefs.setTopBarCenterWidgets(widgets);
+        } else if (sectionId === "right") {
+            widgets = Prefs.topBarRightWidgets.slice();
+            widgets = widgets.filter((widget) => {
+                var widgetId = typeof widget === "string" ? widget : widget.id;
+                return widgetId !== itemId;
+            });
+            Prefs.setTopBarRightWidgets(widgets);
         }
     }
 
     function handleItemEnabledChanged(sectionId, itemId, enabled) {
-        // Update the specific widget instance's enabled state in the section
-        var widgets = []
-        
-        if (sectionId === "left") {
-            widgets = Prefs.topBarLeftWidgets.slice()
-        } else if (sectionId === "center") {
-            widgets = Prefs.topBarCenterWidgets.slice()
-        } else if (sectionId === "right") {
-            widgets = Prefs.topBarRightWidgets.slice()
-        }
-        
-        // Find and update the specific widget instance
+        var widgets = [];
+        if (sectionId === "left")
+            widgets = Prefs.topBarLeftWidgets.slice();
+        else if (sectionId === "center")
+            widgets = Prefs.topBarCenterWidgets.slice();
+        else if (sectionId === "right")
+            widgets = Prefs.topBarRightWidgets.slice();
         for (var i = 0; i < widgets.length; i++) {
-            // Handle both old string format and new object format for backward compatibility
-            var widget = widgets[i]
-            var widgetId = typeof widget === "string" ? widget : widget.id
-            
-            // Update the enabled state for this specific instance
+            var widget = widgets[i];
+            var widgetId = typeof widget === "string" ? widget : widget.id;
             if (widgetId === itemId) {
-                if (typeof widget === "string") {
-                    // Convert old string format to object format
-                    widgets[i] = {id: widget, enabled: enabled}
-                } else {
-                    widgets[i] = {id: widget.id, enabled: enabled}
-                }
-                break
+                widgets[i] = typeof widget === "string" ? {
+                    "id": widget,
+                    "enabled": enabled
+                } : {
+                    "id": widget.id,
+                    "enabled": enabled,
+                    "size": widget.size
+                };
+                break;
             }
         }
-        
-        // Save the updated widgets array
-        if (sectionId === "left") {
-            Prefs.setTopBarLeftWidgets(widgets)
-        } else if (sectionId === "center") {
-            Prefs.setTopBarCenterWidgets(widgets)
-        } else if (sectionId === "right") {
-            Prefs.setTopBarRightWidgets(widgets)
-        }
+        if (sectionId === "left")
+            Prefs.setTopBarLeftWidgets(widgets);
+        else if (sectionId === "center")
+            Prefs.setTopBarCenterWidgets(widgets);
+        else if (sectionId === "right")
+            Prefs.setTopBarRightWidgets(widgets);
     }
 
     function handleItemOrderChanged(sectionId, newOrder) {
-        if (sectionId === "left") {
-            Prefs.setTopBarLeftWidgets(newOrder)
-        } else if (sectionId === "center") {
-            Prefs.setTopBarCenterWidgets(newOrder)
-        } else if (sectionId === "right") {
-            Prefs.setTopBarRightWidgets(newOrder)
+        if (sectionId === "left")
+            Prefs.setTopBarLeftWidgets(newOrder);
+        else if (sectionId === "center")
+            Prefs.setTopBarCenterWidgets(newOrder);
+        else if (sectionId === "right")
+            Prefs.setTopBarRightWidgets(newOrder);
+    }
+
+    function handleSpacerSizeChanged(sectionId, itemId, newSize) {
+        var widgets = [];
+        if (sectionId === "left")
+            widgets = Prefs.topBarLeftWidgets.slice();
+        else if (sectionId === "center")
+            widgets = Prefs.topBarCenterWidgets.slice();
+        else if (sectionId === "right")
+            widgets = Prefs.topBarRightWidgets.slice();
+        for (var i = 0; i < widgets.length; i++) {
+            var widget = widgets[i];
+            var widgetId = typeof widget === "string" ? widget : widget.id;
+            if (widgetId === itemId && widgetId === "spacer") {
+                widgets[i] = typeof widget === "string" ? {
+                    "id": widget,
+                    "enabled": true,
+                    "size": newSize
+                } : {
+                    "id": widget.id,
+                    "enabled": widget.enabled,
+                    "size": newSize
+                };
+                break;
+            }
         }
+        if (sectionId === "left")
+            Prefs.setTopBarLeftWidgets(widgets);
+        else if (sectionId === "center")
+            Prefs.setTopBarCenterWidgets(widgets);
+        else if (sectionId === "right")
+            Prefs.setTopBarRightWidgets(widgets);
     }
 
     function getItemsForSection(sectionId) {
-        var widgets = []
-        var widgetData = []
-        
-        if (sectionId === "left") {
-            widgetData = Prefs.topBarLeftWidgets || []
-        } else if (sectionId === "center") {
-            widgetData = Prefs.topBarCenterWidgets || []
-        } else if (sectionId === "right") {
-            widgetData = Prefs.topBarRightWidgets || []
-        }
-        
-        widgetData.forEach(widget => {
-            // Handle both old string format and new object format for backward compatibility
-            var widgetId = typeof widget === "string" ? widget : widget.id
-            var widgetEnabled = typeof widget === "string" ? true : widget.enabled
-            
-            var widgetDef = baseWidgetDefinitions.find(w => w.id === widgetId)
+        var widgets = [];
+        var widgetData = [];
+        if (sectionId === "left")
+            widgetData = Prefs.topBarLeftWidgets || [];
+        else if (sectionId === "center")
+            widgetData = Prefs.topBarCenterWidgets || [];
+        else if (sectionId === "right")
+            widgetData = Prefs.topBarRightWidgets || [];
+        widgetData.forEach((widget) => {
+            var widgetId = typeof widget === "string" ? widget : widget.id;
+            var widgetEnabled = typeof widget === "string" ? true : widget.enabled;
+            var widgetSize = typeof widget === "string" ? undefined : widget.size;
+            var widgetDef = baseWidgetDefinitions.find((w) => {
+                return w.id === widgetId;
+            });
             if (widgetDef) {
-                var item = Object.assign({}, widgetDef)
-                // Use the per-instance enabled state
-                item.enabled = widgetEnabled
-                widgets.push(item)
+                var item = Object.assign({
+                }, widgetDef);
+                item.enabled = widgetEnabled;
+                if (widgetSize !== undefined)
+                    item.size = widgetSize;
+
+                widgets.push(item);
             }
-        })
-        
-        return widgets
+        });
+        return widgets;
+    }
+
+    contentHeight: column.implicitHeight + Theme.spacingXL
+    clip: true
+    Component.onCompleted: {
+        if (!Prefs.topBarLeftWidgets || Prefs.topBarLeftWidgets.length === 0)
+            Prefs.setTopBarLeftWidgets(defaultLeftWidgets);
+
+        if (!Prefs.topBarCenterWidgets || Prefs.topBarCenterWidgets.length === 0)
+            Prefs.setTopBarCenterWidgets(defaultCenterWidgets);
+
+        if (!Prefs.topBarRightWidgets || Prefs.topBarRightWidgets.length === 0)
+            Prefs.setTopBarRightWidgets(defaultRightWidgets);
+
+        // Ensure existing spacers have default sizes
+        ["left", "center", "right"].forEach((sectionId) => {
+            var widgets = [];
+            if (sectionId === "left")
+                widgets = Prefs.topBarLeftWidgets.slice();
+            else if (sectionId === "center")
+                widgets = Prefs.topBarCenterWidgets.slice();
+            else if (sectionId === "right")
+                widgets = Prefs.topBarRightWidgets.slice();
+            var updated = false;
+            for (var i = 0; i < widgets.length; i++) {
+                var widget = widgets[i];
+                if (typeof widget === "object" && widget.id === "spacer" && !widget.size) {
+                    widgets[i] = Object.assign({
+                    }, widget, {
+                        "size": 20
+                    });
+                    updated = true;
+                }
+            }
+            if (updated) {
+                if (sectionId === "left")
+                    Prefs.setTopBarLeftWidgets(widgets);
+                else if (sectionId === "center")
+                    Prefs.setTopBarCenterWidgets(widgets);
+                else if (sectionId === "right")
+                    Prefs.setTopBarRightWidgets(widgets);
+            }
+        });
     }
 
     Column {
@@ -300,18 +367,18 @@ ScrollView {
                 anchors.verticalCenter: parent.verticalCenter
                 border.width: 1
                 border.color: resetArea.containsMouse ? Theme.outline : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.5)
-                
+
                 Row {
                     anchors.centerIn: parent
                     spacing: Theme.spacingXS
-                    
+
                     DankIcon {
                         name: "refresh"
                         size: 14
                         color: Theme.surfaceText
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                    
+
                     StyledText {
                         text: "Reset"
                         font.pixelSize: Theme.fontSizeSmall
@@ -319,35 +386,40 @@ ScrollView {
                         color: Theme.surfaceText
                         anchors.verticalCenter: parent.verticalCenter
                     }
+
                 }
-                
+
                 MouseArea {
                     id: resetArea
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        // Reset all sections to defaults (with per-instance enabled states)
-                        Prefs.setTopBarLeftWidgets(defaultLeftWidgets)
-                        Prefs.setTopBarCenterWidgets(defaultCenterWidgets)
-                        Prefs.setTopBarRightWidgets(defaultRightWidgets)
+                        Prefs.setTopBarLeftWidgets(defaultLeftWidgets);
+                        Prefs.setTopBarCenterWidgets(defaultCenterWidgets);
+                        Prefs.setTopBarRightWidgets(defaultRightWidgets);
                     }
                 }
-                
+
                 Behavior on color {
                     ColorAnimation {
                         duration: Theme.shortDuration
                         easing.type: Theme.standardEasing
                     }
+
                 }
-                
+
                 Behavior on border.color {
                     ColorAnimation {
                         duration: Theme.shortDuration
                         easing.type: Theme.standardEasing
                     }
+
                 }
+
             }
+
         }
 
         Rectangle {
@@ -358,18 +430,20 @@ ScrollView {
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
             border.width: 1
             visible: true
-            opacity: 1.0
+            opacity: 1
             z: 1
 
             StyledText {
                 id: messageText
+
                 anchors.centerIn: parent
-                text: "Drag widgets to reorder within sections. Use + to add widgets and - to remove the last widget from each section."
+                text: "Drag widgets to reorder within sections. Use the eye icon to hide/show widgets (maintains spacing), or X to remove them completely."
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.outline
                 width: parent.width - Theme.spacingM * 2
                 wrapMode: Text.WordWrap
             }
+
         }
 
         // Widget sections
@@ -385,23 +459,22 @@ ScrollView {
                 sectionId: "left"
                 allWidgets: widgetsTab.baseWidgetDefinitions
                 items: widgetsTab.getItemsForSection("left")
-
                 onItemEnabledChanged: (sectionId, itemId, enabled) => {
-                    widgetsTab.handleItemEnabledChanged(sectionId, itemId, enabled)
+                    widgetsTab.handleItemEnabledChanged(sectionId, itemId, enabled);
                 }
-
                 onItemOrderChanged: (newOrder) => {
-                    widgetsTab.handleItemOrderChanged("left", newOrder)
+                    widgetsTab.handleItemOrderChanged("left", newOrder);
                 }
-
                 onAddWidget: (sectionId) => {
-                    widgetSelectionPopup.allWidgets = widgetsTab.baseWidgetDefinitions
-                    widgetSelectionPopup.targetSection = sectionId
-                    widgetSelectionPopup.safeOpen()
+                    widgetSelectionPopup.allWidgets = widgetsTab.baseWidgetDefinitions;
+                    widgetSelectionPopup.targetSection = sectionId;
+                    widgetSelectionPopup.safeOpen();
                 }
-
-                onRemoveLastWidget: (sectionId) => {
-                    widgetsTab.removeLastWidgetFromSection(sectionId)
+                onRemoveWidget: (sectionId, itemId) => {
+                    widgetsTab.removeWidgetFromSection(sectionId, itemId);
+                }
+                onSpacerSizeChanged: (sectionId, itemId, newSize) => {
+                    widgetsTab.handleSpacerSizeChanged(sectionId, itemId, newSize);
                 }
             }
 
@@ -413,23 +486,22 @@ ScrollView {
                 sectionId: "center"
                 allWidgets: widgetsTab.baseWidgetDefinitions
                 items: widgetsTab.getItemsForSection("center")
-
                 onItemEnabledChanged: (sectionId, itemId, enabled) => {
-                    widgetsTab.handleItemEnabledChanged(sectionId, itemId, enabled)
+                    widgetsTab.handleItemEnabledChanged(sectionId, itemId, enabled);
                 }
-
                 onItemOrderChanged: (newOrder) => {
-                    widgetsTab.handleItemOrderChanged("center", newOrder)
+                    widgetsTab.handleItemOrderChanged("center", newOrder);
                 }
-
                 onAddWidget: (sectionId) => {
-                    widgetSelectionPopup.allWidgets = widgetsTab.baseWidgetDefinitions
-                    widgetSelectionPopup.targetSection = sectionId
-                    widgetSelectionPopup.safeOpen()
+                    widgetSelectionPopup.allWidgets = widgetsTab.baseWidgetDefinitions;
+                    widgetSelectionPopup.targetSection = sectionId;
+                    widgetSelectionPopup.safeOpen();
                 }
-
-                onRemoveLastWidget: (sectionId) => {
-                    widgetsTab.removeLastWidgetFromSection(sectionId)
+                onRemoveWidget: (sectionId, itemId) => {
+                    widgetsTab.removeWidgetFromSection(sectionId, itemId);
+                }
+                onSpacerSizeChanged: (sectionId, itemId, newSize) => {
+                    widgetsTab.handleSpacerSizeChanged(sectionId, itemId, newSize);
                 }
             }
 
@@ -441,25 +513,25 @@ ScrollView {
                 sectionId: "right"
                 allWidgets: widgetsTab.baseWidgetDefinitions
                 items: widgetsTab.getItemsForSection("right")
-
                 onItemEnabledChanged: (sectionId, itemId, enabled) => {
-                    widgetsTab.handleItemEnabledChanged(sectionId, itemId, enabled)
+                    widgetsTab.handleItemEnabledChanged(sectionId, itemId, enabled);
                 }
-
                 onItemOrderChanged: (newOrder) => {
-                    widgetsTab.handleItemOrderChanged("right", newOrder)
+                    widgetsTab.handleItemOrderChanged("right", newOrder);
                 }
-
                 onAddWidget: (sectionId) => {
-                    widgetSelectionPopup.allWidgets = widgetsTab.baseWidgetDefinitions
-                    widgetSelectionPopup.targetSection = sectionId
-                    widgetSelectionPopup.safeOpen()
+                    widgetSelectionPopup.allWidgets = widgetsTab.baseWidgetDefinitions;
+                    widgetSelectionPopup.targetSection = sectionId;
+                    widgetSelectionPopup.safeOpen();
                 }
-
-                onRemoveLastWidget: (sectionId) => {
-                    widgetsTab.removeLastWidgetFromSection(sectionId)
+                onRemoveWidget: (sectionId, itemId) => {
+                    widgetsTab.removeWidgetFromSection(sectionId, itemId);
+                }
+                onSpacerSizeChanged: (sectionId, itemId, newSize) => {
+                    widgetsTab.handleSpacerSizeChanged(sectionId, itemId, newSize);
                 }
             }
+
         }
 
         // Workspace Section
@@ -496,6 +568,7 @@ ScrollView {
                         color: Theme.surfaceText
                         anchors.verticalCenter: parent.verticalCenter
                     }
+
                 }
 
                 DankToggle {
@@ -517,8 +590,11 @@ ScrollView {
                         return Prefs.setShowWorkspacePadding(checked);
                     }
                 }
+
             }
+
         }
+
     }
 
     // Tooltip for reset button (positioned above the button)
@@ -534,30 +610,34 @@ ScrollView {
         y: column.y + 48 // Position above the reset button in the header
         x: parent.width - width - Theme.spacingM
         z: 100
-        
+
         StyledText {
             id: tooltipText
+
             anchors.centerIn: parent
             text: "Reset widget layout to defaults"
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceText
         }
-        
+
         Behavior on opacity {
             NumberAnimation {
                 duration: Theme.shortDuration
                 easing.type: Theme.standardEasing
             }
+
         }
+
     }
 
     // Widget selection popup
     DankWidgetSelectionPopup {
         id: widgetSelectionPopup
-        anchors.centerIn: parent
 
+        anchors.centerIn: parent
         onWidgetSelected: (widgetId, targetSection) => {
-            widgetsTab.addWidgetToSection(widgetId, targetSection)
+            widgetsTab.addWidgetToSection(widgetId, targetSection);
         }
     }
+
 }

@@ -12,30 +12,28 @@ Popup {
 
     signal widgetSelected(string widgetId, string targetSection)
 
+    // Prevent multiple openings
+    function safeOpen() {
+        if (!isOpening && !visible) {
+            isOpening = true;
+            open();
+        }
+    }
+
     width: 400
     height: 450
     modal: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    
-    // Prevent multiple openings
-    function safeOpen() {
-        if (!isOpening && !visible) {
-            isOpening = true
-            open()
-        }
-    }
-    
     onOpened: {
-        isOpening = false
+        isOpening = false;
     }
-    
     onClosed: {
-        isOpening = false
+        isOpening = false;
         // Clear references to prevent memory leaks
-        allWidgets = []
-        targetSection = ""
+        allWidgets = [];
+        targetSection = "";
     }
-    
+
     background: Rectangle {
         color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 1)
         border.color: Theme.primarySelected
@@ -61,6 +59,7 @@ Popup {
 
         Column {
             id: contentColumn
+
             spacing: Theme.spacingM
             anchors.fill: parent
             anchors.margins: Theme.spacingL
@@ -85,15 +84,16 @@ Popup {
                     color: Theme.surfaceText
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
             }
 
-        StyledText {
-            text: "Select a widget to add to the " + root.targetSection.toLowerCase() + " section of the top bar. You can add multiple instances of the same widget if needed."
-            font.pixelSize: Theme.fontSizeSmall
-            color: Theme.outline
-            width: parent.width
-            wrapMode: Text.WordWrap
-        }
+            StyledText {
+                text: "Select a widget to add to the " + root.targetSection.toLowerCase() + " section of the top bar. You can add multiple instances of the same widget if needed."
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.outline
+                width: parent.width
+                wrapMode: Text.WordWrap
+            }
 
             // Widget List
             ScrollView {
@@ -103,6 +103,7 @@ Popup {
 
                 ListView {
                     id: widgetList
+
                     spacing: Theme.spacingS
                     model: root.allWidgets
 
@@ -150,6 +151,7 @@ Popup {
                                     width: parent.width
                                     wrapMode: Text.WordWrap
                                 }
+
                             }
 
                             // Add icon
@@ -159,17 +161,18 @@ Popup {
                                 color: Theme.primary
                                 anchors.verticalCenter: parent.verticalCenter
                             }
+
                         }
 
                         MouseArea {
                             id: widgetArea
+
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            
                             onClicked: {
-                                root.widgetSelected(modelData.id, root.targetSection)
-                                root.close()
+                                root.widgetSelected(modelData.id, root.targetSection);
+                                root.close();
                             }
                         }
 
@@ -178,10 +181,17 @@ Popup {
                                 duration: Theme.shortDuration
                                 easing.type: Theme.standardEasing
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

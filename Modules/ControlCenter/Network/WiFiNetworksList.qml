@@ -9,21 +9,26 @@ import qs.Widgets
 
 Column {
     id: root
-    
+
     property var wifiContextMenuWindow
     property var sortedWifiNetworks
     property var wifiPasswordModalRef
-    
+
     function getWiFiSignalIcon(signalStrength) {
         switch (signalStrength) {
-            case "excellent": return "wifi";
-            case "good": return "wifi_2_bar";
-            case "fair": return "wifi_1_bar";
-            case "poor": return "signal_wifi_0_bar";
-            default: return "wifi";
+        case "excellent":
+            return "wifi";
+        case "good":
+            return "wifi_2_bar";
+        case "fair":
+            return "wifi_1_bar";
+        case "poor":
+            return "signal_wifi_0_bar";
+        default:
+            return "wifi";
         }
     }
-    
+
     anchors.top: parent.top
     anchors.topMargin: 100
     anchors.left: parent.left
@@ -31,7 +36,7 @@ Column {
     anchors.bottom: parent.bottom
     visible: NetworkService.wifiEnabled
     spacing: Theme.spacingS
-    
+
     // Available Networks Section with refresh button (spanning version)
     Row {
         width: parent.width
@@ -59,6 +64,7 @@ Column {
 
             DankIcon {
                 id: refreshIconSpan
+
                 anchors.centerIn: parent
                 name: "refresh"
                 size: Theme.iconSize - 6
@@ -80,11 +86,14 @@ Column {
                         duration: 200
                         easing.type: Easing.OutQuad
                     }
+
                 }
+
             }
 
             MouseArea {
                 id: refreshAreaSpan
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
@@ -96,9 +105,11 @@ Column {
                     }
                 }
             }
+
         }
+
     }
-    
+
     // Scrollable networks container
     Flickable {
         width: parent.width
@@ -109,12 +120,13 @@ Column {
         boundsBehavior: Flickable.DragAndOvershootBounds
         flickDeceleration: 8000
         maximumFlickVelocity: 15000
-        
+
         Column {
             id: spanningNetworksColumn
+
             width: parent.width
             spacing: Theme.spacingXS
-            
+
             Repeater {
                 model: NetworkService.wifiAvailable && NetworkService.wifiEnabled ? sortedWifiNetworks : []
 
@@ -129,11 +141,12 @@ Column {
                     Item {
                         anchors.fill: parent
                         anchors.margins: Theme.spacingXS
-                        anchors.rightMargin: Theme.spacingM  // Extra right margin for scrollbar
+                        anchors.rightMargin: Theme.spacingM // Extra right margin for scrollbar
 
                         // Signal strength icon
                         DankIcon {
                             id: signalIcon2
+
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
                             name: getWiFiSignalIcon(modelData.signalStrength)
@@ -164,29 +177,37 @@ Column {
                                 text: {
                                     if (modelData.connected)
                                         return "Connected";
+
                                     if (NetworkService.connectionStatus === "connecting" && NetworkService.connectingSSID === modelData.ssid)
                                         return "Connecting...";
+
                                     if (NetworkService.connectionStatus === "invalid_password" && NetworkService.connectingSSID === modelData.ssid)
                                         return "Invalid password";
+
                                     if (modelData.saved)
                                         return "Saved" + (modelData.secured ? " • Secured" : " • Open");
+
                                     return modelData.secured ? "Secured" : "Open";
                                 }
                                 font.pixelSize: Theme.fontSizeSmall - 1
                                 color: {
                                     if (NetworkService.connectionStatus === "connecting" && NetworkService.connectingSSID === modelData.ssid)
                                         return Theme.primary;
+
                                     if (NetworkService.connectionStatus === "invalid_password" && NetworkService.connectingSSID === modelData.ssid)
                                         return Theme.error;
+
                                     return Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7);
                                 }
                                 elide: Text.ElideRight
                             }
+
                         }
 
                         // Right side icons
                         Row {
                             id: rightIcons2
+
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: Theme.spacingXS
@@ -203,6 +224,7 @@ Column {
                             // Context menu button
                             Rectangle {
                                 id: wifiMenuButton
+
                                 width: 24
                                 height: 24
                                 radius: 12
@@ -218,6 +240,7 @@ Column {
 
                                 MouseArea {
                                     id: wifiMenuButtonArea
+
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
@@ -226,7 +249,6 @@ Column {
                                         let buttonCenter = wifiMenuButtonArea.width / 2;
                                         let buttonBottom = wifiMenuButtonArea.height;
                                         let globalPos = wifiMenuButtonArea.mapToItem(wifiContextMenuWindow.parentItem, buttonCenter, buttonBottom);
-                                        
                                         Qt.callLater(() => {
                                             wifiContextMenuWindow.show(globalPos.x, globalPos.y);
                                         });
@@ -237,20 +259,25 @@ Column {
                                     ColorAnimation {
                                         duration: Theme.shortDuration
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
 
                     MouseArea {
                         id: networkArea2
+
                         anchors.fill: parent
-                        anchors.rightMargin: 32  // Exclude menu button area
+                        anchors.rightMargin: 32 // Exclude menu button area
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             if (modelData.connected)
-                                return;
+                                return ;
 
                             if (modelData.saved) {
                                 NetworkService.connectToWifi(modelData.ssid);
@@ -265,12 +292,17 @@ Column {
                             }
                         }
                     }
+
                 }
+
             }
+
         }
-        
+
         ScrollBar.vertical: ScrollBar {
             policy: ScrollBar.AsNeeded
         }
+
     }
+
 }

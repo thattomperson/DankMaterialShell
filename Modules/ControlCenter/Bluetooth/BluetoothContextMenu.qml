@@ -10,11 +10,11 @@ import qs.Widgets
 
 Rectangle {
     id: root
-    
+
     property var deviceData: null
     property bool menuVisible: false
     property var parentItem
-    
+
     function show(x, y) {
         const menuWidth = 160;
         const menuHeight = menuColumn.implicitHeight + Theme.spacingS * 2;
@@ -27,14 +27,14 @@ Rectangle {
         root.visible = true;
         root.menuVisible = true;
     }
-    
+
     function hide() {
         root.menuVisible = false;
         Qt.callLater(() => {
             root.visible = false;
         });
     }
-    
+
     visible: false
     width: 160
     height: menuColumn.implicitHeight + Theme.spacingS * 2
@@ -45,7 +45,7 @@ Rectangle {
     z: 1000
     opacity: menuVisible ? 1 : 0
     scale: menuVisible ? 1 : 0.85
-    
+
     Rectangle {
         anchors.fill: parent
         anchors.topMargin: 4
@@ -56,26 +56,26 @@ Rectangle {
         color: Qt.rgba(0, 0, 0, 0.15)
         z: parent.z - 1
     }
-    
+
     Column {
         id: menuColumn
-        
+
         anchors.fill: parent
         anchors.margins: Theme.spacingS
         spacing: 1
-        
+
         Rectangle {
             width: parent.width
             height: 32
             radius: Theme.cornerRadiusSmall
             color: connectArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
-            
+
             Row {
                 anchors.left: parent.left
                 anchors.leftMargin: Theme.spacingS
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: Theme.spacingS
-                
+
                 DankIcon {
                     name: root.deviceData && root.deviceData.connected ? "link_off" : "link"
                     size: Theme.iconSize - 2
@@ -83,7 +83,7 @@ Rectangle {
                     opacity: 0.7
                     anchors.verticalCenter: parent.verticalCenter
                 }
-                
+
                 StyledText {
                     text: root.deviceData && root.deviceData.connected ? "Disconnect" : "Connect"
                     font.pixelSize: Theme.fontSizeSmall
@@ -91,60 +91,63 @@ Rectangle {
                     font.weight: Font.Normal
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
             }
-            
+
             MouseArea {
                 id: connectArea
-                
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     if (root.deviceData) {
-                        if (root.deviceData.connected) {
+                        if (root.deviceData.connected)
                             root.deviceData.disconnect();
-                        } else {
+                        else
                             BluetoothService.connectDeviceWithTrust(root.deviceData);
-                        }
                     }
                     root.hide();
                 }
             }
-            
+
             Behavior on color {
                 ColorAnimation {
                     duration: Theme.shortDuration
                     easing.type: Theme.standardEasing
                 }
+
             }
+
         }
-        
+
         Rectangle {
             width: parent.width - Theme.spacingS * 2
             height: 5
             anchors.horizontalCenter: parent.horizontalCenter
             color: "transparent"
-            
+
             Rectangle {
                 anchors.centerIn: parent
                 width: parent.width
                 height: 1
                 color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
             }
+
         }
-        
+
         Rectangle {
             width: parent.width
             height: 32
             radius: Theme.cornerRadiusSmall
             color: forgetArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
-            
+
             Row {
                 anchors.left: parent.left
                 anchors.leftMargin: Theme.spacingS
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: Theme.spacingS
-                
+
                 DankIcon {
                     name: "delete"
                     size: Theme.iconSize - 2
@@ -152,7 +155,7 @@ Rectangle {
                     opacity: 0.7
                     anchors.verticalCenter: parent.verticalCenter
                 }
-                
+
                 StyledText {
                     text: "Forget Device"
                     font.pixelSize: Theme.fontSizeSmall
@@ -160,42 +163,49 @@ Rectangle {
                     font.weight: Font.Normal
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
             }
-            
+
             MouseArea {
                 id: forgetArea
-                
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    if (root.deviceData) {
+                    if (root.deviceData)
                         root.deviceData.forget();
-                    }
+
                     root.hide();
                 }
             }
-            
+
             Behavior on color {
                 ColorAnimation {
                     duration: Theme.shortDuration
                     easing.type: Theme.standardEasing
                 }
+
             }
+
         }
+
     }
-    
+
     Behavior on opacity {
         NumberAnimation {
             duration: Theme.mediumDuration
             easing.type: Theme.emphasizedEasing
         }
+
     }
-    
+
     Behavior on scale {
         NumberAnimation {
             duration: Theme.mediumDuration
             easing.type: Theme.emphasizedEasing
         }
+
     }
+
 }

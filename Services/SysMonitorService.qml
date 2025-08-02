@@ -10,7 +10,7 @@ Singleton {
     id: root
 
     property int refCount: 0
-    property int updateInterval: 30000
+    property int updateInterval: refCount > 0 ? 2000 : 30000
     property int maxProcesses: 100
     property bool isUpdating: false
 

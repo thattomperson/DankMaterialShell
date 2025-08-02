@@ -19,20 +19,16 @@ Rectangle {
     function show(x, y) {
         const menuWidth = 160;
         wifiContextMenuWindow.visible = true;
-        
         Qt.callLater(() => {
             const menuHeight = wifiMenuColumn.implicitHeight + Theme.spacingS * 2;
             let finalX = x - menuWidth / 2;
             let finalY = y + 4;
-            
             finalX = Math.max(Theme.spacingS, Math.min(finalX, parentItem.width - menuWidth - Theme.spacingS));
             finalY = Math.max(Theme.spacingS, Math.min(finalY, parentItem.height - menuHeight - Theme.spacingS));
-            
             if (finalY + menuHeight > parentItem.height - Theme.spacingS) {
                 finalY = y - menuHeight - 4;
                 finalY = Math.max(Theme.spacingS, finalY);
             }
-            
             wifiContextMenuWindow.x = finalX;
             wifiContextMenuWindow.y = finalY;
             wifiContextMenuWindow.menuVisible = true;
@@ -56,7 +52,6 @@ Rectangle {
     z: 1000
     opacity: menuVisible ? 1 : 0
     scale: menuVisible ? 1 : 0.85
-    
     Component.onCompleted: {
         menuVisible = false;
         visible = false;
@@ -76,6 +71,7 @@ Rectangle {
 
     Column {
         id: wifiMenuColumn
+
         anchors.fill: parent
         anchors.margins: Theme.spacingS
         spacing: 1
@@ -108,10 +104,12 @@ Rectangle {
                     font.weight: Font.Normal
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
             }
 
             MouseArea {
                 id: connectWifiArea
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
@@ -142,7 +140,9 @@ Rectangle {
                     duration: Theme.shortDuration
                     easing.type: Theme.standardEasing
                 }
+
             }
+
         }
 
         // Separator
@@ -158,6 +158,7 @@ Rectangle {
                 height: 1
                 color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
             }
+
         }
 
         // Forget Network option (only for saved networks)
@@ -189,17 +190,19 @@ Rectangle {
                     font.weight: Font.Normal
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
             }
 
             MouseArea {
                 id: forgetWifiArea
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    if (wifiContextMenuWindow.networkData) {
+                    if (wifiContextMenuWindow.networkData)
                         NetworkService.forgetWifiNetwork(wifiContextMenuWindow.networkData.ssid);
-                    }
+
                     wifiContextMenuWindow.hide();
                 }
             }
@@ -209,7 +212,9 @@ Rectangle {
                     duration: Theme.shortDuration
                     easing.type: Theme.standardEasing
                 }
+
             }
+
         }
 
         // Network Info option
@@ -240,17 +245,19 @@ Rectangle {
                     font.weight: Font.Normal
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
             }
 
             MouseArea {
                 id: infoWifiArea
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    if (wifiContextMenuWindow.networkData && networkInfoModalRef) {
+                    if (wifiContextMenuWindow.networkData && networkInfoModalRef)
                         networkInfoModalRef.showNetworkInfo(wifiContextMenuWindow.networkData.ssid, wifiContextMenuWindow.networkData);
-                    }
+
                     wifiContextMenuWindow.hide();
                 }
             }
@@ -260,8 +267,11 @@ Rectangle {
                     duration: Theme.shortDuration
                     easing.type: Theme.standardEasing
                 }
+
             }
+
         }
+
     }
 
     Behavior on opacity {
@@ -269,6 +279,7 @@ Rectangle {
             duration: Theme.mediumDuration
             easing.type: Theme.emphasizedEasing
         }
+
     }
 
     Behavior on scale {
@@ -276,5 +287,7 @@ Rectangle {
             duration: Theme.mediumDuration
             easing.type: Theme.emphasizedEasing
         }
+
     }
+
 }

@@ -9,25 +9,31 @@ import qs.Widgets
 
 Rectangle {
     id: wifiCard
-    
+
     property var refreshTimer
-    
+
     function getWiFiSignalIcon(signalStrength) {
         switch (signalStrength) {
-            case "excellent": return "wifi";
-            case "good": return "wifi_2_bar";
-            case "fair": return "wifi_1_bar";
-            case "poor": return "signal_wifi_0_bar";
-            default: return "wifi";
+        case "excellent":
+            return "wifi";
+        case "good":
+            return "wifi_2_bar";
+        case "fair":
+            return "wifi_1_bar";
+        case "poor":
+            return "signal_wifi_0_bar";
+        default:
+            return "wifi";
         }
     }
-    
+
     width: parent.width
     height: 80
     radius: Theme.cornerRadius
     color: {
         if (wifiPreferenceArea.containsMouse && NetworkService.ethernetConnected && NetworkService.wifiEnabled && NetworkService.networkStatus !== "wifi")
             return Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.8);
+
         return Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5);
     }
     border.color: NetworkService.networkStatus === "wifi" ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
@@ -47,13 +53,12 @@ Rectangle {
 
             DankIcon {
                 name: {
-                    if (!NetworkService.wifiEnabled) {
+                    if (!NetworkService.wifiEnabled)
                         return "wifi_off";
-                    } else if (NetworkService.currentWifiSSID !== "") {
+                    else if (NetworkService.currentWifiSSID !== "")
                         return getWiFiSignalIcon(NetworkService.wifiSignalStrength);
-                    } else {
+                    else
                         return "wifi";
-                    }
                 }
                 size: Theme.iconSize
                 color: NetworkService.networkStatus === "wifi" ? Theme.primary : Theme.surfaceText
@@ -62,13 +67,12 @@ Rectangle {
 
             StyledText {
                 text: {
-                    if (!NetworkService.wifiEnabled) {
+                    if (!NetworkService.wifiEnabled)
                         return "WiFi is off";
-                    } else if (NetworkService.wifiEnabled && NetworkService.currentWifiSSID) {
+                    else if (NetworkService.wifiEnabled && NetworkService.currentWifiSSID)
                         return NetworkService.currentWifiSSID || "Connected";
-                    } else {
+                    else
                         return "Not Connected";
-                    }
                 }
                 font.pixelSize: Theme.fontSizeMedium
                 color: NetworkService.networkStatus === "wifi" ? Theme.primary : Theme.surfaceText
@@ -76,28 +80,30 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 elide: Text.ElideRight
             }
+
         }
 
         StyledText {
             text: {
-                if (!NetworkService.wifiEnabled) {
+                if (!NetworkService.wifiEnabled)
                     return "Turn on WiFi to see networks";
-                } else if (NetworkService.wifiEnabled && NetworkService.currentWifiSSID) {
+                else if (NetworkService.wifiEnabled && NetworkService.currentWifiSSID)
                     return NetworkService.wifiIP || "Connected";
-                } else {
+                else
                     return "Select a network below";
-                }
             }
             font.pixelSize: Theme.fontSizeSmall
             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
             leftPadding: Theme.iconSize + Theme.spacingM
             elide: Text.ElideRight
         }
+
     }
 
     // Loading spinner for preference changes
     DankIcon {
         id: wifiLoadingSpinner
+
         name: "refresh"
         size: Theme.iconSize - 4
         color: Theme.primary
@@ -106,7 +112,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         visible: NetworkService.changingPreference && NetworkService.targetPreference === "wifi"
         z: 10
-        
+
         RotationAnimation {
             target: wifiLoadingSpinner
             property: "rotation"
@@ -116,11 +122,13 @@ Rectangle {
             duration: 1000
             loops: Animation.Infinite
         }
+
     }
 
     // WiFi toggle switch
     DankToggle {
         id: wifiToggle
+
         checked: NetworkService.wifiEnabled
         enabled: true
         toggling: NetworkService.wifiToggling
@@ -140,15 +148,16 @@ Rectangle {
                 NetworkService.refreshNetworkStatus();
             }
             NetworkService.toggleWifiRadio();
-            if (refreshTimer) {
+            if (refreshTimer)
                 refreshTimer.triggered = true;
-            }
+
         }
     }
 
     // MouseArea for network preference (excluding toggle area)
     MouseArea {
         id: wifiPreferenceArea
+
         anchors.fill: parent
         anchors.rightMargin: 60 // Exclude toggle area
         hoverEnabled: true
@@ -170,5 +179,7 @@ Rectangle {
             duration: Theme.shortDuration
             easing.type: Theme.standardEasing
         }
+
     }
+
 }

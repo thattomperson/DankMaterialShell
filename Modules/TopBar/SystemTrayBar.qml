@@ -5,11 +5,10 @@ import qs.Common
 Rectangle {
     id: root
 
+    readonly property int calculatedWidth: SystemTray.items.values.length > 0 ? SystemTray.items.values.length * 24 + (SystemTray.items.values.length - 1) * Theme.spacingXS + Theme.spacingS * 2 : 0
+
     signal menuRequested(var menu, var item, real x, real y)
 
-    readonly property int calculatedWidth: SystemTray.items.values.length > 0 ? 
-        SystemTray.items.values.length * 24 + (SystemTray.items.values.length - 1) * Theme.spacingXS + Theme.spacingS * 2 : 0
-    
     width: calculatedWidth
     height: 30
     radius: Theme.cornerRadius

@@ -500,7 +500,13 @@ Singleton {
             // Handle both old string format and new object format
             var widgetId = typeof order[i] === "string" ? order[i] : order[i].id;
             var enabled = typeof order[i] === "string" ? true : order[i].enabled;
-            listModel.append({"widgetId": widgetId, "enabled": enabled});
+            var size = typeof order[i] === "string" ? undefined : order[i].size;
+            
+            var item = {"widgetId": widgetId, "enabled": enabled};
+            if (size !== undefined) {
+                item.size = size;
+            }
+            listModel.append(item);
         }
     }
 

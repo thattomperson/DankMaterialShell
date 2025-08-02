@@ -9,10 +9,10 @@ import qs.Widgets
 
 Column {
     id: root
-    
+
     property real micLevel: Math.min(100, (AudioService.source && AudioService.source.audio && AudioService.source.audio.volume * 100) || 0)
     property bool micMuted: (AudioService.source && AudioService.source.audio && AudioService.source.audio.muted) || false
-    
+
     width: parent.width
     spacing: Theme.spacingM
 
@@ -40,8 +40,10 @@ Column {
                 onClicked: {
                     if (AudioService.source && AudioService.source.audio)
                         AudioService.source.audio.muted = !AudioService.source.audio.muted;
+
                 }
             }
+
         }
 
         Item {
@@ -74,7 +76,9 @@ Column {
                             easing.type: Easing.BezierSpline
                             easing.bezierCurve: Anims.standardDecel
                         }
+
                     }
+
                 }
 
                 Rectangle {
@@ -90,16 +94,9 @@ Column {
                     anchors.verticalCenter: parent.verticalCenter
                     scale: micMouseArea.containsMouse || micMouseArea.pressed ? 1.2 : 1
 
-                    Behavior on scale {
-                        NumberAnimation {
-                            duration: Anims.durShort
-                            easing.type: Easing.BezierSpline
-                            easing.bezierCurve: Anims.standard
-                        }
-                    }
-
                     Rectangle {
                         id: micTooltip
+
                         width: tooltipText.contentWidth + Theme.spacingS * 2
                         height: tooltipText.contentHeight + Theme.spacingXS * 2
                         radius: Theme.cornerRadiusSmall
@@ -111,24 +108,38 @@ Column {
                         anchors.horizontalCenter: parent.horizontalCenter
                         visible: (micMouseArea.containsMouse && !root.micMuted) || micMouseArea.isDragging
                         opacity: visible ? 1 : 0
-                        
+
                         StyledText {
                             id: tooltipText
+
                             text: Math.round(root.micLevel) + "%"
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceText
                             font.weight: Font.Medium
                             anchors.centerIn: parent
                         }
-                        
+
                         Behavior on opacity {
                             NumberAnimation {
                                 duration: Theme.shortDuration
                                 easing.type: Theme.standardEasing
                             }
+
                         }
+
                     }
+
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: Anims.durShort
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Anims.standard
+                        }
+
+                    }
+
                 }
+
             }
 
             MouseArea {
@@ -197,6 +208,7 @@ Column {
                     micMouseArea.isDragging = false;
                 }
             }
+
         }
 
         DankIcon {
@@ -205,5 +217,7 @@ Column {
             color: Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter
         }
+
     }
+
 }

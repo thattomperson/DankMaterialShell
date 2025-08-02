@@ -5,9 +5,9 @@ import Quickshell.Bluetooth
 import Quickshell.Io
 import Quickshell.Widgets
 import qs.Common
+import qs.Modules.ControlCenter.Bluetooth
 import qs.Services
 import qs.Widgets
-import qs.Modules.ControlCenter.Bluetooth
 
 Item {
     id: bluetoothTab
@@ -22,18 +22,23 @@ Item {
             width: parent.width
             spacing: Theme.spacingL
 
-            BluetoothToggle { }
+            BluetoothToggle {
+            }
 
             PairedDevicesList {
                 bluetoothContextMenuWindow: bluetoothContextMenuWindow
             }
 
-            AvailableDevicesList { }
+            AvailableDevicesList {
+            }
+
         }
+
     }
 
     BluetoothContextMenu {
         id: bluetoothContextMenuWindow
+
         parentItem: bluetoothTab
     }
 
@@ -52,5 +57,7 @@ Item {
             onClicked: {
             }
         }
+
     }
+
 }

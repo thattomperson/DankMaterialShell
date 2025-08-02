@@ -25,14 +25,7 @@ Item {
         repeat: true
         onTriggered: {
             // Generate fake audio levels when cava is unavailable
-            CavaService.values = [
-                Math.random() * 40 + 10,
-                Math.random() * 60 + 20, 
-                Math.random() * 50 + 15,
-                Math.random() * 35 + 20,
-                Math.random() * 45 + 15,
-                Math.random() * 55 + 25
-            ];
+            CavaService.values = [Math.random() * 40 + 10, Math.random() * 60 + 20, Math.random() * 50 + 15, Math.random() * 35 + 20, Math.random() * 45 + 15, Math.random() * 55 + 25];
         }
     }
 

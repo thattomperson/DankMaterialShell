@@ -5,21 +5,6 @@ import qs.Services
 import qs.Widgets
 
 Column {
-    anchors.fill: parent
-    spacing: Theme.spacingM
-
-    Component.onCompleted: {
-        SysMonitorService.addRef();
-        SysMonitorService.addRef();
-        // Trigger immediate updates for both services
-        SysMonitorService.updateAllStats();
-    }
-
-    Component.onDestruction: {
-        SysMonitorService.removeRef();
-        SysMonitorService.removeRef();
-    }
-
     function formatNetworkSpeed(bytesPerSec) {
         if (bytesPerSec < 1024)
             return bytesPerSec.toFixed(0) + " B/s";
@@ -38,6 +23,19 @@ Column {
             return (bytesPerSec / (1024 * 1024)).toFixed(1) + " MB/s";
         else
             return (bytesPerSec / (1024 * 1024 * 1024)).toFixed(1) + " GB/s";
+    }
+
+    anchors.fill: parent
+    spacing: Theme.spacingM
+    Component.onCompleted: {
+        SysMonitorService.addRef();
+        SysMonitorService.addRef();
+        // Trigger immediate updates for both services
+        SysMonitorService.updateAllStats();
+    }
+    Component.onDestruction: {
+        SysMonitorService.removeRef();
+        SysMonitorService.removeRef();
     }
 
     Rectangle {
@@ -279,9 +277,7 @@ Column {
                 }
 
                 StyledText {
-                    text: SysMonitorService.totalSwapKB > 0 ? 
-                        SysMonitorService.formatSystemMemory(SysMonitorService.usedSwapKB) + " / " + SysMonitorService.formatSystemMemory(SysMonitorService.totalSwapKB) :
-                        "No swap configured"
+                    text: SysMonitorService.totalSwapKB > 0 ? SysMonitorService.formatSystemMemory(SysMonitorService.usedSwapKB) + " / " + SysMonitorService.formatSystemMemory(SysMonitorService.totalSwapKB) : "No swap configured"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                 }
@@ -309,10 +305,16 @@ Column {
                         height: parent.height
                         radius: parent.radius
                         color: {
-                            if (!SysMonitorService.totalSwapKB) return Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3);
+                            if (!SysMonitorService.totalSwapKB)
+                                return Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3);
+
                             const usage = SysMonitorService.usedSwapKB / SysMonitorService.totalSwapKB;
-                            if (usage > 0.9) return Theme.error;
-                            if (usage > 0.7) return Theme.warning; 
+                            if (usage > 0.9)
+                                return Theme.error;
+
+                            if (usage > 0.7)
+                                return Theme.warning;
+
                             return Theme.info;
                         }
 
@@ -320,8 +322,11 @@ Column {
                             NumberAnimation {
                                 duration: Theme.mediumDuration
                             }
+
                         }
+
                     }
+
                 }
 
                 StyledText {

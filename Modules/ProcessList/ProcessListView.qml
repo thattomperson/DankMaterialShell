@@ -6,12 +6,12 @@ import qs.Widgets
 
 Column {
     id: root
+
     property var contextMenu: null
 
     Component.onCompleted: {
         SysMonitorService.addRef();
     }
-
     Component.onDestruction: {
         SysMonitorService.removeRef();
     }
@@ -31,19 +31,20 @@ Column {
             anchors.left: parent.left
             anchors.leftMargin: 0
             anchors.verticalCenter: parent.verticalCenter
-            
+
             StyledText {
                 text: "Process"
                 font.pixelSize: Theme.fontSizeSmall
                 font.family: Prefs.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "name" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
-                opacity: SysMonitorService.sortBy === "name" ? 1.0 : 0.7
+                opacity: SysMonitorService.sortBy === "name" ? 1 : 0.7
                 anchors.centerIn: parent
             }
-            
+
             MouseArea {
                 id: processHeaderArea
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
@@ -53,10 +54,14 @@ Column {
                     processListView.restoreAnchor();
                 }
             }
-            
+
             Behavior on color {
-                ColorAnimation { duration: Theme.shortDuration }
+                ColorAnimation {
+                    duration: Theme.shortDuration
+                }
+
             }
+
         }
 
         Rectangle {
@@ -74,12 +79,13 @@ Column {
                 font.family: Prefs.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "cpu" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
-                opacity: SysMonitorService.sortBy === "cpu" ? 1.0 : 0.7
+                opacity: SysMonitorService.sortBy === "cpu" ? 1 : 0.7
                 anchors.centerIn: parent
             }
-            
+
             MouseArea {
                 id: cpuHeaderArea
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
@@ -89,10 +95,14 @@ Column {
                     processListView.restoreAnchor();
                 }
             }
-            
+
             Behavior on color {
-                ColorAnimation { duration: Theme.shortDuration }
+                ColorAnimation {
+                    duration: Theme.shortDuration
+                }
+
             }
+
         }
 
         Rectangle {
@@ -110,12 +120,13 @@ Column {
                 font.family: Prefs.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "memory" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
-                opacity: SysMonitorService.sortBy === "memory" ? 1.0 : 0.7
+                opacity: SysMonitorService.sortBy === "memory" ? 1 : 0.7
                 anchors.centerIn: parent
             }
-            
+
             MouseArea {
                 id: memoryHeaderArea
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
@@ -125,10 +136,14 @@ Column {
                     processListView.restoreAnchor();
                 }
             }
-            
+
             Behavior on color {
-                ColorAnimation { duration: Theme.shortDuration }
+                ColorAnimation {
+                    duration: Theme.shortDuration
+                }
+
             }
+
         }
 
         Rectangle {
@@ -139,20 +154,21 @@ Column {
             anchors.right: parent.right
             anchors.rightMargin: 53
             anchors.verticalCenter: parent.verticalCenter
-            
+
             StyledText {
                 text: "PID"
                 font.pixelSize: Theme.fontSizeSmall
                 font.family: Prefs.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "pid" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
-                opacity: SysMonitorService.sortBy === "pid" ? 1.0 : 0.7
+                opacity: SysMonitorService.sortBy === "pid" ? 1 : 0.7
                 horizontalAlignment: Text.AlignHCenter
                 anchors.centerIn: parent
             }
-            
+
             MouseArea {
                 id: pidHeaderArea
+
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
@@ -162,10 +178,14 @@ Column {
                     processListView.restoreAnchor();
                 }
             }
-            
+
             Behavior on color {
-                ColorAnimation { duration: Theme.shortDuration }
+                ColorAnimation {
+                    duration: Theme.shortDuration
+                }
+
             }
+
         }
 
         Rectangle {
@@ -214,6 +234,43 @@ Column {
         property real stableY: 0
         property bool isUserScrolling: false
         property bool isScrollBarDragging: false
+        property real wheelMultiplier: 1.8
+        property int wheelBaseStep: 160
+        property string keyRoleName: "pid"
+        property var _anchorKey: undefined
+        property real _anchorOffset: 0
+
+        function captureAnchor() {
+            const y = contentY + 1;
+            const idx = indexAt(0, y);
+            if (idx < 0 || !model || idx >= model.length)
+                return ;
+
+            _anchorKey = model[idx][keyRoleName];
+            const it = itemAtIndex(idx);
+            _anchorOffset = it ? (y - it.y) : 0;
+        }
+
+        function restoreAnchor() {
+            Qt.callLater(function() {
+                if (_anchorKey === undefined || !model)
+                    return ;
+
+                var i = -1;
+                for (var j = 0; j < model.length; ++j) {
+                    if (model[j][keyRoleName] === _anchorKey) {
+                        i = j;
+                        break;
+                    }
+                }
+                if (i < 0)
+                    return ;
+
+                positionViewAtIndex(i, ListView.Beginning);
+                const maxY = Math.max(0, contentHeight - height);
+                contentY = Math.max(0, Math.min(maxY, contentY + _anchorOffset - 1));
+            });
+        }
 
         width: parent.width
         height: parent.height - columnHeaders.height
@@ -223,18 +280,37 @@ Column {
         boundsBehavior: Flickable.StopAtBounds
         flickDeceleration: 1500
         maximumFlickVelocity: 2000
-
         onMovementStarted: isUserScrolling = true
         onMovementEnded: {
-            isUserScrolling = false
-            if (contentY > 40) {
-                stableY = contentY
-            }
+            isUserScrolling = false;
+            if (contentY > 40)
+                stableY = contentY;
+
+        }
+        onContentYChanged: {
+            if (!isUserScrolling && !isScrollBarDragging && visible && stableY > 40 && Math.abs(contentY - stableY) > 10)
+                contentY = stableY;
+
+        }
+        onModelChanged: {
+            if (model && model.length > 0 && !isUserScrolling && stableY > 40)
+                // Preserve scroll position when model updates
+                Qt.callLater(function() {
+                    contentY = stableY;
+                });
+
         }
 
-        onContentYChanged: {
-            if (!isUserScrolling && !isScrollBarDragging && visible && stableY > 40 && Math.abs(contentY - stableY) > 10) {
-                contentY = stableY
+        WheelHandler {
+            target: null
+            onWheel: (ev) => {
+                let dy = ev.pixelDelta.y !== 0 ? ev.pixelDelta.y : (ev.angleDelta.y / 120) * processListView.wheelBaseStep;
+                if (ev.inverted)
+                    dy = -dy;
+
+                const maxY = Math.max(0, processListView.contentHeight - processListView.height);
+                processListView.contentY = Math.max(0, Math.min(maxY, processListView.contentY - dy * processListView.wheelMultiplier));
+                ev.accepted = true;
             }
         }
 
@@ -243,74 +319,22 @@ Column {
             contextMenu: root.contextMenu
         }
 
-        ScrollBar.vertical: ScrollBar { 
+        ScrollBar.vertical: ScrollBar {
             id: verticalScrollBar
-            policy: ScrollBar.AsNeeded 
-            
+
+            policy: ScrollBar.AsNeeded
             onPressedChanged: {
-                processListView.isScrollBarDragging = pressed
-                if (!pressed && processListView.contentY > 40) {
-                    processListView.stableY = processListView.contentY
-                }
-            }
-        }
-        ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
+                processListView.isScrollBarDragging = pressed;
+                if (!pressed && processListView.contentY > 40)
+                    processListView.stableY = processListView.contentY;
 
-        property real wheelMultiplier: 1.8
-        property int  wheelBaseStep: 160
-
-        WheelHandler {
-            target: null
-            onWheel: (ev) => {
-                let dy = ev.pixelDelta.y !== 0
-                         ? ev.pixelDelta.y
-                         : (ev.angleDelta.y / 120) * processListView.wheelBaseStep;
-                if (ev.inverted) dy = -dy;
-
-                const maxY = Math.max(0, processListView.contentHeight - processListView.height);
-                processListView.contentY = Math.max(0, Math.min(maxY,
-                    processListView.contentY - dy * processListView.wheelMultiplier));
-
-                ev.accepted = true;
             }
         }
 
-        property string keyRoleName: "pid"
-        property var    _anchorKey: undefined
-        property real   _anchorOffset: 0
-
-        function captureAnchor() {
-            const y = contentY + 1;
-            const idx = indexAt(0, y);
-            if (idx < 0 || !model || idx >= model.length) return;
-            _anchorKey = model[idx][keyRoleName];
-            const it = itemAtIndex(idx);
-            _anchorOffset = it ? (y - it.y) : 0;
+        ScrollBar.horizontal: ScrollBar {
+            policy: ScrollBar.AlwaysOff
         }
 
-        function restoreAnchor() {
-            Qt.callLater(function() {
-                if (_anchorKey === undefined || !model) return;
-
-                var i = -1;
-                for (var j = 0; j < model.length; ++j) {
-                    if (model[j][keyRoleName] === _anchorKey) { i = j; break; }
-                }
-                if (i < 0) return;
-
-                positionViewAtIndex(i, ListView.Beginning);
-                const maxY = Math.max(0, contentHeight - height);
-                contentY = Math.max(0, Math.min(maxY, contentY + _anchorOffset - 1));
-            });
-        }
-
-        onModelChanged: {
-            if (model && model.length > 0 && !isUserScrolling && stableY > 40) {
-                // Preserve scroll position when model updates
-                Qt.callLater(function() {
-                    contentY = stableY
-                })
-            }
-        }
     }
+
 }

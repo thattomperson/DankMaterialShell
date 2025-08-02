@@ -9,11 +9,9 @@ ScrollView {
     clip: true
     ScrollBar.vertical.policy: ScrollBar.AsNeeded
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-
     Component.onCompleted: {
         SysMonitorService.addRef();
     }
-
     Component.onDestruction: {
         SysMonitorService.removeRef();
     }
@@ -31,6 +29,7 @@ ScrollView {
 
             Column {
                 id: systemInfoColumn
+
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
@@ -108,6 +107,7 @@ ScrollView {
 
                         Column {
                             id: hardwareColumn
+
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.top: parent.top
@@ -133,6 +133,7 @@ ScrollView {
                                     color: Theme.primary
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
+
                             }
 
                             StyledText {
@@ -169,7 +170,9 @@ ScrollView {
                                 elide: Text.ElideRight
                                 verticalAlignment: Text.AlignVCenter
                             }
+
                         }
+
                     }
 
                     Rectangle {
@@ -182,6 +185,7 @@ ScrollView {
 
                         Column {
                             id: memoryColumn
+
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.top: parent.top
@@ -207,6 +211,7 @@ ScrollView {
                                     color: Theme.secondary
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
+
                             }
 
                             StyledText {
@@ -234,7 +239,9 @@ ScrollView {
                                 width: parent.width
                                 height: Theme.fontSizeSmall + Theme.spacingXS
                             }
+
                         }
+
                     }
 
                 }
@@ -242,7 +249,6 @@ ScrollView {
             }
 
         }
-
 
         Rectangle {
             width: parent.width
@@ -253,6 +259,7 @@ ScrollView {
 
             Column {
                 id: storageColumn
+
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
@@ -281,181 +288,178 @@ ScrollView {
 
                 }
 
-
                 Column {
                     width: parent.width
                     spacing: 2
 
-                        Row {
-                            width: parent.width
-                            height: 24
-                            spacing: Theme.spacingS
+                    Row {
+                        width: parent.width
+                        height: 24
+                        spacing: Theme.spacingS
 
-                            StyledText {
-                                text: "Device"
-                                font.pixelSize: Theme.fontSizeSmall
-                                font.family: Prefs.monoFontFamily
-                                font.weight: Font.Bold
-                                color: Theme.surfaceText
-                                width: parent.width * 0.25
-                                elide: Text.ElideRight
-                                verticalAlignment: Text.AlignVCenter
-                            }
-
-                            StyledText {
-                                text: "Mount"
-                                font.pixelSize: Theme.fontSizeSmall
-                                font.family: Prefs.monoFontFamily
-                                font.weight: Font.Bold
-                                color: Theme.surfaceText
-                                width: parent.width * 0.2
-                                elide: Text.ElideRight
-                                verticalAlignment: Text.AlignVCenter
-                            }
-
-                            StyledText {
-                                text: "Size"
-                                font.pixelSize: Theme.fontSizeSmall
-                                font.family: Prefs.monoFontFamily
-                                font.weight: Font.Bold
-                                color: Theme.surfaceText
-                                width: parent.width * 0.15
-                                elide: Text.ElideRight
-                                verticalAlignment: Text.AlignVCenter
-                            }
-
-                            StyledText {
-                                text: "Used"
-                                font.pixelSize: Theme.fontSizeSmall
-                                font.family: Prefs.monoFontFamily
-                                font.weight: Font.Bold
-                                color: Theme.surfaceText
-                                width: parent.width * 0.15
-                                elide: Text.ElideRight
-                                verticalAlignment: Text.AlignVCenter
-                            }
-
-                            StyledText {
-                                text: "Available"
-                                font.pixelSize: Theme.fontSizeSmall
-                                font.family: Prefs.monoFontFamily
-                                font.weight: Font.Bold
-                                color: Theme.surfaceText
-                                width: parent.width * 0.15
-                                elide: Text.ElideRight
-                                verticalAlignment: Text.AlignVCenter
-                            }
-
-                            StyledText {
-                                text: "Use%"
-                                font.pixelSize: Theme.fontSizeSmall
-                                font.family: Prefs.monoFontFamily
-                                font.weight: Font.Bold
-                                color: Theme.surfaceText
-                                width: parent.width * 0.1
-                                elide: Text.ElideRight
-                                verticalAlignment: Text.AlignVCenter
-                            }
-
+                        StyledText {
+                            text: "Device"
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
+                            font.weight: Font.Bold
+                            color: Theme.surfaceText
+                            width: parent.width * 0.25
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
                         }
 
-                        Repeater {
-                            id: diskMountRepeater
+                        StyledText {
+                            text: "Mount"
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
+                            font.weight: Font.Bold
+                            color: Theme.surfaceText
+                            width: parent.width * 0.2
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
 
-                            model: SysMonitorService.diskMounts
+                        StyledText {
+                            text: "Size"
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
+                            font.weight: Font.Bold
+                            color: Theme.surfaceText
+                            width: parent.width * 0.15
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
 
-                            Rectangle {
-                                width: parent.width
-                                height: 24
-                                radius: Theme.cornerRadiusSmall
-                                color: diskMouseArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.04) : "transparent"
+                        StyledText {
+                            text: "Used"
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
+                            font.weight: Font.Bold
+                            color: Theme.surfaceText
+                            width: parent.width * 0.15
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
 
-                                MouseArea {
-                                    id: diskMouseArea
+                        StyledText {
+                            text: "Available"
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
+                            font.weight: Font.Bold
+                            color: Theme.surfaceText
+                            width: parent.width * 0.15
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
 
-                                    anchors.fill: parent
-                                    hoverEnabled: true
+                        StyledText {
+                            text: "Use%"
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.family: Prefs.monoFontFamily
+                            font.weight: Font.Bold
+                            color: Theme.surfaceText
+                            width: parent.width * 0.1
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                    }
+
+                    Repeater {
+                        id: diskMountRepeater
+
+                        model: SysMonitorService.diskMounts
+
+                        Rectangle {
+                            width: parent.width
+                            height: 24
+                            radius: Theme.cornerRadiusSmall
+                            color: diskMouseArea.containsMouse ? Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.04) : "transparent"
+
+                            MouseArea {
+                                id: diskMouseArea
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                            }
+
+                            Row {
+                                anchors.fill: parent
+                                spacing: Theme.spacingS
+
+                                StyledText {
+                                    text: modelData.device
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    font.family: Prefs.monoFontFamily
+                                    color: Theme.surfaceText
+                                    width: parent.width * 0.25
+                                    elide: Text.ElideRight
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    verticalAlignment: Text.AlignVCenter
                                 }
 
-                                Row {
-                                    anchors.fill: parent
-                                    spacing: Theme.spacingS
+                                StyledText {
+                                    text: modelData.mount
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    font.family: Prefs.monoFontFamily
+                                    color: Theme.surfaceText
+                                    width: parent.width * 0.2
+                                    elide: Text.ElideRight
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
 
-                                    StyledText {
-                                        text: modelData.device
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.family: Prefs.monoFontFamily
-                                        color: Theme.surfaceText
-                                        width: parent.width * 0.25
-                                        elide: Text.ElideRight
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        verticalAlignment: Text.AlignVCenter
+                                StyledText {
+                                    text: modelData.size
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    font.family: Prefs.monoFontFamily
+                                    color: Theme.surfaceText
+                                    width: parent.width * 0.15
+                                    elide: Text.ElideRight
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+
+                                StyledText {
+                                    text: modelData.used
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    font.family: Prefs.monoFontFamily
+                                    color: Theme.surfaceText
+                                    width: parent.width * 0.15
+                                    elide: Text.ElideRight
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+
+                                StyledText {
+                                    text: modelData.avail
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    font.family: Prefs.monoFontFamily
+                                    color: Theme.surfaceText
+                                    width: parent.width * 0.15
+                                    elide: Text.ElideRight
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+
+                                StyledText {
+                                    text: modelData.percent
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    font.family: Prefs.monoFontFamily
+                                    color: {
+                                        const percent = parseInt(modelData.percent);
+                                        if (percent > 90)
+                                            return Theme.error;
+
+                                        if (percent > 75)
+                                            return Theme.warning;
+
+                                        return Theme.surfaceText;
                                     }
-
-                                    StyledText {
-                                        text: modelData.mount
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.family: Prefs.monoFontFamily
-                                        color: Theme.surfaceText
-                                        width: parent.width * 0.2
-                                        elide: Text.ElideRight
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                    }
-
-                                    StyledText {
-                                        text: modelData.size
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.family: Prefs.monoFontFamily
-                                        color: Theme.surfaceText
-                                        width: parent.width * 0.15
-                                        elide: Text.ElideRight
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                    }
-
-                                    StyledText {
-                                        text: modelData.used
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.family: Prefs.monoFontFamily
-                                        color: Theme.surfaceText
-                                        width: parent.width * 0.15
-                                        elide: Text.ElideRight
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                    }
-
-                                    StyledText {
-                                        text: modelData.avail
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.family: Prefs.monoFontFamily
-                                        color: Theme.surfaceText
-                                        width: parent.width * 0.15
-                                        elide: Text.ElideRight
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                    }
-
-                                    StyledText {
-                                        text: modelData.percent
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        font.family: Prefs.monoFontFamily
-                                        color: {
-                                            const percent = parseInt(modelData.percent);
-                                            if (percent > 90)
-                                                return Theme.error;
-
-                                            if (percent > 75)
-                                                return Theme.warning;
-
-                                            return Theme.surfaceText;
-                                        }
-                                        width: parent.width * 0.1
-                                        elide: Text.ElideRight
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                    }
-
+                                    width: parent.width * 0.1
+                                    elide: Text.ElideRight
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    verticalAlignment: Text.AlignVCenter
                                 }
 
                             }
@@ -463,6 +467,8 @@ ScrollView {
                         }
 
                     }
+
+                }
 
             }
 

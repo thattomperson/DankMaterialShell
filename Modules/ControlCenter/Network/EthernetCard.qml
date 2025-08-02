@@ -9,13 +9,14 @@ import qs.Widgets
 
 Rectangle {
     id: ethernetCard
-    
+
     width: parent.width
     height: 80
     radius: Theme.cornerRadius
     color: {
         if (ethernetPreferenceArea.containsMouse && NetworkService.ethernetConnected && NetworkService.wifiEnabled && NetworkService.networkStatus !== "ethernet")
             return Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.8);
+
         return Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.5);
     }
     border.color: NetworkService.networkStatus === "ethernet" ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
@@ -47,6 +48,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 elide: Text.ElideRight
             }
+
         }
 
         StyledText {
@@ -56,11 +58,13 @@ Rectangle {
             leftPadding: Theme.iconSize + Theme.spacingM
             elide: Text.ElideRight
         }
+
     }
 
     // Loading spinner for preference changes
     DankIcon {
         id: ethernetLoadingSpinner
+
         name: "refresh"
         size: Theme.iconSize - 4
         color: Theme.primary
@@ -69,7 +73,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         visible: NetworkService.changingPreference && NetworkService.targetPreference === "ethernet"
         z: 10
-        
+
         RotationAnimation {
             target: ethernetLoadingSpinner
             property: "rotation"
@@ -79,11 +83,13 @@ Rectangle {
             duration: 1000
             loops: Animation.Infinite
         }
+
     }
 
     // Ethernet toggle switch (matching WiFi style)
     DankToggle {
         id: ethernetToggle
+
         checked: NetworkService.ethernetConnected
         enabled: true
         anchors.right: parent.right
@@ -97,6 +103,7 @@ Rectangle {
     // MouseArea for network preference (excluding toggle area)
     MouseArea {
         id: ethernetPreferenceArea
+
         anchors.fill: parent
         anchors.rightMargin: 60 // Exclude toggle area
         hoverEnabled: true
@@ -118,5 +125,7 @@ Rectangle {
             duration: Theme.shortDuration
             easing.type: Theme.standardEasing
         }
+
     }
+
 }
