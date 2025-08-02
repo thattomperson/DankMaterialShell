@@ -153,23 +153,10 @@ PanelWindow {
             readonly property bool spacingTight: validLayout && (leftToMediaGap < 150 || clockToRightGap < 100)
             readonly property bool overlapping: validLayout && (leftToMediaGap < 100 || clockToRightGap < 50)
 
-            // Helper functions
-            function getWidgetEnabled(widgetId) {
-                switch (widgetId) {
-                    case "launcherButton": return Prefs.showLauncherButton
-                    case "workspaceSwitcher": return Prefs.showWorkspaceSwitcher
-                    case "focusedWindow": return Prefs.showFocusedWindow
-                    case "clock": return Prefs.showClock
-                    case "music": return Prefs.showMusic
-                    case "weather": return Prefs.showWeather
-                    case "systemTray": return Prefs.showSystemTray
-                    case "clipboard": return Prefs.showClipboard
-                    case "systemResources": return Prefs.showSystemResources
-                    case "notificationButton": return Prefs.showNotificationButton
-                    case "battery": return Prefs.showBattery
-                    case "controlCenterButton": return Prefs.showControlCenterButton
-                    default: return false
-                }
+            // Helper functions - now uses per-instance enabled state from model
+            function getWidgetEnabled(enabled) {
+                // Use the enabled state directly from the model
+                return enabled !== undefined ? enabled : true
             }
             
             function getWidgetVisible(widgetId) {
@@ -247,7 +234,7 @@ PanelWindow {
                     
                     Loader {
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                        active: topBarContent.getWidgetEnabled(model.widgetId) && topBarContent.getWidgetVisible(model.widgetId)
+                        active: topBarContent.getWidgetEnabled(model.enabled) && topBarContent.getWidgetVisible(model.widgetId)
                         sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
                         
                         property string widgetId: model.widgetId
@@ -272,7 +259,7 @@ PanelWindow {
                     
                     Loader {
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                        active: topBarContent.getWidgetEnabled(model.widgetId) && topBarContent.getWidgetVisible(model.widgetId)
+                        active: topBarContent.getWidgetEnabled(model.enabled) && topBarContent.getWidgetVisible(model.widgetId)
                         sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
                         
                         property string widgetId: model.widgetId
@@ -298,7 +285,7 @@ PanelWindow {
                     
                     Loader {
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                        active: topBarContent.getWidgetEnabled(model.widgetId) && topBarContent.getWidgetVisible(model.widgetId)
+                        active: topBarContent.getWidgetEnabled(model.enabled) && topBarContent.getWidgetVisible(model.widgetId)
                         sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
                         
                         property string widgetId: model.widgetId
