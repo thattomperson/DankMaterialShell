@@ -28,11 +28,9 @@ PanelWindow {
         let fonts = Qt.fontFamilies();
         if (fonts.indexOf("Material Symbols Rounded") === -1)
             ToastService.showError("Please install Material Symbols Rounded and Restart your Shell. See README.md for instructions");
-        
-        // Connect to the force refresh signal
+
         Prefs.forceTopBarLayoutRefresh.connect(function() {
             console.log("TopBar: Forcing layout refresh");
-            // Force layout recalculation by toggling visibility briefly
             Qt.callLater(() => {
                 leftSection.visible = false;
                 centerSection.visible = false;
@@ -48,11 +46,10 @@ PanelWindow {
     }
 
     Connections {
+
         function onTopBarTransparencyChanged() {
             root.backgroundTransparency = Prefs.topBarTransparency;
         }
-
-        // Remove old manual refresh handlers - ListModel updates are automatic
 
         target: Prefs
     }
@@ -153,63 +150,73 @@ PanelWindow {
             readonly property bool spacingTight: validLayout && (leftToMediaGap < 150 || clockToRightGap < 100)
             readonly property bool overlapping: validLayout && (leftToMediaGap < 100 || clockToRightGap < 50)
 
-            // Helper functions - now uses per-instance enabled state from model
             function getWidgetEnabled(enabled) {
-                // Use the enabled state directly from the model
-                return enabled !== undefined ? enabled : true
+                return enabled !== undefined ? enabled : true;
             }
-            
+
             function getWidgetVisible(widgetId) {
-                // Some widgets have additional visibility conditions
                 switch (widgetId) {
-                    case "launcherButton": return true
-                    case "workspaceSwitcher": return true // Simplified - was NiriService.niriAvailable
-                    case "focusedWindow": return true
-                    case "clock": return true
-                    case "music": return true // Simplified - was MprisController.activePlayer
-                    case "weather": return true // Simplified - was complex weather condition
-                    case "systemTray": return true
-                    case "clipboard": return true
-                    case "systemResources": return true
-                    case "notificationButton": return true
-                    case "battery": return true
-                    case "controlCenterButton": return true
-                    default: return false
+                case "launcherButton":
+                    return true;
+                case "workspaceSwitcher":
+                    return true;
+                case "focusedWindow":
+                    return true;
+                case "clock":
+                    return true;
+                case "music":
+                    return true;
+                case "weather":
+                    return true;
+                case "systemTray":
+                    return true;
+                case "clipboard":
+                    return true;
+                case "systemResources":
+                    return true;
+                case "notificationButton":
+                    return true;
+                case "battery":
+                    return true;
+                case "controlCenterButton":
+                    return true;
+                default:
+                    return false;
                 }
             }
-            
+
             function getWidgetComponent(widgetId) {
                 switch (widgetId) {
-                    case "launcherButton":
-                        return launcherButtonComponent
-                    case "workspaceSwitcher":
-                        return workspaceSwitcherComponent
-                    case "focusedWindow":
-                        return focusedWindowComponent
-                    case "clock":
-                        return clockComponent
-                    case "music":
-                        return mediaComponent
-                    case "weather":
-                        return weatherComponent
-                    case "systemTray":
-                        return systemTrayComponent
-                    case "clipboard":
-                        return clipboardComponent
-                    case "systemResources":
-                        return systemResourcesComponent
-                    case "notificationButton":
-                        return notificationButtonComponent
-                    case "battery":
-                        return batteryComponent
-                    case "controlCenterButton":
-                        return controlCenterButtonComponent
-                    case "spacer":
-                        return spacerComponent
-                    case "separator":
-                        return separatorComponent
-                    default:
-                        return null
+                case "launcherButton":
+                    return launcherButtonComponent;
+                case "workspaceSwitcher":
+                    return workspaceSwitcherComponent;
+                case "focusedWindow":
+                    return focusedWindowComponent;
+                case "clock":
+                    return clockComponent;
+                case "music":
+                    return mediaComponent;
+                case "weather":
+                    return weatherComponent;
+                case "systemTray":
+                    return systemTrayComponent;
+                case "clipboard":
+                    return clipboardComponent;
+                case "systemResources":
+                    return systemResourcesComponent;
+                case "notificationButton":
+                    return notificationButtonComponent;
+                case "battery":
+                    return batteryComponent;
+                case "controlCenterButton":
+                    return controlCenterButtonComponent;
+                case "spacer":
+                    return spacerComponent;
+                case "separator":
+                    return separatorComponent;
+                default:
+                    return null;
                 }
             }
 
@@ -231,43 +238,149 @@ PanelWindow {
 
                 Repeater {
                     model: Prefs.topBarLeftWidgetsModel
-                    
+
                     Loader {
+                        property string widgetId: model.widgetId
+
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
                         active: topBarContent.getWidgetEnabled(model.enabled) && topBarContent.getWidgetVisible(model.widgetId)
                         sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
-                        
-                        property string widgetId: model.widgetId
                     }
+
                 }
+
             }
 
-            // Dynamic center section
-            Row {
+            Item {
                 id: centerSection
 
-                height: parent.height
-                spacing: Theme.spacingS
-                anchors.centerIn: parent
+                property var centerWidgets: []
+                property int totalWidgets: 0
+                property real totalWidth: 0
+                property real spacing: Theme.spacingS
 
+                function updateLayout() {
+                    centerWidgets = [];
+                    totalWidgets = 0;
+                    totalWidth = 0;
+                    
+                    let allItemsReady = true;
+                    for (let i = 0; i < centerRepeater.count; i++) {
+                        let item = centerRepeater.itemAt(i);
+                        if (item && item.active && item.item) {
+                            if (item.item.width <= 0) {
+                                allItemsReady = false;
+                                break;
+                            }
+                            centerWidgets.push(item.item);
+                            totalWidgets++;
+                            totalWidth += item.item.width;
+                        }
+                    }
+                    
+                    if (!allItemsReady) {
+                        Qt.callLater(updateLayout);
+                        return;
+                    }
+                    
+                    if (totalWidgets > 1)
+                        totalWidth += spacing * (totalWidgets - 1);
+
+                    positionWidgets();
+                }
+
+                function positionWidgets() {
+                    if (totalWidgets === 0)
+                        return ;
+
+                    let parentCenterX = width / 2;
+                    if (totalWidgets % 2 === 1) {
+                        let middleIndex = Math.floor(totalWidgets / 2);
+                        let currentX = parentCenterX - (centerWidgets[middleIndex].width / 2);
+                        centerWidgets[middleIndex].x = currentX;
+                        centerWidgets[middleIndex].anchors.horizontalCenter = undefined;
+                        currentX = centerWidgets[middleIndex].x;
+                        for (let i = middleIndex - 1; i >= 0; i--) {
+                            currentX -= (spacing + centerWidgets[i].width);
+                            centerWidgets[i].x = currentX;
+                            centerWidgets[i].anchors.horizontalCenter = undefined;
+                        }
+                        currentX = centerWidgets[middleIndex].x + centerWidgets[middleIndex].width;
+                        for (let i = middleIndex + 1; i < totalWidgets; i++) {
+                            currentX += spacing;
+                            centerWidgets[i].x = currentX;
+                            centerWidgets[i].anchors.horizontalCenter = undefined;
+                            currentX += centerWidgets[i].width;
+                        }
+                    } else {
+                        let leftMiddleIndex = (totalWidgets / 2) - 1;
+                        let rightMiddleIndex = totalWidgets / 2;
+                        let gapCenter = parentCenterX;
+                        let halfSpacing = spacing / 2;
+                        centerWidgets[leftMiddleIndex].x = gapCenter - halfSpacing - centerWidgets[leftMiddleIndex].width;
+                        centerWidgets[leftMiddleIndex].anchors.horizontalCenter = undefined;
+                        centerWidgets[rightMiddleIndex].x = gapCenter + halfSpacing;
+                        centerWidgets[rightMiddleIndex].anchors.horizontalCenter = undefined;
+                        let currentX = centerWidgets[leftMiddleIndex].x;
+                        for (let i = leftMiddleIndex - 1; i >= 0; i--) {
+                            currentX -= (spacing + centerWidgets[i].width);
+                            centerWidgets[i].x = currentX;
+                            centerWidgets[i].anchors.horizontalCenter = undefined;
+                        }
+                        currentX = centerWidgets[rightMiddleIndex].x + centerWidgets[rightMiddleIndex].width;
+                        for (let i = rightMiddleIndex + 1; i < totalWidgets; i++) {
+                            currentX += spacing;
+                            centerWidgets[i].x = currentX;
+                            centerWidgets[i].anchors.horizontalCenter = undefined;
+                            currentX += centerWidgets[i].width;
+                        }
+                    }
+                }
+
+                height: parent.height
+                width: parent.width
+                anchors.centerIn: parent
                 Component.onCompleted: {
-                    console.log("Center widgets model count:", Prefs.topBarCenterWidgetsModel.count)
+                    console.log("Center widgets model count:", Prefs.topBarCenterWidgetsModel.count);
+                    Qt.callLater(() => {
+                        Qt.callLater(updateLayout);
+                    });
                 }
 
                 Repeater {
+                    id: centerRepeater
+
                     model: Prefs.topBarCenterWidgetsModel
-                    
+
                     Loader {
+                        property string widgetId: model.widgetId
+
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
                         active: topBarContent.getWidgetEnabled(model.enabled) && topBarContent.getWidgetVisible(model.widgetId)
                         sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
-                        
-                        property string widgetId: model.widgetId
+                        onLoaded: {
+                            if (item) {
+                                item.onWidthChanged.connect(centerSection.updateLayout);
+                                Qt.callLater(centerSection.updateLayout);
+                            }
+                        }
+                        onActiveChanged: {
+                            Qt.callLater(centerSection.updateLayout);
+                        }
                     }
+
                 }
+
+                Connections {
+                    function onCountChanged() {
+                        Qt.callLater(centerSection.updateLayout);
+                    }
+
+                    target: Prefs.topBarCenterWidgetsModel
+                }
+
             }
 
-            // Dynamic right section
             Row {
                 id: rightSection
 
@@ -275,82 +388,96 @@ PanelWindow {
                 spacing: Theme.spacingXS
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-
                 Component.onCompleted: {
-                    console.log("Right widgets model count:", Prefs.topBarRightWidgetsModel.count)
+                    console.log("Right widgets model count:", Prefs.topBarRightWidgetsModel.count);
                 }
 
                 Repeater {
                     model: Prefs.topBarRightWidgetsModel
-                    
+
                     Loader {
+                        property string widgetId: model.widgetId
+
                         anchors.verticalCenter: parent ? parent.verticalCenter : undefined
                         active: topBarContent.getWidgetEnabled(model.enabled) && topBarContent.getWidgetVisible(model.widgetId)
                         sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
-                        
-                        property string widgetId: model.widgetId
                     }
+
                 }
+
             }
 
-            // Widget Components
             Component {
                 id: launcherButtonComponent
+
                 LauncherButton {
                     isActive: appDrawerPopout ? appDrawerPopout.isVisible : false
                     onClicked: {
                         if (appDrawerPopout)
                             appDrawerPopout.toggle();
+
                     }
                 }
+
             }
 
             Component {
                 id: workspaceSwitcherComponent
+
                 WorkspaceSwitcher {
                     screenName: root.screenName
                 }
+
             }
 
             Component {
                 id: focusedWindowComponent
+
                 FocusedApp {
                     compactMode: topBarContent.spacingTight
                     availableWidth: topBarContent.leftToMediaGap
                 }
+
             }
 
             Component {
                 id: clockComponent
+
                 Clock {
                     compactMode: topBarContent.overlapping
                     onClockClicked: {
                         centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                     }
                 }
+
             }
 
             Component {
                 id: mediaComponent
+
                 Media {
                     compactMode: topBarContent.spacingTight || topBarContent.overlapping
                     onClicked: {
                         centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                     }
                 }
+
             }
 
             Component {
                 id: weatherComponent
+
                 Weather {
                     onClicked: {
                         centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                     }
                 }
+
             }
 
             Component {
                 id: systemTrayComponent
+
                 SystemTrayBar {
                     onMenuRequested: (menu, item, x, y) => {
                         systemTrayContextMenu.currentTrayMenu = menu;
@@ -361,10 +488,12 @@ PanelWindow {
                         menu.menuVisible = true;
                     }
                 }
+
             }
 
             Component {
                 id: clipboardComponent
+
                 Rectangle {
                     width: 40
                     height: 30
@@ -383,6 +512,7 @@ PanelWindow {
 
                     MouseArea {
                         id: clipboardArea
+
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
@@ -396,15 +526,19 @@ PanelWindow {
                             duration: Theme.shortDuration
                             easing.type: Theme.standardEasing
                         }
+
                     }
+
                 }
+
             }
 
             Component {
                 id: systemResourcesComponent
+
                 Row {
                     spacing: Theme.spacingXS
-                    
+
                     CpuMonitor {
                         toggleProcessList: () => {
                             return processListPopout.toggle();
@@ -416,11 +550,14 @@ PanelWindow {
                             return processListPopout.toggle();
                         }
                     }
+
                 }
+
             }
 
             Component {
                 id: notificationButtonComponent
+
                 NotificationCenterButton {
                     hasUnread: root.notificationCount > 0
                     isActive: notificationCenter.notificationHistoryVisible
@@ -428,20 +565,24 @@ PanelWindow {
                         notificationCenter.notificationHistoryVisible = !notificationCenter.notificationHistoryVisible;
                     }
                 }
+
             }
 
             Component {
                 id: batteryComponent
+
                 Battery {
                     batteryPopupVisible: batteryPopout.batteryPopupVisible
                     onToggleBatteryPopup: {
                         batteryPopout.batteryPopupVisible = !batteryPopout.batteryPopupVisible;
                     }
                 }
+
             }
 
             Component {
                 id: controlCenterButtonComponent
+
                 ControlCenterButton {
                     isActive: controlCenterPopout.controlCenterVisible
                     onClicked: {
@@ -449,27 +590,33 @@ PanelWindow {
                         if (controlCenterPopout.controlCenterVisible) {
                             if (NetworkService.wifiEnabled)
                                 NetworkService.scanWifi();
+
                         }
                     }
                 }
+
             }
 
             Component {
                 id: spacerComponent
+
                 Item {
                     width: 20
                     height: 30
                 }
+
             }
 
             Component {
                 id: separatorComponent
+
                 Rectangle {
                     width: 1
                     height: 20
                     color: Theme.outline
                     opacity: 0.3
                 }
+
             }
 
         }
