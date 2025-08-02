@@ -244,7 +244,7 @@ palette = 14=${inverse_b}
 palette = 15=${fg_b}`;
 
         var ghosttyConfigDir = configDir + "/ghostty";
-        var ghosttyConfigPath = ghosttyConfigDir + "/config-colors";
+        var ghosttyConfigPath = ghosttyConfigDir + "/config-dankcolors";
         
         Quickshell.execDetached(["bash", "-c", `mkdir -p '${ghosttyConfigDir}' && echo '${content}' > '${ghosttyConfigPath}'`]);
     }

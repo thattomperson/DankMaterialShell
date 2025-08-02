@@ -206,6 +206,15 @@ ColorScheme=qt6ct
 
 Enable system app theming in **Settings → Appearance → System App Theming** after installing the required dependencies.
 
+### Ghostty Theming
+If using [Ghostty](https://ghostty.org/), you can automatically theme its colors as well by adding the following to your `~/.config/ghostty/config` file
+
+```
+config-file = ./config-dankcolors
+```
+
+Ghostty doesn't hot-reload config changes, but does with a keyboard shortcut `ctrl+,`
+
 ## Usage
 
 ### Basic Controls
