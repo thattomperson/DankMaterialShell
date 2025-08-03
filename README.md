@@ -126,7 +126,7 @@ sudo dnf install quickshell-git
 **Arch Linux:**
 ```bash
 # Core optional packages
-pacman -S cava wl-clipboard cliphist ddcutil brightnessctl gsettings-desktop-schemas qt5ct qt6ct
+pacman -S cava wl-clipboard cliphist ddcutil brightnessctl qt5ct qt6ct
 
 # AUR packages
 paru -S matugen
@@ -135,7 +135,7 @@ paru -S matugen
 **Fedora:**
 ```bash
 # Core packages
-sudo dnf install cava wl-clipboard ddcutil brightnessctl gsettings-desktop-schemas qt5ct qt6ct
+sudo dnf install cava wl-clipboard ddcutil brightnessctl qt5ct qt6ct
 
 # COPR repositories
 sudo dnf copr enable wef/cliphist && sudo dnf install cliphist

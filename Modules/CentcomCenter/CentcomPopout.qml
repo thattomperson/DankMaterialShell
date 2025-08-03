@@ -188,7 +188,7 @@ PanelWindow {
                 }
 
                 Rectangle {
-                    width: leftWidgets.hasAnyWidgets ? parent.width * 0.55 - Theme.spacingM : parent.width
+                    width: leftWidgets.hasAnyWidgets ? parent.width - leftWidgets.width - Theme.spacingM : parent.width
                     height: parent.height
                     radius: Theme.cornerRadiusLarge
                     color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
