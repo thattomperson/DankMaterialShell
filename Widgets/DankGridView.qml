@@ -28,6 +28,7 @@ GridView {
     signal keyboardNavigationReset()
     signal itemClicked(int index, var modelData)
     signal itemHovered(int index)
+    signal itemRightClicked(int index, var modelData, real mouseX, real mouseY)
 
     function ensureVisible(index) {
         if (index < 0 || index >= gridView.count)
@@ -148,6 +149,7 @@ GridView {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
             z: 10
             onEntered: {
                 if (hoverUpdatesSelection && !keyboardNavigationActive)
@@ -158,8 +160,13 @@ GridView {
             onPositionChanged: {
                 keyboardNavigationReset();
             }
-            onClicked: {
-                itemClicked(index, model);
+            onClicked: (mouse) => {
+                if (mouse.button === Qt.LeftButton) {
+                    itemClicked(index, model);
+                } else if (mouse.button === Qt.RightButton) {
+                    var globalPos = mapToGlobal(mouse.x, mouse.y);
+                    itemRightClicked(index, model, globalPos.x, globalPos.y);
+                }
             }
         }
 

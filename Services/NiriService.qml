@@ -343,4 +343,35 @@ Singleton {
         }
         return 1
     }
+    
+    function focusWindow(windowId) {
+        if (!niriAvailable) return false
+        
+        console.log("NiriService: Focusing window with command:", ["niri", "msg", "action", "focus-window", "--id", windowId.toString()])
+        Quickshell.execDetached(["niri", "msg", "action", "focus-window", "--id", windowId.toString()])
+        return true
+    }
+    
+    function closeWindow(windowId) {
+        if (!niriAvailable) return false
+        
+        console.log("NiriService: Closing window with command:", ["niri", "msg", "action", "close-window", "--id", windowId.toString()])
+        Quickshell.execDetached(["niri", "msg", "action", "close-window", "--id", windowId.toString()])
+        return true
+    }
+    
+    function getWindowsByAppId(appId) {
+        if (!appId) return []
+        return windows.filter(w => w.app_id && w.app_id.toLowerCase() === appId.toLowerCase())
+    }
+    
+    function getRunningAppIds() {
+        var appIds = new Set()
+        windows.forEach(w => {
+            if (w.app_id) {
+                appIds.add(w.app_id.toLowerCase())
+            }
+        })
+        return Array.from(appIds)
+    }
 }

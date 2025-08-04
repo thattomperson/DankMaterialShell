@@ -15,6 +15,7 @@ import qs.Modules.Notifications.Popup
 import qs.Modules.ProcessList
 import qs.Modules.Settings
 import qs.Modules.TopBar
+import qs.Modules.Dock
 import qs.Services
 
 ShellRoot {
@@ -38,12 +39,31 @@ ShellRoot {
 
     }
 
+    Variants {
+        model: Quickshell.screens
+
+        delegate: Dock {
+            modelData: item
+            contextMenu: dockContextMenu
+            windowsMenu: dockWindowsMenu
+        }
+
+    }
+
     CentcomPopout {
         id: centcomPopout
     }
 
     SystemTrayContextMenu {
         id: systemTrayContextMenu
+    }
+
+    DockContextMenu {
+        id: dockContextMenu
+    }
+
+    DockWindowsMenu {
+        id: dockWindowsMenu
     }
 
     NotificationCenterPopout {

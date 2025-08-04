@@ -50,6 +50,16 @@ PanelWindow {
 
         target: Prefs
     }
+    
+    Connections {
+        target: root.screen
+        function onGeometryChanged() {
+            // Re-layout center widgets when screen geometry changes
+            if (centerSection && centerSection.width > 0) {
+                Qt.callLater(centerSection.updateLayout);
+            }
+        }
+    }
 
     QtObject {
         id: notificationHistory
@@ -262,6 +272,12 @@ PanelWindow {
                 property real spacing: Theme.spacingS
 
                 function updateLayout() {
+                    // Defer layout if dimensions are invalid
+                    if (width <= 0 || height <= 0 || !visible) {
+                        Qt.callLater(updateLayout);
+                        return;
+                    }
+                    
                     centerWidgets = [];
                     totalWidgets = 0;
                     totalWidth = 0;
@@ -280,7 +296,7 @@ PanelWindow {
                 }
 
                 function positionWidgets() {
-                    if (totalWidgets === 0)
+                    if (totalWidgets === 0 || width <= 0)
                         return ;
 
                     let parentCenterX = width / 2;
@@ -334,6 +350,18 @@ PanelWindow {
                     Qt.callLater(() => {
                         Qt.callLater(updateLayout);
                     });
+                }
+                
+                onWidthChanged: {
+                    if (width > 0) {
+                        Qt.callLater(updateLayout);
+                    }
+                }
+                
+                onVisibleChanged: {
+                    if (visible && width > 0) {
+                        Qt.callLater(updateLayout);
+                    }
                 }
 
                 Repeater {

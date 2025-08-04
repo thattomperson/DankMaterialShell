@@ -17,6 +17,7 @@ Singleton {
     property real topBarTransparency: 0.75
     property real topBarWidgetTransparency: 0.85
     property real popupTransparency: 0.92
+    property real dockTransparency: 1.0
     property var appUsageRanking: {}
     property bool use24HourClock: true
     property bool useFahrenheit: false
@@ -81,6 +82,9 @@ Singleton {
     property int fontWeight: Font.Normal
     property bool gtkThemingEnabled: false
     property bool qtThemingEnabled: false
+    property bool showDock: false
+    property var pinnedApps: []
+    property bool dockAutoHide: false
     
     readonly property string defaultFontFamily: "Inter Variable"
     readonly property string defaultMonoFontFamily: "Fira Code"
@@ -137,6 +141,7 @@ Singleton {
                 topBarTransparency = settings.topBarTransparency !== undefined ? (settings.topBarTransparency > 1 ? settings.topBarTransparency / 100 : settings.topBarTransparency) : 0.75;
                 topBarWidgetTransparency = settings.topBarWidgetTransparency !== undefined ? (settings.topBarWidgetTransparency > 1 ? settings.topBarWidgetTransparency / 100 : settings.topBarWidgetTransparency) : 0.85;
                 popupTransparency = settings.popupTransparency !== undefined ? (settings.popupTransparency > 1 ? settings.popupTransparency / 100 : settings.popupTransparency) : 0.92;
+                dockTransparency = settings.dockTransparency !== undefined ? (settings.dockTransparency > 1 ? settings.dockTransparency / 100 : settings.dockTransparency) : 1.0;
                 appUsageRanking = settings.appUsageRanking || {};
                 use24HourClock = settings.use24HourClock !== undefined ? settings.use24HourClock : true;
                 useFahrenheit = settings.useFahrenheit !== undefined ? settings.useFahrenheit : false;
@@ -193,6 +198,9 @@ Singleton {
                 fontWeight = settings.fontWeight !== undefined ? settings.fontWeight : Font.Normal;
                 gtkThemingEnabled = settings.gtkThemingEnabled !== undefined ? settings.gtkThemingEnabled : false;
                 qtThemingEnabled = settings.qtThemingEnabled !== undefined ? settings.qtThemingEnabled : false;
+                showDock = settings.showDock !== undefined ? settings.showDock : false;
+                pinnedApps = settings.pinnedApps !== undefined ? settings.pinnedApps : [];
+                dockAutoHide = settings.dockAutoHide !== undefined ? settings.dockAutoHide : false;
                         applyStoredTheme();
                         detectAvailableIconThemes();
                         detectQtTools();
@@ -214,6 +222,7 @@ Singleton {
             "topBarTransparency": topBarTransparency,
             "topBarWidgetTransparency": topBarWidgetTransparency,
             "popupTransparency": popupTransparency,
+            "dockTransparency": dockTransparency,
             "appUsageRanking": appUsageRanking,
             "use24HourClock": use24HourClock,
             "useFahrenheit": useFahrenheit,
@@ -255,7 +264,10 @@ Singleton {
             "monoFontFamily": monoFontFamily,
             "fontWeight": fontWeight,
             "gtkThemingEnabled": gtkThemingEnabled,
-            "qtThemingEnabled": qtThemingEnabled
+            "qtThemingEnabled": qtThemingEnabled,
+            "showDock": showDock,
+            "pinnedApps": pinnedApps,
+            "dockAutoHide": dockAutoHide
         }, null, 2));
     }
 
@@ -309,6 +321,11 @@ Singleton {
 
     function setPopupTransparency(transparency) {
         popupTransparency = transparency;
+        saveSettings();
+    }
+
+    function setDockTransparency(transparency) {
+        dockTransparency = transparency;
         saveSettings();
     }
 
@@ -782,6 +799,42 @@ Singleton {
 
     function setQtThemingEnabled(enabled) {
         qtThemingEnabled = enabled;
+        saveSettings();
+    }
+
+    function setShowDock(enabled) {
+        showDock = enabled;
+        saveSettings();
+    }
+
+    function setPinnedApps(apps) {
+        pinnedApps = apps;
+        pinnedAppsChanged();  // Explicitly emit the signal
+        saveSettings();
+    }
+
+    function addPinnedApp(appId) {
+        if (!appId) return;
+        var currentPinned = [...pinnedApps];
+        if (currentPinned.indexOf(appId) === -1) {
+            currentPinned.push(appId);
+            setPinnedApps(currentPinned);
+        }
+    }
+
+    function removePinnedApp(appId) {
+        if (!appId) return;
+        var currentPinned = pinnedApps.filter(id => id !== appId);
+        setPinnedApps(currentPinned);
+    }
+
+    function isPinnedApp(appId) {
+        return appId && pinnedApps.indexOf(appId) !== -1;
+    }
+
+
+    function setDockAutoHide(enabled) {
+        dockAutoHide = enabled;
         saveSettings();
     }
 

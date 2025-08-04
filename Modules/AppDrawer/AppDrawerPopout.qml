@@ -353,6 +353,9 @@ PanelWindow {
                             onItemHovered: function(index) {
                                 appLauncher.selectedIndex = index;
                             }
+                            onItemRightClicked: function(index, modelData, mouseX, mouseY) {
+                                contextMenu.show(mouseX, mouseY, modelData);
+                            }
                             onKeyboardNavigationReset: {
                                 appLauncher.keyboardNavigationActive = false;
                             }
@@ -376,11 +379,209 @@ PanelWindow {
                             onItemHovered: function(index) {
                                 appLauncher.selectedIndex = index;
                             }
+                            onItemRightClicked: function(index, modelData, mouseX, mouseY) {
+                                contextMenu.show(mouseX, mouseY, modelData);
+                            }
                             onKeyboardNavigationReset: {
                                 appLauncher.keyboardNavigationActive = false;
                             }
                         }
 
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+    Popup {
+        id: contextMenu
+
+        property var currentApp: null
+
+        function show(x, y, app) {
+            currentApp = app;
+            if (!contextMenu.parent && typeof Overlay !== "undefined" && Overlay.overlay)
+                contextMenu.parent = Overlay.overlay;
+
+            const menuWidth = 180;
+            const menuHeight = menuColumn.implicitHeight + Theme.spacingS * 2;
+            const screenWidth = Screen.width;
+            const screenHeight = Screen.height;
+            let finalX = x;
+            let finalY = y;
+            if (x + menuWidth > screenWidth - 20)
+                finalX = x - menuWidth;
+
+            if (y + menuHeight > screenHeight - 20)
+                finalY = y - menuHeight;
+
+            contextMenu.x = Math.max(20, finalX);
+            contextMenu.y = Math.max(20, finalY);
+            open();
+        }
+
+        width: 180
+        height: menuColumn.implicitHeight + Theme.spacingS * 2
+        padding: 0
+        modal: false
+        closePolicy: Popup.CloseOnEscape
+        onClosed: {
+            closePolicy = Popup.CloseOnEscape;
+        }
+        onOpened: {
+            outsideClickTimer.start();
+        }
+
+        Timer {
+            id: outsideClickTimer
+
+            interval: 100
+            onTriggered: {
+                contextMenu.closePolicy = Popup.CloseOnEscape | Popup.CloseOnPressOutside;
+            }
+        }
+
+        background: Rectangle {
+            color: "transparent"
+        }
+
+        contentItem: Rectangle {
+            color: Theme.popupBackground()
+            radius: Theme.cornerRadiusLarge
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            border.width: 1
+
+            Column {
+                id: menuColumn
+
+                anchors.fill: parent
+                anchors.margins: Theme.spacingS
+                spacing: 1
+
+                Rectangle {
+                    width: parent.width
+                    height: 32
+                    radius: Theme.cornerRadiusSmall
+                    color: pinMouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+
+                    Row {
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.spacingS
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: Theme.spacingS
+
+                        DankIcon {
+                            name: {
+                                if (!contextMenu.currentApp || !contextMenu.currentApp.desktopEntry)
+                                    return "push_pin";
+
+                                var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || "";
+                                return Prefs.isPinnedApp(appId) ? "keep_off" : "push_pin";
+                            }
+                            size: Theme.iconSize - 2
+                            color: Theme.surfaceText
+                            opacity: 0.7
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        StyledText {
+                            text: {
+                                if (!contextMenu.currentApp || !contextMenu.currentApp.desktopEntry)
+                                    return "Pin to Dock";
+
+                                var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || "";
+                                return Prefs.isPinnedApp(appId) ? "Unpin from Dock" : "Pin to Dock";
+                            }
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceText
+                            font.weight: Font.Normal
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                    }
+
+                    MouseArea {
+                        id: pinMouseArea
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (!contextMenu.currentApp || !contextMenu.currentApp.desktopEntry)
+                                return ;
+
+                            var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || "";
+                            if (Prefs.isPinnedApp(appId))
+                                Prefs.removePinnedApp(appId);
+                            else
+                                Prefs.addPinnedApp(appId);
+                            contextMenu.close();
+                        }
+                    }
+
+                }
+
+                Rectangle {
+                    width: parent.width - Theme.spacingS * 2
+                    height: 5
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: "transparent"
+
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: parent.width
+                        height: 1
+                        color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                    }
+
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: 32
+                    radius: Theme.cornerRadiusSmall
+                    color: launchMouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+
+                    Row {
+                        anchors.left: parent.left
+                        anchors.leftMargin: Theme.spacingS
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: Theme.spacingS
+
+                        DankIcon {
+                            name: "launch"
+                            size: Theme.iconSize - 2
+                            color: Theme.surfaceText
+                            opacity: 0.7
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        StyledText {
+                            text: "Launch"
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceText
+                            font.weight: Font.Normal
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                    }
+
+                    MouseArea {
+                        id: launchMouseArea
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (contextMenu.currentApp)
+                                appLauncher.launchApp(contextMenu.currentApp);
+
+                            contextMenu.close();
+                        }
                     }
 
                 }
