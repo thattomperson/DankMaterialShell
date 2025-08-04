@@ -63,21 +63,13 @@ Item {
                         }
                     })
                     root.pinnedAppCount = pinnedApps.length
-                    var unpinnedApps = []
-                    runningApps.forEach(appId => {
-                        var lowerAppId = appId.toLowerCase()
-                        if (!addedApps.has(lowerAppId)) {
-                            unpinnedApps.push(appId)
-                            addedApps.add(lowerAppId)
-                        }
-                    })
                     var appUsageRanking = Prefs.appUsageRanking || {}
-                    var rankedApps = []
+                    var allUnpinnedApps = []
                     
                     for (var appId in appUsageRanking) {
                         var lowerAppId = appId.toLowerCase()
                         if (!addedApps.has(lowerAppId)) {
-                            rankedApps.push({
+                            allUnpinnedApps.push({
                                 appId: appId,
                                 lastUsed: appUsageRanking[appId].lastUsed || 0,
                                 usageCount: appUsageRanking[appId].usageCount || 0
@@ -85,11 +77,12 @@ Item {
                         }
                     }
                     
-                    rankedApps.sort((a, b) => b.lastUsed - a.lastUsed)
+                    allUnpinnedApps.sort((a, b) => b.lastUsed - a.lastUsed)
                     
-                    var recentToAdd = Math.min(3, rankedApps.length)
+                    var unpinnedApps = []
+                    var recentToAdd = Math.min(3, allUnpinnedApps.length)
                     for (var i = 0; i < recentToAdd; i++) {
-                        var appId = rankedApps[i].appId
+                        var appId = allUnpinnedApps[i].appId
                         var lowerAppId = appId.toLowerCase()
                         unpinnedApps.push(appId)
                         addedApps.add(lowerAppId)
