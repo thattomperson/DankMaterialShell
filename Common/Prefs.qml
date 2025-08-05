@@ -77,6 +77,7 @@ Singleton {
     property string wallpaperLastPath: ""
     property string profileLastPath: ""
     property bool doNotDisturb: false
+    property bool weatherEnabled: true
     property string fontFamily: "Inter Variable"
     property string monoFontFamily: "Fira Code"
     property int fontWeight: Font.Normal
@@ -149,6 +150,7 @@ Singleton {
                 weatherLocation = settings.weatherLocation !== undefined ? settings.weatherLocation : "New York, NY";
                 weatherCoordinates = settings.weatherCoordinates !== undefined ? settings.weatherCoordinates : "40.7128,-74.0060";
                 useAutoLocation = settings.useAutoLocation !== undefined ? settings.useAutoLocation : false;
+                weatherEnabled = settings.weatherEnabled !== undefined ? settings.weatherEnabled : true;
                 showLauncherButton = settings.showLauncherButton !== undefined ? settings.showLauncherButton : true;
                 showWorkspaceSwitcher = settings.showWorkspaceSwitcher !== undefined ? settings.showWorkspaceSwitcher : true;
                 showFocusedWindow = settings.showFocusedWindow !== undefined ? settings.showFocusedWindow : true;
@@ -230,6 +232,7 @@ Singleton {
             "weatherLocation": weatherLocation,
             "weatherCoordinates": weatherCoordinates,
             "useAutoLocation": useAutoLocation,
+            "weatherEnabled": weatherEnabled,
             "showLauncherButton": showLauncherButton,
             "showWorkspaceSwitcher": showWorkspaceSwitcher,
             "showFocusedWindow": showFocusedWindow,
@@ -566,6 +569,11 @@ Singleton {
 
     function setAutoLocation(enabled) {
         useAutoLocation = enabled;
+        saveSettings();
+    }
+
+    function setWeatherEnabled(enabled) {
+        weatherEnabled = enabled;
         saveSettings();
     }
 

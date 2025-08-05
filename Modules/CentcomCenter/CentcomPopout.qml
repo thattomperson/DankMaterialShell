@@ -200,7 +200,7 @@ PanelWindow {
                 width: parent.width
                 height: {
                     let widgetHeight = 160; // Media widget
-                    widgetHeight += 140 + Theme.spacingM; // Weather widget with spacing
+                    widgetHeight += 140 + Theme.spacingM; // Weather/SystemInfo widget with spacing
                     let calendarHeight = 300; // Calendar
                     return Math.max(widgetHeight, calendarHeight);
                 }
@@ -225,6 +225,13 @@ PanelWindow {
                     Weather {
                         width: parent.width
                         height: 140
+                        visible: Prefs.weatherEnabled
+                    }
+
+                    SystemInfo {
+                        width: parent.width
+                        height: 140
+                        visible: !Prefs.weatherEnabled
                     }
 
                 }

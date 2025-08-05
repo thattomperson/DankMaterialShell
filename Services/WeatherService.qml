@@ -107,8 +107,8 @@ Singleton {
     function addRef() {
         refCount++;
         
-        if (refCount === 1 && !weather.available) {
-            // Start fetching when first consumer appears
+        if (refCount === 1 && !weather.available && Prefs.weatherEnabled) {
+            // Start fetching when first consumer appears and weather is enabled
             fetchWeather();
         }
     }
@@ -119,8 +119,8 @@ Singleton {
     }
     
     function fetchWeather() {
-        // Only fetch if someone is consuming the data
-        if (root.refCount === 0) {
+        // Only fetch if someone is consuming the data and weather is enabled
+        if (root.refCount === 0 || !Prefs.weatherEnabled) {
             
             return;
         }
@@ -246,7 +246,7 @@ Singleton {
     Timer {
         id: updateTimer
         interval: root.updateInterval
-        running: root.refCount > 0 && !IdleService.isIdle
+        running: root.refCount > 0 && !IdleService.isIdle && Prefs.weatherEnabled
         repeat: true
         triggeredOnStart: true
         onTriggered: {
@@ -261,8 +261,8 @@ Singleton {
                 console.log("WeatherService: System idle, pausing weather updates")
             } else {
                 console.log("WeatherService: System active, resuming weather updates")
-                if (root.refCount > 0 && !root.weather.available) {
-                    // Trigger immediate update when coming back from idle if no data
+                if (root.refCount > 0 && !root.weather.available && Prefs.weatherEnabled) {
+                    // Trigger immediate update when coming back from idle if no data and weather enabled
                     root.fetchWeather()
                 }
             }
@@ -335,6 +335,22 @@ Singleton {
             }
             root.lastFetchTime = 0
             root.forceRefresh()
+        })
+        
+        Prefs.weatherEnabledChanged.connect(() => {
+            console.log("Weather enabled setting changed:", Prefs.weatherEnabled)
+            if (Prefs.weatherEnabled && root.refCount > 0 && !root.weather.available) {
+                // Start fetching when weather is re-enabled
+                root.forceRefresh()
+            } else if (!Prefs.weatherEnabled) {
+                // Stop all timers when weather is disabled
+                updateTimer.stop()
+                retryTimer.stop()
+                persistentRetryTimer.stop()
+                if (weatherFetcher.running) {
+                    weatherFetcher.running = false
+                }
+            }
         })
     }
 }

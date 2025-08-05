@@ -11,6 +11,7 @@ Rectangle {
 
     signal clicked()
 
+    visible: Prefs.weatherEnabled
     width: visible ? Math.min(100, weatherRow.implicitWidth + Theme.spacingS * 2) : 0
     height: 30
     radius: Theme.cornerRadius

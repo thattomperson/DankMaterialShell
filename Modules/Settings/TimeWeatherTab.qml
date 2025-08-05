@@ -103,9 +103,20 @@ ScrollView {
 
                 DankToggle {
                     width: parent.width
+                    text: "Enable Weather"
+                    description: "Show weather information in top bar and centcom center"
+                    checked: Prefs.weatherEnabled
+                    onToggled: (checked) => {
+                        return Prefs.setWeatherEnabled(checked);
+                    }
+                }
+
+                DankToggle {
+                    width: parent.width
                     text: "Fahrenheit"
                     description: "Use Fahrenheit instead of Celsius for temperature"
                     checked: Prefs.useFahrenheit
+                    enabled: Prefs.weatherEnabled
                     onToggled: (checked) => {
                         return Prefs.setTemperatureUnit(checked);
                     }
@@ -116,6 +127,7 @@ ScrollView {
                     text: "Auto Location"
                     description: "Allow wttr.in to determine location based on IP address"
                     checked: Prefs.useAutoLocation
+                    enabled: Prefs.weatherEnabled
                     onToggled: (checked) => {
                         return Prefs.setAutoLocation(checked);
                     }
@@ -124,7 +136,7 @@ ScrollView {
                 Column {
                     width: parent.width
                     spacing: Theme.spacingXS
-                    visible: !Prefs.useAutoLocation
+                    visible: !Prefs.useAutoLocation && Prefs.weatherEnabled
 
                     StyledText {
                         text: "Location"
