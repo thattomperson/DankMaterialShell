@@ -58,7 +58,7 @@ PanelWindow {
     }
 
     visible: hasValidData
-    WlrLayershell.layer: notificationData && notificationData.urgency === NotificationUrgency.Critical ? WlrLayershell.Overlay : WlrLayershell.TopLayer
+    WlrLayershell.layer: notificationData && notificationData.urgency === NotificationUrgency.Critical ? WlrLayershell.Overlay : WlrLayershell.Top
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     color: "transparent"
