@@ -32,7 +32,7 @@ A modern Wayland desktop shell built with [Quickshell](https://quickshell.org/) 
 <img src="https://github.com/user-attachments/assets/903f7c60-146f-4fb3-a75d-a4823828f298" width="500" alt="Widget Customization" />
 
 ### Lock Screen
-<img src="https://github.com/user-attachments/assets/e4dfb637-8d1d-4d95-9ee3-b6280833ded7" width="600" alt="Lock Screen" />
+<img src="https://github.com/user-attachments/assets/3fa07de2-c1b0-4e57-8f25-3830ac6baf4f" width="600" alt="Lock Screen" />
 
 ### Dynamic Theming
 <img src="https://github.com/user-attachments/assets/1994e616-f9d9-424a-9f60-6f06708bf12e" width="700" alt="Auto Theme" />
