@@ -40,7 +40,7 @@ Singleton {
     property bool showWorkspaceIndex: false
     property bool showWorkspacePadding: false
     property var topBarLeftWidgets: ["launcherButton", "workspaceSwitcher", "focusedWindow"]
-    property var topBarCenterWidgets: ["clock", "music", "weather"]
+    property var topBarCenterWidgets: ["music", "clock", "weather"]
     property var topBarRightWidgets: ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"]
     
     property alias topBarLeftWidgetsModel: leftWidgetsModel
@@ -171,7 +171,7 @@ Singleton {
                     topBarRightWidgets = settings.topBarWidgetOrder.filter(w => ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"].includes(w));
                 } else {
                     var leftWidgets = settings.topBarLeftWidgets !== undefined ? settings.topBarLeftWidgets : ["launcherButton", "workspaceSwitcher", "focusedWindow"];
-                    var centerWidgets = settings.topBarCenterWidgets !== undefined ? settings.topBarCenterWidgets : ["clock", "music", "weather"];
+                    var centerWidgets = settings.topBarCenterWidgets !== undefined ? settings.topBarCenterWidgets : ["music", "clock", "weather"];
                     var rightWidgets = settings.topBarRightWidgets !== undefined ? settings.topBarRightWidgets : ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"];
                     
                     topBarLeftWidgets = leftWidgets;
@@ -523,7 +523,7 @@ Singleton {
 
     function resetTopBarWidgetsToDefault() {
         var defaultLeft = ["launcherButton", "workspaceSwitcher", "focusedWindow"];
-        var defaultCenter = ["clock", "music", "weather"];
+        var defaultCenter = ["music", "clock", "weather"];
         var defaultRight = ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"];
         
         topBarLeftWidgets = defaultLeft;
