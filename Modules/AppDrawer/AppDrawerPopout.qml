@@ -87,19 +87,15 @@ PanelWindow {
         readonly property real screenHeight: Screen.height
         readonly property real calculatedX: {
             var centerX = appDrawerPopout.triggerX + (appDrawerPopout.triggerWidth / 2) - (popupWidth / 2);
-            
-            if (centerX >= Theme.spacingM && centerX + popupWidth <= screenWidth - Theme.spacingM) {
+            if (centerX >= Theme.spacingM && centerX + popupWidth <= screenWidth - Theme.spacingM)
                 return centerX;
-            }
-            
-            if (centerX < Theme.spacingM) {
+
+            if (centerX < Theme.spacingM)
                 return Theme.spacingM;
-            }
-            
-            if (centerX + popupWidth > screenWidth - Theme.spacingM) {
+
+            if (centerX + popupWidth > screenWidth - Theme.spacingM)
                 return screenWidth - popupWidth - Theme.spacingM;
-            }
-            
+
             return centerX;
         }
         readonly property real calculatedY: appDrawerPopout.triggerY
@@ -110,7 +106,6 @@ PanelWindow {
         height: popupHeight
         x: calculatedX
         y: calculatedY
-        
         opacity: appDrawerPopout.isVisible ? 1 : 0
         scale: appDrawerPopout.isVisible ? 1 : 0.9
 

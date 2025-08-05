@@ -354,7 +354,6 @@ DankModal {
         
         function show(x, y, app) {
             currentApp = app
-            
             if (!contextMenu.parent && typeof Overlay !== "undefined" && Overlay.overlay)
                 contextMenu.parent = Overlay.overlay;
             
@@ -364,7 +363,6 @@ DankModal {
             const screenHeight = Screen.height;
             let finalX = x;
             let finalY = y;
-            
             if (x + menuWidth > screenWidth - 20)
                 finalX = x - menuWidth;
             
