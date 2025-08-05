@@ -22,7 +22,6 @@ Singleton {
     property bool use24HourClock: true
     property bool useFahrenheit: false
     property bool nightModeEnabled: false
-    property string profileImage: ""
     property string weatherLocation: "New York, NY"
     property string weatherCoordinates: "40.7128,-74.0060"
     property bool useAutoLocation: false
@@ -147,7 +146,6 @@ Singleton {
                 use24HourClock = settings.use24HourClock !== undefined ? settings.use24HourClock : true;
                 useFahrenheit = settings.useFahrenheit !== undefined ? settings.useFahrenheit : false;
                 nightModeEnabled = settings.nightModeEnabled !== undefined ? settings.nightModeEnabled : false;
-                profileImage = settings.profileImage !== undefined ? settings.profileImage : "";
                 weatherLocation = settings.weatherLocation !== undefined ? settings.weatherLocation : "New York, NY";
                 weatherCoordinates = settings.weatherCoordinates !== undefined ? settings.weatherCoordinates : "40.7128,-74.0060";
                 useAutoLocation = settings.useAutoLocation !== undefined ? settings.useAutoLocation : false;
@@ -229,7 +227,6 @@ Singleton {
             "use24HourClock": use24HourClock,
             "useFahrenheit": useFahrenheit,
             "nightModeEnabled": nightModeEnabled,
-            "profileImage": profileImage,
             "weatherLocation": weatherLocation,
             "weatherCoordinates": weatherCoordinates,
             "useAutoLocation": useAutoLocation,
@@ -421,10 +418,6 @@ Singleton {
         saveSettings();
     }
 
-    function setProfileImage(imageUrl) {
-        profileImage = imageUrl;
-        saveSettings();
-    }
 
     // Widget visibility setters
     function setShowLauncherButton(enabled) {

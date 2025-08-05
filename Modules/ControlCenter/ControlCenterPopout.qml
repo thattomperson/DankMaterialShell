@@ -151,13 +151,13 @@ PanelWindow {
                                     id: profileImageLoader
 
                                     source: {
-                                        if (Prefs.profileImage === "")
+                                        if (PortalService.profileImage === "")
                                             return "";
 
-                                        if (Prefs.profileImage.startsWith("/"))
-                                            return "file://" + Prefs.profileImage;
+                                        if (PortalService.profileImage.startsWith("/"))
+                                            return "file://" + PortalService.profileImage;
 
-                                        return Prefs.profileImage;
+                                        return PortalService.profileImage;
                                     }
                                     smooth: true
                                     asynchronous: true
@@ -215,7 +215,7 @@ PanelWindow {
                                     name: "warning"
                                     size: Theme.iconSize + 8
                                     color: Theme.primaryText
-                                    visible: Prefs.profileImage !== "" && profileImageLoader.status === Image.Error
+                                    visible: PortalService.profileImage !== "" && profileImageLoader.status === Image.Error
                                 }
 
                             }
@@ -743,8 +743,7 @@ PanelWindow {
                             description: "Use light theme instead of dark theme"
                             checked: Prefs.isLightMode
                             onToggled: (checked) => {
-                                Prefs.setLightMode(checked);
-                                Theme.isLightMode = checked;
+                                PortalService.setLightMode(checked);
                             }
                         }
 

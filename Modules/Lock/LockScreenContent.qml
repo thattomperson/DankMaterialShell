@@ -167,11 +167,11 @@ Item {
                     Image {
                         id: profileImageLoader
                         source: {
-                            if (Prefs.profileImage === "")
+                            if (PortalService.profileImage === "")
                                 return ""
-                            if (Prefs.profileImage.startsWith("/"))
-                                return "file://" + Prefs.profileImage
-                            return Prefs.profileImage
+                            if (PortalService.profileImage.startsWith("/"))
+                                return "file://" + PortalService.profileImage
+                            return PortalService.profileImage
                         }
                         smooth: true
                         asynchronous: true
@@ -226,7 +226,7 @@ Item {
                         name: "warning"
                         size: Theme.iconSize + 4
                         color: Theme.primaryText
-                        visible: Prefs.profileImage !== "" && profileImageLoader.status === Image.Error
+                        visible: PortalService.profileImage !== "" && profileImageLoader.status === Image.Error
                     }
                 }
 

@@ -83,13 +83,13 @@ ScrollView {
                             id: avatarImageSource
 
                             source: {
-                                if (Prefs.profileImage === "")
+                                if (PortalService.profileImage === "")
                                     return "";
 
-                                if (Prefs.profileImage.startsWith("/"))
-                                    return "file://" + Prefs.profileImage;
+                                if (PortalService.profileImage.startsWith("/"))
+                                    return "file://" + PortalService.profileImage;
 
-                                return Prefs.profileImage;
+                                return PortalService.profileImage;
                             }
                             smooth: true
                             asynchronous: true
@@ -147,7 +147,7 @@ ScrollView {
                             name: "warning"
                             size: Theme.iconSizeLarge
                             color: Theme.error
-                            visible: Prefs.profileImage !== "" && avatarImageSource.status === Image.Error
+                            visible: PortalService.profileImage !== "" && avatarImageSource.status === Image.Error
                         }
 
                     }
@@ -158,7 +158,7 @@ ScrollView {
                         anchors.verticalCenter: parent.verticalCenter
 
                         StyledText {
-                            text: Prefs.profileImage ? Prefs.profileImage.split('/').pop() : "No profile image selected"
+                            text: PortalService.profileImage ? PortalService.profileImage.split('/').pop() : "No profile image selected"
                             font.pixelSize: Theme.fontSizeLarge
                             color: Theme.surfaceText
                             elide: Text.ElideMiddle
@@ -166,12 +166,32 @@ ScrollView {
                         }
 
                         StyledText {
-                            text: Prefs.profileImage ? Prefs.profileImage : ""
+                            text: PortalService.profileImage ? PortalService.profileImage : ""
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceVariantText
                             elide: Text.ElideMiddle
                             width: parent.width
-                            visible: Prefs.profileImage !== ""
+                            visible: PortalService.profileImage !== ""
+                        }
+
+                        Row {
+                            spacing: Theme.spacingXS
+                            visible: !PortalService.accountsServiceAvailable
+
+                            DankIcon {
+                                name: "error"
+                                size: Theme.iconSizeSmall
+                                color: Theme.error
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            StyledText {
+                                text: "xdg-desktop-portal-gtk missing"
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.error
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
                         }
 
                         Row {
@@ -214,12 +234,13 @@ ScrollView {
 
                             }
 
+
                             StyledRect {
                                 width: 80
                                 height: 32
                                 radius: Theme.cornerRadius
                                 color: Theme.surfaceVariant
-                                opacity: Prefs.profileImage !== "" ? 1 : 0.5
+                                opacity: PortalService.profileImage !== "" ? 1 : 0.5
 
                                 Row {
                                     anchors.centerIn: parent
@@ -243,10 +264,10 @@ ScrollView {
 
                                 MouseArea {
                                     anchors.fill: parent
-                                    enabled: Prefs.profileImage !== ""
+                                    enabled: PortalService.profileImage !== ""
                                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                                     onClicked: {
-                                        Prefs.setProfileImage("");
+                                        PortalService.setProfileImage("");
                                     }
                                 }
 
@@ -551,7 +572,7 @@ ScrollView {
             browserType: "profile"
             fileExtensions: ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"]
             onFileSelected: (path) => {
-                Prefs.setProfileImage(path);
+                PortalService.setProfileImage(path);
                 visible = false;
             }
             onDialogClosed: {}

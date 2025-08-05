@@ -76,8 +76,7 @@ ScrollView {
                     description: "Use light theme instead of dark theme"
                     checked: Prefs.isLightMode
                     onToggled: (checked) => {
-                        Prefs.setLightMode(checked);
-                        Theme.isLightMode = checked;
+                        PortalService.setLightMode(checked);
                     }
                 }
 
