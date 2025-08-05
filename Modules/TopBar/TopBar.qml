@@ -540,7 +540,9 @@ PanelWindow {
                         systemTrayContextMenu.contextMenuX = rightSection.x + rightSection.width - 400 - Theme.spacingL;
                         systemTrayContextMenu.contextMenuY = Theme.barHeight - Theme.spacingXS;
                         systemTrayContextMenu.showContextMenu = true;
-                        menu.menuVisible = true;
+                        if (menu) {
+                            menu.menuVisible = true;
+                        }
                     }
                 }
 
