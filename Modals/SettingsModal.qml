@@ -15,22 +15,20 @@ DankModal {
     signal closingModal()
 
     onVisibleChanged: {
-        if (!visible)
+        if (!visible) {
+            if (settingsVisible) {
+                settingsVisible = false;
+            }
             closingModal();
-
+        }
     }
+    
     visible: settingsVisible
     width: 750
     height: 750
     keyboardFocus: "ondemand"
     onBackgroundClicked: {
         settingsVisible = false;
-    }
-
-    FocusScope {
-        anchors.fill: parent
-        focus: settingsModal.settingsVisible
-        Keys.onEscapePressed: settingsModal.settingsVisible = false
     }
 
     content: Component {

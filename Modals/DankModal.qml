@@ -185,15 +185,28 @@ PanelWindow {
 
     FocusScope {
         id: focusScope
+        objectName: "modalFocusScope"
 
         anchors.fill: parent
         visible: root.visible // Only active when the modal is visible
+        focus: root.visible
         Keys.onEscapePressed: (event) => {
             if (root.closeOnEscapeKey) {
                 root.visible = false;
                 event.accepted = true;
             }
         }
+        
+        onVisibleChanged: {
+            if (visible) {
+                Qt.callLater(function() {
+                    focusScope.forceActiveFocus();
+                });
+            }
+        }
     }
+    
+    // Expose the focusScope for external access
+    property alias modalFocusScope: focusScope
 
 }

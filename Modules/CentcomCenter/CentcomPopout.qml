@@ -48,7 +48,7 @@ PanelWindow {
     implicitHeight: 600
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: calendarVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     color: "transparent"
 
     anchors {
@@ -188,6 +188,13 @@ PanelWindow {
             anchors.fill: parent
             anchors.margins: Theme.spacingM
             spacing: Theme.spacingM
+            focus: true
+            Keys.onPressed: function(event) {
+                if (event.key === Qt.Key_Escape) {
+                    calendarVisible = false;
+                    event.accepted = true;
+                }
+            }
 
             Row {
                 width: parent.width

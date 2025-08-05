@@ -554,6 +554,7 @@ ScrollView {
                 Prefs.setProfileImage(path);
                 visible = false;
             }
+            onDialogClosed: {}
         }
 
     }
@@ -574,6 +575,7 @@ ScrollView {
                 Prefs.setWallpaperPath(path);
                 visible = false;
             }
+            onDialogClosed: {}
         }
 
     }

@@ -334,6 +334,13 @@ DankModal {
             anchors.fill: parent
             anchors.margins: Theme.spacingL
             spacing: Theme.spacingL
+            focus: true
+            Keys.onPressed: function(event) {
+                if (event.key === Qt.Key_Escape) {
+                    hide();
+                    event.accepted = true;
+                }
+            }
 
             Item {
                 width: parent.width

@@ -32,7 +32,7 @@ PanelWindow {
     implicitHeight: Math.min(Screen.height * 0.8, 400)
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: notificationHistoryVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     color: "transparent"
 
     anchors {
@@ -106,6 +106,29 @@ PanelWindow {
             anchors.fill: parent
             anchors.margins: Theme.spacingL
             spacing: Theme.spacingM
+            focus: true
+            Component.onCompleted: {
+                if (notificationHistoryVisible)
+                    forceActiveFocus();
+            }
+            Keys.onPressed: function(event) {
+                if (event.key === Qt.Key_Escape) {
+                    notificationHistoryVisible = false;
+                    event.accepted = true;
+                }
+            }
+
+            Connections {
+                function onNotificationHistoryVisibleChanged() {
+                    if (notificationHistoryVisible)
+                        Qt.callLater(function() {
+                            contentColumn.forceActiveFocus();
+                        });
+                    else
+                        contentColumn.focus = false;
+                }
+                target: root
+            }
 
             NotificationHeader {
                 id: notificationHeader

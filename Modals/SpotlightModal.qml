@@ -194,12 +194,12 @@ DankModal {
                         }
 
                         Connections {
-                            function onOpened() {
-                                searchField.forceActiveFocus();
-                            }
-
-                            function onDialogClosed() {
-                                searchField.clearFocus();
+                            function onSpotlightOpenChanged() {
+                                if (spotlightModal.spotlightOpen) {
+                                    Qt.callLater(function() {
+                                        searchField.forceActiveFocus();
+                                    });
+                                }
                             }
 
                             target: spotlightModal

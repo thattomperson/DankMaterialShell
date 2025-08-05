@@ -47,7 +47,7 @@ PanelWindow {
     implicitHeight: 300
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: batteryPopupVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     color: "transparent"
 
     anchors {
@@ -124,6 +124,27 @@ PanelWindow {
             border.width: 1
             antialiasing: true
             smooth: true
+            focus: true
+            Component.onCompleted: {
+                if (batteryPopupVisible)
+                    forceActiveFocus();
+            }
+            Keys.onPressed: function(event) {
+                if (event.key === Qt.Key_Escape) {
+                    batteryPopupVisible = false;
+                    event.accepted = true;
+                }
+            }
+
+            Connections {
+                function onBatteryPopupVisibleChanged() {
+                    if (batteryPopupVisible)
+                        Qt.callLater(function() {
+                            parent.forceActiveFocus();
+                        });
+                }
+                target: root
+            }
 
             Rectangle {
                 anchors.fill: parent

@@ -51,7 +51,7 @@ PanelWindow {
     implicitHeight: 600
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: isVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     color: "transparent"
 
     Ref {
@@ -135,6 +135,27 @@ PanelWindow {
             clip: true
             antialiasing: true
             smooth: true
+            focus: true
+            Component.onCompleted: {
+                if (processListPopout.isVisible)
+                    forceActiveFocus();
+            }
+            Keys.onPressed: function(event) {
+                if (event.key === Qt.Key_Escape) {
+                    processListPopout.hide();
+                    event.accepted = true;
+                }
+            }
+
+            Connections {
+                function onIsVisibleChanged() {
+                    if (processListPopout.isVisible)
+                        Qt.callLater(function() {
+                            dropdownContent.forceActiveFocus();
+                        });
+                }
+                target: processListPopout
+            }
 
             ColumnLayout {
                 anchors.fill: parent
