@@ -12,6 +12,7 @@ Rectangle {
     property var toggleProcessList
     property string section: "right"
     property var popupTarget: null
+    property var parentScreen: null
 
     width: 55
     height: 30
@@ -36,8 +37,10 @@ Rectangle {
         onClicked: {
             if (popupTarget && popupTarget.setTriggerPosition) {
                 var globalPos = mapToGlobal(0, 0);
-                var screenRelativeX = globalPos.x >= Screen.width ? globalPos.x % Screen.width : globalPos.x;
-                popupTarget.setTriggerPosition(screenRelativeX, Theme.barHeight + Theme.spacingXS, width, section);
+                var currentScreen = parentScreen || Screen;
+                var screenX = currentScreen.x || 0;
+                var relativeX = globalPos.x - screenX;
+                popupTarget.setTriggerPosition(relativeX, Theme.barHeight + Theme.spacingXS, width, section, currentScreen);
             }
             SysMonitorService.setSortBy("memory");
             if (root.toggleProcessList)

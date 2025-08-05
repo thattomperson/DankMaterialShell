@@ -17,7 +17,8 @@ PanelWindow {
     property real triggerX: Theme.spacingL
     property real triggerY: Theme.barHeight + Theme.spacingXS
     property real triggerWidth: 40
-    property string triggerSection: "left" // "left", "center", "right"
+    property string triggerSection: "left"
+    property var triggerScreen: null
 
     function show() {
         appDrawerPopout.isVisible = true;
@@ -35,11 +36,12 @@ PanelWindow {
             show();
     }
 
-    function setTriggerPosition(x, y, width, section) {
+    function setTriggerPosition(x, y, width, section, screen) {
         triggerX = x;
         triggerY = y;
         triggerWidth = width;
         triggerSection = section;
+        triggerScreen = screen;
     }
 
     WlrLayershell.layer: WlrLayershell.Overlay
@@ -48,6 +50,7 @@ PanelWindow {
     WlrLayershell.namespace: "quickshell-launcher"
     visible: isVisible
     color: "transparent"
+    screen: triggerScreen || Screen
 
     anchors {
         top: true
@@ -83,10 +86,11 @@ PanelWindow {
 
         readonly property real popupWidth: 520
         readonly property real popupHeight: 600
-        readonly property real screenWidth: Screen.width
-        readonly property real screenHeight: Screen.height
+        readonly property real screenWidth: appDrawerPopout.screen ? appDrawerPopout.screen.width : Screen.width
+        readonly property real screenHeight: appDrawerPopout.screen ? appDrawerPopout.screen.height : Screen.height
         readonly property real calculatedX: {
             var centerX = appDrawerPopout.triggerX + (appDrawerPopout.triggerWidth / 2) - (popupWidth / 2);
+            
             if (centerX >= Theme.spacingM && centerX + popupWidth <= screenWidth - Theme.spacingM)
                 return centerX;
 

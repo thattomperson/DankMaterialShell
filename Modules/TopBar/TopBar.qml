@@ -447,6 +447,7 @@ PanelWindow {
                         return "left"; // default fallback
                     }
                     popupTarget: appDrawerPopout
+                    parentScreen: root.screen
                     onClicked: {
                         if (appDrawerPopout)
                             appDrawerPopout.toggle();
@@ -486,6 +487,7 @@ PanelWindow {
                         return "center";
                     }
                     popupTarget: centcomPopout
+                    parentScreen: root.screen
                     onClockClicked: {
                         centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                     }
@@ -505,6 +507,7 @@ PanelWindow {
                         return "center";
                     }
                     popupTarget: centcomPopout
+                    parentScreen: root.screen
                     onClicked: {
                         centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                     }
@@ -523,6 +526,7 @@ PanelWindow {
                         return "center";
                     }
                     popupTarget: centcomPopout
+                    parentScreen: root.screen
                     onClicked: {
                         centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                     }
@@ -604,6 +608,7 @@ PanelWindow {
                             return "right";
                         }
                         popupTarget: processListPopout
+                        parentScreen: root.screen
                         toggleProcessList: () => {
                             return processListPopout.toggle();
                         }
@@ -617,6 +622,7 @@ PanelWindow {
                             return "right";
                         }
                         popupTarget: processListPopout
+                        parentScreen: root.screen
                         toggleProcessList: () => {
                             return processListPopout.toggle();
                         }
@@ -639,6 +645,7 @@ PanelWindow {
                         return "right";
                     }
                     popupTarget: notificationCenter
+                    parentScreen: root.screen
                     onClicked: {
                         notificationCenter.notificationHistoryVisible = !notificationCenter.notificationHistoryVisible;
                     }
@@ -658,6 +665,7 @@ PanelWindow {
                         return "right";
                     }
                     popupTarget: batteryPopout
+                    parentScreen: root.screen
                     onToggleBatteryPopup: {
                         batteryPopout.batteryPopupVisible = !batteryPopout.batteryPopupVisible;
                     }
@@ -671,6 +679,7 @@ PanelWindow {
                 ControlCenterButton {
                     isActive: controlCenterPopout.controlCenterVisible
                     onClicked: {
+                        controlCenterPopout.triggerScreen = root.screen;
                         controlCenterPopout.controlCenterVisible = !controlCenterPopout.controlCenterVisible;
                         if (controlCenterPopout.controlCenterVisible) {
                             if (NetworkService.wifiEnabled)

@@ -19,15 +19,18 @@ PanelWindow {
     property real triggerY: Theme.barHeight + 4
     property real triggerWidth: 80
     property string triggerSection: "center"
+    property var triggerScreen: null
 
-    function setTriggerPosition(x, y, width, section) {
+    function setTriggerPosition(x, y, width, section, screen) {
         triggerX = x;
         triggerY = y;
         triggerWidth = width;
         triggerSection = section;
+        triggerScreen = screen;
     }
 
     visible: internalVisible
+    screen: triggerScreen || Screen
     onCalendarVisibleChanged: {
         if (calendarVisible) {
             internalVisible = true;
@@ -61,7 +64,7 @@ PanelWindow {
     Rectangle {
         id: mainContainer
 
-        readonly property real targetWidth: Math.min(Screen.width * 0.9, 600)
+        readonly property real targetWidth: Math.min((root.screen ? root.screen.width : Screen.width) * 0.9, 600)
 
         function calculateWidth() {
             let baseWidth = 320;
@@ -89,15 +92,14 @@ PanelWindow {
         }
 
         readonly property real calculatedX: {
-            // For center widgets, always center the popup on screen
+            var screenWidth = root.screen ? root.screen.width : Screen.width;
             if (root.triggerSection === "center") {
-                return (Screen.width - targetWidth) / 2;
+                return (screenWidth - targetWidth) / 2;
             }
             
-            // For non-center widgets, use the original logic
             var centerX = root.triggerX + (root.triggerWidth / 2) - (targetWidth / 2);
             
-            if (centerX >= Theme.spacingM && centerX + targetWidth <= Screen.width - Theme.spacingM) {
+            if (centerX >= Theme.spacingM && centerX + targetWidth <= screenWidth - Theme.spacingM) {
                 return centerX;
             }
             
@@ -105,8 +107,8 @@ PanelWindow {
                 return Theme.spacingM;
             }
             
-            if (centerX + targetWidth > Screen.width - Theme.spacingM) {
-                return Screen.width - targetWidth - Theme.spacingM;
+            if (centerX + targetWidth > screenWidth - Theme.spacingM) {
+                return screenWidth - targetWidth - Theme.spacingM;
             }
             
             return centerX;

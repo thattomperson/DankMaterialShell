@@ -15,6 +15,7 @@ Rectangle {
     readonly property int compactContentWidth: Math.min(120, baseContentWidth)
     property string section: "center"
     property var popupTarget: null
+    property var parentScreen: null
 
     signal clicked()
 
@@ -132,8 +133,10 @@ Rectangle {
                     onClicked: {
                         if (root.popupTarget && root.popupTarget.setTriggerPosition) {
                             var globalPos = mapToGlobal(0, 0);
-                            var screenRelativeX = globalPos.x >= Screen.width ? globalPos.x % Screen.width : globalPos.x;
-                            root.popupTarget.setTriggerPosition(screenRelativeX, Theme.barHeight + Theme.spacingXS, root.width, root.section);
+                            var currentScreen = root.parentScreen || Screen;
+                            var screenX = currentScreen.x || 0;
+                            var relativeX = globalPos.x - screenX;
+                            root.popupTarget.setTriggerPosition(relativeX, Theme.barHeight + Theme.spacingXS, root.width, root.section, currentScreen);
                         }
                         root.clicked();
                     }

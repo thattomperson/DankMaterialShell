@@ -15,13 +15,15 @@ PanelWindow {
     id: root
 
     property bool controlCenterVisible: false
-    property string currentTab: "network" // "network", "audio", "bluetooth", "display"
+    property string currentTab: "network"
     property bool powerOptionsExpanded: false
+    property var triggerScreen: null
 
     signal powerActionRequested(string action, string title, string message)
     signal lockRequested()
 
     visible: controlCenterVisible
+    screen: triggerScreen || Screen
     onVisibleChanged: {
         NetworkService.autoRefreshEnabled = visible && NetworkService.wifiEnabled;
         if (!visible && BluetoothService.adapter && BluetoothService.adapter.discovering)
@@ -48,14 +50,14 @@ PanelWindow {
     Loader {
         id: contentLoader
 
-        readonly property real targetWidth: Math.min(600, Screen.width - Theme.spacingL * 2)
+        readonly property real targetWidth: Math.min(600, (root.screen ? root.screen.width : Screen.width) - Theme.spacingL * 2)
 
         asynchronous: true
         active: controlCenterVisible
         width: targetWidth
         height: root.powerOptionsExpanded ? 570 : 500
         y: Theme.barHeight + Theme.spacingXS
-        x: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
+        x: Math.max(Theme.spacingL, (root.screen ? root.screen.width : Screen.width) - targetWidth - Theme.spacingL)
         opacity: controlCenterVisible ? 1 : 0
         scale: controlCenterVisible ? 1 : 0.9
 

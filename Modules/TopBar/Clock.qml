@@ -10,6 +10,7 @@ Rectangle {
     property bool compactMode: false
     property string section: "center"
     property var popupTarget: null
+    property var parentScreen: null
 
     signal clockClicked()
 
@@ -71,8 +72,10 @@ Rectangle {
         onClicked: {
             if (popupTarget && popupTarget.setTriggerPosition) {
                 var globalPos = mapToGlobal(0, 0);
-                var screenRelativeX = globalPos.x >= Screen.width ? globalPos.x % Screen.width : globalPos.x;
-                popupTarget.setTriggerPosition(screenRelativeX, Theme.barHeight + Theme.spacingXS, width, section);
+                var currentScreen = parentScreen || Screen;
+                var screenX = currentScreen.x || 0;
+                var relativeX = globalPos.x - screenX;
+                popupTarget.setTriggerPosition(relativeX, Theme.barHeight + Theme.spacingXS, width, section, currentScreen);
             }
             root.clockClicked();
         }

@@ -16,12 +16,14 @@ PanelWindow {
     property real triggerY: Theme.barHeight + Theme.spacingS
     property real triggerWidth: 70
     property string triggerSection: "right"
+    property var triggerScreen: null
 
-    function setTriggerPosition(x, y, width, section) {
+    function setTriggerPosition(x, y, width, section, screen) {
         triggerX = x;
         triggerY = y;
         triggerWidth = width;
         triggerSection = section;
+        triggerScreen = screen;
     }
 
     function isActiveProfile(profile) {
@@ -43,6 +45,7 @@ PanelWindow {
     }
 
     visible: batteryPopupVisible
+    screen: triggerScreen || Screen
     implicitWidth: 400
     implicitHeight: 300
     WlrLayershell.layer: WlrLayershell.Overlay
@@ -70,12 +73,14 @@ PanelWindow {
     Loader {
         id: contentLoader
 
-        readonly property real targetWidth: Math.min(380, Screen.width - Theme.spacingL * 2)
-        readonly property real targetHeight: Math.min(450, Screen.height - Theme.barHeight - Theme.spacingS * 2)
+        readonly property real screenWidth: root.screen ? root.screen.width : Screen.width
+        readonly property real screenHeight: root.screen ? root.screen.height : Screen.height
+        readonly property real targetWidth: Math.min(380, screenWidth - Theme.spacingL * 2)
+        readonly property real targetHeight: Math.min(450, screenHeight - Theme.barHeight - Theme.spacingS * 2)
         readonly property real calculatedX: {
             var centerX = root.triggerX + (root.triggerWidth / 2) - (targetWidth / 2);
             
-            if (centerX >= Theme.spacingM && centerX + targetWidth <= Screen.width - Theme.spacingM) {
+            if (centerX >= Theme.spacingM && centerX + targetWidth <= screenWidth - Theme.spacingM) {
                 return centerX;
             }
             
@@ -83,8 +88,8 @@ PanelWindow {
                 return Theme.spacingM;
             }
             
-            if (centerX + targetWidth > Screen.width - Theme.spacingM) {
-                return Screen.width - targetWidth - Theme.spacingM;
+            if (centerX + targetWidth > screenWidth - Theme.spacingM) {
+                return screenWidth - targetWidth - Theme.spacingM;
             }
             
             return centerX;
