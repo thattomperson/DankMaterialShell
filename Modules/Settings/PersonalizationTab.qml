@@ -186,7 +186,7 @@ ScrollView {
                             }
 
                             StyledText {
-                                text: "xdg-desktop-portal-gtk missing"
+                                text: "accountsservice missing or not accessible"
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.error
                                 anchors.verticalCenter: parent.verticalCenter

@@ -344,7 +344,7 @@ PanelWindow {
                                 hoverColor: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
                                 onClicked: {
                                     controlCenterVisible = false;
-                                    settingsModal.settingsVisible = true;
+                                    settingsModal.show();
                                 }
                             }
 
@@ -743,6 +743,8 @@ PanelWindow {
                             description: "Use light theme instead of dark theme"
                             checked: Prefs.isLightMode
                             onToggled: (checked) => {
+                                Prefs.setLightMode(checked);
+                                Theme.isLightMode = checked;
                                 PortalService.setLightMode(checked);
                             }
                         }

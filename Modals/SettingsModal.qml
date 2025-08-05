@@ -10,32 +10,44 @@ import qs.Widgets
 DankModal {
     id: settingsModal
 
-    property bool settingsVisible: false
-
     signal closingModal()
 
-    onVisibleChanged: {
-        if (!visible) {
-            if (settingsVisible) {
-                settingsVisible = false;
-            }
-            closingModal();
-        }
-    }
-    
-    visible: settingsVisible
-    width: 750
-    height: 750
-    keyboardFocus: "ondemand"
-    onBackgroundClicked: {
-        settingsVisible = false;
+    function show() {
+        settingsModal.visible = true;
     }
 
+    function hide() {
+        settingsModal.visible = false;
+    }
+
+    function toggle() {
+        if (settingsModal.visible)
+            hide();
+        else
+            show();
+    }
+
+    width: 750
+    height: 750
+    visible: false
+    keyboardFocus: "ondemand"
+    onBackgroundClicked: hide()
+
     content: Component {
-        Column {
+        Item {
             anchors.fill: parent
-            anchors.margins: Theme.spacingM
-            spacing: Theme.spacingS
+            focus: true
+            Keys.onPressed: function(event) {
+                if (event.key === Qt.Key_Escape) {
+                    settingsModal.hide();
+                    event.accepted = true;
+                }
+            }
+            
+            Column {
+                anchors.fill: parent
+                anchors.margins: Theme.spacingM
+                spacing: Theme.spacingS
 
             Row {
                 width: parent.width
@@ -67,7 +79,7 @@ DankModal {
                     iconSize: Theme.iconSize - 4
                     iconColor: Theme.surfaceText
                     hoverColor: Theme.errorHover
-                    onClicked: settingsModal.settingsVisible = false
+                    onClicked: settingsModal.hide()
                 }
 
             }
@@ -152,27 +164,24 @@ DankModal {
                     }
                 }
             }
-
         }
+    }
 
     }
 
     IpcHandler {
         function open() {
-            
-            settingsModal.settingsVisible = true;
+            settingsModal.show();
             return "SETTINGS_OPEN_SUCCESS";
         }
 
         function close() {
-            
-            settingsModal.settingsVisible = false;
+            settingsModal.hide();
             return "SETTINGS_CLOSE_SUCCESS";
         }
 
         function toggle() {
-            
-            settingsModal.settingsVisible = !settingsModal.settingsVisible;
+            settingsModal.toggle();
             return "SETTINGS_TOGGLE_SUCCESS";
         }
 

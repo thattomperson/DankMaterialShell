@@ -30,12 +30,6 @@ Singleton {
     }
     
     function setLightMode(isLightMode) {
-        if (typeof Theme !== "undefined") {
-            Theme.isLightMode = isLightMode
-        }
-        if (typeof Prefs !== "undefined") {
-            Prefs.setLightMode(isLightMode)
-        }
         if (settingsPortalAvailable) {
             setSystemColorScheme(isLightMode)
         }
