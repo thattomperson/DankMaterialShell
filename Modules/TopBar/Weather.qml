@@ -6,6 +6,9 @@ import qs.Widgets
 Rectangle {
     id: root
 
+    property string section: "center"
+    property var popupTarget: null
+
     signal clicked()
 
     width: visible ? Math.min(100, weatherRow.implicitWidth + Theme.spacingS * 2) : 0
@@ -48,7 +51,14 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.clicked()
+        onClicked: {
+            if (popupTarget && popupTarget.setTriggerPosition) {
+                var globalPos = mapToGlobal(0, 0);
+                var screenRelativeX = globalPos.x >= Screen.width ? globalPos.x % Screen.width : globalPos.x;
+                popupTarget.setTriggerPosition(screenRelativeX, Theme.barHeight + Theme.spacingXS, width, section);
+            }
+            root.clicked();
+        }
     }
 
     Behavior on color {

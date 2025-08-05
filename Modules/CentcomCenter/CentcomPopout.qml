@@ -15,6 +15,17 @@ PanelWindow {
     readonly property bool hasActiveMedia: MprisController.activePlayer !== null
     property bool calendarVisible: false
     property bool internalVisible: false
+    property real triggerX: (Screen.width - 480) / 2
+    property real triggerY: Theme.barHeight + 4
+    property real triggerWidth: 80
+    property string triggerSection: "center"
+
+    function setTriggerPosition(x, y, width, section) {
+        triggerX = x;
+        triggerY = y;
+        triggerWidth = width;
+        triggerSection = section;
+    }
 
     visible: internalVisible
     onCalendarVisibleChanged: {
@@ -77,6 +88,24 @@ PanelWindow {
             return Math.min(contentHeight, parent.height * 0.9);
         }
 
+        readonly property real calculatedX: {
+            var centerX = root.triggerX + (root.triggerWidth / 2) - (targetWidth / 2);
+            
+            if (centerX >= Theme.spacingM && centerX + targetWidth <= Screen.width - Theme.spacingM) {
+                return centerX;
+            }
+            
+            if (centerX < Theme.spacingM) {
+                return Theme.spacingM;
+            }
+            
+            if (centerX + targetWidth > Screen.width - Theme.spacingM) {
+                return Screen.width - targetWidth - Theme.spacingM;
+            }
+            
+            return centerX;
+        }
+
         width: targetWidth
         height: calculateHeight()
         color: Theme.surfaceContainer
@@ -86,8 +115,8 @@ PanelWindow {
         layer.enabled: true
         opacity: calendarVisible ? 1 : 0
         scale: calendarVisible ? 1 : 0.9
-        x: (Screen.width - targetWidth) / 2
-        y: Theme.barHeight + 4
+        x: calculatedX
+        y: root.triggerY
         onOpacityChanged: {
             if (opacity === 1)
                 Qt.callLater(() => {

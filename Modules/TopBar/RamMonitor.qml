@@ -10,6 +10,8 @@ Rectangle {
     property bool showPercentage: true
     property bool showIcon: true
     property var toggleProcessList
+    property string section: "right"
+    property var popupTarget: null
 
     width: 55
     height: 30
@@ -32,10 +34,14 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
+            if (popupTarget && popupTarget.setTriggerPosition) {
+                var globalPos = mapToGlobal(0, 0);
+                var screenRelativeX = globalPos.x >= Screen.width ? globalPos.x % Screen.width : globalPos.x;
+                popupTarget.setTriggerPosition(screenRelativeX, Theme.barHeight + Theme.spacingXS, width, section);
+            }
             SysMonitorService.setSortBy("memory");
             if (root.toggleProcessList)
                 root.toggleProcessList();
-
         }
     }
 

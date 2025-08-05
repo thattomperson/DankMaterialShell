@@ -12,6 +12,17 @@ PanelWindow {
     id: root
 
     property bool notificationHistoryVisible: false
+    property real triggerX: Screen.width - 400 - Theme.spacingL
+    property real triggerY: Theme.barHeight + Theme.spacingXS
+    property real triggerWidth: 40
+    property string triggerSection: "right"
+
+    function setTriggerPosition(x, y, width, section) {
+        triggerX = x;
+        triggerY = y;
+        triggerWidth = width;
+        triggerSection = section;
+    }
 
     visible: notificationHistoryVisible
     onNotificationHistoryVisibleChanged: {
@@ -53,10 +64,29 @@ PanelWindow {
             return Math.max(300, baseHeight);
         }
 
-        width: 400
+        readonly property real popupWidth: 400
+        readonly property real calculatedX: {
+            var centerX = root.triggerX + (root.triggerWidth / 2) - (popupWidth / 2);
+            
+            if (centerX >= Theme.spacingM && centerX + popupWidth <= Screen.width - Theme.spacingM) {
+                return centerX;
+            }
+            
+            if (centerX < Theme.spacingM) {
+                return Theme.spacingM;
+            }
+            
+            if (centerX + popupWidth > Screen.width - Theme.spacingM) {
+                return Screen.width - popupWidth - Theme.spacingM;
+            }
+            
+            return centerX;
+        }
+
+        width: popupWidth
         height: calculateHeight()
-        x: Screen.width - width - Theme.spacingL
-        y: Theme.barHeight + Theme.spacingXS
+        x: calculatedX
+        y: root.triggerY
         color: Theme.popupBackground()
         radius: Theme.cornerRadiusLarge
         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)

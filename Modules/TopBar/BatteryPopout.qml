@@ -12,6 +12,17 @@ PanelWindow {
     id: root
 
     property bool batteryPopupVisible: false
+    property real triggerX: Screen.width - 380 - Theme.spacingL
+    property real triggerY: Theme.barHeight + Theme.spacingS
+    property real triggerWidth: 70
+    property string triggerSection: "right"
+
+    function setTriggerPosition(x, y, width, section) {
+        triggerX = x;
+        triggerY = y;
+        triggerWidth = width;
+        triggerSection = section;
+    }
 
     function isActiveProfile(profile) {
         if (typeof PowerProfiles === "undefined")
@@ -61,13 +72,30 @@ PanelWindow {
 
         readonly property real targetWidth: Math.min(380, Screen.width - Theme.spacingL * 2)
         readonly property real targetHeight: Math.min(450, Screen.height - Theme.barHeight - Theme.spacingS * 2)
+        readonly property real calculatedX: {
+            var centerX = root.triggerX + (root.triggerWidth / 2) - (targetWidth / 2);
+            
+            if (centerX >= Theme.spacingM && centerX + targetWidth <= Screen.width - Theme.spacingM) {
+                return centerX;
+            }
+            
+            if (centerX < Theme.spacingM) {
+                return Theme.spacingM;
+            }
+            
+            if (centerX + targetWidth > Screen.width - Theme.spacingM) {
+                return Screen.width - targetWidth - Theme.spacingM;
+            }
+            
+            return centerX;
+        }
 
         asynchronous: true
         active: batteryPopupVisible
         width: targetWidth
         height: targetHeight
-        x: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
-        y: Theme.barHeight + Theme.spacingS
+        x: calculatedX
+        y: root.triggerY
         opacity: batteryPopupVisible ? 1 : 0
         scale: batteryPopupVisible ? 1 : 0.9
 

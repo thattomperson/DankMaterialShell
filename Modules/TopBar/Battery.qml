@@ -8,6 +8,8 @@ Rectangle {
     id: battery
 
     property bool batteryPopupVisible: false
+    property string section: "right"
+    property var popupTarget: null
 
     signal toggleBatteryPopup()
 
@@ -92,6 +94,11 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
+            if (popupTarget && popupTarget.setTriggerPosition) {
+                var globalPos = mapToGlobal(0, 0);
+                var screenRelativeX = globalPos.x >= Screen.width ? globalPos.x % Screen.width : globalPos.x;
+                popupTarget.setTriggerPosition(screenRelativeX, Theme.barHeight + Theme.spacingXS, width, section);
+            }
             toggleBatteryPopup();
         }
     }

@@ -14,6 +14,10 @@ PanelWindow {
     id: appDrawerPopout
 
     property bool isVisible: false
+    property real triggerX: Theme.spacingL
+    property real triggerY: Theme.barHeight + Theme.spacingXS
+    property real triggerWidth: 40
+    property string triggerSection: "left" // "left", "center", "right"
 
     function show() {
         appDrawerPopout.isVisible = true;
@@ -29,6 +33,13 @@ PanelWindow {
             hide();
         else
             show();
+    }
+
+    function setTriggerPosition(x, y, width, section) {
+        triggerX = x;
+        triggerY = y;
+        triggerWidth = width;
+        triggerSection = section;
     }
 
     WlrLayershell.layer: WlrLayershell.Overlay
@@ -70,12 +81,36 @@ PanelWindow {
     Loader {
         id: launcherLoader
 
+        readonly property real popupWidth: 520
+        readonly property real popupHeight: 600
+        readonly property real screenWidth: Screen.width
+        readonly property real screenHeight: Screen.height
+        readonly property real calculatedX: {
+            var centerX = appDrawerPopout.triggerX + (appDrawerPopout.triggerWidth / 2) - (popupWidth / 2);
+            
+            if (centerX >= Theme.spacingM && centerX + popupWidth <= screenWidth - Theme.spacingM) {
+                return centerX;
+            }
+            
+            if (centerX < Theme.spacingM) {
+                return Theme.spacingM;
+            }
+            
+            if (centerX + popupWidth > screenWidth - Theme.spacingM) {
+                return screenWidth - popupWidth - Theme.spacingM;
+            }
+            
+            return centerX;
+        }
+        readonly property real calculatedY: appDrawerPopout.triggerY
+
         asynchronous: true
         active: appDrawerPopout.isVisible
-        width: 520
-        height: 600
-        x: Theme.spacingL
-        y: Theme.barHeight + Theme.spacingXS
+        width: popupWidth
+        height: popupHeight
+        x: calculatedX
+        y: calculatedY
+        
         opacity: appDrawerPopout.isVisible ? 1 : 0
         scale: appDrawerPopout.isVisible ? 1 : 0.9
 

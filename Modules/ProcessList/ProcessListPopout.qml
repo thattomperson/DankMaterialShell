@@ -16,6 +16,17 @@ PanelWindow {
 
     property bool isVisible: false
     property var parentWidget: null
+    property real triggerX: Screen.width - 600 - Theme.spacingL
+    property real triggerY: Theme.barHeight + Theme.spacingXS
+    property real triggerWidth: 55
+    property string triggerSection: "right"
+
+    function setTriggerPosition(x, y, width, section) {
+        triggerX = x;
+        triggerY = y;
+        triggerWidth = width;
+        triggerSection = section;
+    }
 
     function hide() {
         isVisible = false;
@@ -69,13 +80,30 @@ PanelWindow {
 
         readonly property real targetWidth: Math.min(600, Screen.width - Theme.spacingL * 2)
         readonly property real targetHeight: Math.min(600, Screen.height - Theme.barHeight - Theme.spacingS * 2)
+        readonly property real calculatedX: {
+            var centerX = processListPopout.triggerX + (processListPopout.triggerWidth / 2) - (targetWidth / 2);
+            
+            if (centerX >= Theme.spacingM && centerX + targetWidth <= Screen.width - Theme.spacingM) {
+                return centerX;
+            }
+            
+            if (centerX < Theme.spacingM) {
+                return Theme.spacingM;
+            }
+            
+            if (centerX + targetWidth > Screen.width - Theme.spacingM) {
+                return Screen.width - targetWidth - Theme.spacingM;
+            }
+            
+            return centerX;
+        }
 
         asynchronous: true
         active: processListPopout.isVisible
         width: targetWidth
         height: targetHeight
-        y: Theme.barHeight + Theme.spacingXS
-        x: Math.max(Theme.spacingL, Screen.width - targetWidth - Theme.spacingL)
+        y: processListPopout.triggerY
+        x: calculatedX
         opacity: processListPopout.isVisible ? 1 : 0
         scale: processListPopout.isVisible ? 1 : 0.9
 

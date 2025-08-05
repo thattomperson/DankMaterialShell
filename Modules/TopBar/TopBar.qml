@@ -437,10 +437,19 @@ PanelWindow {
 
                 LauncherButton {
                     isActive: appDrawerPopout ? appDrawerPopout.isVisible : false
+                    section: {
+                        // Determine which section this loader is in by checking parent
+                        if (parent && parent.parent) {
+                            if (parent.parent === leftSection) return "left";
+                            if (parent.parent === rightSection) return "right";
+                            if (parent.parent === centerSection) return "center";
+                        }
+                        return "left"; // default fallback
+                    }
+                    popupTarget: appDrawerPopout
                     onClicked: {
                         if (appDrawerPopout)
                             appDrawerPopout.toggle();
-
                     }
                 }
 
@@ -470,6 +479,13 @@ PanelWindow {
 
                 Clock {
                     compactMode: topBarContent.overlapping
+                    section: {
+                        if (parent && parent.parent === leftSection) return "left";
+                        if (parent && parent.parent === rightSection) return "right";
+                        if (parent && parent.parent === centerSection) return "center";
+                        return "center";
+                    }
+                    popupTarget: centcomPopout
                     onClockClicked: {
                         centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                     }
@@ -482,6 +498,13 @@ PanelWindow {
 
                 Media {
                     compactMode: topBarContent.spacingTight || topBarContent.overlapping
+                    section: {
+                        if (parent && parent.parent === leftSection) return "left";
+                        if (parent && parent.parent === rightSection) return "right";
+                        if (parent && parent.parent === centerSection) return "center";
+                        return "center";
+                    }
+                    popupTarget: centcomPopout
                     onClicked: {
                         centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                     }
@@ -493,6 +516,13 @@ PanelWindow {
                 id: weatherComponent
 
                 Weather {
+                    section: {
+                        if (parent && parent.parent === leftSection) return "left";
+                        if (parent && parent.parent === rightSection) return "right";
+                        if (parent && parent.parent === centerSection) return "center";
+                        return "center";
+                    }
+                    popupTarget: centcomPopout
                     onClicked: {
                         centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
                     }
@@ -565,12 +595,26 @@ PanelWindow {
                     spacing: Theme.spacingXS
 
                     CpuMonitor {
+                        section: {
+                            if (parent && parent.parent && parent.parent.parent === leftSection) return "left";
+                            if (parent && parent.parent && parent.parent.parent === rightSection) return "right";
+                            if (parent && parent.parent && parent.parent.parent === centerSection) return "center";
+                            return "right";
+                        }
+                        popupTarget: processListPopout
                         toggleProcessList: () => {
                             return processListPopout.toggle();
                         }
                     }
 
                     RamMonitor {
+                        section: {
+                            if (parent && parent.parent && parent.parent.parent === leftSection) return "left";
+                            if (parent && parent.parent && parent.parent.parent === rightSection) return "right";
+                            if (parent && parent.parent && parent.parent.parent === centerSection) return "center";
+                            return "right";
+                        }
+                        popupTarget: processListPopout
                         toggleProcessList: () => {
                             return processListPopout.toggle();
                         }
@@ -586,6 +630,13 @@ PanelWindow {
                 NotificationCenterButton {
                     hasUnread: root.notificationCount > 0
                     isActive: notificationCenter.notificationHistoryVisible
+                    section: {
+                        if (parent && parent.parent === leftSection) return "left";
+                        if (parent && parent.parent === rightSection) return "right";
+                        if (parent && parent.parent === centerSection) return "center";
+                        return "right";
+                    }
+                    popupTarget: notificationCenter
                     onClicked: {
                         notificationCenter.notificationHistoryVisible = !notificationCenter.notificationHistoryVisible;
                     }
@@ -598,6 +649,13 @@ PanelWindow {
 
                 Battery {
                     batteryPopupVisible: batteryPopout.batteryPopupVisible
+                    section: {
+                        if (parent && parent.parent === leftSection) return "left";
+                        if (parent && parent.parent === rightSection) return "right";
+                        if (parent && parent.parent === centerSection) return "center";
+                        return "right";
+                    }
+                    popupTarget: batteryPopout
                     onToggleBatteryPopup: {
                         batteryPopout.batteryPopupVisible = !batteryPopout.batteryPopupVisible;
                     }

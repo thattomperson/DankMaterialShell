@@ -8,6 +8,8 @@ Rectangle {
 
     property date currentDate: new Date()
     property bool compactMode: false
+    property string section: "center"
+    property var popupTarget: null
 
     signal clockClicked()
 
@@ -67,6 +69,11 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
+            if (popupTarget && popupTarget.setTriggerPosition) {
+                var globalPos = mapToGlobal(0, 0);
+                var screenRelativeX = globalPos.x >= Screen.width ? globalPos.x % Screen.width : globalPos.x;
+                popupTarget.setTriggerPosition(screenRelativeX, Theme.barHeight + Theme.spacingXS, width, section);
+            }
             root.clockClicked();
         }
     }

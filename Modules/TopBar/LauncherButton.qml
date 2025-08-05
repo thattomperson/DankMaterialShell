@@ -7,6 +7,8 @@ Rectangle {
     id: root
 
     property bool isActive: false
+    property string section: "left" // Which section this button is in
+    property var popupTarget: null // Reference to the popup to position
 
     signal clicked()
 
@@ -42,7 +44,14 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.clicked()
+        onClicked: {
+            if (popupTarget && popupTarget.setTriggerPosition) {
+                var globalPos = mapToGlobal(0, 0);
+                var screenRelativeX = globalPos.x >= Screen.width ? globalPos.x % Screen.width : globalPos.x;
+                popupTarget.setTriggerPosition(screenRelativeX, Theme.barHeight + Theme.spacingXS, width, section);
+            }
+            root.clicked();
+        }
     }
 
     Behavior on color {

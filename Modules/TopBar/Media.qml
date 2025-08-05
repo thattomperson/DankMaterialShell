@@ -13,6 +13,8 @@ Rectangle {
     readonly property int baseContentWidth: mediaRow.implicitWidth + Theme.spacingS * 2
     readonly property int normalContentWidth: Math.min(280, baseContentWidth)
     readonly property int compactContentWidth: Math.min(120, baseContentWidth)
+    property string section: "center"
+    property var popupTarget: null
 
     signal clicked()
 
@@ -127,7 +129,14 @@ Rectangle {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.clicked()
+                    onClicked: {
+                        if (root.popupTarget && root.popupTarget.setTriggerPosition) {
+                            var globalPos = mapToGlobal(0, 0);
+                            var screenRelativeX = globalPos.x >= Screen.width ? globalPos.x % Screen.width : globalPos.x;
+                            root.popupTarget.setTriggerPosition(screenRelativeX, Theme.barHeight + Theme.spacingXS, root.width, root.section);
+                        }
+                        root.clicked();
+                    }
                 }
 
             }
