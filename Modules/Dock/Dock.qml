@@ -10,7 +10,7 @@ import qs.Widgets
 PanelWindow {
     id: dock
 
-    WlrLayershell.layer: WlrLayershell.Overlay
+    WlrLayershell.layer: WlrLayershell.TopLayer
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     

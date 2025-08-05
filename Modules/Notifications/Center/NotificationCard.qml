@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Widgets
+import Quickshell.Services.Notifications
 import qs.Common
 import qs.Services
 import qs.Widgets
@@ -27,14 +28,14 @@ Rectangle {
     }
     radius: Theme.cornerRadiusLarge
     color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
-    border.color: notificationGroup?.latestNotification?.urgency === 2 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
-    border.width: notificationGroup?.latestNotification?.urgency === 2 ? 2 : 1
+    border.color: notificationGroup?.latestNotification?.urgency === NotificationUrgency.Critical ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+    border.width: notificationGroup?.latestNotification?.urgency === NotificationUrgency.Critical ? 2 : 1
     clip: true
 
     Rectangle {
         anchors.fill: parent
         radius: parent.radius
-        visible: notificationGroup?.latestNotification?.urgency === 2
+        visible: notificationGroup?.latestNotification?.urgency === NotificationUrgency.Critical
         gradient: Gradient {
             orientation: Gradient.Horizontal
             GradientStop { 

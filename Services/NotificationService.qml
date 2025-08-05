@@ -310,8 +310,8 @@ Singleton {
         }
         
         return Object.values(groups).sort((a, b) => {
-            const aUrgency = a.latestNotification.urgency || 0;
-            const bUrgency = b.latestNotification.urgency || 0;
+            const aUrgency = a.latestNotification.urgency || NotificationUrgency.Low;
+            const bUrgency = b.latestNotification.urgency || NotificationUrgency.Low;
             if (aUrgency !== bUrgency) {
                 return bUrgency - aUrgency;
             }

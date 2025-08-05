@@ -3,6 +3,7 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
+import Quickshell.Services.Notifications
 import qs.Common
 import qs.Services
 import qs.Widgets
@@ -57,7 +58,7 @@ PanelWindow {
     }
 
     visible: hasValidData
-    WlrLayershell.layer: WlrLayershell.Overlay
+    WlrLayershell.layer: notificationData && notificationData.urgency === NotificationUrgency.Critical ? WlrLayershell.Overlay : WlrLayershell.TopLayer
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     color: "transparent"
@@ -124,8 +125,8 @@ PanelWindow {
             anchors.margins: 4
             radius: Theme.cornerRadiusLarge
             color: Theme.popupBackground()
-            border.color: notificationData && notificationData.urgency === 2 ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
-            border.width: notificationData && notificationData.urgency === 2 ? 2 : 1
+            border.color: notificationData && notificationData.urgency === NotificationUrgency.Critical ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+            border.width: notificationData && notificationData.urgency === NotificationUrgency.Critical ? 2 : 1
             clip: true
 
             Rectangle {
@@ -166,7 +167,7 @@ PanelWindow {
             Rectangle {
                 anchors.fill: parent
                 radius: parent.radius
-                visible: notificationData && notificationData.urgency === 2
+                visible: notificationData && notificationData.urgency === NotificationUrgency.Critical
                 opacity: 1
 
                 gradient: Gradient {
