@@ -25,6 +25,7 @@ Singleton {
     property string profileImage: ""
     property string weatherLocation: "New York, NY"
     property string weatherCoordinates: "40.7128,-74.0060"
+    property bool useAutoLocation: false
     property bool showLauncherButton: true
     property bool showWorkspaceSwitcher: true
     property bool showFocusedWindow: true
@@ -149,6 +150,7 @@ Singleton {
                 profileImage = settings.profileImage !== undefined ? settings.profileImage : "";
                 weatherLocation = settings.weatherLocation !== undefined ? settings.weatherLocation : "New York, NY";
                 weatherCoordinates = settings.weatherCoordinates !== undefined ? settings.weatherCoordinates : "40.7128,-74.0060";
+                useAutoLocation = settings.useAutoLocation !== undefined ? settings.useAutoLocation : false;
                 showLauncherButton = settings.showLauncherButton !== undefined ? settings.showLauncherButton : true;
                 showWorkspaceSwitcher = settings.showWorkspaceSwitcher !== undefined ? settings.showWorkspaceSwitcher : true;
                 showFocusedWindow = settings.showFocusedWindow !== undefined ? settings.showFocusedWindow : true;
@@ -230,6 +232,7 @@ Singleton {
             "profileImage": profileImage,
             "weatherLocation": weatherLocation,
             "weatherCoordinates": weatherCoordinates,
+            "useAutoLocation": useAutoLocation,
             "showLauncherButton": showLauncherButton,
             "showWorkspaceSwitcher": showWorkspaceSwitcher,
             "showFocusedWindow": showFocusedWindow,
@@ -565,6 +568,11 @@ Singleton {
     function setWeatherLocation(displayName, coordinates) {
         weatherLocation = displayName;
         weatherCoordinates = coordinates;
+        saveSettings();
+    }
+
+    function setAutoLocation(enabled) {
+        useAutoLocation = enabled;
         saveSettings();
     }
 

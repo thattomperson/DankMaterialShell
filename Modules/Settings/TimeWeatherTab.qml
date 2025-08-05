@@ -111,9 +111,20 @@ ScrollView {
                     }
                 }
 
+                DankToggle {
+                    width: parent.width
+                    text: "Auto Location"
+                    description: "Allow wttr.in to determine location based on IP address"
+                    checked: Prefs.useAutoLocation
+                    onToggled: (checked) => {
+                        return Prefs.setAutoLocation(checked);
+                    }
+                }
+
                 Column {
                     width: parent.width
                     spacing: Theme.spacingXS
+                    visible: !Prefs.useAutoLocation
 
                     StyledText {
                         text: "Location"

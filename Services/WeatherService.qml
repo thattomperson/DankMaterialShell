@@ -92,9 +92,15 @@ Singleton {
     }
     
     function getWeatherUrl() {
+        if (Prefs.useAutoLocation) {
+            const url = "wttr.in/?format=j1"
+            console.log("Using auto location, URL:", url)
+            return url
+        }
+        
         const location = Prefs.weatherCoordinates || "40.7128,-74.0060"
         const url = `wttr.in/${encodeURIComponent(location)}?format=j1`
-        console.log("Using location:", location, "URL:", url)
+        console.log("Using manual location:", location, "URL:", url)
         return url
     }
     
@@ -309,6 +315,26 @@ Singleton {
             console.log("Weather location display name changed")
             const currentWeather = Object.assign({}, root.weather)
             root.weather = currentWeather
+        })
+        
+        Prefs.useAutoLocationChanged.connect(() => {
+            console.log("Auto location setting changed, force refreshing weather")
+            root.weather = {
+                available: false,
+                loading: true,
+                temp: 0,
+                tempF: 0,
+                city: "",
+                wCode: "113", 
+                humidity: 0,
+                wind: "",
+                sunrise: "06:00",
+                sunset: "18:00",
+                uv: 0,
+                pressure: 0
+            }
+            root.lastFetchTime = 0
+            root.forceRefresh()
         })
     }
 }
