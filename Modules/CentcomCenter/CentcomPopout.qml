@@ -89,6 +89,12 @@ PanelWindow {
         }
 
         readonly property real calculatedX: {
+            // For center widgets, always center the popup on screen
+            if (root.triggerSection === "center") {
+                return (Screen.width - targetWidth) / 2;
+            }
+            
+            // For non-center widgets, use the original logic
             var centerX = root.triggerX + (root.triggerWidth / 2) - (targetWidth / 2);
             
             if (centerX >= Theme.spacingM && centerX + targetWidth <= Screen.width - Theme.spacingM) {
