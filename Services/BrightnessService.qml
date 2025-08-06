@@ -11,9 +11,10 @@ Singleton {
     property bool brightnessAvailable: laptopBacklightAvailable || ddcAvailable
     property bool laptopBacklightAvailable: false
     property bool ddcAvailable: false
-    property int brightnessLevel: 75
+    property int brightnessLevel: 50
     property int maxBrightness: 100
     property int currentRawBrightness: 0
+    property bool brightnessInitialized: false
     
     function setBrightness(percentage) {
         brightnessLevel = Math.max(1, Math.min(100, percentage));
@@ -33,13 +34,13 @@ Singleton {
     }
     
     onLaptopBacklightAvailableChanged: {
-        if (laptopBacklightAvailable) {
+        if (laptopBacklightAvailable && !brightnessInitialized) {
             laptopBrightnessInitProcess.running = true;
         }
     }
     
     onDdcAvailableChanged: {
-        if (ddcAvailable) {
+        if (ddcAvailable && !laptopBacklightAvailable && !brightnessInitialized) {
             ddcBrightnessInitProcess.running = true;
         }
     }
@@ -87,7 +88,7 @@ Singleton {
         
         onExited: function(exitCode) {
             if (exitCode !== 0) {
-                
+                console.warn("BrightnessService: Failed to read current brightness:", exitCode);
             }
         }
     }
@@ -102,13 +103,15 @@ Singleton {
                 if (text.trim()) {
                     maxBrightness = parseInt(text.trim());
                     brightnessLevel = Math.round((currentRawBrightness / maxBrightness) * 100);
+                    brightnessInitialized = true;
+                    console.log("BrightnessService: Initialized with brightness level:", brightnessLevel + "%");
                 }
             }
         }
         
         onExited: function(exitCode) {
             if (exitCode !== 0) {
-                
+                console.warn("BrightnessService: Failed to read max brightness:", exitCode);
             }
         }
     }
@@ -123,9 +126,10 @@ Singleton {
                 if (text.trim()) {
                     const parts = text.trim().split(" ");
                     if (parts.length >= 5) {
-                        const current = parseInt(parts[3]) || 75;
+                        const current = parseInt(parts[3]) || 50;
                         const max = parseInt(parts[4]) || 100;
                         brightnessLevel = Math.round((current / max) * 100);
+                        brightnessInitialized = true;
                     }
                 }
             }
@@ -133,8 +137,9 @@ Singleton {
         
         onExited: function(exitCode) {
             if (exitCode !== 0) {
-                
-                brightnessLevel = 75;
+                if (!laptopBacklightAvailable) {
+                    console.warn("BrightnessService: DDC brightness read failed:", exitCode);
+                }
             }
         }
     }
