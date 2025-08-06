@@ -262,8 +262,8 @@ ScrollView {
 
                 property var rankedAppsModel: {
                     var apps = [];
-                    for (var appId in AppUsageHistoryData.appUsageRanking) {
-                        var appData = AppUsageHistoryData.appUsageRanking[appId];
+                    for (var appId in (AppUsageHistoryData.appUsageRanking || {})) {
+                        var appData = (AppUsageHistoryData.appUsageRanking || {})[appId];
                         apps.push({
                             "id": appId,
                             "name": appData.name,
@@ -320,8 +320,7 @@ ScrollView {
                         hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
                         anchors.verticalCenter: parent.verticalCenter
                         onClicked: {
-                            AppUsageHistoryData.appUsageRanking = {
-                            };
+                            AppUsageHistoryData.appUsageRanking = {};
                             SettingsData.saveSettings();
                         }
                     }
@@ -438,7 +437,7 @@ ScrollView {
                                 hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
                                 onClicked: {
                                     var currentRanking = Object.assign({
-                                    }, AppUsageHistoryData.appUsageRanking);
+                                    }, AppUsageHistoryData.appUsageRanking || {});
                                     delete currentRanking[modelData.id];
                                     AppUsageHistoryData.appUsageRanking = currentRanking;
                                     SettingsData.saveSettings();

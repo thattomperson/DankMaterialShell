@@ -17,9 +17,6 @@ Singleton {
     property bool doNotDisturb: false
     property var pinnedApps: []
 
-    readonly property string _configUrl: StandardPaths.writableLocation(StandardPaths.ConfigLocation)
-    readonly property string _configDir: _configUrl.startsWith("file://") ? _configUrl.substring(7) : _configUrl
-
     Component.onCompleted: {
         loadSettings();
     }
@@ -115,7 +112,7 @@ Singleton {
     FileView {
         id: settingsFile
 
-        path: StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/DankMaterialShell/session.json"
+        path: StandardPaths.writableLocation(StandardPaths.GenericStateLocation) + "/DankMaterialShell/session.json"
         blockLoading: true
         blockWrites: true
         watchChanges: true

@@ -29,7 +29,7 @@ Item {
     property var categoryIcons: categories.map((category) => {
         return AppSearchService.getCategoryIcon(category);
     })
-    property var appUsageRanking: AppUsageHistoryData.appUsageRanking
+    property var appUsageRanking: AppUsageHistoryData.appUsageRanking || {}
     property alias model: filteredModel
     property var _watchApplications: AppSearchService.applications
 

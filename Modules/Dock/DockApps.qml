@@ -19,7 +19,7 @@ Item {
     function movePinnedApp(fromIndex, toIndex) {
         if (fromIndex === toIndex) return
         
-        var currentPinned = [...SessionData.pinnedApps]
+        var currentPinned = [...(SessionData.pinnedApps || [])]
         if (fromIndex < 0 || fromIndex >= currentPinned.length || toIndex < 0 || toIndex >= currentPinned.length) return
         
         var movedApp = currentPinned.splice(fromIndex, 1)[0]
@@ -46,8 +46,9 @@ Item {
                     
                     var items = []
                     var runningApps = NiriService.getRunningAppIds()
-                    var pinnedApps = [...SessionData.pinnedApps]
+                    var pinnedApps = [...(SessionData.pinnedApps || [])]
                     var addedApps = new Set()
+                    
                     
                     pinnedApps.forEach(appId => {
                         var lowerAppId = appId.toLowerCase()
@@ -64,28 +65,39 @@ Item {
                     })
                     root.pinnedAppCount = pinnedApps.length
                     var appUsageRanking = AppUsageHistoryData.appUsageRanking || {}
-                    var allUnpinnedApps = []
-                    
-                    for (var appId in appUsageRanking) {
-                        var lowerAppId = appId.toLowerCase()
-                        if (!addedApps.has(lowerAppId)) {
-                            allUnpinnedApps.push({
-                                appId: appId,
-                                lastUsed: appUsageRanking[appId].lastUsed || 0,
-                                usageCount: appUsageRanking[appId].usageCount || 0
-                            })
-                        }
-                    }
-                    
-                    allUnpinnedApps.sort((a, b) => b.lastUsed - a.lastUsed)
                     
                     var unpinnedApps = []
-                    var recentToAdd = Math.min(3, allUnpinnedApps.length)
-                    for (var i = 0; i < recentToAdd; i++) {
-                        var appId = allUnpinnedApps[i].appId
+                    var unpinnedAppsSet = new Set()
+                    
+                    // First: Add ALL currently running apps that aren't pinned
+                    runningApps.forEach(appId => {
                         var lowerAppId = appId.toLowerCase()
-                        unpinnedApps.push(appId)
-                        addedApps.add(lowerAppId)
+                        if (!addedApps.has(lowerAppId)) {
+                            unpinnedApps.push(appId)
+                            unpinnedAppsSet.add(lowerAppId)
+                        }
+                    })
+                    
+                    // Then: Fill remaining slots up to 3 with recently used apps
+                    var remainingSlots = Math.max(0, 3 - unpinnedApps.length)
+                    if (remainingSlots > 0) {
+                        // Sort recent apps by usage
+                        var recentApps = []
+                        for (var appId in appUsageRanking) {
+                            var lowerAppId = appId.toLowerCase()
+                            if (!addedApps.has(lowerAppId) && !unpinnedAppsSet.has(lowerAppId)) {
+                                recentApps.push({
+                                    appId: appId,
+                                    lastUsed: appUsageRanking[appId].lastUsed || 0
+                                })
+                            }
+                        }
+                        recentApps.sort((a, b) => b.lastUsed - a.lastUsed)
+                        
+                        var recentToAdd = Math.min(remainingSlots, recentApps.length)
+                        for (var i = 0; i < recentToAdd; i++) {
+                            unpinnedApps.push(recentApps[i].appId)
+                        }
                     }
                     if (pinnedApps.length > 0 && unpinnedApps.length > 0) {
                         items.push({
