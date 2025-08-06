@@ -471,6 +471,13 @@ ScrollView {
                 onSpacerSizeChanged: (sectionId, itemId, newSize) => {
                     widgetsTab.handleSpacerSizeChanged(sectionId, itemId, newSize);
                 }
+                onCompactModeChanged: (widgetId, enabled) => {
+                    if (widgetId === "clock") {
+                        Prefs.setClockCompactMode(enabled);
+                    } else if (widgetId === "music") {
+                        Prefs.setMediaCompactMode(enabled);
+                    }
+                }
             }
 
             DankSections {
@@ -497,6 +504,13 @@ ScrollView {
                 onSpacerSizeChanged: (sectionId, itemId, newSize) => {
                     widgetsTab.handleSpacerSizeChanged(sectionId, itemId, newSize);
                 }
+                onCompactModeChanged: (widgetId, enabled) => {
+                    if (widgetId === "clock") {
+                        Prefs.setClockCompactMode(enabled);
+                    } else if (widgetId === "music") {
+                        Prefs.setMediaCompactMode(enabled);
+                    }
+                }
             }
 
             DankSections {
@@ -522,6 +536,13 @@ ScrollView {
                 }
                 onSpacerSizeChanged: (sectionId, itemId, newSize) => {
                     widgetsTab.handleSpacerSizeChanged(sectionId, itemId, newSize);
+                }
+                onCompactModeChanged: (widgetId, enabled) => {
+                    if (widgetId === "clock") {
+                        Prefs.setClockCompactMode(enabled);
+                    } else if (widgetId === "music") {
+                        Prefs.setMediaCompactMode(enabled);
+                    }
                 }
             }
 

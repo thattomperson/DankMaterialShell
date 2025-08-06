@@ -39,6 +39,8 @@ Singleton {
     property bool showControlCenterButton: true
     property bool showWorkspaceIndex: false
     property bool showWorkspacePadding: false
+    property bool clockCompactMode: false
+    property bool mediaCompactMode: false
     property var topBarLeftWidgets: ["launcherButton", "workspaceSwitcher", "focusedWindow"]
     property var topBarCenterWidgets: ["music", "clock", "weather"]
     property var topBarRightWidgets: ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"]
@@ -165,6 +167,8 @@ Singleton {
                 showControlCenterButton = settings.showControlCenterButton !== undefined ? settings.showControlCenterButton : true;
                 showWorkspaceIndex = settings.showWorkspaceIndex !== undefined ? settings.showWorkspaceIndex : false;
                 showWorkspacePadding = settings.showWorkspacePadding !== undefined ? settings.showWorkspacePadding : false;
+                clockCompactMode = settings.clockCompactMode !== undefined ? settings.clockCompactMode : false;
+                mediaCompactMode = settings.mediaCompactMode !== undefined ? settings.mediaCompactMode : false;
                 if (settings.topBarWidgetOrder) {
                     topBarLeftWidgets = settings.topBarWidgetOrder.filter(w => ["launcherButton", "workspaceSwitcher", "focusedWindow"].includes(w));
                     topBarCenterWidgets = settings.topBarWidgetOrder.filter(w => ["clock", "music", "weather"].includes(w));
@@ -247,6 +251,8 @@ Singleton {
             "showControlCenterButton": showControlCenterButton,
             "showWorkspaceIndex": showWorkspaceIndex,
             "showWorkspacePadding": showWorkspacePadding,
+            "clockCompactMode": clockCompactMode,
+            "mediaCompactMode": mediaCompactMode,
             "topBarLeftWidgets": topBarLeftWidgets,
             "topBarCenterWidgets": topBarCenterWidgets,
             "topBarRightWidgets": topBarRightWidgets,
@@ -281,6 +287,16 @@ Singleton {
 
     function setShowWorkspacePadding(enabled) {
         showWorkspacePadding = enabled;
+        saveSettings();
+    }
+
+    function setClockCompactMode(enabled) {
+        clockCompactMode = enabled;
+        saveSettings();
+    }
+
+    function setMediaCompactMode(enabled) {
+        mediaCompactMode = enabled;
         saveSettings();
     }
 

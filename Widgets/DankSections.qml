@@ -17,6 +17,7 @@ Column {
     signal addWidget(string sectionId)
     signal removeWidget(string sectionId, string itemId)
     signal spacerSizeChanged(string sectionId, string itemId, int newSize)
+    signal compactModeChanged(string widgetId, bool enabled)
 
     width: parent.width
     spacing: Theme.spacingM
@@ -130,6 +131,58 @@ Column {
                         anchors.rightMargin: Theme.spacingM
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: Theme.spacingXS
+
+                        Item {
+                            width: 32
+                            height: 32
+                            visible: modelData.id === "clock" || modelData.id === "music"
+                            
+                            DankActionButton {
+                                id: compactModeButton
+                                anchors.fill: parent
+                                buttonSize: 32
+                                iconName: (modelData.id === "clock" && Prefs.clockCompactMode) || (modelData.id === "music" && Prefs.mediaCompactMode) ? "zoom_out" : "zoom_in"
+                                iconSize: 18
+                                iconColor: ((modelData.id === "clock" && Prefs.clockCompactMode) || (modelData.id === "music" && Prefs.mediaCompactMode)) ? Theme.primary : Theme.outline
+                                onClicked: {
+                                    if (modelData.id === "clock") {
+                                        root.compactModeChanged("clock", !Prefs.clockCompactMode);
+                                    } else if (modelData.id === "music") {
+                                        root.compactModeChanged("music", !Prefs.mediaCompactMode);
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                id: compactModeTooltip
+                                width: tooltipText.contentWidth + Theme.spacingM * 2
+                                height: tooltipText.contentHeight + Theme.spacingS * 2
+                                radius: Theme.cornerRadius
+                                color: Theme.surfaceContainer
+                                border.color: Theme.outline
+                                border.width: 1
+                                visible: compactModeButton.children[1] && compactModeButton.children[1].containsMouse
+                                opacity: visible ? 1 : 0
+                                x: -width - Theme.spacingS
+                                y: (parent.height - height) / 2
+                                z: 100
+
+                                StyledText {
+                                    id: tooltipText
+                                    anchors.centerIn: parent
+                                    text: "Compact Mode"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    color: Theme.surfaceText
+                                }
+
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: Theme.shortDuration
+                                        easing.type: Theme.standardEasing
+                                    }
+                                }
+                            }
+                        }
 
                         DankActionButton {
                             visible: modelData.id !== "spacer"
