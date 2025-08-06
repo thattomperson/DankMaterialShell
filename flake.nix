@@ -108,6 +108,8 @@
                   "micmute";
               };
             });
+          programs.niri.settings.spawn-at-startup =
+            [{ command = "qs" "-c" "DankMaterialShell"; }];
         };
     };
 }
