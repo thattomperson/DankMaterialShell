@@ -424,8 +424,8 @@ Singleton {
         if (isDynamicTheme) {
             currentThemeIndex = 10;
             isDynamicTheme = true;
-            if (typeof Prefs !== "undefined")
-                Prefs.setTheme(currentThemeIndex, isDynamicTheme);
+            if (typeof SettingsData !== "undefined")
+                SettingsData.setTheme(currentThemeIndex, isDynamicTheme);
         }
     }
 
@@ -442,14 +442,14 @@ Singleton {
             currentThemeIndex = themeIndex;
             isDynamicTheme = false;
         }
-        if (savePrefs && typeof Prefs !== "undefined")
-            Prefs.setTheme(currentThemeIndex, isDynamicTheme);
+        if (savePrefs && typeof SettingsData !== "undefined")
+            SettingsData.setTheme(currentThemeIndex, isDynamicTheme);
     }
 
     function toggleLightMode(savePrefs = true) {
         isLightMode = !isLightMode;
-        if (savePrefs && typeof Prefs !== "undefined")
-            Prefs.setLightMode(isLightMode);
+        if (savePrefs && typeof SessionData !== "undefined")
+            SessionData.setLightMode(isLightMode);
     }
 
     function getCurrentThemeArray() {
@@ -592,23 +592,23 @@ Singleton {
         if (typeof Colors !== "undefined")
             Colors.colorsUpdated.connect(root.onColorsUpdated);
 
-        if (typeof Prefs !== "undefined") {
-            if (Prefs.popupTransparency !== undefined)
-                root.popupTransparency = Prefs.popupTransparency;
+        if (typeof SettingsData !== "undefined") {
+            if (SettingsData.popupTransparency !== undefined)
+                root.popupTransparency = SettingsData.popupTransparency;
             
-            if (Prefs.topBarWidgetTransparency !== undefined)
-                root.widgetTransparency = Prefs.topBarWidgetTransparency;
+            if (SettingsData.topBarWidgetTransparency !== undefined)
+                root.widgetTransparency = SettingsData.topBarWidgetTransparency;
 
-            if (Prefs.popupTransparencyChanged)
-                Prefs.popupTransparencyChanged.connect(function() {
-                    if (typeof Prefs !== "undefined" && Prefs.popupTransparency !== undefined)
-                        root.popupTransparency = Prefs.popupTransparency;
+            if (SettingsData.popupTransparencyChanged)
+                SettingsData.popupTransparencyChanged.connect(function() {
+                    if (typeof SettingsData !== "undefined" && SettingsData.popupTransparency !== undefined)
+                        root.popupTransparency = SettingsData.popupTransparency;
                 });
             
-            if (Prefs.topBarWidgetTransparencyChanged)
-                Prefs.topBarWidgetTransparencyChanged.connect(function() {
-                    if (typeof Prefs !== "undefined" && Prefs.topBarWidgetTransparency !== undefined)
-                        root.widgetTransparency = Prefs.topBarWidgetTransparency;
+            if (SettingsData.topBarWidgetTransparencyChanged)
+                SettingsData.topBarWidgetTransparencyChanged.connect(function() {
+                    if (typeof SettingsData !== "undefined" && SettingsData.topBarWidgetTransparency !== undefined)
+                        root.widgetTransparency = SettingsData.topBarWidgetTransparency;
                 });
         }
     }

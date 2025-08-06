@@ -70,7 +70,7 @@ Item {
     Image {
         id: wallpaperBackground
         anchors.fill: parent
-        source: Prefs.wallpaperPath || ""
+        source: SessionData.wallpaperPath || ""
         fillMode: Image.PreserveAspectCrop
         smooth: true
         asynchronous: true
@@ -114,7 +114,7 @@ Item {
                 id: clockText
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
-                text: Prefs.use24HourClock ? Qt.formatTime(new Date(), "H:mm") : Qt.formatTime(new Date(), "h:mm AP")
+                text: SettingsData.use24HourClock ? Qt.formatTime(new Date(), "H:mm") : Qt.formatTime(new Date(), "h:mm AP")
                 font.pixelSize: 120
                 font.weight: Font.Light
                 color: "white"
@@ -124,7 +124,7 @@ Item {
                     interval: 1000
                     running: true
                     repeat: true
-                    onTriggered: parent.text = Prefs.use24HourClock ? Qt.formatTime(new Date(), "H:mm") : Qt.formatTime(new Date(), "h:mm AP")
+                    onTriggered: parent.text = SettingsData.use24HourClock ? Qt.formatTime(new Date(), "H:mm") : Qt.formatTime(new Date(), "h:mm AP")
                 }
             }
 
@@ -517,7 +517,7 @@ Item {
             anchors.right: parent.right
             anchors.margins: Theme.spacingXL
             text: WeatherService.weather.available && WeatherService.weather.city && WeatherService.weather.city !== "Unknown" ? 
-                  `${WeatherService.weather.city} ${(Prefs.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp)}°${(Prefs.useFahrenheit ? "F" : "C")}` :
+                  `${WeatherService.weather.city} ${(SettingsData.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp)}°${(SettingsData.useFahrenheit ? "F" : "C")}` :
                   ""
             font.pixelSize: Theme.fontSizeMedium
             color: "white"

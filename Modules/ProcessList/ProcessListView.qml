@@ -35,7 +35,7 @@ Column {
             StyledText {
                 text: "Process"
                 font.pixelSize: Theme.fontSizeSmall
-                font.family: Prefs.monoFontFamily
+                font.family: SettingsData.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "name" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
                 opacity: SysMonitorService.sortBy === "name" ? 1 : 0.7
@@ -76,7 +76,7 @@ Column {
             StyledText {
                 text: "CPU"
                 font.pixelSize: Theme.fontSizeSmall
-                font.family: Prefs.monoFontFamily
+                font.family: SettingsData.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "cpu" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
                 opacity: SysMonitorService.sortBy === "cpu" ? 1 : 0.7
@@ -117,7 +117,7 @@ Column {
             StyledText {
                 text: "RAM"
                 font.pixelSize: Theme.fontSizeSmall
-                font.family: Prefs.monoFontFamily
+                font.family: SettingsData.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "memory" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
                 opacity: SysMonitorService.sortBy === "memory" ? 1 : 0.7
@@ -158,7 +158,7 @@ Column {
             StyledText {
                 text: "PID"
                 font.pixelSize: Theme.fontSizeSmall
-                font.family: Prefs.monoFontFamily
+                font.family: SettingsData.monoFontFamily
                 font.weight: SysMonitorService.sortBy === "pid" ? Font.Bold : Font.Medium
                 color: Theme.surfaceText
                 opacity: SysMonitorService.sortBy === "pid" ? 1 : 0.7

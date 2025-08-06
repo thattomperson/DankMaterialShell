@@ -19,13 +19,13 @@ Item {
     function movePinnedApp(fromIndex, toIndex) {
         if (fromIndex === toIndex) return
         
-        var currentPinned = [...Prefs.pinnedApps]
+        var currentPinned = [...SessionData.pinnedApps]
         if (fromIndex < 0 || fromIndex >= currentPinned.length || toIndex < 0 || toIndex >= currentPinned.length) return
         
         var movedApp = currentPinned.splice(fromIndex, 1)[0]
         currentPinned.splice(toIndex, 0, movedApp)
         
-        Prefs.setPinnedApps(currentPinned)
+        SessionData.setPinnedApps(currentPinned)
     }
     
     Row {
@@ -46,7 +46,7 @@ Item {
                     
                     var items = []
                     var runningApps = NiriService.getRunningAppIds()
-                    var pinnedApps = [...Prefs.pinnedApps]
+                    var pinnedApps = [...SessionData.pinnedApps]
                     var addedApps = new Set()
                     
                     pinnedApps.forEach(appId => {
@@ -63,7 +63,7 @@ Item {
                         }
                     })
                     root.pinnedAppCount = pinnedApps.length
-                    var appUsageRanking = Prefs.appUsageRanking || {}
+                    var appUsageRanking = AppUsageHistoryData.appUsageRanking || {}
                     var allUnpinnedApps = []
                     
                     for (var appId in appUsageRanking) {
@@ -151,7 +151,7 @@ Item {
     }
     
     Connections {
-        target: Prefs
+        target: SessionData
         function onPinnedAppsChanged() { dockModel.updateModel() }
     }
 }

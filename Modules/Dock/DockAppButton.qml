@@ -170,7 +170,7 @@ Item {
                     if (appData && appData.appId) {
                         var desktopEntry = DesktopEntries.byId(appData.appId)
                         if (desktopEntry) {
-                            Prefs.addAppUsage({
+                            AppUsageHistoryData.addAppUsage({
                                 id: appData.appId,
                                 name: desktopEntry.name || appData.appId,
                                 icon: desktopEntry.icon || "",
@@ -190,7 +190,7 @@ Item {
                 if (appData && appData.appId) {
                     var desktopEntry = DesktopEntries.byId(appData.appId)
                     if (desktopEntry) {
-                        Prefs.addAppUsage({
+                        AppUsageHistoryData.addAppUsage({
                             id: appData.appId,
                             name: desktopEntry.name || appData.appId,
                             icon: desktopEntry.icon || "",
@@ -225,7 +225,7 @@ Item {
             if (!appData || !appData.appId) return ""
             var desktopEntry = DesktopEntries.byId(appData.appId)
             if (desktopEntry && desktopEntry.icon) {
-                var iconPath = Quickshell.iconPath(desktopEntry.icon, Prefs.iconTheme === "System Default" ? "" : Prefs.iconTheme)
+                var iconPath = Quickshell.iconPath(desktopEntry.icon, SettingsData.iconTheme === "System Default" ? "" : SettingsData.iconTheme)
                 return iconPath
             }
             return ""

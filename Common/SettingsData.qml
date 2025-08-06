@@ -13,12 +13,10 @@ Singleton {
 
     property int themeIndex: 0
     property bool themeIsDynamic: false
-    property bool isLightMode: false
     property real topBarTransparency: 0.75
     property real topBarWidgetTransparency: 0.85
     property real popupTransparency: 0.92
     property real dockTransparency: 1.0
-    property var appUsageRanking: {}
     property bool use24HourClock: true
     property bool useFahrenheit: false
     property bool nightModeEnabled: false
@@ -74,11 +72,7 @@ Singleton {
     property string osLogoColorOverride: ""
     property real osLogoBrightness: 0.5
     property real osLogoContrast: 1.0
-    property string wallpaperPath: ""
     property bool wallpaperDynamicTheming: true
-    property string wallpaperLastPath: ""
-    property string profileLastPath: ""
-    property bool doNotDisturb: false
     property bool weatherEnabled: true
     property string fontFamily: "Inter Variable"
     property string monoFontFamily: "Fira Code"
@@ -86,7 +80,6 @@ Singleton {
     property bool gtkThemingEnabled: false
     property bool qtThemingEnabled: false
     property bool showDock: false
-    property var pinnedApps: []
     property bool dockAutoHide: false
     
     readonly property string defaultFontFamily: "Inter Variable"
@@ -140,12 +133,10 @@ Singleton {
                 var settings = JSON.parse(content);
                 themeIndex = settings.themeIndex !== undefined ? settings.themeIndex : 0;
                 themeIsDynamic = settings.themeIsDynamic !== undefined ? settings.themeIsDynamic : false;
-                isLightMode = settings.isLightMode !== undefined ? settings.isLightMode : false;
                 topBarTransparency = settings.topBarTransparency !== undefined ? (settings.topBarTransparency > 1 ? settings.topBarTransparency / 100 : settings.topBarTransparency) : 0.75;
                 topBarWidgetTransparency = settings.topBarWidgetTransparency !== undefined ? (settings.topBarWidgetTransparency > 1 ? settings.topBarWidgetTransparency / 100 : settings.topBarWidgetTransparency) : 0.85;
                 popupTransparency = settings.popupTransparency !== undefined ? (settings.popupTransparency > 1 ? settings.popupTransparency / 100 : settings.popupTransparency) : 0.92;
                 dockTransparency = settings.dockTransparency !== undefined ? (settings.dockTransparency > 1 ? settings.dockTransparency / 100 : settings.dockTransparency) : 1.0;
-                appUsageRanking = settings.appUsageRanking || {};
                 use24HourClock = settings.use24HourClock !== undefined ? settings.use24HourClock : true;
                 useFahrenheit = settings.useFahrenheit !== undefined ? settings.useFahrenheit : false;
                 nightModeEnabled = settings.nightModeEnabled !== undefined ? settings.nightModeEnabled : false;
@@ -194,18 +185,13 @@ Singleton {
                 osLogoColorOverride = settings.osLogoColorOverride !== undefined ? settings.osLogoColorOverride : "";
                 osLogoBrightness = settings.osLogoBrightness !== undefined ? settings.osLogoBrightness : 0.5;
                 osLogoContrast = settings.osLogoContrast !== undefined ? settings.osLogoContrast : 1.0;
-                wallpaperPath = settings.wallpaperPath !== undefined ? settings.wallpaperPath : "";
                 wallpaperDynamicTheming = settings.wallpaperDynamicTheming !== undefined ? settings.wallpaperDynamicTheming : true;
-                wallpaperLastPath = settings.wallpaperLastPath !== undefined ? settings.wallpaperLastPath : "";
-                profileLastPath = settings.profileLastPath !== undefined ? settings.profileLastPath : "";
-                doNotDisturb = settings.doNotDisturb !== undefined ? settings.doNotDisturb : false;
                 fontFamily = settings.fontFamily !== undefined ? settings.fontFamily : defaultFontFamily;
                 monoFontFamily = settings.monoFontFamily !== undefined ? settings.monoFontFamily : defaultMonoFontFamily;
                 fontWeight = settings.fontWeight !== undefined ? settings.fontWeight : Font.Normal;
                 gtkThemingEnabled = settings.gtkThemingEnabled !== undefined ? settings.gtkThemingEnabled : false;
                 qtThemingEnabled = settings.qtThemingEnabled !== undefined ? settings.qtThemingEnabled : false;
                 showDock = settings.showDock !== undefined ? settings.showDock : false;
-                pinnedApps = settings.pinnedApps !== undefined ? settings.pinnedApps : [];
                 dockAutoHide = settings.dockAutoHide !== undefined ? settings.dockAutoHide : false;
                         applyStoredTheme();
                         detectAvailableIconThemes();
@@ -224,12 +210,10 @@ Singleton {
         settingsFile.setText(JSON.stringify({
             "themeIndex": themeIndex,
             "themeIsDynamic": themeIsDynamic,
-            "isLightMode": isLightMode,
             "topBarTransparency": topBarTransparency,
             "topBarWidgetTransparency": topBarWidgetTransparency,
             "popupTransparency": popupTransparency,
             "dockTransparency": dockTransparency,
-            "appUsageRanking": appUsageRanking,
             "use24HourClock": use24HourClock,
             "useFahrenheit": useFahrenheit,
             "nightModeEnabled": nightModeEnabled,
@@ -264,18 +248,13 @@ Singleton {
             "osLogoColorOverride": osLogoColorOverride,
             "osLogoBrightness": osLogoBrightness,
             "osLogoContrast": osLogoContrast,
-            "wallpaperPath": wallpaperPath,
             "wallpaperDynamicTheming": wallpaperDynamicTheming,
-            "wallpaperLastPath": wallpaperLastPath,
-            "profileLastPath": profileLastPath,
-            "doNotDisturb": doNotDisturb,
             "fontFamily": fontFamily,
             "monoFontFamily": monoFontFamily,
             "fontWeight": fontWeight,
             "gtkThemingEnabled": gtkThemingEnabled,
             "qtThemingEnabled": qtThemingEnabled,
             "showDock": showDock,
-            "pinnedApps": pinnedApps,
             "dockAutoHide": dockAutoHide
         }, null, 2));
     }
@@ -302,12 +281,10 @@ Singleton {
 
     function applyStoredTheme() {
         if (typeof Theme !== "undefined") {
-            Theme.isLightMode = isLightMode;
             Theme.switchTheme(themeIndex, themeIsDynamic, false);
         } else {
             Qt.callLater(() => {
                 if (typeof Theme !== "undefined") {
-                    Theme.isLightMode = isLightMode;
                     Theme.switchTheme(themeIndex, themeIsDynamic, false);
                 }
             });
@@ -320,13 +297,6 @@ Singleton {
         saveSettings();
     }
 
-    function setLightMode(lightMode) {
-        isLightMode = lightMode;
-        if (typeof Theme !== "undefined") {
-            Theme.isLightMode = lightMode;
-        }
-        saveSettings();
-    }
 
     function setTopBarTransparency(transparency) {
         topBarTransparency = transparency;
@@ -348,78 +318,9 @@ Singleton {
         saveSettings();
     }
 
-    function addAppUsage(app) {
-        if (!app)
-            return;
 
-        var appId = app.id || (app.execString || app.exec || "");
-        if (!appId)
-            return;
 
-        var currentRanking = Object.assign({}, appUsageRanking);
-        
-        if (currentRanking[appId]) {
-            currentRanking[appId].usageCount = (currentRanking[appId].usageCount || 1) + 1;
-            currentRanking[appId].lastUsed = Date.now();
-            currentRanking[appId].icon = app.icon || currentRanking[appId].icon || "application-x-executable";
-            currentRanking[appId].name = app.name || currentRanking[appId].name || "";
-        } else {
-            currentRanking[appId] = {
-                "name": app.name || "",
-                "exec": app.execString || app.exec || "",
-                "icon": app.icon || "application-x-executable",
-                "comment": app.comment || "",
-                "usageCount": 1,
-                "lastUsed": Date.now()
-            };
-        }
-        
-        appUsageRanking = currentRanking;
-        saveSettings();
-    }
 
-    function getAppUsageRanking() {
-        return appUsageRanking;
-    }
-
-    function getRankedApps() {
-        var apps = [];
-        for (var appId in appUsageRanking) {
-            var appData = appUsageRanking[appId];
-            apps.push({
-                id: appId,
-                name: appData.name,
-                exec: appData.exec,
-                icon: appData.icon,
-                comment: appData.comment,
-                usageCount: appData.usageCount,
-                lastUsed: appData.lastUsed
-            });
-        }
-        
-        return apps.sort(function(a, b) {
-            if (a.usageCount !== b.usageCount)
-                return b.usageCount - a.usageCount;
-            return a.name.localeCompare(b.name);
-        });
-    }
-
-    function cleanupAppUsageRanking(availableAppIds) {
-        var currentRanking = Object.assign({}, appUsageRanking);
-        var hasChanges = false;
-        
-        for (var appId in currentRanking) {
-            if (availableAppIds.indexOf(appId) === -1) {
-                delete currentRanking[appId];
-                hasChanges = true;
-            }
-        }
-        
-        if (hasChanges) {
-            appUsageRanking = currentRanking;
-            saveSettings();
-        }
-    }
 
     // New preference setters
     function setClockFormat(use24Hour) {
@@ -770,37 +671,14 @@ Singleton {
         saveSettings();
     }
 
-    function setWallpaperPath(path) {
-        wallpaperPath = path;
-        saveSettings();
-        
-        if (wallpaperDynamicTheming && path && typeof Theme !== "undefined") {
-            Theme.switchTheme(themeIndex, true, true);
-        }
-    }
 
     function setWallpaperDynamicTheming(enabled) {
         wallpaperDynamicTheming = enabled;
         saveSettings();
         
-        if (enabled && wallpaperPath && typeof Theme !== "undefined") {
-            Theme.switchTheme(themeIndex, true, true);
-        }
     }
 
-    function setWallpaper(imagePath) {
-        wallpaperPath = imagePath;
-        saveSettings();
-        
-        if (wallpaperDynamicTheming && typeof Colors !== "undefined") {
-            Colors.extractColors();
-        }
-    }
 
-    function setDoNotDisturb(enabled) {
-        doNotDisturb = enabled;
-        saveSettings();
-    }
 
     function setFontFamily(family) {
         fontFamily = family;
@@ -832,30 +710,6 @@ Singleton {
         saveSettings();
     }
 
-    function setPinnedApps(apps) {
-        pinnedApps = apps;
-        pinnedAppsChanged();  // Explicitly emit the signal
-        saveSettings();
-    }
-
-    function addPinnedApp(appId) {
-        if (!appId) return;
-        var currentPinned = [...pinnedApps];
-        if (currentPinned.indexOf(appId) === -1) {
-            currentPinned.push(appId);
-            setPinnedApps(currentPinned);
-        }
-    }
-
-    function removePinnedApp(appId) {
-        if (!appId) return;
-        var currentPinned = pinnedApps.filter(id => id !== appId);
-        setPinnedApps(currentPinned);
-    }
-
-    function isPinnedApp(appId) {
-        return appId && pinnedApps.indexOf(appId) !== -1;
-    }
 
 
     function setDockAutoHide(enabled) {
@@ -942,54 +796,4 @@ Singleton {
         }
     }
 
-    IpcHandler {
-        target: "wallpaper"
-
-        function get(): string {
-            return root.wallpaperPath || ""
-        }
-
-        function set(path: string): string {
-            if (!path) {
-                return "ERROR: No path provided"
-            }
-            
-            var absolutePath = path.startsWith("/") ? path : StandardPaths.writableLocation(StandardPaths.HomeLocation) + "/" + path
-            
-            try {
-                root.setWallpaper(absolutePath)
-                return "SUCCESS: Wallpaper set to " + absolutePath
-            } catch (e) {
-                return "ERROR: Failed to set wallpaper: " + e.toString()
-            }
-        }
-
-        function clear(): string {
-            root.setWallpaper("")
-            return "SUCCESS: Wallpaper cleared"
-        }
-    }
-
-    IpcHandler {
-        target: "theme"
-
-        function toggle(): string {
-            root.setLightMode(!root.isLightMode)
-            return root.isLightMode ? "light" : "dark"
-        }
-
-        function light(): string {
-            root.setLightMode(true)
-            return "light"
-        }
-
-        function dark(): string {
-            root.setLightMode(false)
-            return "dark"  
-        }
-
-        function getMode(): string {
-            return root.isLightMode ? "light" : "dark"
-        }
-    }
 }

@@ -23,9 +23,9 @@ Rectangle {
 
     DankIcon {
         anchors.centerIn: parent
-        name: Prefs.doNotDisturb ? "notifications_off" : "notifications"
+        name: SessionData.doNotDisturb ? "notifications_off" : "notifications"
         size: Theme.iconSize - 6
-        color: Prefs.doNotDisturb ? Theme.error : (notificationArea.containsMouse || root.isActive ? Theme.primary : Theme.surfaceText)
+        color: SessionData.doNotDisturb ? Theme.error : (notificationArea.containsMouse || root.isActive ? Theme.primary : Theme.surfaceText)
     }
 
     Rectangle {

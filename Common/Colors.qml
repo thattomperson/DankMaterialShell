@@ -17,7 +17,7 @@ Singleton {
     readonly property string _configUrl: StandardPaths.writableLocation(StandardPaths.ConfigLocation)
     readonly property string configDir: _configUrl.startsWith("file://") ? _configUrl.substring(7) : _configUrl
     readonly property string shellDir: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Common/", "")
-    readonly property string wallpaperPath: Prefs.wallpaperPath
+    readonly property string wallpaperPath: SessionData.wallpaperPath
     property bool matugenAvailable: false
     property bool gtkThemingEnabled: false
     property bool qtThemingEnabled: false
@@ -71,7 +71,7 @@ Singleton {
 
     function getMatugenColor(path, fallback) {
         colorUpdateTrigger;
-        const colorMode = (typeof Theme !== "undefined" && Theme.isLightMode) ? "light" : "dark";
+        const colorMode = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "light" : "dark";
         let cur = matugenColors && matugenColors.colors && matugenColors.colors[colorMode];
         for (const part of path.split(".")) {
             if (!cur || typeof cur !== "object" || !(part in cur))
@@ -90,8 +90,8 @@ Singleton {
         matugenCheck.running = true;
         checkGtkThemingAvailability();
         checkQtThemingAvailability();
-        if (typeof Theme !== "undefined")
-            Theme.isLightModeChanged.connect(root.onLightModeChanged);
+        if (typeof SessionData !== "undefined")
+            SessionData.isLightModeChanged.connect(root.onLightModeChanged);
     }
 
     Process {
@@ -167,10 +167,10 @@ Singleton {
         generateNiriConfig();
         generateGhosttyConfig();
         
-        if (gtkThemingEnabled && typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) {
+        if (gtkThemingEnabled && typeof SettingsData !== "undefined" && SettingsData.gtkThemingEnabled) {
             generateGtkThemes();
         }
-        if (qtThemingEnabled && typeof Prefs !== "undefined" && Prefs.qtThemingEnabled) {
+        if (qtThemingEnabled && typeof SettingsData !== "undefined" && SettingsData.qtThemingEnabled) {
             generateQtThemes();
         }
     }
@@ -270,10 +270,10 @@ palette = 15=${fg_b}`;
             return;
         }
         
-        const isLight = (typeof Theme !== "undefined" && Theme.isLightMode) ? "true" : "false";
-        const iconTheme = (typeof Prefs !== "undefined" && Prefs.iconTheme) ? Prefs.iconTheme : "System Default";
-        const gtkTheming = (typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) ? "true" : "false";
-        const qtTheming = (typeof Prefs !== "undefined" && Prefs.qtThemingEnabled) ? "true" : "false";
+        const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "true" : "false";
+        const iconTheme = (typeof SettingsData !== "undefined" && SettingsData.iconTheme) ? SettingsData.iconTheme : "System Default";
+        const gtkTheming = (typeof SettingsData !== "undefined" && SettingsData.gtkThemingEnabled) ? "true" : "false";
+        const qtTheming = (typeof SettingsData !== "undefined" && SettingsData.qtThemingEnabled) ? "true" : "false";
         
         systemThemeGenerationInProgress = true;
         systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme, gtkTheming, qtTheming];
@@ -294,10 +294,10 @@ palette = 15=${fg_b}`;
             return;
         }
         
-        const isLight = (typeof Theme !== "undefined" && Theme.isLightMode) ? "true" : "false";
-        const iconTheme = (typeof Prefs !== "undefined" && Prefs.iconTheme) ? Prefs.iconTheme : "System Default";
-        const gtkTheming = (typeof Prefs !== "undefined" && Prefs.gtkThemingEnabled) ? "true" : "false";
-        const qtTheming = (typeof Prefs !== "undefined" && Prefs.qtThemingEnabled) ? "true" : "false";
+        const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "true" : "false";
+        const iconTheme = (typeof SettingsData !== "undefined" && SettingsData.iconTheme) ? SettingsData.iconTheme : "System Default";
+        const gtkTheming = (typeof SettingsData !== "undefined" && SettingsData.gtkThemingEnabled) ? "true" : "false";
+        const qtTheming = (typeof SettingsData !== "undefined" && SettingsData.qtThemingEnabled) ? "true" : "false";
         
         systemThemeRestoreProcess.command = [shellDir + "/generate-themes.sh", "", shellDir, configDir, "restore", isLight, iconTheme, gtkTheming, qtTheming];
         systemThemeRestoreProcess.running = true;

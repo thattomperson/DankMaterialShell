@@ -149,8 +149,8 @@ Singleton {
                         var shouldBeLightMode = (root.systemColorScheme === 2)
                         if (Theme.isLightMode !== shouldBeLightMode) {
                             Theme.isLightMode = shouldBeLightMode
-                            if (typeof Prefs !== "undefined") {
-                                Prefs.setLightMode(shouldBeLightMode)
+                            if (typeof SessionData !== "undefined") {
+                                SessionData.setLightMode(shouldBeLightMode)
                             }
                         }
                     }

@@ -26,11 +26,11 @@ Item {
         DankActionButton {
             id: doNotDisturbButton
 
-            iconName: Prefs.doNotDisturb ? "notifications_off" : "notifications"
-            iconColor: Prefs.doNotDisturb ? Theme.error : Theme.surfaceText
+            iconName: SessionData.doNotDisturb ? "notifications_off" : "notifications"
+            iconColor: SessionData.doNotDisturb ? Theme.error : Theme.surfaceText
             buttonSize: 28
             anchors.verticalCenter: parent.verticalCenter
-            onClicked: Prefs.setDoNotDisturb(!Prefs.doNotDisturb)
+            onClicked: SessionData.setDoNotDisturb(!SessionData.doNotDisturb)
 
             Rectangle {
                 id: doNotDisturbTooltip

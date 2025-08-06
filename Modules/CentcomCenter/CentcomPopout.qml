@@ -227,13 +227,13 @@ PanelWindow {
                     Weather {
                         width: parent.width
                         height: 140
-                        visible: Prefs.weatherEnabled
+                        visible: SettingsData.weatherEnabled
                     }
 
                     SystemInfo {
                         width: parent.width
                         height: 140
-                        visible: !Prefs.weatherEnabled
+                        visible: !SettingsData.weatherEnabled
                     }
 
                 }

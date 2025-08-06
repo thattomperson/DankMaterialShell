@@ -334,9 +334,9 @@ ScrollView {
                         CachingImage {
                             anchors.fill: parent
                             anchors.margins: 1
-                            imagePath: Prefs.wallpaperPath || ""
+                            imagePath: SessionData.wallpaperPath || ""
                             fillMode: Image.PreserveAspectCrop
-                            visible: Prefs.wallpaperPath !== ""
+                            visible: SessionData.wallpaperPath !== ""
                             maxCacheSize: 160
                             layer.enabled: true
 
@@ -365,7 +365,7 @@ ScrollView {
                             name: "image"
                             size: Theme.iconSizeLarge + 8
                             color: Theme.surfaceVariantText
-                            visible: Prefs.wallpaperPath === ""
+                            visible: SessionData.wallpaperPath === ""
                         }
 
                     }
@@ -376,7 +376,7 @@ ScrollView {
                         anchors.verticalCenter: parent.verticalCenter
 
                         StyledText {
-                            text: Prefs.wallpaperPath ? Prefs.wallpaperPath.split('/').pop() : "No wallpaper selected"
+                            text: SessionData.wallpaperPath ? SessionData.wallpaperPath.split('/').pop() : "No wallpaper selected"
                             font.pixelSize: Theme.fontSizeLarge
                             color: Theme.surfaceText
                             elide: Text.ElideMiddle
@@ -384,12 +384,12 @@ ScrollView {
                         }
 
                         StyledText {
-                            text: Prefs.wallpaperPath ? Prefs.wallpaperPath : ""
+                            text: SessionData.wallpaperPath ? SessionData.wallpaperPath : ""
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceVariantText
                             elide: Text.ElideMiddle
                             width: parent.width
-                            visible: Prefs.wallpaperPath !== ""
+                            visible: SessionData.wallpaperPath !== ""
                         }
 
                         Row {
@@ -437,7 +437,7 @@ ScrollView {
                                 height: 32
                                 radius: Theme.cornerRadius
                                 color: Theme.surfaceVariant
-                                opacity: Prefs.wallpaperPath !== "" ? 1 : 0.5
+                                opacity: SessionData.wallpaperPath !== "" ? 1 : 0.5
 
                                 Row {
                                     anchors.centerIn: parent
@@ -461,10 +461,10 @@ ScrollView {
 
                                 MouseArea {
                                     anchors.fill: parent
-                                    enabled: Prefs.wallpaperPath !== ""
+                                    enabled: SessionData.wallpaperPath !== ""
                                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                                     onClicked: {
-                                        Prefs.setWallpaperPath("");
+                                        SessionData.setWallpaper("");
                                     }
                                 }
 
@@ -593,7 +593,7 @@ ScrollView {
             browserType: "wallpaper"
             fileExtensions: ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"]
             onFileSelected: (path) => {
-                Prefs.setWallpaperPath(path);
+                SessionData.setWallpaper(path);
                 visible = false;
             }
             onDialogClosed: {}

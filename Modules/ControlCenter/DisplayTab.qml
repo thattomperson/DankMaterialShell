@@ -88,25 +88,25 @@ ScrollView {
                     width: (parent.width - Theme.spacingM) / 2
                     height: 80
                     radius: Theme.cornerRadius
-                    color: Prefs.nightModeEnabled ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : (nightModeToggle.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08))
-                    border.color: Prefs.nightModeEnabled ? Theme.primary : "transparent"
-                    border.width: Prefs.nightModeEnabled ? 1 : 0
+                    color: SettingsData.nightModeEnabled ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : (nightModeToggle.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08))
+                    border.color: SettingsData.nightModeEnabled ? Theme.primary : "transparent"
+                    border.width: SettingsData.nightModeEnabled ? 1 : 0
 
                     Column {
                         anchors.centerIn: parent
                         spacing: Theme.spacingS
 
                         DankIcon {
-                            name: Prefs.nightModeEnabled ? "nightlight" : "dark_mode"
+                            name: SettingsData.nightModeEnabled ? "nightlight" : "dark_mode"
                             size: Theme.iconSizeLarge
-                            color: Prefs.nightModeEnabled ? Theme.primary : Theme.surfaceText
+                            color: SettingsData.nightModeEnabled ? Theme.primary : Theme.surfaceText
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
 
                         StyledText {
                             text: "Night Mode"
                             font.pixelSize: Theme.fontSizeMedium
-                            color: Prefs.nightModeEnabled ? Theme.primary : Theme.surfaceText
+                            color: SettingsData.nightModeEnabled ? Theme.primary : Theme.surfaceText
                             font.weight: Font.Medium
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
@@ -120,12 +120,12 @@ ScrollView {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            if (Prefs.nightModeEnabled) {
+                            if (SettingsData.nightModeEnabled) {
                                 nightModeDisableProcess.running = true;
-                                Prefs.setNightModeEnabled(false);
+                                SettingsData.setNightModeEnabled(false);
                             } else {
                                 nightModeEnableProcess.running = true;
-                                Prefs.setNightModeEnabled(true);
+                                SettingsData.setNightModeEnabled(true);
                             }
                         }
                     }
@@ -196,7 +196,7 @@ ScrollView {
         onExited: (exitCode) => {
             if (exitCode !== 0) {
                 
-                Prefs.setNightModeEnabled(false);
+                SettingsData.setNightModeEnabled(false);
             }
         }
     }

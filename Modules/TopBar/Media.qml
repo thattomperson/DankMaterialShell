@@ -33,7 +33,7 @@ Rectangle {
             PropertyChanges {
                 target: root
                 opacity: 1
-                width: Prefs.mediaCompactMode ? compactContentWidth : normalContentWidth
+                width: SettingsData.mediaCompactMode ? compactContentWidth : normalContentWidth
             }
 
         },
@@ -100,8 +100,8 @@ Rectangle {
                 id: mediaText
 
                 anchors.verticalCenter: parent.verticalCenter
-                width: Prefs.mediaCompactMode ? 60 : 140
-                visible: !Prefs.mediaCompactMode
+                width: SettingsData.mediaCompactMode ? 60 : 140
+                visible: !SettingsData.mediaCompactMode
                 text: {
                     if (!activePlayer || !activePlayer.trackTitle)
                         return "";

@@ -57,7 +57,7 @@ Singleton {
         onNotification: notif => {
             notif.tracked = true;
 
-            const shouldShowPopup = !root.popupsDisabled && !Prefs.doNotDisturb;
+            const shouldShowPopup = !root.popupsDisabled && !SessionData.doNotDisturb;
             const wrapper = notifComponent.createObject(root, {
                 popup: shouldShowPopup,
                 notification: notif
@@ -226,7 +226,7 @@ Singleton {
     function processQueue() {
         if (addGateBusy) return;
         if (popupsDisabled) return;
-        if (Prefs.doNotDisturb) return;
+        if (SessionData.doNotDisturb) return;
         if (notificationQueue.length === 0) return;
 
         const [next, ...rest] = notificationQueue;
@@ -420,9 +420,9 @@ Singleton {
 
 
     Connections {
-        target: Prefs
+        target: SessionData
         function onDoNotDisturbChanged() {
-            if (Prefs.doNotDisturb) {
+            if (SessionData.doNotDisturb) {
                 // Hide all current popups when DND is enabled
                 for (const notif of visibleNotifications) {
                     notif.popup = false;

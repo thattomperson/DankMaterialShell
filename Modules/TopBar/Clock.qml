@@ -32,7 +32,7 @@ Rectangle {
         spacing: Theme.spacingS
 
         StyledText {
-            text: Prefs.use24HourClock ? Qt.formatTime(root.currentDate, "H:mm") : Qt.formatTime(root.currentDate, "h:mm AP")
+            text: SettingsData.use24HourClock ? Qt.formatTime(root.currentDate, "H:mm") : Qt.formatTime(root.currentDate, "h:mm AP")
             font.pixelSize: Theme.fontSizeMedium - 1
             color: Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter
@@ -43,7 +43,7 @@ Rectangle {
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.outlineButton
             anchors.verticalCenter: parent.verticalCenter
-            visible: !Prefs.clockCompactMode
+            visible: !SettingsData.clockCompactMode
         }
 
         StyledText {
@@ -51,7 +51,7 @@ Rectangle {
             font.pixelSize: Theme.fontSizeMedium - 1
             color: Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter
-            visible: !Prefs.clockCompactMode
+            visible: !SettingsData.clockCompactMode
         }
 
     }

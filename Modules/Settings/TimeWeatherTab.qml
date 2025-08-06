@@ -55,9 +55,9 @@ ScrollView {
                     width: parent.width
                     text: "24-Hour Format"
                     description: "Use 24-hour time format instead of 12-hour AM/PM"
-                    checked: Prefs.use24HourClock
+                    checked: SettingsData.use24HourClock
                     onToggled: (checked) => {
-                        return Prefs.setClockFormat(checked);
+                        return SettingsData.setClockFormat(checked);
                     }
                 }
 
@@ -105,9 +105,9 @@ ScrollView {
                     width: parent.width
                     text: "Enable Weather"
                     description: "Show weather information in top bar and centcom center"
-                    checked: Prefs.weatherEnabled
+                    checked: SettingsData.weatherEnabled
                     onToggled: (checked) => {
-                        return Prefs.setWeatherEnabled(checked);
+                        return SettingsData.setWeatherEnabled(checked);
                     }
                 }
 
@@ -115,10 +115,10 @@ ScrollView {
                     width: parent.width
                     text: "Fahrenheit"
                     description: "Use Fahrenheit instead of Celsius for temperature"
-                    checked: Prefs.useFahrenheit
-                    enabled: Prefs.weatherEnabled
+                    checked: SettingsData.useFahrenheit
+                    enabled: SettingsData.weatherEnabled
                     onToggled: (checked) => {
-                        return Prefs.setTemperatureUnit(checked);
+                        return SettingsData.setTemperatureUnit(checked);
                     }
                 }
 
@@ -126,17 +126,17 @@ ScrollView {
                     width: parent.width
                     text: "Auto Location"
                     description: "Allow wttr.in to determine location based on IP address"
-                    checked: Prefs.useAutoLocation
-                    enabled: Prefs.weatherEnabled
+                    checked: SettingsData.useAutoLocation
+                    enabled: SettingsData.weatherEnabled
                     onToggled: (checked) => {
-                        return Prefs.setAutoLocation(checked);
+                        return SettingsData.setAutoLocation(checked);
                     }
                 }
 
                 Column {
                     width: parent.width
                     spacing: Theme.spacingXS
-                    visible: !Prefs.useAutoLocation && Prefs.weatherEnabled
+                    visible: !SettingsData.useAutoLocation && SettingsData.weatherEnabled
 
                     StyledText {
                         text: "Location"
@@ -147,10 +147,10 @@ ScrollView {
 
                     DankLocationSearch {
                         width: parent.width
-                        currentLocation: Prefs.weatherLocation
+                        currentLocation: SettingsData.weatherLocation
                         placeholderText: "New York, NY"
                         onLocationSelected: (displayName, coordinates) => {
-                            Prefs.setWeatherLocation(displayName, coordinates);
+                            SettingsData.setWeatherLocation(displayName, coordinates);
                         }
                     }
 

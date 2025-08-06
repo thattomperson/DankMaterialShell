@@ -62,11 +62,11 @@ PanelWindow {
     AppLauncher {
         id: appLauncher
 
-        viewMode: Prefs.appLauncherViewMode
+        viewMode: SettingsData.appLauncherViewMode
         gridColumns: 4
         onAppLaunched: appDrawerPopout.hide()
         onViewModeSelected: function(mode) {
-            Prefs.setAppLauncherViewMode(mode);
+            SettingsData.setAppLauncherViewMode(mode);
         }
     }
 
@@ -514,7 +514,7 @@ PanelWindow {
                                     return "push_pin";
 
                                 var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || "";
-                                return Prefs.isPinnedApp(appId) ? "keep_off" : "push_pin";
+                                return SessionData.isPinnedApp(appId) ? "keep_off" : "push_pin";
                             }
                             size: Theme.iconSize - 2
                             color: Theme.surfaceText
@@ -528,7 +528,7 @@ PanelWindow {
                                     return "Pin to Dock";
 
                                 var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || "";
-                                return Prefs.isPinnedApp(appId) ? "Unpin from Dock" : "Pin to Dock";
+                                return SessionData.isPinnedApp(appId) ? "Unpin from Dock" : "Pin to Dock";
                             }
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceText
@@ -549,10 +549,10 @@ PanelWindow {
                                 return ;
 
                             var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || "";
-                            if (Prefs.isPinnedApp(appId))
-                                Prefs.removePinnedApp(appId);
+                            if (SessionData.isPinnedApp(appId))
+                                SessionData.removePinnedApp(appId);
                             else
-                                Prefs.addPinnedApp(appId);
+                                SessionData.addPinnedApp(appId);
                             contextMenu.close();
                         }
                     }

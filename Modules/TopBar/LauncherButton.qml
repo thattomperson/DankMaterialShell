@@ -22,17 +22,17 @@ Rectangle {
     }
 
     SystemLogo {
-        visible: Prefs.useOSLogo
+        visible: SettingsData.useOSLogo
         anchors.centerIn: parent
         width: Theme.iconSize - 3
         height: Theme.iconSize - 3
-        colorOverride: Prefs.osLogoColorOverride
-        brightnessOverride: Prefs.osLogoBrightness
-        contrastOverride: Prefs.osLogoContrast
+        colorOverride: SettingsData.osLogoColorOverride
+        brightnessOverride: SettingsData.osLogoBrightness
+        contrastOverride: SettingsData.osLogoContrast
     }
 
     DankIcon {
-        visible: !Prefs.useOSLogo
+        visible: !SettingsData.useOSLogo
         anchors.centerIn: parent
         name: "apps"
         size: Theme.iconSize - 6

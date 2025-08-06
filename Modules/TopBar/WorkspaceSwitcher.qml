@@ -12,7 +12,7 @@ Rectangle {
     property int currentWorkspace: getDisplayActiveWorkspace()
     property var workspaceList: {
         var baseList = getDisplayWorkspaces();
-        return Prefs.showWorkspacePadding ? padWorkspaces(baseList) : baseList;
+        return SettingsData.showWorkspacePadding ? padWorkspaces(baseList) : baseList;
     }
 
     function padWorkspaces(list) {
@@ -54,7 +54,7 @@ Rectangle {
         return 1;
     }
 
-    width: Prefs.showWorkspacePadding ? Math.max(120, workspaceRow.implicitWidth + Theme.spacingL * 2) : workspaceRow.implicitWidth + Theme.spacingL * 2
+    width: SettingsData.showWorkspacePadding ? Math.max(120, workspaceRow.implicitWidth + Theme.spacingL * 2) : workspaceRow.implicitWidth + Theme.spacingL * 2
     height: 30
     radius: Theme.cornerRadiusLarge
     color: {
@@ -65,7 +65,7 @@ Rectangle {
 
     Connections {
         function onAllWorkspacesChanged() {
-            root.workspaceList = Prefs.showWorkspacePadding ? root.padWorkspaces(root.getDisplayWorkspaces()) : root.getDisplayWorkspaces();
+            root.workspaceList = SettingsData.showWorkspacePadding ? root.padWorkspaces(root.getDisplayWorkspaces()) : root.getDisplayWorkspaces();
             root.currentWorkspace = root.getDisplayActiveWorkspace();
         }
 
@@ -75,7 +75,7 @@ Rectangle {
 
         function onNiriAvailableChanged() {
             if (NiriService.niriAvailable) {
-                root.workspaceList = Prefs.showWorkspacePadding ? root.padWorkspaces(root.getDisplayWorkspaces()) : root.getDisplayWorkspaces();
+                root.workspaceList = SettingsData.showWorkspacePadding ? root.padWorkspaces(root.getDisplayWorkspaces()) : root.getDisplayWorkspaces();
                 root.currentWorkspace = root.getDisplayActiveWorkspace();
             }
         }
@@ -86,10 +86,10 @@ Rectangle {
     Connections {
         function onShowWorkspacePaddingChanged() {
             var baseList = root.getDisplayWorkspaces();
-            root.workspaceList = Prefs.showWorkspacePadding ? root.padWorkspaces(baseList) : baseList;
+            root.workspaceList = SettingsData.showWorkspacePadding ? root.padWorkspaces(baseList) : baseList;
         }
 
-        target: Prefs
+        target: SettingsData
     }
 
     Row {
@@ -127,7 +127,7 @@ Rectangle {
                 }
 
                 StyledText {
-                    visible: Prefs.showWorkspaceIndex
+                    visible: SettingsData.showWorkspaceIndex
                     anchors.centerIn: parent
                     text: isPlaceholder ? sequentialNumber : sequentialNumber
                     color: isActive ? Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.95) : isPlaceholder ? Theme.surfaceTextAlpha : Theme.surfaceTextMedium

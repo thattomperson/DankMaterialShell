@@ -39,9 +39,9 @@ DankModal {
     function getLastPath() {
         var lastPath = "";
         if (browserType === "wallpaper") {
-            lastPath = Prefs.wallpaperLastPath;
+            lastPath = SessionData.wallpaperLastPath;
         } else if (browserType === "profile") {
-            lastPath = Prefs.profileLastPath;
+            lastPath = SessionData.profileLastPath;
         }
         
         if (lastPath && lastPath !== "") {
@@ -52,11 +52,10 @@ DankModal {
     
     function saveLastPath(path) {
         if (browserType === "wallpaper") {
-            Prefs.wallpaperLastPath = path;
+            SessionData.setWallpaperLastPath(path);
         } else if (browserType === "profile") {
-            Prefs.profileLastPath = path;
+            SessionData.setProfileLastPath(path);
         }
-        Prefs.saveSettings();
     }
 
     Component.onCompleted: {

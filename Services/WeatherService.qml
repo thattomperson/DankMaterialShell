@@ -92,13 +92,13 @@ Singleton {
     }
     
     function getWeatherUrl() {
-        if (Prefs.useAutoLocation) {
+        if (SettingsData.useAutoLocation) {
             const url = "wttr.in/?format=j1"
             console.log("Using auto location, URL:", url)
             return url
         }
         
-        const location = Prefs.weatherCoordinates || "40.7128,-74.0060"
+        const location = SettingsData.weatherCoordinates || "40.7128,-74.0060"
         const url = `wttr.in/${encodeURIComponent(location)}?format=j1`
         console.log("Using manual location:", location, "URL:", url)
         return url
@@ -107,7 +107,7 @@ Singleton {
     function addRef() {
         refCount++;
         
-        if (refCount === 1 && !weather.available && Prefs.weatherEnabled) {
+        if (refCount === 1 && !weather.available && SettingsData.weatherEnabled) {
             // Start fetching when first consumer appears and weather is enabled
             fetchWeather();
         }
@@ -120,7 +120,7 @@ Singleton {
     
     function fetchWeather() {
         // Only fetch if someone is consuming the data and weather is enabled
-        if (root.refCount === 0 || !Prefs.weatherEnabled) {
+        if (root.refCount === 0 || !SettingsData.weatherEnabled) {
             
             return;
         }
@@ -246,7 +246,7 @@ Singleton {
     Timer {
         id: updateTimer
         interval: root.updateInterval
-        running: root.refCount > 0 && !IdleService.isIdle && Prefs.weatherEnabled
+        running: root.refCount > 0 && !IdleService.isIdle && SettingsData.weatherEnabled
         repeat: true
         triggeredOnStart: true
         onTriggered: {
@@ -261,7 +261,7 @@ Singleton {
                 console.log("WeatherService: System idle, pausing weather updates")
             } else {
                 console.log("WeatherService: System active, resuming weather updates")
-                if (root.refCount > 0 && !root.weather.available && Prefs.weatherEnabled) {
+                if (root.refCount > 0 && !root.weather.available && SettingsData.weatherEnabled) {
                     // Trigger immediate update when coming back from idle if no data and weather enabled
                     root.fetchWeather()
                 }
@@ -291,7 +291,7 @@ Singleton {
     }
     
     Component.onCompleted: {
-        Prefs.weatherCoordinatesChanged.connect(() => {
+        SettingsData.weatherCoordinatesChanged.connect(() => {
             console.log("Weather location changed, force refreshing weather")
             root.weather = {
                 available: false,
@@ -311,13 +311,13 @@ Singleton {
             root.forceRefresh()
         })
         
-        Prefs.weatherLocationChanged.connect(() => {
+        SettingsData.weatherLocationChanged.connect(() => {
             console.log("Weather location display name changed")
             const currentWeather = Object.assign({}, root.weather)
             root.weather = currentWeather
         })
         
-        Prefs.useAutoLocationChanged.connect(() => {
+        SettingsData.useAutoLocationChanged.connect(() => {
             console.log("Auto location setting changed, force refreshing weather")
             root.weather = {
                 available: false,
@@ -337,12 +337,12 @@ Singleton {
             root.forceRefresh()
         })
         
-        Prefs.weatherEnabledChanged.connect(() => {
-            console.log("Weather enabled setting changed:", Prefs.weatherEnabled)
-            if (Prefs.weatherEnabled && root.refCount > 0 && !root.weather.available) {
+        SettingsData.weatherEnabledChanged.connect(() => {
+            console.log("Weather enabled setting changed:", SettingsData.weatherEnabled)
+            if (SettingsData.weatherEnabled && root.refCount > 0 && !root.weather.available) {
                 // Start fetching when weather is re-enabled
                 root.forceRefresh()
-            } else if (!Prefs.weatherEnabled) {
+            } else if (!SettingsData.weatherEnabled) {
                 // Stop all timers when weather is disabled
                 updateTimer.stop()
                 retryTimer.stop()

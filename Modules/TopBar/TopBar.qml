@@ -18,7 +18,7 @@ PanelWindow {
 
     property var modelData
     property string screenName: modelData.name
-    property real backgroundTransparency: Prefs.topBarTransparency
+    property real backgroundTransparency: SettingsData.topBarTransparency
     readonly property int notificationCount: NotificationService.notifications.length
 
     screen: modelData
@@ -29,7 +29,7 @@ PanelWindow {
         if (fonts.indexOf("Material Symbols Rounded") === -1)
             ToastService.showError("Please install Material Symbols Rounded and Restart your Shell. See README.md for instructions");
 
-        Prefs.forceTopBarLayoutRefresh.connect(function() {
+        SettingsData.forceTopBarLayoutRefresh.connect(function() {
             Qt.callLater(() => {
                 leftSection.visible = false;
                 centerSection.visible = false;
@@ -45,10 +45,10 @@ PanelWindow {
 
     Connections {
         function onTopBarTransparencyChanged() {
-            root.backgroundTransparency = Prefs.topBarTransparency;
+            root.backgroundTransparency = SettingsData.topBarTransparency;
         }
 
-        target: Prefs
+        target: SettingsData
     }
     
     Connections {
@@ -246,7 +246,7 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
 
                 Repeater {
-                    model: Prefs.topBarLeftWidgetsModel
+                    model: SettingsData.topBarLeftWidgetsModel
 
                     Loader {
                         property string widgetId: model.widgetId
@@ -367,7 +367,7 @@ PanelWindow {
                 Repeater {
                     id: centerRepeater
 
-                    model: Prefs.topBarCenterWidgetsModel
+                    model: SettingsData.topBarCenterWidgetsModel
 
                     Loader {
                         property string widgetId: model.widgetId
@@ -401,7 +401,7 @@ PanelWindow {
                         Qt.callLater(centerSection.updateLayout);
                     }
 
-                    target: Prefs.topBarCenterWidgetsModel
+                    target: SettingsData.topBarCenterWidgetsModel
                 }
 
             }
@@ -415,7 +415,7 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
 
                 Repeater {
-                    model: Prefs.topBarRightWidgetsModel
+                    model: SettingsData.topBarRightWidgetsModel
 
                     Loader {
                         property string widgetId: model.widgetId

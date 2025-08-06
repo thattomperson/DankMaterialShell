@@ -29,7 +29,7 @@ Item {
     property var categoryIcons: categories.map((category) => {
         return AppSearchService.getCategoryIcon(category);
     })
-    property var appUsageRanking: Prefs.appUsageRanking
+    property var appUsageRanking: AppUsageHistoryData.appUsageRanking
     property alias model: filteredModel
     property var _watchApplications: AppSearchService.applications
 
@@ -144,7 +144,7 @@ Item {
 
         appData.desktopEntry.execute();
         appLaunched(appData);
-        Prefs.addAppUsage(appData.desktopEntry);
+        AppUsageHistoryData.addAppUsage(appData.desktopEntry);
     }
 
     function setCategory(category) {

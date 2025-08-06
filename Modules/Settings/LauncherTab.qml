@@ -37,16 +37,16 @@ ScrollView {
                     width: parent.width
                     text: "Use OS Logo"
                     description: "Display operating system logo instead of apps icon"
-                    checked: Prefs.useOSLogo
+                    checked: SettingsData.useOSLogo
                     onToggled: (checked) => {
-                        return Prefs.setUseOSLogo(checked);
+                        return SettingsData.setUseOSLogo(checked);
                     }
                 }
 
                 Row {
                     width: parent.width - Theme.spacingL
                     spacing: Theme.spacingL
-                    visible: Prefs.useOSLogo
+                    visible: SettingsData.useOSLogo
                     opacity: visible ? 1 : 0
                     anchors.left: parent.left
                     anchors.leftMargin: Theme.spacingL
@@ -66,7 +66,7 @@ ScrollView {
                             width: 100
                             height: 28
                             placeholderText: "#ffffff"
-                            text: Prefs.osLogoColorOverride
+                            text: SettingsData.osLogoColorOverride
                             maximumLength: 7
                             font.pixelSize: Theme.fontSizeSmall
                             topPadding: Theme.spacingXS
@@ -74,9 +74,9 @@ ScrollView {
                             onEditingFinished: {
                                 var color = text.trim();
                                 if (color === "" || /^#[0-9A-Fa-f]{6}$/.test(color))
-                                    Prefs.setOSLogoColorOverride(color);
+                                    SettingsData.setOSLogoColorOverride(color);
                                 else
-                                    text = Prefs.osLogoColorOverride;
+                                    text = SettingsData.osLogoColorOverride;
                             }
                         }
 
@@ -98,11 +98,11 @@ ScrollView {
                             height: 20
                             minimum: 0
                             maximum: 100
-                            value: Math.round(Prefs.osLogoBrightness * 100)
+                            value: Math.round(SettingsData.osLogoBrightness * 100)
                             unit: "%"
                             showValue: true
                             onSliderValueChanged: (newValue) => {
-                                Prefs.setOSLogoBrightness(newValue / 100);
+                                SettingsData.setOSLogoBrightness(newValue / 100);
                             }
                         }
 
@@ -124,11 +124,11 @@ ScrollView {
                             height: 20
                             minimum: 0
                             maximum: 200
-                            value: Math.round(Prefs.osLogoContrast * 100)
+                            value: Math.round(SettingsData.osLogoContrast * 100)
                             unit: "%"
                             showValue: true
                             onSliderValueChanged: (newValue) => {
-                                Prefs.setOSLogoContrast(newValue / 100);
+                                SettingsData.setOSLogoContrast(newValue / 100);
                             }
                         }
 
@@ -187,9 +187,9 @@ ScrollView {
                     width: parent.width
                     text: "Show Dock"
                     description: "Display a dock at the bottom of the screen with pinned and running applications"
-                    checked: Prefs.showDock
+                    checked: SettingsData.showDock
                     onToggled: (checked) => {
-                        Prefs.setShowDock(checked)
+                        SettingsData.setShowDock(checked)
                     }
                 }
 
@@ -197,11 +197,11 @@ ScrollView {
                     width: parent.width
                     text: "Auto-hide Dock"
                     description: "Hide the dock when not in use and reveal it when hovering near the bottom of the screen"
-                    checked: Prefs.dockAutoHide
-                    visible: Prefs.showDock
+                    checked: SettingsData.dockAutoHide
+                    visible: SettingsData.showDock
                     opacity: visible ? 1 : 0
                     onToggled: (checked) => {
-                        Prefs.setDockAutoHide(checked)
+                        SettingsData.setDockAutoHide(checked)
                     }
 
                     Behavior on opacity {
@@ -215,7 +215,7 @@ ScrollView {
                 Column {
                     width: parent.width
                     spacing: Theme.spacingS
-                    visible: Prefs.showDock
+                    visible: SettingsData.showDock
                     opacity: visible ? 1 : 0
 
                     StyledText {
@@ -228,13 +228,13 @@ ScrollView {
                     DankSlider {
                         width: parent.width
                         height: 24
-                        value: Math.round(Prefs.dockTransparency * 100)
+                        value: Math.round(SettingsData.dockTransparency * 100)
                         minimum: 0
                         maximum: 100
                         unit: ""
                         showValue: true
                         onSliderValueChanged: (newValue) => {
-                            Prefs.setDockTransparency(newValue / 100);
+                            SettingsData.setDockTransparency(newValue / 100);
                         }
                     }
 
@@ -262,8 +262,8 @@ ScrollView {
 
                 property var rankedAppsModel: {
                     var apps = [];
-                    for (var appId in Prefs.appUsageRanking) {
-                        var appData = Prefs.appUsageRanking[appId];
+                    for (var appId in AppUsageHistoryData.appUsageRanking) {
+                        var appData = AppUsageHistoryData.appUsageRanking[appId];
                         apps.push({
                             "id": appId,
                             "name": appData.name,
@@ -320,9 +320,9 @@ ScrollView {
                         hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
                         anchors.verticalCenter: parent.verticalCenter
                         onClicked: {
-                            Prefs.appUsageRanking = {
+                            AppUsageHistoryData.appUsageRanking = {
                             };
-                            Prefs.saveSettings();
+                            SettingsData.saveSettings();
                         }
                     }
 
@@ -438,10 +438,10 @@ ScrollView {
                                 hoverColor: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
                                 onClicked: {
                                     var currentRanking = Object.assign({
-                                    }, Prefs.appUsageRanking);
+                                    }, AppUsageHistoryData.appUsageRanking);
                                     delete currentRanking[modelData.id];
-                                    Prefs.appUsageRanking = currentRanking;
-                                    Prefs.saveSettings();
+                                    AppUsageHistoryData.appUsageRanking = currentRanking;
+                                    SettingsData.saveSettings();
                                 }
                             }
 

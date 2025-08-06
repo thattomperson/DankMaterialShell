@@ -89,7 +89,7 @@ ListView {
                     id: iconImg
 
                     anchors.fill: parent
-                    source: (model.icon) ? Quickshell.iconPath(model.icon, Prefs.iconTheme === "System Default" ? "" : Prefs.iconTheme) : ""
+                    source: (model.icon) ? Quickshell.iconPath(model.icon, SettingsData.iconTheme === "System Default" ? "" : SettingsData.iconTheme) : ""
                     smooth: true
                     asynchronous: true
                     visible: status === Image.Ready

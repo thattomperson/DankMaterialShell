@@ -67,7 +67,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
 
                     StyledText {
-                        text: (Prefs.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp) + "°" + (Prefs.useFahrenheit ? "F" : "C")
+                        text: (SettingsData.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp) + "°" + (SettingsData.useFahrenheit ? "F" : "C")
                         font.pixelSize: Theme.fontSizeXLarge
                         color: Theme.surfaceText
                         font.weight: Font.Light
@@ -78,7 +78,7 @@ Rectangle {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 if (WeatherService.weather.available)
-                                    Prefs.setTemperatureUnit(!Prefs.useFahrenheit);
+                                    SettingsData.setTemperatureUnit(!SettingsData.useFahrenheit);
 
                             }
                             enabled: WeatherService.weather.available
