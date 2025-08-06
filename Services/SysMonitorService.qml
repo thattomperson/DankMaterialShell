@@ -285,8 +285,8 @@ Singleton {
                     "pid": proc.pid,
                     "ppid": proc.ppid,
                     "cpu": proc.cpu,
-                    "memoryPercent": proc.memoryPercent,
-                    "memoryKB": proc.memoryKB,
+                    "memoryPercent": proc.pssPercent ?? proc.memoryPercent,
+                    "memoryKB": proc.pssKB ?? proc.memoryKB,
                     "command": proc.command,
                     "fullCommand": proc.fullCommand,
                     "displayName": proc.command.length > 15 ? proc.command.substring(0, 15) + "..." : proc.command
@@ -404,6 +404,18 @@ read -r MT MF MA BU CA SH ST SF <<< "$mem_line"
 printf '"memory":{"total":%d,"free":%d,"available":%d,"buffers":%d,"cached":%d,"shared":%d,"swaptotal":%d,"swapfree":%d},' \\
        "$MT" "$MF" "$MA" "$BU" "$CA" "$SH" "$ST" "$SF"
 
+# Get pss per pid
+get_pss_kb() {
+  local pid="$1"
+  if [ -r "/proc/$pid/smaps_rollup" ]; then
+    awk '/^Pss:/{print $2; exit}' "/proc/$pid/smaps_rollup"
+  elif [ -r "/proc/$pid/smaps" ]; then
+    awk '/^Pss:/{t+=$2} END{print t+0}' "/proc/$pid/smaps"
+  else
+    echo 0
+  fi
+}
+
 cpu_count=$(nproc)
 cpu_model=$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ *//' | json_escape || echo 'Unknown')
 cpu_freq=$(awk -F: '/cpu MHz/{gsub(/ /,"",$2);print $2;exit}' /proc/cpuinfo || echo 0)
@@ -463,7 +475,7 @@ printf '],'
 printf '"processes":['
 case "$sort_key" in
     cpu)    SORT_OPT="--sort=-pcpu" ;;
-    memory) SORT_OPT="--sort=-pmem" ;; 
+    memory) SORT_OPT="--sort=-pmem" ;;
     name)   SORT_OPT="--sort=+comm" ;;
     pid)    SORT_OPT="--sort=+pid" ;;
     *)      SORT_OPT="--sort=-pcpu" ;;
@@ -471,14 +483,29 @@ esac
 
 tmp_ps=$(mktemp)
 ps -eo pid,ppid,pcpu,pmem,rss,comm,cmd --no-headers $SORT_OPT | head -n "$max_procs" > "$tmp_ps" || true
+
 pfirst=1
-while IFS=' ' read -r pid ppid cpu memp memk comm rest; do
-    [ -z "$pid" ] && continue
-    cmd=$(printf "%s" "$rest" | json_escape)
-    [ $pfirst -eq 1 ] || printf ","
-    printf '{"pid":%s,"ppid":%s,"cpu":%s,"memoryPercent":%s,"memoryKB":%s,"command":"%s","fullCommand":"%s"}' \\
-           "$pid" "$ppid" "$cpu" "$memp" "$memk" "$comm" "$cmd"
-    pfirst=0
+while IFS=' ' read -r pid ppid cpu pmem_rss rss_kib comm rest; do
+  [ -z "$pid" ] && continue
+
+  # Optionally skip kernel threads / empty RSS lines (uncomment to filter)
+  # [ "$rss_kib" -eq 0 ] && continue
+
+  pss_kib=$(get_pss_kb "$pid" 2>/dev/null || true)
+  # Force numeric default if empty or non-numeric
+  case "$pss_kib" in (''|*[!0-9]*) pss_kib=0 ;; esac
+
+  # PSS-based percent (locale-safe)
+  pss_pct=$(LC_ALL=C awk -v p="$pss_kib" -v t="$MT" 'BEGIN{if(t>0) printf "%.2f", (100*p)/t; else printf "0.00"}')
+
+  # Build full command; escape both fields
+  cmd=$(printf "%s %s" "$comm" "\${rest:-}" | json_escape)
+  comm_esc=$(printf "%s" "$comm" | json_escape)
+
+  [ "$pfirst" -eq 1 ] || printf ","
+  printf '{"pid":%s,"ppid":%s,"cpu":%s,"memoryPercent":%s,"memoryKB":%s,"pssKB":%s,"pssPercent":%s,"command":"%s","fullCommand":"%s"}' \
+         "$pid" "$ppid" "$cpu" "$pss_pct" "$rss_kib" "$pss_kib" "$pss_pct" "$comm_esc" "$cmd"
+  pfirst=0
 done < "$tmp_ps"
 rm -f "$tmp_ps"
 printf '],'
