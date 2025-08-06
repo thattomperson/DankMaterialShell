@@ -41,7 +41,7 @@ Singleton {
         running: false
         onExited: (exitCode) => {
             if (exitCode !== 0) {
-                
+
                 root.username = "User";
                 root.fullName = "User";
                 root.hostname = "System";
@@ -55,7 +55,7 @@ Singleton {
                     root.username = parts[0] || "";
                     root.fullName = parts[1] || parts[0] || "";
                     root.hostname = parts[2] || "";
-                    
+
                 }
             }
         }
@@ -66,20 +66,35 @@ Singleton {
     Process {
         id: uptimeProcess
 
-        command: ["bash", "-c", "uptime -p | sed 's/up //'"]
+        command: ["cat", "/proc/uptime"]
         running: false
+
         onExited: (exitCode) => {
             if (exitCode !== 0) {
-                
                 root.uptime = "Unknown";
             }
         }
 
         stdout: StdioCollector {
             onStreamFinished: {
-                root.uptime = text.trim() || "Unknown";
+                const seconds = parseInt(text.split(" ")[0]);
+                const days = Math.floor(seconds / 86400);
+                const hours = Math.floor((seconds % 86400) / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+
+                const parts = [];
+                if (days > 0)
+                    parts.push(`${days} day${days === 1 ? "" : "s"}`);
+                if (hours > 0)
+                    parts.push(`${hours} hour${hours === 1 ? "" : "s"}`);
+                if (minutes > 0)
+                    parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+
+                if (parts.length > 0)
+                    root.uptime = "up " + parts.join(", ");
+                else
+                    root.uptime = `up ${seconds} seconds`;
             }
         }
-
-    } 
+    }
 }
