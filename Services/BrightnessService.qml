@@ -16,7 +16,9 @@ Singleton {
     property int currentRawBrightness: 0
     property bool brightnessInitialized: false
     
-    function setBrightness(percentage) {
+    signal brightnessChanged()
+    
+    function setBrightnessInternal(percentage) {
         brightnessLevel = Math.max(1, Math.min(100, percentage));
         
         if (laptopBacklightAvailable) {
@@ -26,6 +28,11 @@ Singleton {
             
             Quickshell.execDetached(["ddcutil", "setvcp", "10", brightnessLevel.toString()]);
         }
+    }
+    
+    function setBrightness(percentage) {
+        setBrightnessInternal(percentage);
+        brightnessChanged();
     }
     
     Component.onCompleted: {
@@ -141,6 +148,53 @@ Singleton {
                     console.warn("BrightnessService: DDC brightness read failed:", exitCode);
                 }
             }
+        }
+    }
+    
+    // IPC Handler for external control
+    IpcHandler {
+        target: "brightness"
+
+        function set(percentage: string): string {
+            if (!root.brightnessAvailable) {
+                return "Brightness control not available";
+            }
+            
+            const value = parseInt(percentage);
+            const clampedValue = Math.max(1, Math.min(100, value));
+            root.setBrightness(clampedValue);
+            return "Brightness set to " + clampedValue + "%";
+        }
+
+        function increment(step: string): string {
+            if (!root.brightnessAvailable) {
+                return "Brightness control not available";
+            }
+            
+            const currentLevel = root.brightnessLevel;
+            const newLevel = Math.max(1, Math.min(100, currentLevel + parseInt(step || "10")));
+            root.setBrightness(newLevel);
+            return "Brightness increased to " + newLevel + "%";
+        }
+
+        function decrement(step: string): string {
+            if (!root.brightnessAvailable) {
+                return "Brightness control not available";
+            }
+            
+            const currentLevel = root.brightnessLevel;
+            const newLevel = Math.max(1, Math.min(100, currentLevel - parseInt(step || "10")));
+            root.setBrightness(newLevel);
+            return "Brightness decreased to " + newLevel + "%";
+        }
+
+        function status(): string {
+            if (!root.brightnessAvailable) {
+                return "Brightness control not available";
+            }
+            
+            return "Brightness: " + root.brightnessLevel + "% (" + 
+                   (root.laptopBacklightAvailable ? "laptop backlight" : "DDC") + ")";
         }
     }
 }

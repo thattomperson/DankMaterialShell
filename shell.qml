@@ -189,4 +189,22 @@ ShellRoot {
 
     }
 
+    Variants {
+        model: Quickshell.screens
+
+        delegate: MicMutePopup {
+            modelData: item
+        }
+
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        delegate: BrightnessPopup {
+            modelData: item
+        }
+
+    }
+
 }

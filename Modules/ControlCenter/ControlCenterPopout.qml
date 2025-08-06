@@ -711,7 +711,7 @@ PanelWindow {
                             interval: BrightnessService.ddcAvailable ? 500 : 50
                             repeat: false
                             onTriggered: {
-                                BrightnessService.setBrightness(pendingValue);
+                                BrightnessService.setBrightnessInternal(pendingValue);
                             }
                         }
 
@@ -745,7 +745,7 @@ PanelWindow {
                                 }
                                 onSliderDragFinished: function(finalValue) {
                                     parent.parent.brightnessDebounceTimer.stop();
-                                    BrightnessService.setBrightness(finalValue);
+                                    BrightnessService.setBrightnessInternal(finalValue);
                                 }
                             }
 

@@ -46,7 +46,7 @@ Column {
             let leftIconItem = volumeSlider.children[0].children[0];
             if (leftIconItem) {
                 let mouseArea = Qt.createQmlObject(
-                    'import QtQuick 2.15; MouseArea { anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { if (AudioService.sink && AudioService.sink.audio) AudioService.sink.audio.muted = !AudioService.sink.audio.muted; } }',
+                    'import QtQuick; import qs.Services; MouseArea { anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { if (AudioService.sink && AudioService.sink.audio) AudioService.sink.audio.muted = !AudioService.sink.audio.muted; } }',
                     leftIconItem,
                     "dynamicMouseArea"
                 );

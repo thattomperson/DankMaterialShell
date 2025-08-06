@@ -169,6 +169,10 @@ Add to your niri config
 spawn-at-startup "qs" "-c" "DankMaterialShell"
 
 // Dank keybinds
+// 1. These should not be in conflict with any pre-existing keybindings
+// 2. You need to merge them with your existing config if you want to use these
+// 3. You can change the keys to whatever you want, if you prefer something different
+// 4. For the increment/decrement ones you can change the steps to whatever you like too
 binds {
    Mod+Space hotkey-overlay-title="Application Launcher" {
       spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "spotlight" "toggle";
@@ -197,6 +201,12 @@ binds {
    XF86AudioMicMute allow-when-locked=true {
       spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "audio" "micmute";
    }
+   XF86MonBrightnessUp allow-when-locked=true {
+      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "brightness" "increment" "5";
+   }
+   XF86MonBrightnessDown allow-when-locked=true {
+      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "brightness" "decrement" "5";
+   }  
 }
 ```
 

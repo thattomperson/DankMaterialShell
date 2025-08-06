@@ -13,6 +13,7 @@ Singleton {
     readonly property PwNode source: Pipewire.defaultAudioSource
     
     signal volumeChanged()
+    signal micMuteChanged()
 
     function displayName(node) {
         if (!node) return ""
@@ -137,7 +138,9 @@ Singleton {
         }
 
         function mute(): string {
-            return root.toggleMute();
+            const result = root.toggleMute();
+            root.volumeChanged();
+            return result;
         }
 
         function setmic(percentage: string): string {
@@ -145,7 +148,9 @@ Singleton {
         }
 
         function micmute(): string {
-            return root.toggleMicMute();
+            const result = root.toggleMicMute();
+            root.micMuteChanged();
+            return result;
         }
 
         function status(): string {

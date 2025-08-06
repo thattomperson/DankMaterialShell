@@ -20,7 +20,7 @@ ScrollView {
         repeat: false
         onTriggered: {
             
-            BrightnessService.setBrightness(pendingValue);
+            BrightnessService.setBrightnessInternal(pendingValue);
         }
     }
 
@@ -55,7 +55,7 @@ ScrollView {
                 onSliderDragFinished: function(finalValue) {
                     
                     brightnessDebounceTimer.stop();
-                    BrightnessService.setBrightness(finalValue);
+                    BrightnessService.setBrightnessInternal(finalValue);
                 }
             }
 
