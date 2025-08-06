@@ -1,6 +1,6 @@
 ---
 name: Request a Feature
-about: Request a New Feature
+about: New widgets, new widget behavior, etc.
 title: ""
 labels: "enhancement"
 assignees: ""

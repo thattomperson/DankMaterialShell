@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report bugs with DankMaterialShell
+about: Crashes or unexpected behaviors
 title: ""
 labels: "bug"
 assignees: ""

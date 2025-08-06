@@ -1,6 +1,6 @@
 ---
 name: Request Assistance or Support
-about: Request help with installation, usage, or general questions.
+about: Help with installation, usage, or general questions.
 title: ""
 labels: "support"
 assignees: ""
