@@ -45,7 +45,7 @@ PanelWindow {
     }
 
     visible: batteryPopupVisible
-    screen: triggerScreen || Screen
+    screen: triggerScreen
     implicitWidth: 400
     implicitHeight: 300
     WlrLayershell.layer: WlrLayershell.Overlay

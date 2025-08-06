@@ -49,7 +49,7 @@ PanelWindow {
     }
 
     visible: isVisible
-    screen: triggerScreen || Screen
+    screen: triggerScreen
     implicitWidth: 600
     implicitHeight: 600
     WlrLayershell.layer: WlrLayershell.Overlay

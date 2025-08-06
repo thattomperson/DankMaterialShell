@@ -50,7 +50,7 @@ PanelWindow {
     WlrLayershell.namespace: "quickshell-launcher"
     visible: isVisible
     color: "transparent"
-    screen: triggerScreen || Screen
+    screen: triggerScreen
 
     anchors {
         top: true

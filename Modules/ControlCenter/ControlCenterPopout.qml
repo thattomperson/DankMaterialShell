@@ -35,7 +35,7 @@ PanelWindow {
     signal lockRequested()
 
     visible: controlCenterVisible
-    screen: triggerScreen || Screen
+    screen: triggerScreen
     onVisibleChanged: {
         NetworkService.autoRefreshEnabled = visible && NetworkService.wifiEnabled;
         if (!visible && BluetoothService.adapter && BluetoothService.adapter.discovering)

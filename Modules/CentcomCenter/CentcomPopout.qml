@@ -30,7 +30,7 @@ PanelWindow {
     }
 
     visible: internalVisible
-    screen: triggerScreen || Screen
+    screen: triggerScreen
     onCalendarVisibleChanged: {
         if (calendarVisible) {
             internalVisible = true;
