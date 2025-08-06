@@ -7,6 +7,9 @@ Rectangle {
     id: root
 
     property bool isActive: false
+    property string section: "right"
+    property var popupTarget: null
+    property var parentScreen: null
 
     signal clicked()
 
@@ -118,6 +121,13 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
+            if (popupTarget && popupTarget.setTriggerPosition) {
+                var globalPos = mapToGlobal(0, 0);
+                var currentScreen = parentScreen || Screen;
+                var screenX = currentScreen.x || 0;
+                var relativeX = globalPos.x - screenX;
+                popupTarget.setTriggerPosition(relativeX, Theme.barHeight + Theme.spacingXS, width, section, currentScreen);
+            }
             root.clicked();
         }
     }

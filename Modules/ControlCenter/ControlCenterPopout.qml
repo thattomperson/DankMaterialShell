@@ -18,6 +18,18 @@ PanelWindow {
     property string currentTab: "network"
     property bool powerOptionsExpanded: false
     property var triggerScreen: null
+    property real triggerX: Screen.width - 600 - Theme.spacingL
+    property real triggerY: Theme.barHeight + Theme.spacingXS
+    property real triggerWidth: 80
+    property string triggerSection: "right"
+
+    function setTriggerPosition(x, y, width, section, screen) {
+        triggerX = x;
+        triggerY = y;
+        triggerWidth = width;
+        triggerSection = section;
+        triggerScreen = screen;
+    }
 
     signal powerActionRequested(string action, string title, string message)
     signal lockRequested()
@@ -50,14 +62,32 @@ PanelWindow {
     Loader {
         id: contentLoader
 
-        readonly property real targetWidth: Math.min(600, (root.screen ? root.screen.width : Screen.width) - Theme.spacingL * 2)
+        readonly property real screenWidth: root.screen ? root.screen.width : Screen.width
+        readonly property real screenHeight: root.screen ? root.screen.height : Screen.height
+        readonly property real targetWidth: Math.min(600, screenWidth - Theme.spacingL * 2)
 
         asynchronous: true
         active: controlCenterVisible
         width: targetWidth
         height: root.powerOptionsExpanded ? 570 : 500
         y: Theme.barHeight + Theme.spacingXS
-        x: Math.max(Theme.spacingL, (root.screen ? root.screen.width : Screen.width) - targetWidth - Theme.spacingL)
+        x: {
+            var centerX = root.triggerX + (root.triggerWidth / 2) - (targetWidth / 2);
+            
+            if (centerX >= Theme.spacingM && centerX + targetWidth <= screenWidth - Theme.spacingM) {
+                return centerX;
+            }
+            
+            if (centerX < Theme.spacingM) {
+                return Theme.spacingM;
+            }
+            
+            if (centerX + targetWidth > screenWidth - Theme.spacingM) {
+                return screenWidth - targetWidth - Theme.spacingM;
+            }
+            
+            return centerX;
+        }
         opacity: controlCenterVisible ? 1 : 0
         scale: controlCenterVisible ? 1 : 0.9
 

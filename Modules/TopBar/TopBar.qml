@@ -678,6 +678,14 @@ PanelWindow {
 
                 ControlCenterButton {
                     isActive: controlCenterPopout.controlCenterVisible
+                    section: {
+                        if (parent && parent.parent === leftSection) return "left";
+                        if (parent && parent.parent === rightSection) return "right";
+                        if (parent && parent.parent === centerSection) return "center";
+                        return "right";
+                    }
+                    popupTarget: controlCenterPopout
+                    parentScreen: root.screen
                     onClicked: {
                         controlCenterPopout.triggerScreen = root.screen;
                         controlCenterPopout.controlCenterVisible = !controlCenterPopout.controlCenterVisible;
