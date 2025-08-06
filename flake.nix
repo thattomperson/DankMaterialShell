@@ -3,10 +3,12 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    quickshell.url = "git+https://git.outfoxxed.me/quickshell/quickshell";
+    quickshell.inputs.nixpkgs.follows = "nixpkgs";
     # home-manager.url = "github:nix-community/home-manager";
   };
 
-  outputs = { self, nixpkgs, home-manager }:
+  outputs = { self, nixpkgs, ... }:
     let pkgs = nixpkgs.legacyPackages.x86_64-linux;
     in {
 
@@ -41,45 +43,54 @@
             enable = pkgs.lib.mkEnableOption "DankMaterialShell";
             enableKeybinds =
               pkgs.lib.mkEnableOption "DankMaterialShell Niri keybinds";
+            enableSystemd =
+              pkgs.lib.mkEnableOption "DankMaterialShell systemd startup";
           };
 
-          programs.quickshell.enable = pkgs.lib.mkIf cfg.enable true;
+          config.programs.quickshell.enable = pkgs.lib.mkIf cfg.enable true;
 
-          programs.quickshell.configs.DankMaterialShell =
-            pkgs.lib.mkIf cfg.enableKeybinds
-            "${outputs.packages.x86_64-linux.dankMaterialShell}/etc/xdg/quickshell/DankMaterialShell";
+          config.programs.quickshell.configs.DankMaterialShell =
+            pkgs.lib.mkIf cfg.enable
+            "${self.outputs.packages.x86_64-linux.dankMaterialShell}/etc/xdg/quickshell/DankMaterialShell";
 
-          programs.quickshell.activeConfig =
-            pkgs.lib.mkIf cfg.enable "DankMaterialShell";
+          config.programs.quickshell.package = pkgs.lib.mkIf cfg.enable
+            self.inputs.quickshell.packages.x86_64-linux.quickshell;
 
-          programs.niri.settings.input.binds = pkgs.lib.mkIf cfg.enableKeybinds
+          config.programs.quickshell.activeConfig =
+            pkgs.lib.mkIf cfg.enableSystemd "DankMaterialShell";
+          config.programs.quickshell.systemd.enable =
+            pkgs.lib.mkIf cfg.enableSystemd true;
+          config.programs.quickshell.systemd.target =
+            pkgs.lib.mkIf cfg.enableSystemd "graphical-session.target";
+
+          config.programs.niri.settings.binds = pkgs.lib.mkIf cfg.enableKeybinds
             (with config.lib.niri.actions; {
               "Mod+Space" = {
-                hotkey-overlay-title = "Application Launcher";
+                hotkey-overlay.title = "Application Launcher";
                 action =
                   spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "spotlight"
                   "toggle";
               };
               "Mod+V" = {
-                hotkey-overlay-title = "Clipboard Manager";
+                hotkey-overlay.title = "Clipboard Manager";
                 action =
                   spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "clipboard"
                   "toggle";
               };
               "Mod+M" = {
-                hotkey-overlay-title = "Task Manager";
+                hotkey-overlay.title = "Task Manager";
                 action =
                   spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "processlist"
                   "toggle";
               };
               "Mod+Comma" = {
-                hotkey-overlay-title = "Settings";
+                hotkey-overlay.title = "Settings";
                 action =
                   spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "settings"
                   "toggle";
               };
               "Super+Alt+L" = {
-                hotkey-overlay-title = "Lock Screen";
+                hotkey-overlay.title = "Lock Screen";
                 action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "lock"
                   "lock";
               };
@@ -108,8 +119,24 @@
                   "micmute";
               };
             });
-          programs.niri.settings.spawn-at-startup =
-            [{ command = "qs" "-c" "DankMaterialShell"; }];
+
+          config.home.packages = pkgs.lib.mkIf cfg.enable (with pkgs; [
+            material-symbols
+            inter
+            fira-code
+            cava
+            wl-clipboard
+            cliphist
+            ddcutil
+            libsForQt5.qt5ct
+            kdePackages.qt6ct
+            matugen
+          ]);
+
+          config.programs.niri.settings.spawn-at-startup =
+            pkgs.lib.mkIf (cfg.enable && !cfg.enableSystemd) [{
+              command = [ "qs" "-c" "DankMaterialShell" ];
+            }];
         };
     };
 }
