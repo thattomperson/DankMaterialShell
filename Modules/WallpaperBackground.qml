@@ -6,7 +6,7 @@ import qs.Common
 import qs.Widgets
 
 LazyLoader {
-    active: Prefs.wallpaperPath !== ""
+    active: SessionData.wallpaperPath !== ""
 
     Variants {
         model: Quickshell.screens
@@ -32,7 +32,7 @@ LazyLoader {
                 id: root
                 anchors.fill: parent
 
-                property string source: Prefs.wallpaperPath || ""
+                property string source: SessionData.wallpaperPath || ""
                 property Image current: one
 
                 onSourceChanged: {

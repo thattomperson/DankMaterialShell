@@ -763,9 +763,9 @@ PanelWindow {
                             width: parent.width
                             text: "Night Mode"
                             description: "Apply warm color temperature to reduce eye strain"
-                            checked: Prefs.nightModeEnabled
+                            checked: SettingsData.nightModeEnabled
                             onToggled: (checked) => {
-                                Prefs.setNightModeEnabled(checked);
+                                SettingsData.setNightModeEnabled(checked);
                             }
                         }
 
@@ -773,9 +773,9 @@ PanelWindow {
                             width: parent.width
                             text: "Light Mode"
                             description: "Use light theme instead of dark theme"
-                            checked: Prefs.isLightMode
+                            checked: SessionData.isLightMode
                             onToggled: (checked) => {
-                                Prefs.setLightMode(checked);
+                                SessionData.setLightMode(checked);
                                 Theme.isLightMode = checked;
                                 PortalService.setLightMode(checked);
                             }

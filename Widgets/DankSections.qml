@@ -141,14 +141,14 @@ Column {
                                 id: compactModeButton
                                 anchors.fill: parent
                                 buttonSize: 32
-                                iconName: (modelData.id === "clock" && Prefs.clockCompactMode) || (modelData.id === "music" && Prefs.mediaCompactMode) ? "zoom_out" : "zoom_in"
+                                iconName: (modelData.id === "clock" && SettingsData.clockCompactMode) || (modelData.id === "music" && SettingsData.mediaCompactMode) ? "zoom_out" : "zoom_in"
                                 iconSize: 18
-                                iconColor: ((modelData.id === "clock" && Prefs.clockCompactMode) || (modelData.id === "music" && Prefs.mediaCompactMode)) ? Theme.primary : Theme.outline
+                                iconColor: ((modelData.id === "clock" && SettingsData.clockCompactMode) || (modelData.id === "music" && SettingsData.mediaCompactMode)) ? Theme.primary : Theme.outline
                                 onClicked: {
                                     if (modelData.id === "clock") {
-                                        root.compactModeChanged("clock", !Prefs.clockCompactMode);
+                                        root.compactModeChanged("clock", !SettingsData.clockCompactMode);
                                     } else if (modelData.id === "music") {
-                                        root.compactModeChanged("music", !Prefs.mediaCompactMode);
+                                        root.compactModeChanged("music", !SettingsData.mediaCompactMode);
                                     }
                                 }
                             }

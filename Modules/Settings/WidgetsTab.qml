@@ -141,54 +141,54 @@ ScrollView {
 
         var widgets = [];
         if (targetSection === "left") {
-            widgets = Prefs.topBarLeftWidgets.slice();
+            widgets = SettingsData.topBarLeftWidgets.slice();
             widgets.push(widgetObj);
-            Prefs.setTopBarLeftWidgets(widgets);
+            SettingsData.setTopBarLeftWidgets(widgets);
         } else if (targetSection === "center") {
-            widgets = Prefs.topBarCenterWidgets.slice();
+            widgets = SettingsData.topBarCenterWidgets.slice();
             widgets.push(widgetObj);
-            Prefs.setTopBarCenterWidgets(widgets);
+            SettingsData.setTopBarCenterWidgets(widgets);
         } else if (targetSection === "right") {
-            widgets = Prefs.topBarRightWidgets.slice();
+            widgets = SettingsData.topBarRightWidgets.slice();
             widgets.push(widgetObj);
-            Prefs.setTopBarRightWidgets(widgets);
+            SettingsData.setTopBarRightWidgets(widgets);
         }
     }
 
     function removeWidgetFromSection(sectionId, itemId) {
         var widgets = [];
         if (sectionId === "left") {
-            widgets = Prefs.topBarLeftWidgets.slice();
+            widgets = SettingsData.topBarLeftWidgets.slice();
             widgets = widgets.filter((widget) => {
                 var widgetId = typeof widget === "string" ? widget : widget.id;
                 return widgetId !== itemId;
             });
-            Prefs.setTopBarLeftWidgets(widgets);
+            SettingsData.setTopBarLeftWidgets(widgets);
         } else if (sectionId === "center") {
-            widgets = Prefs.topBarCenterWidgets.slice();
+            widgets = SettingsData.topBarCenterWidgets.slice();
             widgets = widgets.filter((widget) => {
                 var widgetId = typeof widget === "string" ? widget : widget.id;
                 return widgetId !== itemId;
             });
-            Prefs.setTopBarCenterWidgets(widgets);
+            SettingsData.setTopBarCenterWidgets(widgets);
         } else if (sectionId === "right") {
-            widgets = Prefs.topBarRightWidgets.slice();
+            widgets = SettingsData.topBarRightWidgets.slice();
             widgets = widgets.filter((widget) => {
                 var widgetId = typeof widget === "string" ? widget : widget.id;
                 return widgetId !== itemId;
             });
-            Prefs.setTopBarRightWidgets(widgets);
+            SettingsData.setTopBarRightWidgets(widgets);
         }
     }
 
     function handleItemEnabledChanged(sectionId, itemId, enabled) {
         var widgets = [];
         if (sectionId === "left")
-            widgets = Prefs.topBarLeftWidgets.slice();
+            widgets = SettingsData.topBarLeftWidgets.slice();
         else if (sectionId === "center")
-            widgets = Prefs.topBarCenterWidgets.slice();
+            widgets = SettingsData.topBarCenterWidgets.slice();
         else if (sectionId === "right")
-            widgets = Prefs.topBarRightWidgets.slice();
+            widgets = SettingsData.topBarRightWidgets.slice();
         for (var i = 0; i < widgets.length; i++) {
             var widget = widgets[i];
             var widgetId = typeof widget === "string" ? widget : widget.id;
@@ -205,30 +205,30 @@ ScrollView {
             }
         }
         if (sectionId === "left")
-            Prefs.setTopBarLeftWidgets(widgets);
+            SettingsData.setTopBarLeftWidgets(widgets);
         else if (sectionId === "center")
-            Prefs.setTopBarCenterWidgets(widgets);
+            SettingsData.setTopBarCenterWidgets(widgets);
         else if (sectionId === "right")
-            Prefs.setTopBarRightWidgets(widgets);
+            SettingsData.setTopBarRightWidgets(widgets);
     }
 
     function handleItemOrderChanged(sectionId, newOrder) {
         if (sectionId === "left")
-            Prefs.setTopBarLeftWidgets(newOrder);
+            SettingsData.setTopBarLeftWidgets(newOrder);
         else if (sectionId === "center")
-            Prefs.setTopBarCenterWidgets(newOrder);
+            SettingsData.setTopBarCenterWidgets(newOrder);
         else if (sectionId === "right")
-            Prefs.setTopBarRightWidgets(newOrder);
+            SettingsData.setTopBarRightWidgets(newOrder);
     }
 
     function handleSpacerSizeChanged(sectionId, itemId, newSize) {
         var widgets = [];
         if (sectionId === "left")
-            widgets = Prefs.topBarLeftWidgets.slice();
+            widgets = SettingsData.topBarLeftWidgets.slice();
         else if (sectionId === "center")
-            widgets = Prefs.topBarCenterWidgets.slice();
+            widgets = SettingsData.topBarCenterWidgets.slice();
         else if (sectionId === "right")
-            widgets = Prefs.topBarRightWidgets.slice();
+            widgets = SettingsData.topBarRightWidgets.slice();
         for (var i = 0; i < widgets.length; i++) {
             var widget = widgets[i];
             var widgetId = typeof widget === "string" ? widget : widget.id;
@@ -246,22 +246,22 @@ ScrollView {
             }
         }
         if (sectionId === "left")
-            Prefs.setTopBarLeftWidgets(widgets);
+            SettingsData.setTopBarLeftWidgets(widgets);
         else if (sectionId === "center")
-            Prefs.setTopBarCenterWidgets(widgets);
+            SettingsData.setTopBarCenterWidgets(widgets);
         else if (sectionId === "right")
-            Prefs.setTopBarRightWidgets(widgets);
+            SettingsData.setTopBarRightWidgets(widgets);
     }
 
     function getItemsForSection(sectionId) {
         var widgets = [];
         var widgetData = [];
         if (sectionId === "left")
-            widgetData = Prefs.topBarLeftWidgets || [];
+            widgetData = SettingsData.topBarLeftWidgets || [];
         else if (sectionId === "center")
-            widgetData = Prefs.topBarCenterWidgets || [];
+            widgetData = SettingsData.topBarCenterWidgets || [];
         else if (sectionId === "right")
-            widgetData = Prefs.topBarRightWidgets || [];
+            widgetData = SettingsData.topBarRightWidgets || [];
         widgetData.forEach((widget) => {
             var widgetId = typeof widget === "string" ? widget : widget.id;
             var widgetEnabled = typeof widget === "string" ? true : widget.enabled;
@@ -285,23 +285,23 @@ ScrollView {
     contentHeight: column.implicitHeight + Theme.spacingXL
     clip: true
     Component.onCompleted: {
-        if (!Prefs.topBarLeftWidgets || Prefs.topBarLeftWidgets.length === 0)
-            Prefs.setTopBarLeftWidgets(defaultLeftWidgets);
+        if (!SettingsData.topBarLeftWidgets || SettingsData.topBarLeftWidgets.length === 0)
+            SettingsData.setTopBarLeftWidgets(defaultLeftWidgets);
 
-        if (!Prefs.topBarCenterWidgets || Prefs.topBarCenterWidgets.length === 0)
-            Prefs.setTopBarCenterWidgets(defaultCenterWidgets);
+        if (!SettingsData.topBarCenterWidgets || SettingsData.topBarCenterWidgets.length === 0)
+            SettingsData.setTopBarCenterWidgets(defaultCenterWidgets);
 
-        if (!Prefs.topBarRightWidgets || Prefs.topBarRightWidgets.length === 0)
-            Prefs.setTopBarRightWidgets(defaultRightWidgets);
+        if (!SettingsData.topBarRightWidgets || SettingsData.topBarRightWidgets.length === 0)
+            SettingsData.setTopBarRightWidgets(defaultRightWidgets);
 
         ["left", "center", "right"].forEach((sectionId) => {
             var widgets = [];
             if (sectionId === "left")
-                widgets = Prefs.topBarLeftWidgets.slice();
+                widgets = SettingsData.topBarLeftWidgets.slice();
             else if (sectionId === "center")
-                widgets = Prefs.topBarCenterWidgets.slice();
+                widgets = SettingsData.topBarCenterWidgets.slice();
             else if (sectionId === "right")
-                widgets = Prefs.topBarRightWidgets.slice();
+                widgets = SettingsData.topBarRightWidgets.slice();
             var updated = false;
             for (var i = 0; i < widgets.length; i++) {
                 var widget = widgets[i];
@@ -315,11 +315,11 @@ ScrollView {
             }
             if (updated) {
                 if (sectionId === "left")
-                    Prefs.setTopBarLeftWidgets(widgets);
+                    SettingsData.setTopBarLeftWidgets(widgets);
                 else if (sectionId === "center")
-                    Prefs.setTopBarCenterWidgets(widgets);
+                    SettingsData.setTopBarCenterWidgets(widgets);
                 else if (sectionId === "right")
-                    Prefs.setTopBarRightWidgets(widgets);
+                    SettingsData.setTopBarRightWidgets(widgets);
             }
         });
     }
@@ -393,9 +393,9 @@ ScrollView {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        Prefs.setTopBarLeftWidgets(defaultLeftWidgets);
-                        Prefs.setTopBarCenterWidgets(defaultCenterWidgets);
-                        Prefs.setTopBarRightWidgets(defaultRightWidgets);
+                        SettingsData.setTopBarLeftWidgets(defaultLeftWidgets);
+                        SettingsData.setTopBarCenterWidgets(defaultCenterWidgets);
+                        SettingsData.setTopBarRightWidgets(defaultRightWidgets);
                     }
                 }
 
@@ -473,9 +473,9 @@ ScrollView {
                 }
                 onCompactModeChanged: (widgetId, enabled) => {
                     if (widgetId === "clock") {
-                        Prefs.setClockCompactMode(enabled);
+                        SettingsData.setClockCompactMode(enabled);
                     } else if (widgetId === "music") {
-                        Prefs.setMediaCompactMode(enabled);
+                        SettingsData.setMediaCompactMode(enabled);
                     }
                 }
             }
@@ -506,9 +506,9 @@ ScrollView {
                 }
                 onCompactModeChanged: (widgetId, enabled) => {
                     if (widgetId === "clock") {
-                        Prefs.setClockCompactMode(enabled);
+                        SettingsData.setClockCompactMode(enabled);
                     } else if (widgetId === "music") {
-                        Prefs.setMediaCompactMode(enabled);
+                        SettingsData.setMediaCompactMode(enabled);
                     }
                 }
             }
@@ -539,9 +539,9 @@ ScrollView {
                 }
                 onCompactModeChanged: (widgetId, enabled) => {
                     if (widgetId === "clock") {
-                        Prefs.setClockCompactMode(enabled);
+                        SettingsData.setClockCompactMode(enabled);
                     } else if (widgetId === "music") {
-                        Prefs.setMediaCompactMode(enabled);
+                        SettingsData.setMediaCompactMode(enabled);
                     }
                 }
             }
@@ -588,9 +588,9 @@ ScrollView {
                     width: parent.width
                     text: "Workspace Index Numbers"
                     description: "Show workspace index numbers in the top bar workspace switcher"
-                    checked: Prefs.showWorkspaceIndex
+                    checked: SettingsData.showWorkspaceIndex
                     onToggled: (checked) => {
-                        return Prefs.setShowWorkspaceIndex(checked);
+                        return SettingsData.setShowWorkspaceIndex(checked);
                     }
                 }
 
@@ -598,9 +598,9 @@ ScrollView {
                     width: parent.width
                     text: "Workspace Padding"
                     description: "Always show a minimum of 3 workspaces, even if fewer are available"
-                    checked: Prefs.showWorkspacePadding
+                    checked: SettingsData.showWorkspacePadding
                     onToggled: (checked) => {
-                        return Prefs.setShowWorkspacePadding(checked);
+                        return SettingsData.setShowWorkspacePadding(checked);
                     }
                 }
 

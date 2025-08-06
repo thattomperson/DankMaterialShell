@@ -55,7 +55,7 @@ Singleton {
     }
     
     Component.onCompleted: {
-        root.userPreference = Prefs.networkPreference
+        root.userPreference = SettingsData.networkPreference
         
         if (root.networkStatus === "wifi" && root.wifiEnabled) {
             updateCurrentWifiInfo()
@@ -402,7 +402,7 @@ Singleton {
         root.userPreference = preference
         root.changingPreference = true
         root.targetPreference = preference
-        Prefs.setNetworkPreference(preference)
+        SettingsData.setNetworkPreference(preference)
         
         if (preference === "wifi") {
             // Set WiFi to low route metric (high priority), ethernet to high route metric (low priority)

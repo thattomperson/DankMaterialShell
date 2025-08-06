@@ -10,8 +10,8 @@ Text {
     color: Theme.surfaceText
     font.pixelSize: Appearance.fontSize.normal
     font.family: {
-        var requestedFont = isMonospace ? Prefs.monoFontFamily : Prefs.fontFamily;
-        var defaultFont = isMonospace ? Prefs.defaultMonoFontFamily : Prefs.defaultFontFamily;
+        var requestedFont = isMonospace ? SettingsData.monoFontFamily : SettingsData.fontFamily;
+        var defaultFont = isMonospace ? SettingsData.defaultMonoFontFamily : SettingsData.defaultFontFamily;
         if (requestedFont === defaultFont) {
             var availableFonts = Qt.fontFamilies();
             if (!availableFonts.includes(requestedFont))
@@ -20,7 +20,7 @@ Text {
         }
         return requestedFont;
     }
-    font.weight: Prefs.fontWeight
+    font.weight: SettingsData.fontWeight
     wrapMode: Text.WordWrap
     elide: Text.ElideRight
     verticalAlignment: Text.AlignVCenter

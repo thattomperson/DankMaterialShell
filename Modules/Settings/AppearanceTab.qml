@@ -60,9 +60,9 @@ ScrollView {
                     width: parent.width
                     text: "Night Mode"
                     description: "Apply warm color temperature to reduce eye strain"
-                    checked: Prefs.nightModeEnabled
+                    checked: SettingsData.nightModeEnabled
                     onToggled: (checked) => {
-                        Prefs.setNightModeEnabled(checked);
+                        SettingsData.setNightModeEnabled(checked);
                         if (checked)
                             nightModeEnableProcess.running = true;
                         else
@@ -74,9 +74,9 @@ ScrollView {
                     width: parent.width
                     text: "Light Mode"
                     description: "Use light theme instead of dark theme"
-                    checked: Prefs.isLightMode
+                    checked: SessionData.isLightMode
                     onToggled: (checked) => {
-                        Prefs.setLightMode(checked);
+                        SessionData.setLightMode(checked);
                         Theme.isLightMode = checked;
                         PortalService.setLightMode(checked);
                     }
@@ -86,17 +86,17 @@ ScrollView {
                     width: parent.width
                     text: "Icon Theme"
                     description: "Select icon theme"
-                    currentValue: Prefs.iconTheme
+                    currentValue: SettingsData.iconTheme
                     enableFuzzySearch: true
                     popupWidthOffset: 100
                     maxPopupHeight: 400
                     options: {
-                        Prefs.detectAvailableIconThemes();
-                        return Prefs.availableIconThemes;
+                        SettingsData.detectAvailableIconThemes();
+                        return SettingsData.availableIconThemes;
                     }
                     onValueChanged: (value) => {
-                        Prefs.setIconTheme(value);
-                        if (value !== "System Default" && !Prefs.qt5ctAvailable && !Prefs.qt6ctAvailable)
+                        SettingsData.setIconTheme(value);
+                        if (value !== "System Default" && !SettingsData.qt5ctAvailable && !SettingsData.qt6ctAvailable)
                             ToastService.showWarning("qt5ct or qt6ct not found - Qt app themes may not update without these tools");
 
                     }
@@ -107,16 +107,16 @@ ScrollView {
                     text: "Font Family"
                     description: "Select system font family"
                     currentValue: {
-                        if (Prefs.fontFamily === Prefs.defaultFontFamily)
-                            return "Default (" + Prefs.defaultFontFamily + ")";
+                        if (SettingsData.fontFamily === SettingsData.defaultFontFamily)
+                            return "Default (" + SettingsData.defaultFontFamily + ")";
                         else
-                            return Prefs.fontFamily || "Default (" + Prefs.defaultFontFamily + ")";
+                            return SettingsData.fontFamily || "Default (" + SettingsData.defaultFontFamily + ")";
                     }
                     enableFuzzySearch: true
                     popupWidthOffset: 100
                     maxPopupHeight: 400
                     options: {
-                        var fonts = ["Default (" + Prefs.defaultFontFamily + ")"];
+                        var fonts = ["Default (" + SettingsData.defaultFontFamily + ")"];
                         var availableFonts = Qt.fontFamilies();
                         var rootFamilies = [];
                         var seenFamilies = new Set();
@@ -125,7 +125,7 @@ ScrollView {
                             if (fontName.startsWith("."))
                                 continue;
 
-                            if (fontName === Prefs.defaultFontFamily)
+                            if (fontName === SettingsData.defaultFontFamily)
                                 continue;
 
                             var rootName = fontName.replace(/ (Thin|Extra Light|Light|Regular|Medium|Semi Bold|Demi Bold|Bold|Extra Bold|Black|Heavy)$/i, "").replace(/ (Italic|Oblique|Condensed|Extended|Narrow|Wide)$/i, "").replace(/ (UI|Display|Text|Mono|Sans|Serif)$/i, function(match, suffix) {
@@ -140,9 +140,9 @@ ScrollView {
                     }
                     onValueChanged: (value) => {
                         if (value.startsWith("Default ("))
-                            Prefs.setFontFamily(Prefs.defaultFontFamily);
+                            SettingsData.setFontFamily(SettingsData.defaultFontFamily);
                         else
-                            Prefs.setFontFamily(value);
+                            SettingsData.setFontFamily(value);
                     }
                 }
 
@@ -151,7 +151,7 @@ ScrollView {
                     text: "Font Weight"
                     description: "Select font weight"
                     currentValue: {
-                        switch (Prefs.fontWeight) {
+                        switch (SettingsData.fontWeight) {
                         case Font.Thin:
                             return "Thin";
                         case Font.ExtraLight:
@@ -209,7 +209,7 @@ ScrollView {
                             weight = Font.Normal;
                             break;
                         }
-                        Prefs.setFontWeight(weight);
+                        SettingsData.setFontWeight(weight);
                     }
                 }
 
@@ -218,10 +218,10 @@ ScrollView {
                     text: "Monospace Font"
                     description: "Select monospace font for process list and technical displays"
                     currentValue: {
-                        if (Prefs.monoFontFamily === Prefs.defaultMonoFontFamily)
+                        if (SettingsData.monoFontFamily === SettingsData.defaultMonoFontFamily)
                             return "Default";
 
-                        return Prefs.monoFontFamily || "Default";
+                        return SettingsData.monoFontFamily || "Default";
                     }
                     enableFuzzySearch: true
                     popupWidthOffset: 100
@@ -236,7 +236,7 @@ ScrollView {
                             if (fontName.startsWith("."))
                                 continue;
 
-                            if (fontName === Prefs.defaultMonoFontFamily)
+                            if (fontName === SettingsData.defaultMonoFontFamily)
                                 continue;
 
                             var lowerName = fontName.toLowerCase();
@@ -252,9 +252,9 @@ ScrollView {
                     }
                     onValueChanged: (value) => {
                         if (value === "Default")
-                            Prefs.setMonoFontFamily(Prefs.defaultMonoFontFamily);
+                            SettingsData.setMonoFontFamily(SettingsData.defaultMonoFontFamily);
                         else
-                            Prefs.setMonoFontFamily(value);
+                            SettingsData.setMonoFontFamily(value);
                     }
                 }
 
@@ -312,13 +312,13 @@ ScrollView {
                     DankSlider {
                         width: parent.width
                         height: 24
-                        value: Math.round(Prefs.topBarTransparency * 100)
+                        value: Math.round(SettingsData.topBarTransparency * 100)
                         minimum: 0
                         maximum: 100
                         unit: ""
                         showValue: true
                         onSliderValueChanged: (newValue) => {
-                            Prefs.setTopBarTransparency(newValue / 100);
+                            SettingsData.setTopBarTransparency(newValue / 100);
                         }
                     }
 
@@ -338,13 +338,13 @@ ScrollView {
                     DankSlider {
                         width: parent.width
                         height: 24
-                        value: Math.round(Prefs.topBarWidgetTransparency * 100)
+                        value: Math.round(SettingsData.topBarWidgetTransparency * 100)
                         minimum: 0
                         maximum: 100
                         unit: ""
                         showValue: true
                         onSliderValueChanged: (newValue) => {
-                            Prefs.setTopBarWidgetTransparency(newValue / 100);
+                            SettingsData.setTopBarWidgetTransparency(newValue / 100);
                         }
                     }
 
@@ -364,13 +364,13 @@ ScrollView {
                     DankSlider {
                         width: parent.width
                         height: 24
-                        value: Math.round(Prefs.popupTransparency * 100)
+                        value: Math.round(SettingsData.popupTransparency * 100)
                         minimum: 0
                         maximum: 100
                         unit: ""
                         showValue: true
                         onSliderValueChanged: (newValue) => {
-                            Prefs.setPopupTransparency(newValue / 100);
+                            SettingsData.setPopupTransparency(newValue / 100);
                         }
                     }
 
@@ -790,9 +790,9 @@ ScrollView {
                     text: "Theme GTK Applications"
                     description: Colors.gtkThemingEnabled ? "File managers, text editors, and system dialogs will match your theme" : "GTK theming not available (install gsettings)"
                     enabled: Colors.gtkThemingEnabled
-                    checked: Colors.gtkThemingEnabled && Prefs.gtkThemingEnabled
+                    checked: Colors.gtkThemingEnabled && SettingsData.gtkThemingEnabled
                     onToggled: function(checked) {
-                        Prefs.setGtkThemingEnabled(checked);
+                        SettingsData.setGtkThemingEnabled(checked);
                         if (checked && Theme.isDynamicTheme)
                             Colors.generateGtkThemes();
 
@@ -804,9 +804,9 @@ ScrollView {
                     text: "Theme Qt Applications"
                     description: Colors.qtThemingEnabled ? "Qt applications will match your theme colors" : "Qt theming not available (install qt5ct or qt6ct)"
                     enabled: Colors.qtThemingEnabled
-                    checked: Colors.qtThemingEnabled && Prefs.qtThemingEnabled
+                    checked: Colors.qtThemingEnabled && SettingsData.qtThemingEnabled
                     onToggled: function(checked) {
-                        Prefs.setQtThemingEnabled(checked);
+                        SettingsData.setQtThemingEnabled(checked);
                         if (checked && Theme.isDynamicTheme)
                             Colors.generateQtThemes();
 
@@ -826,7 +826,7 @@ ScrollView {
         running: false
         onExited: (exitCode) => {
             if (exitCode !== 0)
-                Prefs.setNightModeEnabled(true);
+                SettingsData.setNightModeEnabled(true);
 
         }
     }
@@ -838,7 +838,7 @@ ScrollView {
         running: false
         onExited: (exitCode) => {
             if (exitCode !== 0)
-                Prefs.setNightModeEnabled(false);
+                SettingsData.setNightModeEnabled(false);
 
         }
     }

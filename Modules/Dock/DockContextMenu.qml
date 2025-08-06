@@ -160,9 +160,9 @@ PanelWindow {
                     onClicked: {
                         if (!root.appData) return
                         if (root.appData.isPinned) {
-                            Prefs.removePinnedApp(root.appData.appId)
+                            SessionData.removePinnedApp(root.appData.appId)
                         } else {
-                            Prefs.addPinnedApp(root.appData.appId)
+                            SessionData.addPinnedApp(root.appData.appId)
                         }
                         root.close()
                     }

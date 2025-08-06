@@ -59,11 +59,11 @@ DankModal {
     AppLauncher {
         id: appLauncher
 
-        viewMode: Prefs.spotlightModalViewMode
+        viewMode: SettingsData.spotlightModalViewMode
         gridColumns: 4
         onAppLaunched: hide()
         onViewModeSelected: function(mode) {
-            Prefs.setSpotlightModalViewMode(mode);
+            SettingsData.setSpotlightModalViewMode(mode);
         }
     }
 
@@ -426,7 +426,7 @@ DankModal {
                             name: {
                                 if (!contextMenu.currentApp || !contextMenu.currentApp.desktopEntry) return "push_pin"
                                 var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || ""
-                                return Prefs.isPinnedApp(appId) ? "keep_off" : "push_pin"
+                                return SessionData.isPinnedApp(appId) ? "keep_off" : "push_pin"
                             }
                             size: Theme.iconSize - 2
                             color: Theme.surfaceText
@@ -438,7 +438,7 @@ DankModal {
                             text: {
                                 if (!contextMenu.currentApp || !contextMenu.currentApp.desktopEntry) return "Pin to Dock"
                                 var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || ""
-                                return Prefs.isPinnedApp(appId) ? "Unpin from Dock" : "Pin to Dock"
+                                return SessionData.isPinnedApp(appId) ? "Unpin from Dock" : "Pin to Dock"
                             }
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceText
@@ -455,10 +455,10 @@ DankModal {
                         onClicked: {
                             if (!contextMenu.currentApp || !contextMenu.currentApp.desktopEntry) return
                             var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || ""
-                            if (Prefs.isPinnedApp(appId)) {
-                                Prefs.removePinnedApp(appId)
+                            if (SessionData.isPinnedApp(appId)) {
+                                SessionData.removePinnedApp(appId)
                             } else {
-                                Prefs.addPinnedApp(appId)
+                                SessionData.addPinnedApp(appId)
                             }
                             contextMenu.close()
                         }

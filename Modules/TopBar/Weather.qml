@@ -12,7 +12,7 @@ Rectangle {
 
     signal clicked()
 
-    visible: Prefs.weatherEnabled
+    visible: SettingsData.weatherEnabled
     width: visible ? Math.min(100, weatherRow.implicitWidth + Theme.spacingS * 2) : 0
     height: 30
     radius: Theme.cornerRadius
@@ -39,7 +39,7 @@ Rectangle {
         }
 
         StyledText {
-            text: (Prefs.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp) + "°" + (Prefs.useFahrenheit ? "F" : "C")
+            text: (SettingsData.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp) + "°" + (SettingsData.useFahrenheit ? "F" : "C")
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter

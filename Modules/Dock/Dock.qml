@@ -17,8 +17,8 @@ PanelWindow {
     property var modelData
     property var contextMenu
     property var windowsMenu
-    property bool autoHide: Prefs.dockAutoHide
-    property real backgroundTransparency: Prefs.dockTransparency
+    property bool autoHide: SettingsData.dockAutoHide
+    property real backgroundTransparency: SettingsData.dockTransparency
     
     
     property bool contextMenuOpen: (contextMenu && contextMenu.visible && contextMenu.screen === modelData) || (windowsMenu && windowsMenu.visible && windowsMenu.screen === modelData)
@@ -32,14 +32,14 @@ PanelWindow {
     property bool reveal: (!autoHide || dockMouseArea.containsMouse || dockApps.requestDockShow || contextMenuOpen) && !windowIsFullscreen
     
     Connections {
-        target: Prefs
+        target: SettingsData
         function onDockTransparencyChanged() {
-            dock.backgroundTransparency = Prefs.dockTransparency;
+            dock.backgroundTransparency = SettingsData.dockTransparency;
         }
     }
     
     screen: modelData
-    visible: Prefs.showDock
+    visible: SettingsData.showDock
     color: "transparent"
     
     anchors {
