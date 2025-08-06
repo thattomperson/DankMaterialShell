@@ -62,3 +62,5 @@ CLAUDE-temp.md
 *.generated.*
 niri-colors.generated.kdl
 ghostty-colors.generated.conf
+
+result
