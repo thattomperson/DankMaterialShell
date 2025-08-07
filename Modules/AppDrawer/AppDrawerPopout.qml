@@ -368,8 +368,9 @@ PanelWindow {
                         border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
                         border.width: 1
 
-                        GoodScrollingListView {
+                        DankListView {
                             id: appList
+                            mouseWheelSpeed: 20
 
                             property int itemHeight: 72
                             property int iconSize: 56
@@ -533,7 +534,7 @@ PanelWindow {
                             }
                         }
 
-                        GoodScrollingGridView {
+                        DankGridView {
                             id: appGrid
 
                             property int currentIndex: appLauncher.selectedIndex

@@ -283,8 +283,9 @@ DankModal {
                     border.color: Theme.outlineLight
                     border.width: 1
 
-                    GoodScrollingListView {
+                    DankListView {
                         id: resultsList
+                        mouseWheelSpeed: 20
 
                         property int itemHeight: 60
                         property int iconSize: 40
@@ -448,7 +449,7 @@ DankModal {
                         }
                     }
 
-                    GoodScrollingGridView {
+                    DankGridView {
                         id: resultsGrid
 
                         property int currentIndex: appLauncher.selectedIndex

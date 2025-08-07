@@ -63,7 +63,7 @@ PanelWindow {
                 menu: currentTrayItem && currentTrayItem.hasMenu ? currentTrayItem.menu : null
             }
 
-            ListView {
+            DankListView {
                 id: menuList
 
                 property real maxTextWidth: {
