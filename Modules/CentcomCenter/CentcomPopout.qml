@@ -51,7 +51,7 @@ PanelWindow {
     implicitHeight: 600
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: calendarVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: calendarVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     color: "transparent"
 
     anchors {
@@ -195,6 +195,9 @@ PanelWindow {
                 if (event.key === Qt.Key_Escape) {
                     calendarVisible = false;
                     event.accepted = true;
+                } else {
+                    // Don't handle other keys - let them bubble up to modals
+                    event.accepted = false;
                 }
             }
 

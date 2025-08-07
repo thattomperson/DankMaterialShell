@@ -14,7 +14,7 @@ DankModal {
     visible: wifiPasswordModalVisible
     width: 420
     height: 230
-    keyboardFocus: "ondemand"
+    keyboardFocus: "exclusive"
     onVisibleChanged: {
         if (!visible)
             wifiPasswordInput = "";
@@ -39,8 +39,9 @@ DankModal {
     }
 
     content: Component {
-        Item {
+        FocusScope {
             anchors.fill: parent
+            focus: true
 
             Column {
                 anchors.centerIn: parent
@@ -102,8 +103,7 @@ DankModal {
                         echoMode: showPasswordCheckbox.checked ? TextInput.Normal : TextInput.Password
                         placeholderText: "Enter password"
                         backgroundColor: "transparent"
-                        normalBorderColor: "transparent"
-                        focusedBorderColor: "transparent"
+                        focus: true
                         onTextEdited: {
                             wifiPasswordInput = text;
                         }
@@ -114,13 +114,25 @@ DankModal {
                             passwordInput.text = "";
                         }
 
+                        Timer {
+                            id: focusTimer
+                            interval: 50
+                            onTriggered: passwordInput.forceActiveFocus()
+                        }
+
+                        Component.onCompleted: {
+                            focusTimer.start();
+                        }
+
                         Connections {
                             function onOpened() {
-                                passwordInput.forceActiveFocus();
+                                focusTimer.start();
                             }
 
-                            function onDialogClosed() {
-                                passwordInput.clearFocus();
+                            function onVisibleChanged() {
+                                if (root.visible) {
+                                    focusTimer.start();
+                                }
                             }
 
                             target: root
@@ -264,7 +276,6 @@ DankModal {
             }
 
         }
-
     }
 
 }
