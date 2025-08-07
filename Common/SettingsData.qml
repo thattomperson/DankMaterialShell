@@ -588,8 +588,6 @@ Singleton {
                 "remove_icon_theme " + _configDir + "/qt5ct/qt5ct.conf\n" +
                 "remove_icon_theme " + _configDir + "/qt6ct/qt6ct.conf\n" +
                 "rm -f " + _configDir + "/environment.d/95-qtct.conf 2>/dev/null || true\n" +
-                "systemctl --user import-environment --unset=QT_QPA_PLATFORMTHEME --unset=QT_QPA_PLATFORMTHEME_QT6 2>/dev/null || true\n" +
-                "dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME= QT_QPA_PLATFORMTHEME_QT6= 2>/dev/null || true\n" +
                 "rm -rf " + home + "/.cache/icon-cache " + home + "/.cache/thumbnails 2>/dev/null || true\n";
 
             Quickshell.execDetached(["sh", "-lc", revertScript]);
@@ -630,16 +628,6 @@ Singleton {
             "}\n" +
             "update_qt_config " + _configDir + "/qt5ct/qt5ct.conf " + _shq(qtThemeName) + "\n" +
             "update_qt_config " + _configDir + "/qt6ct/qt6ct.conf " + _shq(qtThemeName) + "\n" +
-            "if command -v qt5ct >/dev/null 2>&1; then\n" +
-            "  printf 'QT_QPA_PLATFORMTHEME=qt5ct\\n' > " + _configDir + "/environment.d/95-qtct.conf\n" +
-            "  if command -v qt6ct >/dev/null 2>&1; then\n" +
-            "    printf 'QT_QPA_PLATFORMTHEME_QT6=qt6ct\\n' >> " + _configDir + "/environment.d/95-qtct.conf\n" +
-            "  fi\n" +
-            "else\n" +
-            "  rm -f " + _configDir + "/environment.d/95-qtct.conf 2>/dev/null || true\n" +
-            "fi\n" +
-            "systemctl --user import-environment QT_QPA_PLATFORMTHEME QT_QPA_PLATFORMTHEME_QT6 2>/dev/null || true\n" +
-            "dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME QT_QPA_PLATFORMTHEME_QT6 2>/dev/null || true\n" +
             "rm -rf " + home + "/.cache/icon-cache " + home + "/.cache/thumbnails 2>/dev/null || true\n";
 
         Quickshell.execDetached(["sh", "-lc", script]);
