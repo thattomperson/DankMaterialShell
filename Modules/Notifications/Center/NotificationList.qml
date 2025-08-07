@@ -19,8 +19,13 @@ ListView {
     spacing: Theme.spacingL
     interactive: true
     boundsBehavior: Flickable.StopAtBounds
-    flickDeceleration: 1500
-    maximumFlickVelocity: 2000
+    
+    // Enhanced native kinetic scrolling - Qt handles touch vs mouse automatically
+    flickDeceleration: 1000      // Lower = more momentum, longer scrolling
+    maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
+    boundsMovement: Flickable.FollowBoundsBehavior
+    pressDelay: 0
+    flickableDirection: Flickable.VerticalFlick
     cacheBuffer: 1000
     onMovementStarted: isUserScrolling = true
     onMovementEnded: {

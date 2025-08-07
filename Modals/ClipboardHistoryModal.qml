@@ -433,27 +433,20 @@ DankModal {
                 ListView {
                     id: clipboardListView
 
-                    property real wheelMultiplier: 1.8
-                    property int wheelBaseStep: 160
-
                     anchors.fill: parent
                     anchors.margins: Theme.spacingS
                     clip: true
                     model: filteredClipboardModel
                     spacing: Theme.spacingXS
-
-                    WheelHandler {
-                        target: null
-                        onWheel: (ev) => {
-                            let dy = ev.pixelDelta.y !== 0 ? ev.pixelDelta.y : (ev.angleDelta.y / 120) * clipboardListView.wheelBaseStep;
-                            if (ev.inverted)
-                                dy = -dy;
-
-                            const maxY = Math.max(0, clipboardListView.contentHeight - clipboardListView.height);
-                            clipboardListView.contentY = Math.max(0, Math.min(maxY, clipboardListView.contentY - dy * clipboardListView.wheelMultiplier));
-                            ev.accepted = true;
-                        }
-                    }
+                    
+                    // Enhanced native kinetic scrolling - faster for both touchpad and mouse
+                    interactive: true
+                    flickDeceleration: 1000      // Lower = more momentum, longer scrolling
+                    maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
+                    boundsBehavior: Flickable.DragAndOvershootBounds
+                    boundsMovement: Flickable.FollowBoundsBehavior
+                    pressDelay: 0
+                    flickableDirection: Flickable.VerticalFlick
 
                     StyledText {
                         text: "No clipboard entries found"

@@ -258,6 +258,15 @@ Item {
                 model: searchResultsModel
                 spacing: 2
 
+                // Enhanced native kinetic scrolling - faster for both touchpad and mouse
+                interactive: true
+                flickDeceleration: 1000      // Lower = more momentum, longer scrolling
+                maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
+                boundsBehavior: Flickable.DragAndOvershootBounds
+                boundsMovement: Flickable.FollowBoundsBehavior
+                pressDelay: 0
+                flickableDirection: Flickable.VerticalFlick
+
                 delegate: StyledRect {
                     width: searchResultsList.width
                     height: 36

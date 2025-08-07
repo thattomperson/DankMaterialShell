@@ -13,8 +13,6 @@ ListView {
     property int itemSpacing: Theme.spacingS
     property bool hoverUpdatesSelection: true
     property bool keyboardNavigationActive: false
-    property real wheelMultiplier: 1.8
-    property int wheelBaseStep: 160
 
     signal keyboardNavigationReset()
     signal itemClicked(int index, var modelData)
@@ -36,28 +34,21 @@ ListView {
     onCurrentIndexChanged: {
         if (keyboardNavigationActive)
             ensureVisible(currentIndex);
-
     }
+    
     clip: true
     anchors.margins: itemSpacing
     spacing: itemSpacing
     focus: true
     interactive: true
-    flickDeceleration: 600
-    maximumFlickVelocity: 30000
-
-    WheelHandler {
-        target: null
-        onWheel: (ev) => {
-            let dy = ev.pixelDelta.y !== 0 ? ev.pixelDelta.y : (ev.angleDelta.y / 120) * wheelBaseStep;
-            if (ev.inverted)
-                dy = -dy;
-
-            const maxY = Math.max(0, contentHeight - height);
-            contentY = Math.max(0, Math.min(maxY, contentY - dy * wheelMultiplier));
-            ev.accepted = true;
-        }
-    }
+    
+    // Enhanced native kinetic scrolling - faster for both touchpad and mouse
+    flickDeceleration: 1000      // Lower = more momentum, longer scrolling
+    maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
+    boundsBehavior: Flickable.DragAndOvershootBounds
+    boundsMovement: Flickable.FollowBoundsBehavior
+    pressDelay: 0
+    flickableDirection: Flickable.VerticalFlick
 
     ScrollBar.vertical: ScrollBar {
         policy: ScrollBar.AlwaysOn

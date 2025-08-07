@@ -18,8 +18,6 @@ GridView {
     property int minIconSize: 32
     property bool hoverUpdatesSelection: true
     property bool keyboardNavigationActive: false
-    property real wheelMultiplier: 1.8
-    property int wheelBaseStep: 160
     property int baseCellWidth: adaptiveColumns ? Math.max(minCellWidth, Math.min(maxCellWidth, width / columns)) : (width - Theme.spacingS * 2) / columns
     property int baseCellHeight: baseCellWidth + 20
     property int actualColumns: adaptiveColumns ? Math.floor(width / cellWidth) : columns
@@ -55,21 +53,14 @@ GridView {
     rightMargin: leftMargin
     focus: true
     interactive: true
-    flickDeceleration: 300
-    maximumFlickVelocity: 30000
-
-    WheelHandler {
-        target: null
-        onWheel: (ev) => {
-            let dy = ev.pixelDelta.y !== 0 ? ev.pixelDelta.y : (ev.angleDelta.y / 120) * gridView.wheelBaseStep;
-            if (ev.inverted)
-                dy = -dy;
-
-            const maxY = Math.max(0, gridView.contentHeight - gridView.height);
-            gridView.contentY = Math.max(0, Math.min(maxY, gridView.contentY - dy * gridView.wheelMultiplier));
-            ev.accepted = true;
-        }
-    }
+    
+    // Enhanced native kinetic scrolling - faster for both touchpad and mouse
+    flickDeceleration: 1000      // Lower = more momentum, longer scrolling
+    maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
+    boundsBehavior: Flickable.DragAndOvershootBounds
+    boundsMovement: Flickable.FollowBoundsBehavior
+    pressDelay: 0
+    flickableDirection: Flickable.VerticalFlick
 
     ScrollBar.vertical: ScrollBar {
         policy: ScrollBar.AsNeeded

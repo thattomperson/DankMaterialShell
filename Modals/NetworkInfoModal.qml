@@ -90,27 +90,20 @@ DankModal {
                 }
 
                 Flickable {
-                    property real wheelMultiplier: 1.8
-                    property int wheelBaseStep: 160
-
                     width: parent.width
                     height: parent.height - 140
                     clip: true
                     contentWidth: width
                     contentHeight: detailsRect.height
 
-                    WheelHandler {
-                        target: null
-                        onWheel: (ev) => {
-                            let dy = ev.pixelDelta.y !== 0 ? ev.pixelDelta.y : (ev.angleDelta.y / 120) * parent.wheelBaseStep;
-                            if (ev.inverted)
-                                dy = -dy;
-
-                            const maxY = Math.max(0, parent.contentHeight - parent.height);
-                            parent.contentY = Math.max(0, Math.min(maxY, parent.contentY - dy * parent.wheelMultiplier));
-                            ev.accepted = true;
-                        }
-                    }
+                    // Enhanced native kinetic scrolling - faster for both touchpad and mouse
+                    interactive: true
+                    flickDeceleration: 1000      // Lower = more momentum, longer scrolling
+                    maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
+                    boundsBehavior: Flickable.DragAndOvershootBounds
+                    boundsMovement: Flickable.FollowBoundsBehavior
+                    pressDelay: 0
+                    flickableDirection: Flickable.VerticalFlick
 
                     Rectangle {
                         id: detailsRect

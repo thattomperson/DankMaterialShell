@@ -114,9 +114,16 @@ Rectangle {
         opacity: hasEvents ? 1 : 0
         clip: true
         spacing: Theme.spacingS
-        boundsMovement: Flickable.StopAtBounds
         boundsBehavior: Flickable.StopAtBounds
-
+        
+        // Enhanced native kinetic scrolling - faster for both touchpad and mouse
+        interactive: true
+        flickDeceleration: 1000      // Lower = more momentum, longer scrolling
+        maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
+        boundsMovement: Flickable.FollowBoundsBehavior
+        pressDelay: 0
+        flickableDirection: Flickable.VerticalFlick
+        
         ScrollBar.vertical: ScrollBar {
             policy: eventsList.contentHeight > eventsList.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
         }

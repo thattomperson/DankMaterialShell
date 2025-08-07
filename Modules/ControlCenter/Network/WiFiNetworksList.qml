@@ -114,8 +114,9 @@ Column {
         contentWidth: width
         contentHeight: spanningNetworksColumn.height
         boundsBehavior: Flickable.DragAndOvershootBounds
-        flickDeceleration: 8000
-        maximumFlickVelocity: 15000
+        // Enhanced native kinetic scrolling - Qt handles touch vs mouse automatically
+        flickDeceleration: 1000      // Lower = more momentum, longer scrolling
+        maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
 
         Column {
             id: spanningNetworksColumn

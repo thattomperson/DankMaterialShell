@@ -234,8 +234,6 @@ Column {
         property real stableY: 0
         property bool isUserScrolling: false
         property bool isScrollBarDragging: false
-        property real wheelMultiplier: 1.8
-        property int wheelBaseStep: 160
         property string keyRoleName: "pid"
         property var _anchorKey: undefined
         property real _anchorOffset: 0
@@ -278,39 +276,30 @@ Column {
         spacing: 4
         model: SysMonitorService.processes
         boundsBehavior: Flickable.StopAtBounds
-        flickDeceleration: 1500
-        maximumFlickVelocity: 2000
+        
+                // Enhanced native kinetic scrolling - faster for both touchpad and mouse
+        interactive: true
+        flickDeceleration: 1000      // Lower = more momentum, longer scrolling
+        maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
+        boundsMovement: Flickable.FollowBoundsBehavior
+        pressDelay: 0
+        flickableDirection: Flickable.VerticalFlick
+        
         onMovementStarted: isUserScrolling = true
         onMovementEnded: {
             isUserScrolling = false;
             if (contentY > 40)
                 stableY = contentY;
-
         }
         onContentYChanged: {
             if (!isUserScrolling && !isScrollBarDragging && visible && stableY > 40 && Math.abs(contentY - stableY) > 10)
                 contentY = stableY;
-
         }
         onModelChanged: {
             if (model && model.length > 0 && !isUserScrolling && stableY > 40)
                 Qt.callLater(function() {
                     contentY = stableY;
                 });
-
-        }
-
-        WheelHandler {
-            target: null
-            onWheel: (ev) => {
-                let dy = ev.pixelDelta.y !== 0 ? ev.pixelDelta.y : (ev.angleDelta.y / 120) * processListView.wheelBaseStep;
-                if (ev.inverted)
-                    dy = -dy;
-
-                const maxY = Math.max(0, processListView.contentHeight - processListView.height);
-                processListView.contentY = Math.max(0, Math.min(maxY, processListView.contentY - dy * processListView.wheelMultiplier));
-                ev.accepted = true;
-            }
         }
 
         delegate: ProcessListItem {

@@ -84,8 +84,9 @@ Item {
                 contentWidth: width
                 contentHeight: wifiContent.height
                 boundsBehavior: Flickable.DragAndOvershootBounds
-                flickDeceleration: 8000
-                maximumFlickVelocity: 15000
+                // Enhanced native kinetic scrolling - faster for both touchpad and mouse
+                flickDeceleration: 1000      // Lower = more momentum, longer scrolling
+                maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
 
                 Column {
                     id: wifiContent
@@ -115,8 +116,9 @@ Item {
                 contentWidth: width
                 contentHeight: ethernetContent.height
                 boundsBehavior: Flickable.StopAtBounds
-                flickDeceleration: 8000
-                maximumFlickVelocity: 15000
+                // Enhanced native kinetic scrolling - faster for both touchpad and mouse
+                flickDeceleration: 1000      // Lower = more momentum, longer scrolling
+                maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
 
                 Column {
                     id: ethernetContent
