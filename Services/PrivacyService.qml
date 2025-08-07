@@ -17,7 +17,6 @@ Singleton {
             if (!node) continue
             
             if ((node.type & PwNodeType.AudioInStream) === PwNodeType.AudioInStream) {
-                console.log("Found AudioInStream:", node.name, "media.class:", node.properties?.["media.class"], "stream.is-live:", node.properties?.["stream.is-live"])
                 if (!looksLikeSystemVirtualMic(node)) {
                     console.log(node.audio)
                     if (node.audio && node.audio.muted) {
@@ -43,7 +42,6 @@ Singleton {
             if (!node || !node.ready) continue
             
             if (node.properties && node.properties["media.class"] === "Stream/Input/Video") {
-                console.log("Found Stream/Input/Video:", node.name, "stream.is-live:", node.properties["stream.is-live"])
                 if (node.properties["stream.is-live"] === "true") {
                     return true
                 }

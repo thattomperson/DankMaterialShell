@@ -11,7 +11,6 @@ DankModal {
 
     id: clipboardHistoryModal
 
-    property bool isVisible: false
     property int totalCount: 0
     property var activeTheme: Theme
     property bool showClearConfirmation: false
@@ -39,21 +38,21 @@ DankModal {
     }
 
     function toggle() {
-        if (isVisible)
+        if (visible)
             hide();
         else
             show();
     }
 
     function show() {
-        clipboardHistoryModal.isVisible = true;
+        clipboardHistoryModal.visible = true;
         initializeThumbnailSystem();
         refreshClipboard();
         
     }
 
     function hide() {
-        clipboardHistoryModal.isVisible = false;
+        clipboardHistoryModal.visible = false;
         clipboardHistoryModal.searchText = "";
         cleanupTempFiles();
     }
@@ -123,7 +122,7 @@ DankModal {
     }
 
 
-    visible: isVisible
+    visible: false
     width: 650
     height: 550
     keyboardFocus: "ondemand"
