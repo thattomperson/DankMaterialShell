@@ -6,6 +6,7 @@ import QtQuick.Layouts
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Services.Pam
+import Quickshell.Io
 import qs.Common
 import qs.Services
 import qs.Widgets
@@ -594,8 +595,15 @@ Item {
         }
     }
 
+    FileView {
+        id: pamConfigWatcher
+        path: "/etc/pam.d/dankshell"
+        printErrors: false
+    }
+
     PamContext {
         id: pam
+        config: pamConfigWatcher.loaded ? "dankshell" : "login"
 
         onResponseRequiredChanged: {
             if (demoMode) return
