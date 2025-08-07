@@ -405,7 +405,7 @@ PanelWindow {
                             spacing: itemSpacing
                             focus: true
                             interactive: true
-                            cacheBuffer: Math.min(height * 2, 1000)
+                            cacheBuffer: Math.max(0, Math.min(height * 2, 1000))
                             reuseItems: true
 
                             onCurrentIndexChanged: {
@@ -581,7 +581,7 @@ PanelWindow {
                             rightMargin: leftMargin
                             focus: true
                             interactive: true
-                            cacheBuffer: Math.min(height * 2, 1000)
+                            cacheBuffer: Math.max(0, Math.min(height * 2, 1000))
                             reuseItems: true
 
                             onCurrentIndexChanged: {
