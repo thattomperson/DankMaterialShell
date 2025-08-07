@@ -14,13 +14,16 @@ Singleton {
         
         for (let i = 0; i < Pipewire.nodes.values.length; i++) {
             const node = Pipewire.nodes.values[i]
-            if (!node || !node.ready) continue
+            if (!node) continue
             
-            if (node.properties && node.properties["media.class"] === "Stream/Input/Audio") {
-                if (node.properties["stream.is-live"] === "true") {
-                    if (!looksLikeSystemVirtualMic(node)) {
-                        return true
+            if ((node.type & PwNodeType.AudioInStream) === PwNodeType.AudioInStream) {
+                console.log("Found AudioInStream:", node.name, "media.class:", node.properties?.["media.class"], "stream.is-live:", node.properties?.["stream.is-live"])
+                if (!looksLikeSystemVirtualMic(node)) {
+                    console.log(node.audio)
+                    if (node.audio && node.audio.muted) {
+                        return false
                     }
+                    return true
                 }
             }
         }
@@ -40,6 +43,7 @@ Singleton {
             if (!node || !node.ready) continue
             
             if (node.properties && node.properties["media.class"] === "Stream/Input/Video") {
+                console.log("Found Stream/Input/Video:", node.name, "stream.is-live:", node.properties["stream.is-live"])
                 if (node.properties["stream.is-live"] === "true") {
                     return true
                 }
@@ -67,6 +71,9 @@ Singleton {
                 
                 if (mediaName.includes("desktop") || appName.includes("screen") || appName === "obs") {
                     if (node.properties["stream.is-live"] === "true") {
+                        if (node.audio && node.audio.muted) {
+                            return false
+                        }
                         return true
                     }
                 }
