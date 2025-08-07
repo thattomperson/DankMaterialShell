@@ -61,6 +61,12 @@ ScrollView {
         "icon": "notifications",
         "enabled": true
     }, {
+        "id": "privacyIndicator",
+        "text": "Privacy Indicator",
+        "description": "Shows when microphone, camera, or screen sharing is active",
+        "icon": "privacy_tip",
+        "enabled": true
+    }, {
         "id": "controlCenterButton",
         "text": "Control Center",
         "description": "Access to system controls and settings",
@@ -112,6 +118,9 @@ ScrollView {
         "enabled": true
     }]
     property var defaultRightWidgets: [{
+        "id": "privacyIndicator",
+        "enabled": true
+    }, {
         "id": "systemTray",
         "enabled": true
     }, {
@@ -619,7 +628,7 @@ ScrollView {
         border.width: 1
         visible: resetArea.containsMouse
         opacity: resetArea.containsMouse ? 1 : 0
-        y: column.y + 48 // Position above the reset button in the header
+        y: column.y + 48
         x: parent.width - width - Theme.spacingM
         z: 100
 

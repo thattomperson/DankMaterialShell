@@ -176,6 +176,8 @@ PanelWindow {
                     return true;
                 case "systemTray":
                     return true;
+                case "privacyIndicator":
+                    return true;
                 case "clipboard":
                     return true;
                 case "systemResources":
@@ -211,6 +213,8 @@ PanelWindow {
                     return weatherComponent;
                 case "systemTray":
                     return systemTrayComponent;
+                case "privacyIndicator":
+                    return privacyIndicatorComponent;
                 case "clipboard":
                     return clipboardComponent;
                 case "systemResources":
@@ -548,6 +552,21 @@ PanelWindow {
                             menu.menuVisible = true;
                         }
                     }
+                }
+
+            }
+
+            Component {
+                id: privacyIndicatorComponent
+
+                PrivacyIndicator {
+                    section: {
+                        if (parent && parent.parent === leftSection) return "left";
+                        if (parent && parent.parent === rightSection) return "right";
+                        if (parent && parent.parent === centerSection) return "center";
+                        return "right";
+                    }
+                    parentScreen: root.screen
                 }
 
             }
