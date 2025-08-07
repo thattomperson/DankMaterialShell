@@ -543,6 +543,7 @@ PanelWindow {
 
                 SystemTrayBar {
                     parentWindow: root
+                    parentScreen: root.screen
                 }
 
             }

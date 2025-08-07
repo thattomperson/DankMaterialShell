@@ -7,6 +7,7 @@ Rectangle {
     id: root
     
     property var parentWindow: null
+    property var parentScreen: null
 
     readonly property int calculatedWidth: SystemTray.items.values.length > 0 ? SystemTray.items.values.length * 24 + (SystemTray.items.values.length - 1) * Theme.spacingXS + Theme.spacingS * 2 : 0
 
@@ -88,19 +89,17 @@ Rectangle {
                         if (!trayItem)
                             return
 
-                        if (mouse.button === Qt.LeftButton) {
+                        if (trayItem.hasMenu) {
+                            var globalPos = mapToGlobal(0, 0)
+                            var currentScreen = parentScreen || Screen
+                            var screenX = currentScreen.x || 0
+                            var relativeX = globalPos.x - screenX
+                            menuAnchor.menu = trayItem.menu
+                            menuAnchor.anchor.window = parentWindow
+                            menuAnchor.anchor.rect = Qt.rect(relativeX, Theme.barHeight + Theme.spacingS, parent.width, 1)
+                            menuAnchor.open()
+                        } else if (mouse.button === Qt.LeftButton) {
                             trayItem.activate()
-                        } else if (mouse.button === Qt.RightButton) {
-                            if (trayItem.hasMenu) {
-                                var globalPos = mapToGlobal(0, 0)
-                                var currentScreen = Screen
-                                var screenX = currentScreen.x || 0
-                                var relativeX = globalPos.x - screenX
-                                menuAnchor.menu = trayItem.menu
-                                menuAnchor.anchor.window = parentWindow
-                                menuAnchor.anchor.rect = Qt.rect(relativeX, Theme.barHeight + Theme.spacingS, parent.width, 1)
-                                menuAnchor.open()
-                            }
                         }
                     }
                 }
