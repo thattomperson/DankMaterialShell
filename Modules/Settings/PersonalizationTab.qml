@@ -10,6 +10,20 @@ import qs.Widgets
 ScrollView {
     id: personalizationTab
 
+    // Qt 6.9+ scrolling: Enhanced mouse wheel and touchpad responsiveness
+    // Custom wheel handler for Qt 6.9+ responsive mouse wheel scrolling
+    WheelHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: (event) => {
+            let delta = event.pixelDelta.y !== 0 ? event.pixelDelta.y * 1.8 : event.angleDelta.y / 120 * 80
+            let flickable = personalizationTab.contentItem
+            let newY = flickable.contentY - delta
+            newY = Math.max(0, Math.min(flickable.contentHeight - flickable.height, newY))
+            flickable.contentY = newY
+            event.accepted = true
+        }
+    }
+
     property alias profileBrowser: profileBrowserLoader.item
     property alias wallpaperBrowser: wallpaperBrowserLoader.item
 

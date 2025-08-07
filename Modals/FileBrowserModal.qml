@@ -203,10 +203,10 @@ DankModal {
                 ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
                 ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
 
-                // Enhanced native kinetic scrolling - faster for both touchpad and mouse
+                // Qt 6.9+ scrolling: flickDeceleration/maximumFlickVelocity only affect touch now
                 interactive: true
-                flickDeceleration: 1000      // Lower = more momentum, longer scrolling
-                maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
+                flickDeceleration: 1500  // Touch only in Qt 6.9+      // Lower = more momentum, longer scrolling
+                maximumFlickVelocity: 2000  // Touch only in Qt 6.9+   // Higher = faster maximum scroll speed
                 boundsBehavior: Flickable.DragAndOvershootBounds
                 boundsMovement: Flickable.FollowBoundsBehavior
                 pressDelay: 0

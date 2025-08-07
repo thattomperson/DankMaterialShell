@@ -54,13 +54,67 @@ GridView {
     focus: true
     interactive: true
     
-    // Enhanced native kinetic scrolling - faster for both touchpad and mouse
-    flickDeceleration: 1000      // Lower = more momentum, longer scrolling
-    maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
-    boundsBehavior: Flickable.DragAndOvershootBounds
+    // Qt 6.9+ scrolling: flickDeceleration/maximumFlickVelocity only affect touch now
+    flickDeceleration: 1500
+    maximumFlickVelocity: 2000
+    boundsBehavior: Flickable.StopAtBounds
     boundsMovement: Flickable.FollowBoundsBehavior
     pressDelay: 0
     flickableDirection: Flickable.VerticalFlick
+    
+    // Performance optimizations
+    cacheBuffer: Math.min(height * 2, 1000)
+    reuseItems: true
+    
+    // Custom wheel handler for Qt 6.9+ responsive mouse wheel scrolling
+    WheelHandler {
+        id: wheelHandler
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        
+        // Tunable parameters for responsive scrolling
+        property real mouseWheelSpeed: 20    // Higher = faster mouse wheel
+        property real touchpadSpeed: 1.8     // Touchpad sensitivity
+        property real momentumRetention: 0.92
+        property real lastWheelTime: 0
+        property real momentum: 0
+        
+        onWheel: (event) => {
+            let currentTime = Date.now()
+            let timeDelta = currentTime - lastWheelTime
+            lastWheelTime = currentTime
+            
+            // Calculate scroll delta based on input type
+            let delta = 0
+            if (event.pixelDelta.y !== 0) {
+                // Touchpad with pixel precision
+                delta = event.pixelDelta.y * touchpadSpeed
+            } else {
+                // Mouse wheel - larger steps for faster scrolling
+                delta = event.angleDelta.y / 120 * cellHeight * 2 // 2 cells per wheel step
+            }
+            
+            // Apply momentum for touchpad (smooth continuous scrolling)
+            if (event.pixelDelta.y !== 0 && timeDelta < 50) {
+                momentum = momentum * momentumRetention + delta * 0.15
+                delta += momentum
+            } else {
+                momentum = 0
+            }
+            
+            // Apply scrolling with proper bounds checking
+            let newY = contentY - delta
+            newY = Math.max(0, Math.min(
+                contentHeight - height, newY))
+            
+            // Cancel any conflicting flicks and apply new position
+            if (flicking) {
+                cancelFlick()
+            }
+            
+            contentY = newY
+            event.accepted = true
+        }
+    }
 
     ScrollBar.vertical: ScrollBar {
         policy: ScrollBar.AsNeeded

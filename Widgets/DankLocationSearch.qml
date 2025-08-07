@@ -258,14 +258,35 @@ Item {
                 model: searchResultsModel
                 spacing: 2
 
-                // Enhanced native kinetic scrolling - faster for both touchpad and mouse
+                // Qt 6.9+ scrolling: flickDeceleration/maximumFlickVelocity only affect touch now
                 interactive: true
-                flickDeceleration: 1000      // Lower = more momentum, longer scrolling
-                maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
+                flickDeceleration: 1500
+                maximumFlickVelocity: 2000
                 boundsBehavior: Flickable.DragAndOvershootBounds
                 boundsMovement: Flickable.FollowBoundsBehavior
                 pressDelay: 0
                 flickableDirection: Flickable.VerticalFlick
+                
+                // Custom wheel handler for Qt 6.9+ responsive mouse wheel scrolling
+                WheelHandler {
+                    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                    property real momentum: 0
+                    onWheel: (event) => {
+                        if (event.pixelDelta.y !== 0) {
+                            // Touchpad with pixel delta
+                            momentum = event.pixelDelta.y * 1.8
+                        } else {
+                            // Mouse wheel with angle delta  
+                            momentum = (event.angleDelta.y / 120) * ((36 + parent.spacing) * 2.5) // ~2.5 items per wheel step
+                        }
+                        
+                        let newY = parent.contentY - momentum
+                        newY = Math.max(0, Math.min(parent.contentHeight - parent.height, newY))
+                        parent.contentY = newY
+                        momentum *= 0.92 // Decay for smooth momentum
+                        event.accepted = true
+                    }
+                }
 
                 delegate: StyledRect {
                     width: searchResultsList.width

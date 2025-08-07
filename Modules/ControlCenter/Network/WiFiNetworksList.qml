@@ -114,9 +114,21 @@ Column {
         contentWidth: width
         contentHeight: spanningNetworksColumn.height
         boundsBehavior: Flickable.DragAndOvershootBounds
-        // Enhanced native kinetic scrolling - Qt handles touch vs mouse automatically
-        flickDeceleration: 1000      // Lower = more momentum, longer scrolling
-        maximumFlickVelocity: 8000   // Higher = faster maximum scroll speed
+        // Qt 6.9+ scrolling: flickDeceleration/maximumFlickVelocity only affect touch now
+        flickDeceleration: 1500
+        maximumFlickVelocity: 2000
+        
+        // Custom wheel handler for Qt 6.9+ responsive mouse wheel scrolling
+        WheelHandler {
+            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+            onWheel: (event) => {
+                let delta = event.pixelDelta.y !== 0 ? event.pixelDelta.y * 1.8 : event.angleDelta.y / 120 * 60
+                let newY = parent.contentY - delta
+                newY = Math.max(0, Math.min(parent.contentHeight - parent.height, newY))
+                parent.contentY = newY
+                event.accepted = true
+            }
+        }
 
         Column {
             id: spanningNetworksColumn
