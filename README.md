@@ -83,14 +83,19 @@ A modern Wayland desktop shell built with [Quickshell](https://quickshell.org/) 
 
 ### Quick Start
 
+*If you do not already have niri, see [#]
+
 **Dependencies:**
 ```bash
 # Arch Linux
 paru -S quickshell-git ttf-material-symbols-variable-git inter-font ttf-fira-code
 
 # Fedora  
-sudo dnf copr enable errornointernet/quickshell && sudo dnf install quickshell-git
-# Install fonts manually (see instructions below)
+sudo dnf copr enable errornointernet/quickshell && sudo dnf install quickshell-git rsms-inter-fonts fira-code-fonts
+# Install icon fonts manually
+mkdir -p ~/.local/share/fonts
+curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf
+fc-cache -f
 ```
 
 **Get the shell:**
@@ -166,6 +171,14 @@ sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 Add to your niri config
 
 ```bash
+// Required for clipboard history integration
+spawn-at-startup "bash" "-c" "wl-paste --watch cliphist store &"
+
+// Recommended (must install polkit-mate before hand) for elevation prompts
+spawn-at-startup "/usr/lib/mate-polkit/polkit-mate-authentication-agent-1"
+// This may be a different path on different distributions, the above is for the arch linux mate-polkit package
+
+// Starts DankShell
 spawn-at-startup "qs" "-c" "DankMaterialShell"
 
 // Dank keybinds
