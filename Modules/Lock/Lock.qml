@@ -17,7 +17,7 @@ Item {
     id: loader
 
     WlSessionLock {
-      id: lock
+      id: sessionLock
 
       property bool unlocked: false
       property string sharedPasswordBuffer: ""
@@ -30,10 +30,11 @@ Item {
       }
 
       LockSurface {
-        lock: lock
-        sharedPasswordBuffer: lock.sharedPasswordBuffer
+        id: lockSurface
+        lock: sessionLock
+        sharedPasswordBuffer: sessionLock.sharedPasswordBuffer
         onPasswordChanged: newPassword => {
-          lock.sharedPasswordBuffer = newPassword
+          sessionLock.sharedPasswordBuffer = newPassword
         }
       }
     }
