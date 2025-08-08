@@ -119,7 +119,7 @@ PanelWindow {
     }
     y: Math.max(10, root.anchorPos.y - height + 30)
     color: Theme.popupBackground()
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                           Theme.outline.b, 0.08)
     border.width: 1
@@ -153,7 +153,7 @@ PanelWindow {
           required property var model
           width: windowColumn.width
           height: 32
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
           color: windowArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                     Theme.primary.g,
                                                     Theme.primary.b,

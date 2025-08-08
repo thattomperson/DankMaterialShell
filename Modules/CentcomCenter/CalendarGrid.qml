@@ -189,7 +189,7 @@ Column {
                                                           Theme.primary.g,
                                                           Theme.primary.b,
                                                           0.12) : dayArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
           clip: true
 
           StyledText {

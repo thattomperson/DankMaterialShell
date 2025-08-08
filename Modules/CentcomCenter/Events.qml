@@ -29,7 +29,7 @@ Rectangle {
   height: shouldShow ? (hasEvents ? Math.min(
                                       300,
                                       80 + selectedDateEvents.length * 60) : 120) : 0
-  radius: Theme.cornerRadiusLarge
+  radius: Theme.cornerRadius
   color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                  Theme.surfaceVariant.b, 0.12)
   border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)

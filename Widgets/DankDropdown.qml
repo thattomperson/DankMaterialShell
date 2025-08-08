@@ -82,7 +82,7 @@ Rectangle {
     anchors.right: parent.right
     anchors.rightMargin: Theme.spacingM
     anchors.verticalCenter: parent.verticalCenter
-    radius: Theme.cornerRadiusSmall
+    radius: Theme.cornerRadius
     color: dropdownArea.containsMouse ? Theme.primaryHover : Theme.contentBackground()
     border.color: Theme.surfaceVariantAlpha
     border.width: 1
@@ -226,7 +226,7 @@ Rectangle {
                          Theme.surfaceContainer.b, 1)
           border.color: Theme.primarySelected
           border.width: 1
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
 
           Column {
             anchors.fill: parent
@@ -238,7 +238,7 @@ Rectangle {
               width: parent.width
               height: 42
               visible: root.enableFuzzySearch
-              radius: Theme.cornerRadiusSmall
+              radius: Theme.cornerRadius
               color: Theme.surfaceVariantAlpha
 
               DankTextField {
@@ -303,7 +303,7 @@ Rectangle {
 
                 width: ListView.view.width
                 height: 32
-                radius: Theme.cornerRadiusSmall
+                radius: Theme.cornerRadius
                 color: isSelected ? Theme.primaryHover : optionArea.containsMouse ? Theme.primaryHoverLight : "transparent"
 
                 Row {

@@ -685,7 +685,7 @@ Item {
       anchors.centerIn: parent
       width: 320
       height: 180
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Theme.surfaceContainer
       border.color: Theme.outline
       border.width: 1
@@ -794,7 +794,7 @@ Item {
       anchors.centerIn: parent
       width: 320
       height: 180
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Theme.surfaceContainer
       border.color: Theme.outline
       border.width: 1
@@ -903,7 +903,7 @@ Item {
       anchors.centerIn: parent
       width: 320
       height: 180
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Theme.surfaceContainer
       border.color: Theme.outline
       border.width: 1

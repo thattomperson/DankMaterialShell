@@ -60,7 +60,7 @@ Rectangle {
                                                * 2) : workspaceRow.implicitWidth
                                              + Theme.spacingL * 2
   height: 30
-  radius: Theme.cornerRadiusLarge
+  radius: Theme.cornerRadius
   color: {
     const baseColor = Theme.surfaceTextHover
     return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,

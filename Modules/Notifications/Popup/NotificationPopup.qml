@@ -125,7 +125,7 @@ PanelWindow {
 
       anchors.fill: parent
       anchors.margins: 4
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Theme.popupBackground()
       border.color: notificationData && notificationData.urgency
                     === NotificationUrgency.Critical ? Qt.rgba(Theme.primary.r,

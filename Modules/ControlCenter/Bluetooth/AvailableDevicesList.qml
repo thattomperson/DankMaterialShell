@@ -279,7 +279,7 @@ Column {
       Rectangle {
         width: 80
         height: 28
-        radius: Theme.cornerRadiusSmall
+        radius: Theme.cornerRadius
         anchors.right: parent.right
         anchors.rightMargin: Theme.spacingM
         anchors.verticalCenter: parent.verticalCenter

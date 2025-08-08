@@ -40,7 +40,7 @@ DankModal {
   visible: false
   keyboardFocus: "exclusive"
   backgroundColor: Theme.popupBackground()
-  cornerRadius: Theme.cornerRadiusXLarge
+  cornerRadius: Theme.cornerRadius
   enableShadow: true
   onBackgroundClicked: hide()
 
@@ -128,7 +128,7 @@ DankModal {
           Layout.fillWidth: true
           height: 52
           color: Theme.surfaceSelected
-          radius: Theme.cornerRadiusLarge
+          radius: Theme.cornerRadius
           border.color: Theme.outlineLight
           border.width: 1
 
@@ -143,7 +143,7 @@ DankModal {
               Rectangle {
                 width: (parent.width - (tabNames.length - 1) * 2) / tabNames.length
                 height: 44
-                radius: Theme.cornerRadiusLarge
+                radius: Theme.cornerRadius
                 color: currentTab === index ? Theme.primaryPressed : (tabMouseArea.containsMouse ? Theme.primaryHoverLight : "transparent")
                 border.color: currentTab === index ? Theme.primary : "transparent"
                 border.width: currentTab === index ? 1 : 0
@@ -223,7 +223,7 @@ DankModal {
         Rectangle {
           Layout.fillWidth: true
           Layout.fillHeight: true
-          radius: Theme.cornerRadiusLarge
+          radius: Theme.cornerRadius
           color: Theme.surfaceLight
           border.color: Theme.outlineLight
           border.width: 1

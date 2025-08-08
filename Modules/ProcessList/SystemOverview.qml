@@ -16,7 +16,7 @@ Row {
   Rectangle {
     width: (parent.width - Theme.spacingM * 2) / 3
     height: 80
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     color: {
       if (SysMonitorService.sortBy === "cpu")
         return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16)
@@ -125,7 +125,7 @@ Row {
   Rectangle {
     width: (parent.width - Theme.spacingM * 2) / 3
     height: 80
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     color: {
       if (SysMonitorService.sortBy === "memory")
         return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.16)
@@ -236,7 +236,7 @@ Row {
   Rectangle {
     width: (parent.width - Theme.spacingM * 2) / 3
     height: 80
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                    Theme.surfaceVariant.b, 0.08)
     border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,

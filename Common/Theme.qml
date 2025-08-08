@@ -428,10 +428,7 @@ Singleton {
   property int extraLongDuration: 1000
   property int standardEasing: Easing.OutCubic
   property int emphasizedEasing: Easing.OutQuart
-  property real cornerRadius: 12
-  property real cornerRadiusSmall: 8
-  property real cornerRadiusLarge: 16
-  property real cornerRadiusXLarge: 24
+  property real cornerRadius: typeof SettingsData !== "undefined" ? SettingsData.cornerRadius : 12
   property real spacingXS: 4
   property real spacingS: 8
   property real spacingM: 12

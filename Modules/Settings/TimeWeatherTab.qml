@@ -38,7 +38,7 @@ Item {
     StyledRect {
       width: parent.width
       height: timeSection.implicitHeight + Theme.spacingL * 2
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                      Theme.surfaceVariant.b, 0.3)
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
@@ -92,7 +92,7 @@ Item {
     StyledRect {
       width: parent.width
       height: weatherSection.implicitHeight + Theme.spacingL * 2
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                      Theme.surfaceVariant.b, 0.3)
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,

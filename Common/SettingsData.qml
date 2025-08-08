@@ -87,6 +87,7 @@ Singleton {
   property bool qtThemingEnabled: false
   property bool showDock: false
   property bool dockAutoHide: false
+  property real cornerRadius: 12
 
   readonly property string defaultFontFamily: "Inter Variable"
   readonly property string defaultMonoFontFamily: "Fira Code"
@@ -250,6 +251,7 @@ Singleton {
             !== undefined ? settings.qtThemingEnabled : false
         showDock = settings.showDock !== undefined ? settings.showDock : false
         dockAutoHide = settings.dockAutoHide !== undefined ? settings.dockAutoHide : false
+        cornerRadius = settings.cornerRadius !== undefined ? settings.cornerRadius : 12
         applyStoredTheme()
         detectAvailableIconThemes()
         detectQtTools()
@@ -316,7 +318,8 @@ Singleton {
                                           "gtkThemingEnabled": gtkThemingEnabled,
                                           "qtThemingEnabled": qtThemingEnabled,
                                           "showDock": showDock,
-                                          "dockAutoHide": dockAutoHide
+                                          "dockAutoHide": dockAutoHide,
+                                          "cornerRadius": cornerRadius
                                         }, null, 2))
   }
 
@@ -716,6 +719,11 @@ Singleton {
 
   function setDockAutoHide(enabled) {
     dockAutoHide = enabled
+    saveSettings()
+  }
+
+  function setCornerRadius(radius) {
+    cornerRadius = radius
     saveSettings()
   }
 

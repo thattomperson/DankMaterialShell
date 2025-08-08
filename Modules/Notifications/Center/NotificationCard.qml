@@ -28,7 +28,7 @@ Rectangle {
     }
     return baseHeight
   }
-  radius: Theme.cornerRadiusLarge
+  radius: Theme.cornerRadius
   color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                  Theme.surfaceVariant.b, 0.1)
   border.color: notificationGroup?.latestNotification?.urgency
@@ -323,7 +323,7 @@ Rectangle {
             }
             return baseHeight
           }
-          radius: Theme.cornerRadiusLarge
+          radius: Theme.cornerRadius
           color: "transparent"
           border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                                 Theme.outline.b, 0.05)

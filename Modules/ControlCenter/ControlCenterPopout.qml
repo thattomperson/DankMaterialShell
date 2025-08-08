@@ -111,7 +111,7 @@ PanelWindow {
 
     sourceComponent: Rectangle {
       color: Theme.popupBackground()
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                             Theme.outline.b, 0.08)
       border.width: 1
@@ -153,7 +153,7 @@ PanelWindow {
           Rectangle {
             width: parent.width
             height: 90
-            radius: Theme.cornerRadiusLarge
+            radius: Theme.cornerRadius
             color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                            Theme.surfaceVariant.b,
                            Theme.getContentBackgroundAlpha() * 0.4)
@@ -651,7 +651,7 @@ PanelWindow {
           Rectangle {
             width: parent.width
             height: tabBar.height + Theme.spacingM * 2
-            radius: Theme.cornerRadiusLarge
+            radius: Theme.cornerRadius
             color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                            Theme.surfaceVariant.b, 0.15)
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
@@ -712,7 +712,7 @@ PanelWindow {
         Rectangle {
           width: parent.width
           Layout.fillHeight: true
-          radius: Theme.cornerRadiusLarge
+          radius: Theme.cornerRadius
           color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                          Theme.surfaceVariant.b, 0.1)
           border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,

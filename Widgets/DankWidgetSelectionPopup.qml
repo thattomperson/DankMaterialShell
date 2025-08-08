@@ -37,7 +37,7 @@ Popup {
                    Theme.surfaceContainer.b, 1)
     border.color: Theme.primarySelected
     border.width: 1
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
   }
 
   contentItem: Item {

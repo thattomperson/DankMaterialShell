@@ -60,7 +60,7 @@ Rectangle {
 
         Rectangle {
           anchors.fill: parent
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
           color: trayItemArea.containsMouse ? Theme.primaryHover : "transparent"
 
           Behavior on color {

@@ -11,7 +11,7 @@ Rectangle {
 
   width: parent ? parent.width : 0
   height: 40
-  radius: Theme.cornerRadiusLarge
+  radius: Theme.cornerRadius
   color: processMouseArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                   Theme.primary.g,
                                                   Theme.primary.b,

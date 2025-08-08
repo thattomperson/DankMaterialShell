@@ -44,7 +44,7 @@ PanelWindow {
     x: Math.max(Theme.spacingL, parent.width - width - Theme.spacingL)
     y: Theme.barHeight + Theme.spacingXS
     color: Theme.popupBackground()
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                           Theme.outline.b, 0.08)
     border.width: 1

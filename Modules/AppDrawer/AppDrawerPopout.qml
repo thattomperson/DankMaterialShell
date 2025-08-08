@@ -134,7 +134,7 @@ PanelWindow {
       id: launcherPanel
 
       color: Theme.popupBackground()
-      radius: Theme.cornerRadiusXLarge
+      radius: Theme.cornerRadius
       antialiasing: true
       smooth: true
 
@@ -245,7 +245,7 @@ PanelWindow {
 
             width: parent.width
             height: 52
-            cornerRadius: Theme.cornerRadiusLarge
+            cornerRadius: Theme.cornerRadius
             backgroundColor: Qt.rgba(Theme.surfaceVariant.r,
                                      Theme.surfaceVariant.g,
                                      Theme.surfaceVariant.b,
@@ -392,7 +392,7 @@ PanelWindow {
               usedHeight += (searchField.text.length === 0 ? 40 + Theme.spacingL : 0)
               return parent.height - usedHeight
             }
-            radius: Theme.cornerRadiusLarge
+            radius: Theme.cornerRadius
             color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                            Theme.surfaceVariant.b, 0.1)
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
@@ -467,7 +467,7 @@ PanelWindow {
               delegate: Rectangle {
                 width: ListView.view.width
                 height: appList.itemHeight
-                radius: Theme.cornerRadiusLarge
+                radius: Theme.cornerRadius
                 color: ListView.isCurrentItem ? Theme.primaryPressed : listMouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
                 border.color: ListView.isCurrentItem ? Theme.primarySelected : Theme.outlineMedium
                 border.width: ListView.isCurrentItem ? 2 : 1
@@ -498,7 +498,7 @@ PanelWindow {
                       anchors.fill: parent
                       visible: !listIconImg.visible
                       color: Theme.surfaceLight
-                      radius: Theme.cornerRadiusLarge
+                      radius: Theme.cornerRadius
                       border.width: 1
                       border.color: Theme.primarySelected
 
@@ -657,7 +657,7 @@ PanelWindow {
               delegate: Rectangle {
                 width: appGrid.cellWidth - appGrid.cellPadding
                 height: appGrid.cellHeight - appGrid.cellPadding
-                radius: Theme.cornerRadiusLarge
+                radius: Theme.cornerRadius
                 color: appGrid.currentIndex === index ? Theme.primaryPressed : gridMouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
                 border.color: appGrid.currentIndex
                               === index ? Theme.primarySelected : Theme.outlineMedium
@@ -693,7 +693,7 @@ PanelWindow {
                       anchors.fill: parent
                       visible: !gridIconImg.visible
                       color: Theme.surfaceLight
-                      radius: Theme.cornerRadiusLarge
+                      radius: Theme.cornerRadius
                       border.width: 1
                       border.color: Theme.primarySelected
 
@@ -816,7 +816,7 @@ PanelWindow {
 
     contentItem: Rectangle {
       color: Theme.popupBackground()
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                             Theme.outline.b, 0.08)
       border.width: 1
@@ -831,7 +831,7 @@ PanelWindow {
         Rectangle {
           width: parent.width
           height: 32
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
           color: pinMouseArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                       Theme.primary.g,
                                                       Theme.primary.b,
@@ -917,7 +917,7 @@ PanelWindow {
         Rectangle {
           width: parent.width
           height: 32
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
           color: launchMouseArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                          Theme.primary.g,
                                                          Theme.primary.b,

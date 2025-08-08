@@ -37,7 +37,7 @@ Column {
   Rectangle {
     width: parent.width
     height: 200
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                    Theme.surfaceVariant.b, 0.04)
     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
@@ -65,7 +65,7 @@ Column {
         Rectangle {
           width: 80
           height: 24
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
           color: Qt.rgba(Theme.primary.r, Theme.primary.g,
                          Theme.primary.b, 0.12)
           anchors.verticalCenter: parent.verticalCenter
@@ -169,7 +169,7 @@ Column {
   Rectangle {
     width: parent.width
     height: 80
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                    Theme.surfaceVariant.b, 0.04)
     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
@@ -348,7 +348,7 @@ Column {
     Rectangle {
       width: (parent.width - Theme.spacingM) / 2
       height: 80
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                      Theme.surfaceVariant.b, 0.04)
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
@@ -415,7 +415,7 @@ Column {
     Rectangle {
       width: (parent.width - Theme.spacingM) / 2
       height: 80
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                      Theme.surfaceVariant.b, 0.04)
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,

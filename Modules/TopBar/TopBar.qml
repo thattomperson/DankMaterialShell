@@ -84,7 +84,7 @@ PanelWindow {
 
     Rectangle {
       anchors.fill: parent
-      radius: Theme.cornerRadiusXLarge
+      radius: Theme.cornerRadius
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g,
                      Theme.surfaceContainer.b, root.backgroundTransparency)
       layer.enabled: true

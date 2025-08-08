@@ -146,7 +146,7 @@ Column {
         Rectangle {
           width: spanningNetworksColumn.width
           height: 38
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
           color: networkArea2.containsMouse ? Qt.rgba(
                                                 Theme.primary.r,
                                                 Theme.primary.g,

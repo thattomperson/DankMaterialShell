@@ -35,7 +35,7 @@ Item {
         width: tabBar.equalWidthTabs ? (tabBar.width - tabBar.spacing * (tabCount - 1))
                                        / tabCount : contentRow.implicitWidth + Theme.spacingM * 2
         height: tabBar.tabHeight
-        radius: Theme.cornerRadiusSmall
+        radius: Theme.cornerRadius
         color: isActive ? Theme.primaryPressed : tabArea.containsMouse ? Theme.primaryHoverLight : "transparent"
 
         Row {

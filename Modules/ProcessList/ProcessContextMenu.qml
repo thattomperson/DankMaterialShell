@@ -62,7 +62,7 @@ Popup {
     id: menuContent
 
     color: Theme.popupBackground()
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                           Theme.outline.b, 0.08)
     border.width: 1
@@ -77,7 +77,7 @@ Popup {
       Rectangle {
         width: parent.width
         height: 28
-        radius: Theme.cornerRadiusSmall
+        radius: Theme.cornerRadius
         color: copyPidArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                    Theme.primary.g,
                                                    Theme.primary.b,
@@ -112,7 +112,7 @@ Popup {
       Rectangle {
         width: parent.width
         height: 28
-        radius: Theme.cornerRadiusSmall
+        radius: Theme.cornerRadius
         color: copyNameArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                     Theme.primary.g,
                                                     Theme.primary.b,
@@ -162,7 +162,7 @@ Popup {
       Rectangle {
         width: parent.width
         height: 28
-        radius: Theme.cornerRadiusSmall
+        radius: Theme.cornerRadius
         color: killArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g,
                                                 Theme.error.b,
                                                 0.12) : "transparent"
@@ -201,7 +201,7 @@ Popup {
       Rectangle {
         width: parent.width
         height: 28
-        radius: Theme.cornerRadiusSmall
+        radius: Theme.cornerRadius
         color: forceKillArea.containsMouse ? Qt.rgba(Theme.error.r,
                                                      Theme.error.g,
                                                      Theme.error.b,

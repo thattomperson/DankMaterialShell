@@ -59,7 +59,7 @@ PanelWindow {
     anchors.bottom: parent.bottom
     anchors.bottomMargin: Theme.spacingM
     color: Theme.popupBackground()
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                           Theme.outline.b, 0.08)
     border.width: 1

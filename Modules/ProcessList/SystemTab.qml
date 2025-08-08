@@ -23,7 +23,7 @@ ScrollView {
     Rectangle {
       width: parent.width
       height: systemInfoColumn.implicitHeight + 2 * Theme.spacingL
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g,
                      Theme.surfaceContainer.b, 0.6)
       border.width: 0
@@ -265,7 +265,7 @@ ScrollView {
     Rectangle {
       width: parent.width
       height: storageColumn.implicitHeight + 2 * Theme.spacingL
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g,
                      Theme.surfaceContainer.b, 0.6)
       border.width: 0
@@ -384,7 +384,7 @@ ScrollView {
             Rectangle {
               width: parent.width
               height: 24
-              radius: Theme.cornerRadiusSmall
+              radius: Theme.cornerRadius
               color: diskMouseArea.containsMouse ? Qt.rgba(Theme.surfaceText.r,
                                                            Theme.surfaceText.g,
                                                            Theme.surfaceText.b,

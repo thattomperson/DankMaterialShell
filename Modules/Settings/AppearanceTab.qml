@@ -33,6 +33,11 @@ Item {
 
       Loader {
         width: parent.width
+        sourceComponent: cornerRadiusComponent
+      }
+
+      Loader {
+        width: parent.width
         sourceComponent: themeComponent
       }
 
@@ -50,7 +55,7 @@ Item {
     StyledRect {
       width: parent.width
       height: displaySection.implicitHeight + Theme.spacingL * 2
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                      Theme.surfaceVariant.b, 0.3)
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
@@ -319,7 +324,7 @@ Item {
     StyledRect {
       width: parent.width
       height: transparencySection.implicitHeight + Theme.spacingL * 2
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                      Theme.surfaceVariant.b, 0.3)
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
@@ -441,7 +446,7 @@ Item {
     StyledRect {
       width: parent.width
       height: themeSection.implicitHeight + Theme.spacingL * 2
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                      Theme.surfaceVariant.b, 0.3)
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
@@ -532,7 +537,7 @@ Item {
                   color: Theme.surfaceContainer
                   border.color: Theme.outline
                   border.width: 1
-                  radius: Theme.cornerRadiusSmall
+                  radius: Theme.cornerRadius
                   anchors.bottom: parent.top
                   anchors.bottomMargin: Theme.spacingXS
                   anchors.horizontalCenter: parent.horizontalCenter
@@ -602,7 +607,7 @@ Item {
                   color: Theme.surfaceContainer
                   border.color: Theme.outline
                   border.width: 1
-                  radius: Theme.cornerRadiusSmall
+                  radius: Theme.cornerRadius
                   anchors.bottom: parent.top
                   anchors.bottomMargin: Theme.spacingXS
                   anchors.horizontalCenter: parent.horizontalCenter
@@ -748,7 +753,7 @@ Item {
               color: Theme.surfaceContainer
               border.color: Theme.outline
               border.width: 1
-              radius: Theme.cornerRadiusSmall
+              radius: Theme.cornerRadius
               anchors.bottom: parent.top
               anchors.bottomMargin: Theme.spacingS
               anchors.horizontalCenter: parent.horizontalCenter
@@ -803,6 +808,75 @@ Item {
     }
   }
 
+  // Corner Radius Component
+  Component {
+    id: cornerRadiusComponent
+
+    StyledRect {
+      width: parent.width
+      height: cornerRadiusSection.implicitHeight + Theme.spacingL * 2
+      radius: Theme.cornerRadius
+      color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                     Theme.surfaceVariant.b, 0.3)
+      border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                            Theme.outline.b, 0.2)
+      border.width: 1
+
+      Column {
+        id: cornerRadiusSection
+
+        anchors.fill: parent
+        anchors.margins: Theme.spacingL
+        spacing: Theme.spacingM
+
+        Row {
+          width: parent.width
+          spacing: Theme.spacingM
+
+          DankIcon {
+            name: "rounded_corner"
+            size: Theme.iconSize
+            color: Theme.primary
+            anchors.verticalCenter: parent.verticalCenter
+          }
+
+          StyledText {
+            text: "Corner Radius"
+            font.pixelSize: Theme.fontSizeLarge
+            font.weight: Font.Medium
+            color: Theme.surfaceText
+            anchors.verticalCenter: parent.verticalCenter
+          }
+        }
+
+        Column {
+          width: parent.width
+          spacing: Theme.spacingS
+
+          StyledText {
+            text: "Bar & Widget Corner Roundness"
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.surfaceText
+            font.weight: Font.Medium
+          }
+
+          DankSlider {
+            width: parent.width
+            height: 24
+            value: SettingsData.cornerRadius
+            minimum: 0
+            maximum: 32
+            unit: ""
+            showValue: true
+            onSliderValueChanged: newValue => {
+                                    SettingsData.setCornerRadius(newValue)
+                                  }
+          }
+        }
+      }
+    }
+  }
+
   // System App Theming Component
   Component {
     id: systemThemingComponent
@@ -810,7 +884,7 @@ Item {
     StyledRect {
       width: parent.width
       height: systemThemingSection.implicitHeight + Theme.spacingL * 2
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                      Theme.surfaceVariant.b, 0.3)
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,

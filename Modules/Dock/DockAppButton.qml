@@ -262,7 +262,7 @@ Item {
     anchors.centerIn: parent
     visible: !iconImg.visible
     color: Theme.surfaceLight
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     border.width: 1
     border.color: Theme.primarySelected
 

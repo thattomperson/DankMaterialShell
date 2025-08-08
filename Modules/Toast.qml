@@ -45,7 +45,7 @@ PanelWindow {
         return Theme.primary
       }
     }
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     layer.enabled: true
     opacity: ToastService.toastVisible ? 0.9 : 0
     scale: ToastService.toastVisible ? 1 : 0.9

@@ -51,7 +51,7 @@ Rectangle {
   visible: false
   width: 160
   height: wifiMenuColumn.implicitHeight + Theme.spacingS * 2
-  radius: Theme.cornerRadiusLarge
+  radius: Theme.cornerRadius
   color: Theme.popupBackground()
   border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
   border.width: 1
@@ -84,7 +84,7 @@ Rectangle {
     Rectangle {
       width: parent.width
       height: 32
-      radius: Theme.cornerRadiusSmall
+      radius: Theme.cornerRadius
       color: connectWifiArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                      Theme.primary.g,
                                                      Theme.primary.b,
@@ -170,7 +170,7 @@ Rectangle {
     Rectangle {
       width: parent.width
       height: 32
-      radius: Theme.cornerRadiusSmall
+      radius: Theme.cornerRadius
       color: forgetWifiArea.containsMouse ? Qt.rgba(Theme.error.r,
                                                     Theme.error.g,
                                                     Theme.error.b,
@@ -228,7 +228,7 @@ Rectangle {
     Rectangle {
       width: parent.width
       height: 32
-      radius: Theme.cornerRadiusSmall
+      radius: Theme.cornerRadius
       color: infoWifiArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                   Theme.primary.g,
                                                   Theme.primary.b,

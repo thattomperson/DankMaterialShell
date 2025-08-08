@@ -40,7 +40,7 @@ DankModal {
   height: 600
   keyboardFocus: "ondemand"
   backgroundColor: Theme.popupBackground()
-  cornerRadius: Theme.cornerRadiusXLarge
+  cornerRadius: Theme.cornerRadius
   borderColor: Theme.outlineMedium
   borderWidth: 1
   enableShadow: true
@@ -133,7 +133,7 @@ DankModal {
         Rectangle {
           width: parent.width
           height: categorySelector.height + Theme.spacingM * 2
-          radius: Theme.cornerRadiusLarge
+          radius: Theme.cornerRadius
           color: Theme.surfaceVariantAlpha
           border.color: Theme.outlineMedium
           border.width: 1
@@ -163,7 +163,7 @@ DankModal {
 
             width: parent.width - 80 - Theme.spacingM // Leave space for view toggle buttons
             height: 56
-            cornerRadius: Theme.cornerRadiusLarge
+            cornerRadius: Theme.cornerRadius
             backgroundColor: Qt.rgba(Theme.surfaceVariant.r,
                                      Theme.surfaceVariant.g,
                                      Theme.surfaceVariant.b,
@@ -226,7 +226,7 @@ DankModal {
             Rectangle {
               width: 36
               height: 36
-              radius: Theme.cornerRadiusLarge
+              radius: Theme.cornerRadius
               color: appLauncher.viewMode === "list" ? Theme.primaryHover : listViewArea.containsMouse ? Theme.surfaceHover : "transparent"
               border.color: appLauncher.viewMode === "list" ? Theme.primarySelected : "transparent"
               border.width: 1
@@ -253,7 +253,7 @@ DankModal {
             Rectangle {
               width: 36
               height: 36
-              radius: Theme.cornerRadiusLarge
+              radius: Theme.cornerRadius
               color: appLauncher.viewMode === "grid" ? Theme.primaryHover : gridViewArea.containsMouse ? Theme.surfaceHover : "transparent"
               border.color: appLauncher.viewMode === "grid" ? Theme.primarySelected : "transparent"
               border.width: 1
@@ -284,7 +284,7 @@ DankModal {
 
           width: parent.width
           height: parent.height - y
-          radius: Theme.cornerRadiusLarge
+          radius: Theme.cornerRadius
           color: Theme.surfaceLight
           border.color: Theme.outlineLight
           border.width: 1
@@ -357,7 +357,7 @@ DankModal {
             delegate: Rectangle {
               width: ListView.view.width
               height: resultsList.itemHeight
-              radius: Theme.cornerRadiusLarge
+              radius: Theme.cornerRadius
               color: ListView.isCurrentItem ? Theme.primaryPressed : listMouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
               border.color: ListView.isCurrentItem ? Theme.primarySelected : Theme.outlineMedium
               border.width: ListView.isCurrentItem ? 2 : 1
@@ -388,7 +388,7 @@ DankModal {
                     anchors.fill: parent
                     visible: !listIconImg.visible
                     color: Theme.surfaceLight
-                    radius: Theme.cornerRadiusLarge
+                    radius: Theme.cornerRadius
                     border.width: 1
                     border.color: Theme.primarySelected
 
@@ -547,7 +547,7 @@ DankModal {
             delegate: Rectangle {
               width: resultsGrid.cellWidth - resultsGrid.cellPadding
               height: resultsGrid.cellHeight - resultsGrid.cellPadding
-              radius: Theme.cornerRadiusLarge
+              radius: Theme.cornerRadius
               color: resultsGrid.currentIndex === index ? Theme.primaryPressed : gridMouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
               border.color: resultsGrid.currentIndex
                             === index ? Theme.primarySelected : Theme.outlineMedium
@@ -583,7 +583,7 @@ DankModal {
                     anchors.fill: parent
                     visible: !gridIconImg.visible
                     color: Theme.surfaceLight
-                    radius: Theme.cornerRadiusLarge
+                    radius: Theme.cornerRadius
                     border.width: 1
                     border.color: Theme.primarySelected
 
@@ -704,7 +704,7 @@ DankModal {
 
     contentItem: Rectangle {
       color: Theme.popupBackground()
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                             Theme.outline.b, 0.08)
       border.width: 1
@@ -718,7 +718,7 @@ DankModal {
         Rectangle {
           width: parent.width
           height: 32
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
           color: pinMouseArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                       Theme.primary.g,
                                                       Theme.primary.b,
@@ -801,7 +801,7 @@ DankModal {
         Rectangle {
           width: parent.width
           height: 32
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
           color: launchMouseArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                          Theme.primary.g,
                                                          Theme.primary.b,

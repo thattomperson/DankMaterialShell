@@ -118,7 +118,7 @@ PanelWindow {
     }
     y: Math.max(10, root.anchorPos.y - height + 30)
     color: Theme.popupBackground()
-    radius: Theme.cornerRadiusLarge
+    radius: Theme.cornerRadius
     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                           Theme.outline.b, 0.08)
     border.width: 1
@@ -147,7 +147,7 @@ PanelWindow {
       Rectangle {
         width: parent.width
         height: 28
-        radius: Theme.cornerRadiusSmall
+        radius: Theme.cornerRadius
         color: pinArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                Theme.primary.g,
                                                Theme.primary.b,
@@ -202,7 +202,7 @@ PanelWindow {
           required property var model
           width: menuColumn.width
           height: 28
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
           color: windowArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                     Theme.primary.g,
                                                     Theme.primary.b,
@@ -248,7 +248,7 @@ PanelWindow {
                  && root.appData.windows.count > 1
         width: parent.width
         height: 28
-        radius: Theme.cornerRadiusSmall
+        radius: Theme.cornerRadius
         color: closeAllArea.containsMouse ? Qt.rgba(Theme.error.r,
                                                     Theme.error.g,
                                                     Theme.error.b,

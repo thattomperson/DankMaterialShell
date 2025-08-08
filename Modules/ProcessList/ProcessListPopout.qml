@@ -135,7 +135,7 @@ PanelWindow {
     sourceComponent: Rectangle {
       id: dropdownContent
 
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       color: Theme.popupBackground()
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                             Theme.outline.b, 0.08)
@@ -173,7 +173,7 @@ PanelWindow {
         Rectangle {
           Layout.fillWidth: true
           height: systemOverview.height + Theme.spacingM * 2
-          radius: Theme.cornerRadiusLarge
+          radius: Theme.cornerRadius
           color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                          Theme.surfaceVariant.b, 0.2)
           border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
@@ -191,7 +191,7 @@ PanelWindow {
         Rectangle {
           Layout.fillWidth: true
           Layout.fillHeight: true
-          radius: Theme.cornerRadiusLarge
+          radius: Theme.cornerRadius
           color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                          Theme.surfaceVariant.b, 0.1)
           border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,

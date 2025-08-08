@@ -119,7 +119,7 @@ PanelWindow {
 
         color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g,
                        Theme.surfaceContainer.b, backgroundTransparency)
-        radius: Theme.cornerRadiusXLarge
+        radius: Theme.cornerRadius
         border.width: 1
         border.color: Theme.outlineMedium
         layer.enabled: true

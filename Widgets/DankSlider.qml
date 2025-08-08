@@ -96,7 +96,7 @@ Item {
 
           width: tooltipText.contentWidth + Theme.spacingS * 2
           height: tooltipText.contentHeight + Theme.spacingXS * 2
-          radius: Theme.cornerRadiusSmall
+          radius: Theme.cornerRadius
           color: Theme.surfaceContainer
           border.color: Theme.outline
           border.width: 1

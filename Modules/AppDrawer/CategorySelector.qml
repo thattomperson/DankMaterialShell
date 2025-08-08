@@ -28,7 +28,7 @@ Item {
         width: (parent.width - (Math.min(categories.length,
                                          8) - 1) * Theme.spacingS) / Math.min(
                  categories.length, 8)
-        radius: Theme.cornerRadiusLarge
+        radius: Theme.cornerRadius
         color: selectedCategory === modelData ? Theme.primary : "transparent"
         border.color: selectedCategory === modelData ? "transparent" : Qt.rgba(
                                                          Theme.outline.r,
@@ -77,7 +77,7 @@ Item {
           height: 36
           width: (parent.width - (parent.topRowCategories.length - 1)
                   * Theme.spacingS) / parent.topRowCategories.length
-          radius: Theme.cornerRadiusLarge
+          radius: Theme.cornerRadius
           color: selectedCategory === modelData ? Theme.primary : "transparent"
           border.color: selectedCategory === modelData ? "transparent" : Qt.rgba(
                                                            Theme.outline.r,
@@ -122,7 +122,7 @@ Item {
           height: 36
           width: (parent.width - (parent.bottomRowCategories.length - 1)
                   * Theme.spacingS) / parent.bottomRowCategories.length
-          radius: Theme.cornerRadiusLarge
+          radius: Theme.cornerRadius
           color: selectedCategory === modelData ? Theme.primary : "transparent"
           border.color: selectedCategory === modelData ? "transparent" : Qt.rgba(
                                                            Theme.outline.r,

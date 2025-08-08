@@ -38,7 +38,7 @@ Rectangle {
   visible: false
   width: 160
   height: menuColumn.implicitHeight + Theme.spacingS * 2
-  radius: Theme.cornerRadiusLarge
+  radius: Theme.cornerRadius
   color: Theme.popupBackground()
   border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
   border.width: 1
@@ -67,7 +67,7 @@ Rectangle {
     Rectangle {
       width: parent.width
       height: 32
-      radius: Theme.cornerRadiusSmall
+      radius: Theme.cornerRadius
       color: connectArea.containsMouse ? Qt.rgba(Theme.primary.r,
                                                  Theme.primary.g,
                                                  Theme.primary.b,
@@ -140,7 +140,7 @@ Rectangle {
     Rectangle {
       width: parent.width
       height: 32
-      radius: Theme.cornerRadiusSmall
+      radius: Theme.cornerRadius
       color: forgetArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g,
                                                 Theme.error.b,
                                                 0.12) : "transparent"

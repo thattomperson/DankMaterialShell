@@ -126,7 +126,7 @@ DankModal {
   height: 550
   keyboardFocus: "ondemand"
   backgroundColor: Theme.popupBackground()
-  cornerRadius: Theme.cornerRadiusLarge
+  cornerRadius: Theme.cornerRadius
   borderColor: Theme.outlineMedium
   borderWidth: 1
   enableShadow: true
@@ -403,7 +403,7 @@ DankModal {
       Rectangle {
         width: parent.width
         height: parent.height - 110
-        radius: Theme.cornerRadiusLarge
+        radius: Theme.cornerRadius
         color: Theme.surfaceLight
         border.color: Theme.outlineLight
         border.width: 1

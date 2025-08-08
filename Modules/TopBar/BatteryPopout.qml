@@ -125,7 +125,7 @@ PanelWindow {
 
     sourceComponent: Rectangle {
       color: Theme.popupBackground()
-      radius: Theme.cornerRadiusLarge
+      radius: Theme.cornerRadius
       border.color: Theme.outlineMedium
       border.width: 1
       antialiasing: true
@@ -235,7 +235,7 @@ PanelWindow {
           Rectangle {
             width: parent.width
             height: 80
-            radius: Theme.cornerRadiusLarge
+            radius: Theme.cornerRadius
             color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                            Theme.surfaceVariant.b,
                            Theme.getContentBackgroundAlpha() * 0.4)
@@ -328,7 +328,7 @@ PanelWindow {
           Rectangle {
             width: parent.width
             height: 80
-            radius: Theme.cornerRadiusLarge
+            radius: Theme.cornerRadius
             color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                            Theme.surfaceVariant.b,
                            Theme.getContentBackgroundAlpha() * 0.4)
@@ -452,7 +452,7 @@ PanelWindow {
                 Rectangle {
                   width: parent.width
                   height: 50
-                  radius: Theme.cornerRadiusLarge
+                  radius: Theme.cornerRadius
                   color: profileArea.containsMouse ? Theme.primaryHoverLight : (root.isActiveProfile(modelData) ? Theme.primaryPressed : Theme.surfaceLight)
                   border.color: root.isActiveProfile(
                                   modelData) ? Theme.primary : Theme.outlineLight
@@ -511,7 +511,7 @@ PanelWindow {
           Rectangle {
             width: parent.width
             height: 60
-            radius: Theme.cornerRadiusLarge
+            radius: Theme.cornerRadius
             color: Theme.errorHover
             border.color: Theme.primarySelected
             border.width: 1
