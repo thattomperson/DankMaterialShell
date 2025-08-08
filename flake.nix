@@ -5,10 +5,11 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     quickshell.url = "git+https://git.outfoxxed.me/quickshell/quickshell";
     quickshell.inputs.nixpkgs.follows = "nixpkgs";
+    niri.url = "github:sodiboo/niri-flake";
     # home-manager.url = "github:nix-community/home-manager";
   };
 
-  outputs = { self, nixpkgs, ... }:
+  outputs = { self, nixpkgs, niri, ... }:
     let pkgs = nixpkgs.legacyPackages.x86_64-linux;
     in {
 
@@ -39,6 +40,8 @@
       homeModules.dankMaterialShell = { config, options, pkgs, outputs, ... }:
         let cfg = config.programs.dankMaterialShell;
         in {
+          imports = [ niri.homeModules.niri ];
+
           options.programs.dankMaterialShell = {
             enable = pkgs.lib.mkEnableOption "DankMaterialShell";
             enableKeybinds =
