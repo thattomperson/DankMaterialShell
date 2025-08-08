@@ -12,20 +12,21 @@
 
   outputs = { self, nixpkgs, niri, quickshell, ... }:
     let
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
       system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
     in {
+      packages.${system} = {
+        dankMaterialShell = pkgs.stdenvNoCC.mkDerivation {
+          name = "dankMaterialShell";
+          src = ./.;
+          installPhase = ''
+            mkdir -p $out/etc/xdg/quickshell/DankMaterialShell
+            cp -r . $out/etc/xdg/quickshell/DankMaterialShell
+          '';
+        };
 
-      packages.${system}.dankMaterialShell = pkgs.stdenvNoCC.mkDerivation {
-        name = "dankMaterialShell";
-        src = ./.;
-        installPhase = ''
-          mkdir -p $out/etc/xdg/quickshell/DankMaterialShell
-          cp -r . $out/etc/xdg/quickshell/DankMaterialShell
-        '';
+        default = self.packages.${system}.dankMaterialShell;
       };
-
-      packages.${system}.default = self.packages.${system}.dankMaterialShell;
 
       homeModules.dankMaterialShell = { config, pkgs, lib, ... }:
         let cfg = config.programs.dankMaterialShell;
@@ -53,26 +54,11 @@
             programs.niri.settings = lib.mkMerge [
               (lib.mkIf cfg.enableKeybinds {
                 binds = with config.lib.niri.actions; {
-                  "Mod+Space" = {
-                    hotkey-overlay.title = "Application Launcher";
-                    action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "spotlight" "toggle";
-                  };
-                  "Mod+V" = {
-                    hotkey-overlay.title = "Clipboard Manager";
-                    action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "clipboard" "toggle";
-                  };
-                  "Mod+M" = {
-                    hotkey-overlay.title = "Task Manager";
-                    action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "processlist" "toggle";
-                  };
-                  "Mod+Comma" = {
-                    hotkey-overlay.title = "Settings";
-                    action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "settings" "toggle";
-                  };
-                  "Super+Alt+L" = {
-                    hotkey-overlay.title = "Lock Screen";
-                    action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "lock" "lock";
-                  };
+                  "Mod+Space".action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "spotlight" "toggle";
+                  "Mod+V".action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "clipboard" "toggle";
+                  "Mod+M".action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "processlist" "toggle";
+                  "Mod+Comma".action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "settings" "toggle";
+                  "Super+Alt+L".action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "lock" "lock";
                   "XF86AudioRaiseVolume" = {
                     allow-when-locked = true;
                     action = spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "audio" "increment" "3";
