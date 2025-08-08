@@ -17,6 +17,7 @@ Singleton {
   property string profileLastPath: ""
   property bool doNotDisturb: false
   property var pinnedApps: []
+  property int selectedGpuIndex: 0
 
   Component.onCompleted: {
     loadSettings()
@@ -37,6 +38,7 @@ Singleton {
         profileLastPath = settings.profileLastPath !== undefined ? settings.profileLastPath : ""
         doNotDisturb = settings.doNotDisturb !== undefined ? settings.doNotDisturb : false
         pinnedApps = settings.pinnedApps !== undefined ? settings.pinnedApps : []
+        selectedGpuIndex = settings.selectedGpuIndex !== undefined ? settings.selectedGpuIndex : 0
       }
     } catch (e) {
 
@@ -50,7 +52,8 @@ Singleton {
                                           "wallpaperLastPath": wallpaperLastPath,
                                           "profileLastPath": profileLastPath,
                                           "doNotDisturb": doNotDisturb,
-                                          "pinnedApps": pinnedApps
+                                          "pinnedApps": pinnedApps,
+                                          "selectedGpuIndex": selectedGpuIndex
                                         }, null, 2))
   }
 
@@ -113,6 +116,11 @@ Singleton {
 
   function isPinnedApp(appId) {
     return appId && pinnedApps.indexOf(appId) !== -1
+  }
+
+  function setSelectedGpuIndex(index) {
+    selectedGpuIndex = index
+    saveSettings()
   }
 
   FileView {

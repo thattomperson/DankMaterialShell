@@ -87,7 +87,8 @@ Rectangle {
 
         SequentialAnimation on opacity {
           id: pulseAnimation
-          running: parent.visible && hasActivePrivacy && PrivacyService.cameraActive
+          running: parent.visible && hasActivePrivacy
+                   && PrivacyService.cameraActive
           loops: Animation.Infinite
 
           NumberAnimation {

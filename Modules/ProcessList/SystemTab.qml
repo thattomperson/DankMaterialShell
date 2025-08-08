@@ -104,8 +104,7 @@ ScrollView {
 
           Rectangle {
             width: (parent.width - Theme.spacingXL) / 2
-            height: Math.max(hardwareColumn.implicitHeight,
-                             memoryColumn.implicitHeight) + Theme.spacingM
+            height: hardwareColumn.implicitHeight + Theme.spacingL
             radius: Theme.cornerRadius
             color: Qt.rgba(Theme.surfaceContainerHigh.r,
                            Theme.surfaceContainerHigh.g,
@@ -135,7 +134,7 @@ ScrollView {
                 }
 
                 StyledText {
-                  text: "Hardware"
+                  text: "System"
                   font.pixelSize: Theme.fontSizeSmall
                   font.family: SettingsData.monoFontFamily
                   font.weight: Font.Bold
@@ -180,23 +179,57 @@ ScrollView {
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
               }
+
+              StyledText {
+                text: SysMonitorService.formatSystemMemory(
+                        SysMonitorService.totalMemoryKB) + " RAM"
+                font.pixelSize: Theme.fontSizeSmall
+                font.family: SettingsData.monoFontFamily
+                color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g,
+                               Theme.surfaceText.b, 0.8)
+                width: parent.width
+                elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter
+              }
             }
           }
 
           Rectangle {
             width: (parent.width - Theme.spacingXL) / 2
-            height: Math.max(hardwareColumn.implicitHeight,
-                             memoryColumn.implicitHeight) + Theme.spacingM
+            height: gpuColumn.implicitHeight + Theme.spacingL
             radius: Theme.cornerRadius
-            color: Qt.rgba(Theme.surfaceContainerHigh.r,
-                           Theme.surfaceContainerHigh.g,
-                           Theme.surfaceContainerHigh.b, 0.4)
+            color: {
+              if (gpuCardMouseArea.containsMouse
+                  && SysMonitorService.availableGpus.length > 1)
+                return Qt.rgba(Theme.surfaceContainerHigh.r,
+                               Theme.surfaceContainerHigh.g,
+                               Theme.surfaceContainerHigh.b, 0.6)
+              else
+                return Qt.rgba(Theme.surfaceContainerHigh.r,
+                               Theme.surfaceContainerHigh.g,
+                               Theme.surfaceContainerHigh.b, 0.4)
+            }
             border.width: 1
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                                   Theme.outline.b, 0.1)
 
+            MouseArea {
+              id: gpuCardMouseArea
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: SysMonitorService.availableGpus.length
+                           > 1 ? Qt.PointingHandCursor : Qt.ArrowCursor
+              onClicked: {
+                if (SysMonitorService.availableGpus.length > 1) {
+                  var nextIndex = (SessionData.selectedGpuIndex + 1)
+                      % SysMonitorService.availableGpus.length
+                  SessionData.setSelectedGpuIndex(nextIndex)
+                }
+              }
+            }
+
             Column {
-              id: memoryColumn
+              id: gpuColumn
 
               anchors.left: parent.left
               anchors.right: parent.right
@@ -209,14 +242,14 @@ ScrollView {
                 spacing: Theme.spacingS
 
                 DankIcon {
-                  name: "developer_board"
+                  name: "auto_awesome_mosaic"
                   size: Theme.iconSizeSmall
                   color: Theme.secondary
                   anchors.verticalCenter: parent.verticalCenter
                 }
 
                 StyledText {
-                  text: "Memory"
+                  text: "GPU"
                   font.pixelSize: Theme.fontSizeSmall
                   font.family: SettingsData.monoFontFamily
                   font.weight: Font.Bold
@@ -226,35 +259,113 @@ ScrollView {
               }
 
               StyledText {
-                text: SysMonitorService.formatSystemMemory(
-                        SysMonitorService.totalMemoryKB) + " Total"
+                text: {
+                  if (!SysMonitorService.availableGpus
+                      || SysMonitorService.availableGpus.length === 0) {
+                    return "No GPUs detected"
+                  }
+                  var gpu = SysMonitorService.availableGpus[Math.min(
+                                                              SessionData.selectedGpuIndex,
+                                                              SysMonitorService.availableGpus.length
+                                                              - 1)]
+                  return gpu.fullName
+                }
                 font.pixelSize: Theme.fontSizeSmall
                 font.family: SettingsData.monoFontFamily
                 font.weight: Font.Medium
                 color: Theme.surfaceText
                 width: parent.width
                 elide: Text.ElideRight
+                maximumLineCount: 1
                 verticalAlignment: Text.AlignVCenter
               }
 
               StyledText {
-                text: SysMonitorService.formatSystemMemory(
-                        SysMonitorService.usedMemoryKB) + " Used • "
-                      + SysMonitorService.formatSystemMemory(
-                        SysMonitorService.totalMemoryKB
-                        - SysMonitorService.usedMemoryKB) + " Available"
+                text: {
+                  if (!SysMonitorService.availableGpus
+                      || SysMonitorService.availableGpus.length === 0) {
+                    return "Vendor: N/A"
+                  }
+                  var gpu = SysMonitorService.availableGpus[Math.min(
+                                                              SessionData.selectedGpuIndex,
+                                                              SysMonitorService.availableGpus.length
+                                                              - 1)]
+                  return "Vendor: " + gpu.vendor
+                }
                 font.pixelSize: Theme.fontSizeSmall
                 font.family: SettingsData.monoFontFamily
                 color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g,
-                               Theme.surfaceText.b, 0.7)
+                               Theme.surfaceText.b, 0.8)
                 width: parent.width
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
               }
 
-              Item {
+              StyledText {
+                text: {
+                  if (!SysMonitorService.availableGpus
+                      || SysMonitorService.availableGpus.length === 0) {
+                    return "Driver: N/A"
+                  }
+                  var gpu = SysMonitorService.availableGpus[Math.min(
+                                                              SessionData.selectedGpuIndex,
+                                                              SysMonitorService.availableGpus.length
+                                                              - 1)]
+                  return "Driver: " + gpu.driver
+                }
+                font.pixelSize: Theme.fontSizeSmall
+                font.family: SettingsData.monoFontFamily
+                color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g,
+                               Theme.surfaceText.b, 0.8)
                 width: parent.width
-                height: Theme.fontSizeSmall + Theme.spacingXS
+                elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter
+              }
+
+              StyledText {
+                text: {
+                  if (!SysMonitorService.availableGpus
+                      || SysMonitorService.availableGpus.length === 0) {
+                    return "Temp: --°"
+                  }
+                  var gpu = SysMonitorService.availableGpus[Math.min(
+                                                              SessionData.selectedGpuIndex,
+                                                              SysMonitorService.availableGpus.length
+                                                              - 1)]
+                  var temp = gpu.temperature
+                  return "Temp: " + ((temp === undefined || temp === null
+                                      || temp === 0) ? "--°" : Math.round(
+                                                         temp) + "°C")
+                }
+                font.pixelSize: Theme.fontSizeSmall
+                font.family: SettingsData.monoFontFamily
+                color: {
+                  if (!SysMonitorService.availableGpus
+                      || SysMonitorService.availableGpus.length === 0) {
+                    return Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g,
+                                   Theme.surfaceText.b, 0.7)
+                  }
+                  var gpu = SysMonitorService.availableGpus[Math.min(
+                                                              SessionData.selectedGpuIndex,
+                                                              SysMonitorService.availableGpus.length
+                                                              - 1)]
+                  var temp = gpu.temperature || 0
+                  if (temp > 80)
+                    return Theme.error
+                  if (temp > 60)
+                    return Theme.warning
+                  return Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g,
+                                 Theme.surfaceText.b, 0.7)
+                }
+                width: parent.width
+                elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter
+              }
+            }
+
+            Behavior on color {
+              ColorAnimation {
+                duration: Theme.shortDuration
               }
             }
           }

@@ -237,11 +237,33 @@ Row {
     width: (parent.width - Theme.spacingM * 2) / 3
     height: 80
     radius: Theme.cornerRadius
-    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
-                   Theme.surfaceVariant.b, 0.08)
+    color: {
+      if (gpuCardMouseArea.containsMouse
+          && SysMonitorService.availableGpus.length > 1)
+        return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                       Theme.surfaceVariant.b, 0.16)
+      else
+        return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                       Theme.surfaceVariant.b, 0.08)
+    }
     border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
                           Theme.surfaceVariant.b, 0.2)
     border.width: 1
+
+    MouseArea {
+      id: gpuCardMouseArea
+      anchors.fill: parent
+      hoverEnabled: true
+      cursorShape: SysMonitorService.availableGpus.length
+                   > 1 ? Qt.PointingHandCursor : Qt.ArrowCursor
+      onClicked: {
+        if (SysMonitorService.availableGpus.length > 1) {
+          var nextIndex = (SessionData.selectedGpuIndex + 1)
+              % SysMonitorService.availableGpus.length
+          SessionData.setSelectedGpuIndex(nextIndex)
+        }
+      }
+    }
 
     Column {
       anchors.left: parent.left
@@ -250,7 +272,7 @@ Row {
       spacing: 2
 
       StyledText {
-        text: "Graphics"
+        text: "GPU"
         font.pixelSize: Theme.fontSizeSmall
         font.weight: Font.Medium
         color: Theme.secondary
@@ -261,29 +283,15 @@ Row {
         text: {
           if (!SysMonitorService.availableGpus
               || SysMonitorService.availableGpus.length === 0) {
-            return "None"
+            return "--°"
           }
-          if (SysMonitorService.availableGpus.length === 1) {
-            var gpu = SysMonitorService.availableGpus[0]
-            var temp = gpu.temperature
-            var tempText = (temp === undefined || temp === null
-                            || temp === 0) ? "--°" : Math.round(temp) + "°"
-            return tempText
-          }
-          // Multiple GPUs - show average temp
-          var totalTemp = 0
-          var validTemps = 0
-          for (var i = 0; i < SysMonitorService.availableGpus.length; i++) {
-            var temp = SysMonitorService.availableGpus[i].temperature
-            if (temp !== undefined && temp !== null && temp > 0) {
-              totalTemp += temp
-              validTemps++
-            }
-          }
-          if (validTemps > 0) {
-            return Math.round(totalTemp / validTemps) + "°"
-          }
-          return "--°"
+
+          var gpu = SysMonitorService.availableGpus[Math.min(
+                                                      SessionData.selectedGpuIndex,
+                                                      SysMonitorService.availableGpus.length - 1)]
+          var temp = gpu.temperature
+          return (temp === undefined || temp === null
+                  || temp === 0) ? "--°" : Math.round(temp) + "°"
         }
         font.pixelSize: Theme.fontSizeLarge
         font.family: SettingsData.monoFontFamily
@@ -293,25 +301,15 @@ Row {
               || SysMonitorService.availableGpus.length === 0) {
             return Theme.surfaceText
           }
-          if (SysMonitorService.availableGpus.length === 1) {
-            var temp = SysMonitorService.availableGpus[0].temperature || 0
-            if (temp > 80)
-              return Theme.tempDanger
-            if (temp > 60)
-              return Theme.tempWarning
-            return Theme.surfaceText
-          }
-          // Multiple GPUs - get max temp for coloring
-          var maxTemp = 0
-          for (var i = 0; i < SysMonitorService.availableGpus.length; i++) {
-            var temp = SysMonitorService.availableGpus[i].temperature || 0
-            if (temp > maxTemp)
-              maxTemp = temp
-          }
-          if (maxTemp > 80)
-            return Theme.tempDanger
-          if (maxTemp > 60)
-            return Theme.tempWarning
+
+          var gpu = SysMonitorService.availableGpus[Math.min(
+                                                      SessionData.selectedGpuIndex,
+                                                      SysMonitorService.availableGpus.length - 1)]
+          var temp = gpu.temperature || 0
+          if (temp > 80)
+            return Theme.error
+          if (temp > 60)
+            return Theme.warning
           return Theme.surfaceText
         }
       }
@@ -322,15 +320,25 @@ Row {
               || SysMonitorService.availableGpus.length === 0) {
             return "No GPUs detected"
           }
-          if (SysMonitorService.availableGpus.length === 1) {
-            return SysMonitorService.availableGpus[0].driver.toUpperCase()
-          }
-          return SysMonitorService.availableGpus.length + " GPUs detected"
+
+          var gpu = SysMonitorService.availableGpus[Math.min(
+                                                      SessionData.selectedGpuIndex,
+                                                      SysMonitorService.availableGpus.length - 1)]
+          return gpu.vendor + " " + gpu.displayName
         }
         font.pixelSize: Theme.fontSizeSmall
         font.family: SettingsData.monoFontFamily
         color: Theme.surfaceText
         opacity: 0.7
+        width: parent.parent.width - Theme.spacingM * 2
+        elide: Text.ElideRight
+        maximumLineCount: 1
+      }
+    }
+
+    Behavior on color {
+      ColorAnimation {
+        duration: Theme.shortDuration
       }
     }
   }

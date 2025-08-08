@@ -1,4 +1,5 @@
 pragma Singleton
+
 pragma ComponentBehavior
 
 import QtQuick
@@ -7,404 +8,415 @@ import Quickshell.Io
 import qs.Services
 
 Singleton {
-    id: root
-    property int refCount: 0
-    property int updateInterval: refCount > 0 ? 3000 : 30000
-    property int maxProcesses: 100
-    property bool isUpdating: false
+  id: root
+  property int refCount: 0
+  property int updateInterval: refCount > 0 ? 3000 : 30000
+  property int maxProcesses: 100
+  property bool isUpdating: false
 
-    property var processes: []
-    property string sortBy: "cpu"
-    property bool sortDescending: true
-    property var lastProcTicks: ({})
-    property real lastTotalJiffies: -1
+  property var processes: []
+  property string sortBy: "cpu"
+  property bool sortDescending: true
+  property var lastProcTicks: ({})
+  property real lastTotalJiffies: -1
 
-    property real cpuUsage: 0
-    property real totalCpuUsage: 0
-    property int cpuCores: 1
-    property int cpuCount: 1
-    property string cpuModel: ""
-    property real cpuFrequency: 0
-    property real cpuTemperature: -1
-    property var perCoreCpuUsage: []
+  property real cpuUsage: 0
+  property real totalCpuUsage: 0
+  property int cpuCores: 1
+  property int cpuCount: 1
+  property string cpuModel: ""
+  property real cpuFrequency: 0
+  property real cpuTemperature: -1
+  property var perCoreCpuUsage: []
 
-    property var lastCpuStats: null
-    property var lastPerCoreStats: null
+  property var lastCpuStats: null
+  property var lastPerCoreStats: null
 
-    property real memoryUsage: 0
-    property real totalMemoryMB: 0
-    property real usedMemoryMB: 0
-    property real freeMemoryMB: 0
-    property real availableMemoryMB: 0
-    property int totalMemoryKB: 0
-    property int usedMemoryKB: 0
-    property int totalSwapKB: 0
-    property int usedSwapKB: 0
+  property real memoryUsage: 0
+  property real totalMemoryMB: 0
+  property real usedMemoryMB: 0
+  property real freeMemoryMB: 0
+  property real availableMemoryMB: 0
+  property int totalMemoryKB: 0
+  property int usedMemoryKB: 0
+  property int totalSwapKB: 0
+  property int usedSwapKB: 0
 
-    property real networkRxRate: 0
-    property real networkTxRate: 0
-    property var lastNetworkStats: null
+  property real networkRxRate: 0
+  property real networkTxRate: 0
+  property var lastNetworkStats: null
 
-    property real diskReadRate: 0
-    property real diskWriteRate: 0
-    property var lastDiskStats: null
-    property var diskMounts: []
+  property real diskReadRate: 0
+  property real diskWriteRate: 0
+  property var lastDiskStats: null
+  property var diskMounts: []
 
-    property int historySize: 60
-    property var cpuHistory: []
-    property var memoryHistory: []
-    property var networkHistory: ({
-            "rx": [],
-            "tx": []
-        })
-    property var diskHistory: ({
-            "read": [],
-            "write": []
-        })
+  property int historySize: 60
+  property var cpuHistory: []
+  property var memoryHistory: []
+  property var networkHistory: ({
+                                  "rx": [],
+                                  "tx": []
+                                })
+  property var diskHistory: ({
+                               "read": [],
+                               "write": []
+                             })
 
-    property string kernelVersion: ""
-    property string distribution: ""
-    property string hostname: ""
-    property string architecture: ""
-    property string loadAverage: ""
-    property int processCount: 0
-    property int threadCount: 0
-    property string bootTime: ""
-    property string motherboard: ""
-    property string biosVersion: ""
-    property var availableGpus: []
+  property string kernelVersion: ""
+  property string distribution: ""
+  property string hostname: ""
+  property string architecture: ""
+  property string loadAverage: ""
+  property int processCount: 0
+  property int threadCount: 0
+  property string bootTime: ""
+  property string motherboard: ""
+  property string biosVersion: ""
+  property var availableGpus: []
 
-    function addRef() {
-        refCount++;
-        if (refCount === 1) {
-            updateAllStats();
-        }
+  function addRef() {
+    refCount++
+    if (refCount === 1) {
+      updateAllStats()
+    }
+  }
+
+  function removeRef() {
+    refCount = Math.max(0, refCount - 1)
+  }
+
+  function updateAllStats() {
+    if (refCount > 0) {
+      isUpdating = true
+      unifiedStatsProcess.running = true
+    }
+  }
+
+  function setSortBy(newSortBy) {
+    if (newSortBy !== sortBy) {
+      sortBy = newSortBy
+      sortProcessesInPlace()
+    }
+  }
+
+  function toggleSortOrder() {
+    sortDescending = !sortDescending
+    sortProcessesInPlace()
+  }
+
+  function sortProcessesInPlace() {
+    if (processes.length === 0)
+      return
+    const sortedProcesses = [...processes]
+
+    sortedProcesses.sort((a, b) => {
+                           let aVal, bVal
+
+                           switch (sortBy) {
+                             case "cpu":
+                             aVal = parseFloat(a.cpu) || 0
+                             bVal = parseFloat(b.cpu) || 0
+                             break
+                             case "memory":
+                             aVal = parseFloat(a.memoryPercent) || 0
+                             bVal = parseFloat(b.memoryPercent) || 0
+                             break
+                             case "name":
+                             aVal = a.command || ""
+                             bVal = b.command || ""
+                             break
+                             case "pid":
+                             aVal = parseInt(a.pid) || 0
+                             bVal = parseInt(b.pid) || 0
+                             break
+                             default:
+                             aVal = parseFloat(a.cpu) || 0
+                             bVal = parseFloat(b.cpu) || 0
+                           }
+
+                           if (typeof aVal === "string") {
+                             return sortDescending ? bVal.localeCompare(
+                                                       aVal) : aVal.localeCompare(
+                                                       bVal)
+                           } else {
+                             return sortDescending ? bVal - aVal : aVal - bVal
+                           }
+                         })
+
+    processes = sortedProcesses
+  }
+
+  function killProcess(pid) {
+    if (pid > 0) {
+      Quickshell.execDetached("kill", [pid.toString()])
+    }
+  }
+
+  function addToHistory(array, value) {
+    array.push(value)
+    if (array.length > historySize)
+      array.shift()
+  }
+
+  function calculateCpuUsage(currentStats, lastStats) {
+    if (!lastStats || !currentStats || currentStats.length < 4) {
+      return 0
     }
 
-    function removeRef() {
-        refCount = Math.max(0, refCount - 1);
+    const currentTotal = currentStats.reduce((sum, val) => sum + val, 0)
+    const lastTotal = lastStats.reduce((sum, val) => sum + val, 0)
+
+    const totalDiff = currentTotal - lastTotal
+    if (totalDiff <= 0)
+      return 0
+
+    const currentIdle = currentStats[3]
+    const lastIdle = lastStats[3]
+    const idleDiff = currentIdle - lastIdle
+
+    const usedDiff = totalDiff - idleDiff
+    return Math.max(0, Math.min(100, (usedDiff / totalDiff) * 100))
+  }
+
+  function parseUnifiedStats(text) {
+    function num(x) {
+      return (typeof x === "number" && !isNaN(x)) ? x : 0
     }
 
-    function updateAllStats() {
-        if (refCount > 0) {
-            isUpdating = true;
-            unifiedStatsProcess.running = true;
-        }
+    let data
+    try {
+      data = JSON.parse(text)
+    } catch (error) {
+      isUpdating = false
+      return
     }
 
-    function setSortBy(newSortBy) {
-        if (newSortBy !== sortBy) {
-            sortBy = newSortBy;
-            sortProcessesInPlace();
-        }
+    if (data.memory) {
+      const m = data.memory
+      totalMemoryKB = num(m.total)
+      const free = num(m.free)
+      const buf = num(m.buffers)
+      const cached = num(m.cached)
+      const shared = num(m.shared)
+      usedMemoryKB = totalMemoryKB - free - buf - cached
+      totalSwapKB = num(m.swaptotal)
+      usedSwapKB = num(m.swaptotal) - num(m.swapfree)
+      totalMemoryMB = totalMemoryKB / 1024
+      usedMemoryMB = usedMemoryKB / 1024
+      freeMemoryMB = (totalMemoryKB - usedMemoryKB) / 1024
+      availableMemoryMB = num(
+            m.available) ? num(
+                             m.available) / 1024 : (free + buf + cached) / 1024
+      memoryUsage = totalMemoryKB > 0 ? (usedMemoryKB / totalMemoryKB) * 100 : 0
     }
 
-    function toggleSortOrder() {
-        sortDescending = !sortDescending;
-        sortProcessesInPlace();
-    }
+    if (data.cpu) {
+      cpuCores = data.cpu.count || 1
+      cpuCount = data.cpu.count || 1
+      cpuModel = data.cpu.model || ""
+      cpuFrequency = data.cpu.frequency || 0
+      cpuTemperature = data.cpu.temperature || 0
 
-    function sortProcessesInPlace() {
-        if (processes.length === 0)
-            return;
-        const sortedProcesses = [...processes];
+      if (data.cpu.total && data.cpu.total.length >= 8) {
+        const currentStats = data.cpu.total
+        const usage = calculateCpuUsage(currentStats, lastCpuStats)
+        cpuUsage = usage
+        totalCpuUsage = usage
+        lastCpuStats = [...currentStats]
+      }
 
-        sortedProcesses.sort((a, b) => {
-            let aVal, bVal;
-
-            switch (sortBy) {
-            case "cpu":
-                aVal = parseFloat(a.cpu) || 0;
-                bVal = parseFloat(b.cpu) || 0;
-                break;
-            case "memory":
-                aVal = parseFloat(a.memoryPercent) || 0;
-                bVal = parseFloat(b.memoryPercent) || 0;
-                break;
-            case "name":
-                aVal = a.command || "";
-                bVal = b.command || "";
-                break;
-            case "pid":
-                aVal = parseInt(a.pid) || 0;
-                bVal = parseInt(b.pid) || 0;
-                break;
-            default:
-                aVal = parseFloat(a.cpu) || 0;
-                bVal = parseFloat(b.cpu) || 0;
+      if (data.cpu.cores) {
+        const coreUsages = []
+        for (var i = 0; i < data.cpu.cores.length; i++) {
+          const currentCoreStats = data.cpu.cores[i]
+          if (currentCoreStats && currentCoreStats.length >= 8) {
+            let lastCoreStats = null
+            if (lastPerCoreStats && lastPerCoreStats[i]) {
+              lastCoreStats = lastPerCoreStats[i]
             }
 
-            if (typeof aVal === "string") {
-                return sortDescending ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
-            } else {
-                return sortDescending ? bVal - aVal : aVal - bVal;
-            }
-        });
+            const usage = calculateCpuUsage(currentCoreStats, lastCoreStats)
+            coreUsages.push(usage)
+          }
+        }
 
-        processes = sortedProcesses;
+        if (JSON.stringify(perCoreCpuUsage) !== JSON.stringify(coreUsages)) {
+          perCoreCpuUsage = coreUsages
+        }
+
+        lastPerCoreStats = data.cpu.cores.map(core => [...core])
+      }
     }
 
-    function killProcess(pid) {
-        if (pid > 0) {
-            Quickshell.execDetached("kill", [pid.toString()]);
-        }
+    if (data.network) {
+      let totalRx = 0
+      let totalTx = 0
+      for (const iface of data.network) {
+        totalRx += iface.rx
+        totalTx += iface.tx
+      }
+      if (lastNetworkStats) {
+        const timeDiff = updateInterval / 1000
+        const rxDiff = totalRx - lastNetworkStats.rx
+        const txDiff = totalTx - lastNetworkStats.tx
+        networkRxRate = Math.max(0, rxDiff / timeDiff)
+        networkTxRate = Math.max(0, txDiff / timeDiff)
+        addToHistory(networkHistory.rx, networkRxRate / 1024)
+        addToHistory(networkHistory.tx, networkTxRate / 1024)
+      }
+      lastNetworkStats = {
+        "rx": totalRx,
+        "tx": totalTx
+      }
     }
 
-    function addToHistory(array, value) {
-        array.push(value);
-        if (array.length > historySize)
-            array.shift();
+    if (data.disk) {
+      let totalRead = 0
+      let totalWrite = 0
+      for (const disk of data.disk) {
+        totalRead += disk.read * 512
+        totalWrite += disk.write * 512
+      }
+      if (lastDiskStats) {
+        const timeDiff = updateInterval / 1000
+        const readDiff = totalRead - lastDiskStats.read
+        const writeDiff = totalWrite - lastDiskStats.write
+        diskReadRate = Math.max(0, readDiff / timeDiff)
+        diskWriteRate = Math.max(0, writeDiff / timeDiff)
+        addToHistory(diskHistory.read, diskReadRate / (1024 * 1024))
+        addToHistory(diskHistory.write, diskWriteRate / (1024 * 1024))
+      }
+      lastDiskStats = {
+        "read": totalRead,
+        "write": totalWrite
+      }
     }
 
-    function calculateCpuUsage(currentStats, lastStats) {
-        if (!lastStats || !currentStats || currentStats.length < 4) {
-            return 0;
-        }
-
-        const currentTotal = currentStats.reduce((sum, val) => sum + val, 0);
-        const lastTotal = lastStats.reduce((sum, val) => sum + val, 0);
-
-        const totalDiff = currentTotal - lastTotal;
-        if (totalDiff <= 0)
-            return 0;
-
-        const currentIdle = currentStats[3];
-        const lastIdle = lastStats[3];
-        const idleDiff = currentIdle - lastIdle;
-
-        const usedDiff = totalDiff - idleDiff;
-        return Math.max(0, Math.min(100, (usedDiff / totalDiff) * 100));
+    let totalDiff = 0
+    if (data.cpu && data.cpu.total && data.cpu.total.length >= 4) {
+      const currentTotal = data.cpu.total.reduce((s, v) => s + v, 0)
+      if (lastTotalJiffies > 0)
+        totalDiff = currentTotal - lastTotalJiffies
+      lastTotalJiffies = currentTotal
     }
 
-    function parseUnifiedStats(text) {
-        function num(x) {
-            return (typeof x === "number" && !isNaN(x)) ? x : 0;
+    if (data.processes) {
+      const newProcesses = []
+      for (const proc of data.processes) {
+        const pid = proc.pid
+        const pticks = Number(proc.pticks) || 0
+        const prev = lastProcTicks[pid] ?? null
+        let cpuShare = 0
+
+        if (prev !== null && totalDiff > 0) {
+          // Per share all CPUs (matches gnome system monitor)
+          //cpuShare = 100 * Math.max(0, pticks - prev) / totalDiff
+
+          // per-share per-core
+          cpuShare = 100 * cpuCores * Math.max(0, pticks - prev) / totalDiff
         }
 
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (error) {
-            isUpdating = false;
-            return;
-        }
+        lastProcTicks[pid] = pticks // update cache
 
-        if (data.memory) {
-            const m = data.memory;
-            totalMemoryKB = num(m.total);
-            const free = num(m.free);
-            const buf = num(m.buffers);
-            const cached = num(m.cached);
-            const shared = num(m.shared);
-            usedMemoryKB = totalMemoryKB - free - buf - cached;
-            totalSwapKB = num(m.swaptotal);
-            usedSwapKB = num(m.swaptotal) - num(m.swapfree);
-            totalMemoryMB = totalMemoryKB / 1024;
-            usedMemoryMB = usedMemoryKB / 1024;
-            freeMemoryMB = (totalMemoryKB - usedMemoryKB) / 1024;
-            availableMemoryMB = num(m.available) ? num(m.available) / 1024 : (free + buf + cached) / 1024;
-            memoryUsage = totalMemoryKB > 0 ? (usedMemoryKB / totalMemoryKB) * 100 : 0;
-        }
-
-        if (data.cpu) {
-            cpuCores = data.cpu.count || 1;
-            cpuCount = data.cpu.count || 1;
-            cpuModel = data.cpu.model || "";
-            cpuFrequency = data.cpu.frequency || 0;
-            cpuTemperature = data.cpu.temperature || 0;
-
-            if (data.cpu.total && data.cpu.total.length >= 8) {
-                const currentStats = data.cpu.total;
-                const usage = calculateCpuUsage(currentStats, lastCpuStats);
-                cpuUsage = usage;
-                totalCpuUsage = usage;
-                lastCpuStats = [...currentStats];
-            }
-
-            if (data.cpu.cores) {
-                const coreUsages = [];
-                for (var i = 0; i < data.cpu.cores.length; i++) {
-                    const currentCoreStats = data.cpu.cores[i];
-                    if (currentCoreStats && currentCoreStats.length >= 8) {
-                        let lastCoreStats = null;
-                        if (lastPerCoreStats && lastPerCoreStats[i]) {
-                            lastCoreStats = lastPerCoreStats[i];
-                        }
-
-                        const usage = calculateCpuUsage(currentCoreStats, lastCoreStats);
-                        coreUsages.push(usage);
-                    }
-                }
-
-                if (JSON.stringify(perCoreCpuUsage) !== JSON.stringify(coreUsages)) {
-                    perCoreCpuUsage = coreUsages;
-                }
-
-                lastPerCoreStats = data.cpu.cores.map(core => [...core]);
-            }
-        }
-
-        if (data.network) {
-            let totalRx = 0;
-            let totalTx = 0;
-            for (const iface of data.network) {
-                totalRx += iface.rx;
-                totalTx += iface.tx;
-            }
-            if (lastNetworkStats) {
-                const timeDiff = updateInterval / 1000;
-                const rxDiff = totalRx - lastNetworkStats.rx;
-                const txDiff = totalTx - lastNetworkStats.tx;
-                networkRxRate = Math.max(0, rxDiff / timeDiff);
-                networkTxRate = Math.max(0, txDiff / timeDiff);
-                addToHistory(networkHistory.rx, networkRxRate / 1024);
-                addToHistory(networkHistory.tx, networkTxRate / 1024);
-            }
-            lastNetworkStats = {
-                "rx": totalRx,
-                "tx": totalTx
-            };
-        }
-
-        if (data.disk) {
-            let totalRead = 0;
-            let totalWrite = 0;
-            for (const disk of data.disk) {
-                totalRead += disk.read * 512;
-                totalWrite += disk.write * 512;
-            }
-            if (lastDiskStats) {
-                const timeDiff = updateInterval / 1000;
-                const readDiff = totalRead - lastDiskStats.read;
-                const writeDiff = totalWrite - lastDiskStats.write;
-                diskReadRate = Math.max(0, readDiff / timeDiff);
-                diskWriteRate = Math.max(0, writeDiff / timeDiff);
-                addToHistory(diskHistory.read, diskReadRate / (1024 * 1024));
-                addToHistory(diskHistory.write, diskWriteRate / (1024 * 1024));
-            }
-            lastDiskStats = {
-                "read": totalRead,
-                "write": totalWrite
-            };
-        }
-
-        let totalDiff = 0;
-        if (data.cpu && data.cpu.total && data.cpu.total.length >= 4) {
-            const currentTotal = data.cpu.total.reduce((s, v) => s + v, 0);
-            if (lastTotalJiffies > 0)
-                totalDiff = currentTotal - lastTotalJiffies;
-            lastTotalJiffies = currentTotal;
-        }
-
-        if (data.processes) {
-            const newProcesses = [];
-            for (const proc of data.processes) {
-                const pid = proc.pid;
-                const pticks = Number(proc.pticks) || 0;
-                const prev = lastProcTicks[pid] ?? null;
-                let cpuShare = 0;
-
-                if (prev !== null && totalDiff > 0) {
-                    // Per share all CPUs (matches gnome system monitor)
-                    //cpuShare = 100 * Math.max(0, pticks - prev) / totalDiff
-
-                    // per-share per-core
-                    cpuShare = 100 * cpuCores * Math.max(0, pticks - prev) / totalDiff;
-                }
-
-                lastProcTicks[pid] = pticks; // update cache
-
-                newProcesses.push({
-                    "pid": pid,
-                    "ppid": proc.ppid,
-                    "cpu": cpuShare,
-                    "memoryPercent": proc.pssPercent ?? proc.memoryPercent,
-                    "memoryKB": proc.pssKB ?? proc.memoryKB,
-                    "command": proc.command,
-                    "fullCommand": proc.fullCommand,
-                    "displayName": (proc.command && proc.command.length > 15) ? proc.command.substring(0, 15) + "..." : proc.command
-                });
-            }
-            processes = newProcesses;
-            sortProcessesInPlace();
-        }
-
-        if (data.system) {
-            kernelVersion = data.system.kernel || "";
-            distribution = data.system.distro || "";
-            hostname = data.system.hostname || "";
-            architecture = data.system.arch || "";
-            loadAverage = data.system.loadavg || "";
-            processCount = data.system.processes || 0;
-            threadCount = data.system.threads || 0;
-            bootTime = data.system.boottime || "";
-            motherboard = data.system.motherboard || "";
-            biosVersion = data.system.bios || "";
-        }
-
-        if (data.diskmounts) {
-            diskMounts = data.diskmounts;
-        }
-
-        if (data.gpus) {
-            availableGpus = data.gpus;
-        }
-
-        addToHistory(cpuHistory, cpuUsage);
-        addToHistory(memoryHistory, memoryUsage);
-
-        isUpdating = false;
+        newProcesses.push({
+                            "pid": pid,
+                            "ppid": proc.ppid,
+                            "cpu": cpuShare,
+                            "memoryPercent": proc.pssPercent
+                                             ?? proc.memoryPercent,
+                            "memoryKB": proc.pssKB ?? proc.memoryKB,
+                            "command": proc.command,
+                            "fullCommand": proc.fullCommand,
+                            "displayName": (proc.command && proc.command.length
+                                            > 15) ? proc.command.substring(
+                                                      0,
+                                                      15) + "..." : proc.command
+                          })
+      }
+      processes = newProcesses
+      sortProcessesInPlace()
     }
 
-    function getProcessIcon(command) {
-        const cmd = command.toLowerCase();
-        if (cmd.includes("firefox") || cmd.includes("chrome") || cmd.includes("browser"))
-            return "web";
-        if (cmd.includes("code") || cmd.includes("editor") || cmd.includes("vim"))
-            return "code";
-        if (cmd.includes("terminal") || cmd.includes("bash") || cmd.includes("zsh"))
-            return "terminal";
-        if (cmd.includes("music") || cmd.includes("audio") || cmd.includes("spotify"))
-            return "music_note";
-        if (cmd.includes("video") || cmd.includes("vlc") || cmd.includes("mpv"))
-            return "play_circle";
-        if (cmd.includes("systemd") || cmd.includes("kernel") || cmd.includes("kthread"))
-            return "settings";
-        return "memory";
+    if (data.system) {
+      kernelVersion = data.system.kernel || ""
+      distribution = data.system.distro || ""
+      hostname = data.system.hostname || ""
+      architecture = data.system.arch || ""
+      loadAverage = data.system.loadavg || ""
+      processCount = data.system.processes || 0
+      threadCount = data.system.threads || 0
+      bootTime = data.system.boottime || ""
+      motherboard = data.system.motherboard || ""
+      biosVersion = data.system.bios || ""
     }
 
-    function formatCpuUsage(cpu) {
-        return (cpu || 0).toFixed(1) + "%";
+    if (data.diskmounts) {
+      diskMounts = data.diskmounts
     }
 
-    function formatMemoryUsage(memoryKB) {
-        const mem = memoryKB || 0;
-        if (mem < 1024)
-            return mem.toFixed(0) + " KB";
-        else if (mem < 1024 * 1024)
-            return (mem / 1024).toFixed(1) + " MB";
-        else
-            return (mem / (1024 * 1024)).toFixed(1) + " GB";
+    if (data.gpus) {
+      availableGpus = data.gpus
     }
 
-    function formatSystemMemory(memoryKB) {
-        const mem = memoryKB || 0;
-        if (mem < 1024 * 1024)
-            return (mem / 1024).toFixed(0) + " MB";
-        else
-            return (mem / (1024 * 1024)).toFixed(1) + " GB";
-    }
+    addToHistory(cpuHistory, cpuUsage)
+    addToHistory(memoryHistory, memoryUsage)
 
-    Timer {
-        id: updateTimer
-        interval: root.updateInterval
-        running: root.refCount > 0
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: root.updateAllStats()
-    }
+    isUpdating = false
+  }
 
-    readonly property string scriptBody: `
+  function getProcessIcon(command) {
+    const cmd = command.toLowerCase()
+    if (cmd.includes("firefox") || cmd.includes("chrome") || cmd.includes(
+          "browser"))
+      return "web"
+    if (cmd.includes("code") || cmd.includes("editor") || cmd.includes("vim"))
+      return "code"
+    if (cmd.includes("terminal") || cmd.includes("bash") || cmd.includes("zsh"))
+      return "terminal"
+    if (cmd.includes("music") || cmd.includes("audio") || cmd.includes(
+          "spotify"))
+      return "music_note"
+    if (cmd.includes("video") || cmd.includes("vlc") || cmd.includes("mpv"))
+      return "play_circle"
+    if (cmd.includes("systemd") || cmd.includes("kernel") || cmd.includes(
+          "kthread"))
+      return "settings"
+    return "memory"
+  }
+
+  function formatCpuUsage(cpu) {
+    return (cpu || 0).toFixed(1) + "%"
+  }
+
+  function formatMemoryUsage(memoryKB) {
+    const mem = memoryKB || 0
+    if (mem < 1024)
+      return mem.toFixed(0) + " KB"
+    else if (mem < 1024 * 1024)
+      return (mem / 1024).toFixed(1) + " MB"
+    else
+      return (mem / (1024 * 1024)).toFixed(1) + " GB"
+  }
+
+  function formatSystemMemory(memoryKB) {
+    const mem = memoryKB || 0
+    if (mem < 1024 * 1024)
+      return (mem / 1024).toFixed(0) + " MB"
+    else
+      return (mem / (1024 * 1024)).toFixed(1) + " GB"
+  }
+
+  Timer {
+    id: updateTimer
+    interval: root.updateInterval
+    running: root.refCount > 0
+    repeat: true
+    triggeredOnStart: true
+    onTriggered: root.updateAllStats()
+  }
+
+  readonly property string scriptBody: `
   sort_key=\${1:-cpu}
   max_procs=\${2:-20}
 
@@ -461,20 +473,20 @@ Singleton {
   cpu_freq=$(awk -F: '/cpu MHz/{gsub(/ /,"",$2);print $2;exit}' /proc/cpuinfo || echo 0)
   cpu_temp=0
   for hwmon_dir in /sys/class/hwmon/hwmon*/; do
-    [ -d "$hwmon_dir" ] || continue
-    name_file="\${hwmon_dir}name"
-    [ -r "$name_file" ] || continue
+  [ -d "$hwmon_dir" ] || continue
+  name_file="\${hwmon_dir}name"
+  [ -r "$name_file" ] || continue
 
-    # Check if this hwmon is for CPU temperature
-    if grep -qE 'coretemp|k10temp|k8temp|cpu_thermal|soc_thermal' "$name_file" 2>/dev/null; then
-      # Look for temperature files without using wildcards in quotes
-      for temp_file in "\${hwmon_dir}"temp*_input; do
-        if [ -r "$temp_file" ]; then
-          cpu_temp=$(awk '{printf "%.1f", $1/1000}' "$temp_file" 2>/dev/null || echo 0)
-          break 2  # Break both loops
-        fi
-      done
-    fi
+  # Check if this hwmon is for CPU temperature
+  if grep -qE 'coretemp|k10temp|k8temp|cpu_thermal|soc_thermal' "$name_file" 2>/dev/null; then
+  # Look for temperature files without using wildcards in quotes
+  for temp_file in "\${hwmon_dir}"temp*_input; do
+  if [ -r "$temp_file" ]; then
+  cpu_temp=$(awk '{printf "%.1f", $1/1000}' "$temp_file" 2>/dev/null || echo 0)
+  break 2  # Break both loops
+  fi
+  done
+  fi
   done
 
   printf '"cpu":{"count":%d,"model":"%s","frequency":%s,"temperature":%s,' \\
@@ -612,30 +624,195 @@ Singleton {
   gfirst=1
   tmp_gpu=$(mktemp)
 
-  # Gather cards via DRM (much cheaper than lspci each tick)
+  # Function to extract display name from full GPU name
+  extract_display_name() {
+  local full_name="$1"
+  local drv="$2"
+  local display_name=""
+
+  # NVIDIA patterns
+  if [[ "$full_name" =~ GeForce|Quadro|Tesla|NVIDIA ]]; then
+  # Extract model like "RTX 4070", "GTX 1080", "RTX 4090", etc.
+  display_name=$(echo "$full_name" | grep -oE '(RTX|GTX|GT|MX|Tesla|Quadro|TITAN) [0-9]{3,4}( Ti| SUPER| Ti SUPER| Max-Q| Mobile)?' | head -1)
+
+  # If not found, try alternate patterns
+  if [ -z "$display_name" ]; then
+  display_name=$(echo "$full_name" | grep -oE 'GeForce [0-9]{3,4}' | sed 's/GeForce //')
+  fi
+  # AMD patterns
+  elif [[ "$full_name" =~ AMD|Radeon|ATI|Navi|Raphael|Rembrandt|Phoenix|Strix ]]; then
+  # Check for our special integrated graphics format
+  if [[ "$full_name" =~ "AMD Raphael (Integrated Graphics)" ]]; then
+  display_name="Raphael"
+  elif [[ "$full_name" =~ "AMD Phoenix (Integrated Graphics)" ]]; then
+  display_name="Phoenix"
+  elif [[ "$full_name" =~ "AMD Rembrandt (Integrated Graphics)" ]]; then
+  display_name="Rembrandt"
+  else
+  # Check if it contains actual Radeon model numbers
+  display_name=$(echo "$full_name" | grep -oE 'Radeon [0-9]{3,4}[A-Z]*( / [0-9]{3,4}[A-Z]*)?' | head -1)
+
+  # If not, try RX/R series cards
+  if [ -z "$display_name" ]; then
+  display_name=$(echo "$full_name" | grep -oE '(RX|R9|R7|R5|Vega|VII) [0-9]{3,4}( XT| XTX)?' | head -1)
+  fi
+
+  # For Strix with Radeon model in brackets
+  if [ -z "$display_name" ] && [[ "$full_name" =~ "Strix" ]]; then
+  if [[ "$full_name" =~ Radeon ]]; then
+  # Extract everything after "Strix "
+  display_name=$(echo "$full_name" | sed 's/.*Strix //')
+  # Remove brackets if present
+  display_name=$(echo "$display_name" | tr -d '[]')
+  else
+  display_name="Strix"
+  fi
+  fi
+
+  # Check for Navi
+  if [ -z "$display_name" ] && [[ "$full_name" =~ Navi ]]; then
+  display_name=$(echo "$full_name" | grep -oE 'Navi [0-9]+' | head -1)
+  fi
+  fi
+  # Intel patterns
+  elif [[ "$full_name" =~ Intel ]]; then
+  # Extract Arc models
+  display_name=$(echo "$full_name" | grep -oE 'Arc A[0-9]{3,4}' | head -1)
+
+  # If not Arc, try Iris/UHD
+  if [ -z "$display_name" ]; then
+  display_name=$(echo "$full_name" | grep -oE '(Iris Xe|UHD|HD) Graphics( [0-9]+)?' | head -1)
+  fi
+
+  # Generic Intel graphics
+  if [ -z "$display_name" ]; then
+  display_name="Intel Graphics"
+  fi
+  fi
+
+  # Fallback - but don't cut off at 3 words if it's our special format
+  if [ -z "$display_name" ]; then
+  if [[ "$full_name" =~ "(Integrated Graphics)" ]]; then
+  # Just use the codename part
+  display_name=$(echo "$full_name" | sed 's/AMD //' | sed 's/ (Integrated Graphics)//')
+  else
+  display_name="$full_name"
+  fi
+  fi
+
+  echo "$display_name"
+  }
+
+  # Gather cards via DRM
   for card in /sys/class/drm/card*; do
   [ -e "$card/device/driver" ] || continue
 
-  drv=$(basename "$(readlink -f "$card/device/driver")")  # e.g. nvidia, amdgpu, i915
+  drv=$(basename "$(readlink -f "$card/device/driver")")
   drv=\${drv##*/}
 
-  # Determine PCI secondary bus to help identify integrated vs discrete
-  pci_path=$(readlink -f "$card/device")                   # .../0000:01:00.0
-  func=\${pci_path##*/}                                     # 0000:01:00.0
-  sec=\${func#*:}; sec=\${sec%%:*}                           # "01" from 0000:01:00.0
+  # Get PCI path and info
+  pci_path=$(readlink -f "$card/device")
+  func=\${pci_path##*/}
+  sec=\${func#*:}; sec=\${sec%%:*}
 
-  # Priority: higher = more likely dedicated
+  # Determine vendor
+  vendor="Unknown"
+  case "$drv" in
+  nvidia) vendor="NVIDIA" ;;
+  amdgpu|radeon) vendor="AMD" ;;
+  i915|xe) vendor="Intel" ;;
+  esac
+
+  # Priority
   prio=0
   case "$drv" in
-  nvidia) prio=3 ;;                                      # dGPU
+  nvidia) prio=3 ;;
   amdgpu|radeon)
-  if [ "$sec" = "00" ]; then prio=1; else prio=2; fi   # APU often on bus 00
+  if [ "$sec" = "00" ]; then prio=1; else prio=2; fi
   ;;
-  i915) prio=0 ;;                                        # iGPU
+  i915|xe) prio=0 ;;
   *) prio=0 ;;
   esac
 
-  # Temperature via per-device hwmon if available
+  # Get full GPU name
+  full_name=""
+  display_name=""
+
+  # Special handling for NVIDIA with nvidia-smi
+  if [ "$drv" = "nvidia" ] && command -v nvidia-smi >/dev/null 2>&1; then
+  # Get the GPU index for this card
+  gpu_name=$(nvidia-smi --query-gpu=name --format=csv,noheader,nounits 2>/dev/null | head -1 | sed 's/^ *//;s/ *$//' | json_escape)
+  if [ -n "$gpu_name" ]; then
+  full_name="$gpu_name"
+  # Extract display name from nvidia-smi output
+  display_name=$(echo "$gpu_name" | grep -oE '(RTX|GTX|GT|MX|Tesla|Quadro|TITAN) [0-9]{3,4}( Ti| SUPER| Ti SUPER)?' | head -1)
+  if [ -z "$display_name" ]; then
+  display_name="$gpu_name"
+  fi
+  fi
+  fi
+
+  # AMD specific detection
+  if [ -z "$full_name" ] && [ "$drv" = "amdgpu" -o "$drv" = "radeon" ]; then
+  # Try lspci with proper parsing for AMD GPUs
+  if command -v lspci >/dev/null 2>&1; then
+  pci_addr="\${func}"
+  # Get the full device name
+  lspci_out=$(lspci -s "$pci_addr" 2>/dev/null)
+  # Remove PCI address and device class prefix (everything before the colon)
+  temp_name=$(echo "$lspci_out" | cut -d: -f2- | sed 's/^ *//')
+
+  # Check for AMD/ATI format and extract the GPU name
+  if echo "$temp_name" | grep -q 'AMD/ATI'; then
+  # Extract everything after "] " which comes after [AMD/ATI]
+  # This handles both "Raphael" and "Strix [Radeon 880M / 890M]" formats
+  gpu_name=$(echo "$temp_name" | sed 's/.*\] //' | sed 's/ (rev .*)$//')
+
+  # For codenames like Raphael, add context for full name
+  if [[ "$gpu_name" == "Raphael" ]] || [[ "$gpu_name" == "Phoenix" ]] || [[ "$gpu_name" == "Rembrandt" ]]; then
+  full_name="AMD $gpu_name (Integrated Graphics)"
+  else
+  full_name="$gpu_name"
+  fi
+  else
+  # Fallback: just clean up vendor name
+  full_name=$(echo "$temp_name" | sed 's/Advanced Micro Devices, Inc\. //' | sed 's/ (rev .*)$//')
+  fi
+
+  # Clean up and escape for JSON
+  full_name=$(echo "$full_name" | json_escape)
+  fi
+  fi
+
+  # Intel and generic fallback
+  if [ -z "$full_name" ]; then
+  if command -v lspci >/dev/null 2>&1; then
+  pci_addr="\${func}"
+  lspci_out=$(lspci -s "$pci_addr" 2>/dev/null)
+  # Extract device name after the colon
+  full_name=$(echo "$lspci_out" | sed 's/^[0-9a-f:.]* [^:]*: //' | sed 's/ (rev .*)$//' | json_escape)
+  fi
+  fi
+
+  # Final fallback - use driver name
+  if [ -z "$full_name" ] || [[ "$full_name" =~ ^[0-9a-f] ]]; then
+  case "$drv" in
+  nvidia) full_name="NVIDIA GPU" ;;
+  amdgpu|radeon) full_name="AMD GPU" ;;
+  i915|xe) full_name="Intel GPU" ;;
+  *) full_name="Unknown GPU" ;;
+  esac
+  fi
+
+  # Extract display name
+  display_name=$(extract_display_name "$full_name" "$drv")
+
+  # If display name is still empty, use a simplified version of full name
+  if [ -z "$display_name" ]; then
+  display_name="$full_name"
+  fi
+
+  # Temperature
   hw=""; temp="0"
   for h in "$card/device"/hwmon/hwmon*; do
   [ -e "$h/temp1_input" ] || continue
@@ -644,36 +821,35 @@ Singleton {
   break
   done
 
-  # NVIDIA fallback: use nvidia-smi (first GPU) if temp still 0
-  if [ "$drv" = "nvidia" ] && command -v nvidia-smi >/dev/null 2>&1; then
+  # NVIDIA temperature fallback
+  if [ "$drv" = "nvidia" ] && [ "$temp" = "0" ] && command -v nvidia-smi >/dev/null 2>&1; then
   t=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | head -1)
   [ -n "$t" ] && { temp="$t"; hw="\${hw:-nvidia}"; }
   fi
 
-  printf '%s|%s|%s|%s\n' "$prio" "$drv" "\${hw:-unknown}" "\${temp:-0}" >> "$tmp_gpu"
+  printf '%s|%s|%s|%s|%s|%s|%s\n' "$prio" "$drv" "\${hw:-unknown}" "\${temp:-0}" "$vendor" "$display_name" "$full_name" >> "$tmp_gpu"
   done
 
-  # Fallback if no DRM cards found (keep drivers but still sort)
+  # Fallback if no DRM cards found but nvidia-smi is available
   if [ ! -s "$tmp_gpu" ]; then
-  for drv in nvidia amdgpu radeon i915; do
-  command -v "$drv" >/dev/null 2>&1 || true
-  prio=0; [ "$drv" = "nvidia" ] && prio=3
-  [ "$drv" = "amdgpu" ] && prio=2
-  [ "$drv" = "radeon" ] && prio=2
-  [ "$drv" = "i915" ] && prio=0
-  temp="0"; hw="$drv"
-  if [ "$drv" = "nvidia" ] && command -v nvidia-smi >/dev/null 2>&1; then
-  t=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | head -1)
-  [ -n "$t" ] && temp="$t"
+  if command -v nvidia-smi >/dev/null 2>&1; then
+  gpu_info=$(nvidia-smi --query-gpu=name,temperature.gpu --format=csv,noheader 2>/dev/null | head -1)
+  if [ -n "$gpu_info" ]; then
+  IFS=',' read -r gpu_name temp <<< "$gpu_info"
+  gpu_name=$(echo "$gpu_name" | sed 's/^ *//;s/ *$//' | json_escape)
+  temp=$(echo "$temp" | sed 's/^ *//;s/ *$//')
+  display_name=$(echo "$gpu_name" | grep -oE '(RTX|GTX|GT|MX|Tesla|Quadro) [0-9]{3,4}( Ti| SUPER| Ti SUPER)?' | head -1)
+  [ -z "$display_name" ] && display_name="$gpu_name"
+  printf '3|nvidia|nvidia|%s|NVIDIA|%s|%s\n' "\${temp:-0}" "$display_name" "$gpu_name" >> "$tmp_gpu"
   fi
-  printf '%s|%s|%s|%s\n' "$prio" "$drv" "$hw" "$temp" >> "$tmp_gpu"
-  done
+  fi
   fi
 
-  # Sort by priority (desc), then driver name for stability, and emit SAME JSON shape
-  while IFS='|' read -r pr drv hw temp; do
+  # Sort and output JSON
+  while IFS='|' read -r pr drv hw temp vendor display_name full_name; do
   [ $gfirst -eq 1 ] || printf ","
-  printf '{"driver":"%s","hwmon":"%s","temperature":%s}' "$drv" "$hw" "$temp"
+  printf '{"driver":"%s","hwmon":"%s","temperature":%s,"vendor":"%s","displayName":"%s","fullName":"%s"}' \\
+  "$drv" "$hw" "$temp" "$vendor" "$display_name" "$full_name"
   gfirst=0
   done < <(sort -t'|' -k1,1nr -k2,2 "$tmp_gpu")
 
@@ -682,35 +858,36 @@ Singleton {
 
   printf "}\\n"`
 
-    Process {
-        id: unifiedStatsProcess
-        command: ["bash", "-c", "bash -s \"$1\" \"$2\" <<'QS_EOF'\n" + root.scriptBody + "\nQS_EOF\n", root.sortBy, String(root.maxProcesses)]
-        running: false
-        onExited: exitCode => {
-            if (exitCode !== 0) {
-                isUpdating = false;
-            }
-        }
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (text.trim()) {
-                    const fullText = text.trim();
-                    const lastBraceIndex = fullText.lastIndexOf('}');
-                    if (lastBraceIndex === -1) {
-                        isUpdating = false;
-                        return;
-                    }
-                    const jsonText = fullText.substring(0, lastBraceIndex + 1);
-
-                    try {
-                        const data = JSON.parse(jsonText);
-                        parseUnifiedStats(jsonText);
-                    } catch (e) {
-                        isUpdating = false;
-                        return;
-                    }
-                }
-            }
-        }
+  Process {
+    id: unifiedStatsProcess
+    command: ["bash", "-c", "bash -s \"$1\" \"$2\" <<'QS_EOF'\n"
+      + root.scriptBody + "\nQS_EOF\n", root.sortBy, String(root.maxProcesses)]
+    running: false
+    onExited: exitCode => {
+      if (exitCode !== 0) {
+        isUpdating = false
+      }
     }
+    stdout: StdioCollector {
+      onStreamFinished: {
+        if (text.trim()) {
+          const fullText = text.trim()
+          const lastBraceIndex = fullText.lastIndexOf('}')
+          if (lastBraceIndex === -1) {
+            isUpdating = false
+            return
+          }
+          const jsonText = fullText.substring(0, lastBraceIndex + 1)
+
+          try {
+            const data = JSON.parse(jsonText)
+            parseUnifiedStats(jsonText)
+          } catch (e) {
+            isUpdating = false
+            return
+          }
+        }
+      }
+    }
+  }
 }
