@@ -5,81 +5,84 @@ import qs.Services
 import qs.Widgets
 
 Rectangle {
-    id: root
+  id: root
 
-    property bool showPercentage: true
-    property bool showIcon: true
-    property var toggleProcessList
-    property string section: "right"
-    property var popupTarget: null
-    property var parentScreen: null
+  property bool showPercentage: true
+  property bool showIcon: true
+  property var toggleProcessList
+  property string section: "right"
+  property var popupTarget: null
+  property var parentScreen: null
 
-    width: 55
-    height: 30
-    radius: Theme.cornerRadius
-    color: {
-        const baseColor = cpuArea.containsMouse ? Theme.primaryPressed : Theme.secondaryHover;
-        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+  width: 55
+  height: 30
+  radius: Theme.cornerRadius
+  color: {
+    const baseColor = cpuArea.containsMouse ? Theme.primaryPressed : Theme.secondaryHover
+    return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
+                   baseColor.a * Theme.widgetTransparency)
+  }
+  Component.onCompleted: {
+    SysMonitorService.addRef()
+  }
+  Component.onDestruction: {
+    SysMonitorService.removeRef()
+  }
+
+  MouseArea {
+    id: cpuArea
+
+    anchors.fill: parent
+    hoverEnabled: true
+    cursorShape: Qt.PointingHandCursor
+    onClicked: {
+      if (popupTarget && popupTarget.setTriggerPosition) {
+        var globalPos = mapToGlobal(0, 0)
+        var currentScreen = parentScreen || Screen
+        var screenX = currentScreen.x || 0
+        var relativeX = globalPos.x - screenX
+        popupTarget.setTriggerPosition(relativeX,
+                                       Theme.barHeight + Theme.spacingXS,
+                                       width, section, currentScreen)
+      }
+      SysMonitorService.setSortBy("cpu")
+      if (root.toggleProcessList)
+        root.toggleProcessList()
     }
-    Component.onCompleted: {
-        SysMonitorService.addRef();
-    }
-    Component.onDestruction: {
-        SysMonitorService.removeRef();
+  }
+
+  Row {
+    anchors.centerIn: parent
+    spacing: 3
+
+    DankIcon {
+      name: "memory"
+      size: Theme.iconSize - 8
+      color: {
+        if (SysMonitorService.cpuUsage > 80)
+          return Theme.tempDanger
+
+        if (SysMonitorService.cpuUsage > 60)
+          return Theme.tempWarning
+
+        return Theme.surfaceText
+      }
+      anchors.verticalCenter: parent.verticalCenter
     }
 
-    MouseArea {
-        id: cpuArea
-
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            if (popupTarget && popupTarget.setTriggerPosition) {
-                var globalPos = mapToGlobal(0, 0);
-                var currentScreen = parentScreen || Screen;
-                var screenX = currentScreen.x || 0;
-                var relativeX = globalPos.x - screenX;
-                popupTarget.setTriggerPosition(relativeX, Theme.barHeight + Theme.spacingXS, width, section, currentScreen);
-            }
-            SysMonitorService.setSortBy("cpu");
-            if (root.toggleProcessList)
-                root.toggleProcessList();
+    StyledText {
+      text: {
+        if (SysMonitorService.cpuUsage === undefined
+            || SysMonitorService.cpuUsage === null
+            || SysMonitorService.cpuUsage === 0) {
+          return "--%"
         }
+        return SysMonitorService.cpuUsage.toFixed(0) + "%"
+      }
+      font.pixelSize: Theme.fontSizeSmall
+      font.weight: Font.Medium
+      color: Theme.surfaceText
+      anchors.verticalCenter: parent.verticalCenter
     }
-
-    Row {
-        anchors.centerIn: parent
-        spacing: 3
-
-        DankIcon {
-            name: "memory"
-            size: Theme.iconSize - 8
-            color: {
-                if (SysMonitorService.cpuUsage > 80)
-                    return Theme.tempDanger;
-
-                if (SysMonitorService.cpuUsage > 60)
-                    return Theme.tempWarning;
-
-                return Theme.surfaceText;
-            }
-            anchors.verticalCenter: parent.verticalCenter
-        }
-
-        StyledText {
-            text: {
-                if (SysMonitorService.cpuUsage === undefined || SysMonitorService.cpuUsage === null || SysMonitorService.cpuUsage === 0) {
-                    return "--%";
-                }
-                return SysMonitorService.cpuUsage.toFixed(0) + "%";
-            }
-            font.pixelSize: Theme.fontSizeSmall
-            font.weight: Font.Medium
-            color: Theme.surfaceText
-            anchors.verticalCenter: parent.verticalCenter
-        }
-
-    }
-
+  }
 }
