@@ -20,6 +20,7 @@ Rectangle {
   radius: Theme.cornerRadius
   visible: hasActivePrivacy
   opacity: hasActivePrivacy ? 1 : 0
+  enabled: hasActivePrivacy
 
   color: Qt.rgba(
            privacyArea.containsMouse ? Theme.errorPressed.r : Theme.errorHover.r,
@@ -32,7 +33,8 @@ Rectangle {
     id: privacyArea
 
     anchors.fill: parent
-    hoverEnabled: true
+    hoverEnabled: hasActivePrivacy
+    enabled: hasActivePrivacy
     cursorShape: Qt.PointingHandCursor
     onClicked: {
 
@@ -84,7 +86,8 @@ Rectangle {
         anchors.topMargin: -1
 
         SequentialAnimation on opacity {
-          running: parent.visible && hasActivePrivacy
+          id: pulseAnimation
+          running: parent.visible && hasActivePrivacy && PrivacyService.cameraActive
           loops: Animation.Infinite
 
           NumberAnimation {
@@ -116,7 +119,7 @@ Rectangle {
   }
 
   Behavior on width {
-    enabled: hasActivePrivacy
+    enabled: hasActivePrivacy && visible
     NumberAnimation {
       duration: Theme.mediumDuration
       easing.type: Theme.emphasizedEasing
@@ -148,7 +151,7 @@ Rectangle {
     }
 
     Behavior on opacity {
-      enabled: hasActivePrivacy
+      enabled: hasActivePrivacy && root.visible
       NumberAnimation {
         duration: Theme.shortDuration
         easing.type: Theme.standardEasing
