@@ -306,10 +306,10 @@ Singleton {
 
                 if (prev !== null && totalDiff > 0) {
                     // Per share all CPUs (matches gnome system monitor)
-                    cpuShare = 100 * Math.max(0, pticks - prev) / totalDiff;
+                    //cpuShare = 100 * Math.max(0, pticks - prev) / totalDiff
 
                     // per-share per-core
-                    //cpuShare = 100 * cpuCores * Math.max(0, pticks - prev) / totalDiff;
+                    cpuShare = 100 * cpuCores * Math.max(0, pticks - prev) / totalDiff;
                 }
 
                 lastProcTicks[pid] = pticks; // update cache
@@ -688,14 +688,12 @@ Singleton {
         running: false
         onExited: exitCode => {
             if (exitCode !== 0) {
-                console.log("SERVICE UPDATE FAILED");
                 isUpdating = false;
             }
         }
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.trim()) {
-                    console.log(text.trim());
                     const fullText = text.trim();
                     const lastBraceIndex = fullText.lastIndexOf('}');
                     if (lastBraceIndex === -1) {
