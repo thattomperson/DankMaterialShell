@@ -358,6 +358,10 @@ Singleton {
             return (mem / (1024 * 1024)).toFixed(1) + " GB";
     }
 
+    function getCpuTempCentigrade() {
+        cpuTempProcess.running = true;
+    }
+
     Timer {
         id: updateTimer
         interval: root.updateInterval
@@ -585,6 +589,20 @@ printf "}\\n"`
                         isUpdating = false;
                         return;
                     }
+                }
+            }
+        }
+    }
+
+    Process {
+        id: cpuTempProcess
+        command: ["bash", "-c", "grep -l 'coretemp\\|k10temp\\|k8temp\\|cpu_thermal\\|soc_thermal' /sys/class/hwmon/hwmon*/name | sed 's/name$/temp1_input/' | xargs cat | awk '{print $1/1000}'"]
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const temp = parseFloat(text.trim());
+                if (!isNaN(temp)) {
+                    cpuTemperature = temp;
                 }
             }
         }
