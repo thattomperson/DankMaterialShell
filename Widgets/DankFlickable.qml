@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import qs.Common
 
 Flickable {
     id: flickable
@@ -10,6 +11,8 @@ Flickable {
     property real friction: 0.95
     property real minMomentumVelocity: 50
     property real maxMomentumVelocity: 2500
+    // Internal: controls transient scrollbar visibility
+    property bool _scrollBarActive: false
 
     flickDeceleration: 1500
     maximumFlickVelocity: 2000
@@ -35,6 +38,9 @@ Flickable {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         
         onWheel: (event) => {
+            // Activate scrollbar on any wheel interaction
+            flickable._scrollBarActive = true;
+            hideScrollBarTimer.restart();
             let currentTime = Date.now();
             let timeDelta = currentTime - lastWheelTime;
             lastWheelTime = currentTime;
@@ -118,6 +124,13 @@ Flickable {
         }
     }
 
+    // Show scrollbar while flicking / momentum
+    onMovementStarted: {
+        _scrollBarActive = true;
+        hideScrollBarTimer.stop();
+    }
+    onMovementEnded: hideScrollBarTimer.restart()
+
     Timer {
         id: momentumTimer
         interval: 16
@@ -159,5 +172,35 @@ Flickable {
         property: "contentY"
         duration: 300
         easing.type: Easing.OutQuad
+    }
+
+    // Styled vertical scrollbar (auto-hide, no track)
+    ScrollBar.vertical: ScrollBar {
+        id: vbar
+        policy: flickable.contentHeight > flickable.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
+        minimumSize: 0.08
+        implicitWidth: 10
+        interactive: true
+        hoverEnabled: true
+        z: 1000
+        opacity: (policy !== ScrollBar.AlwaysOff) && (vbar.pressed || vbar.hovered || vbar.active || flickable.moving || flickable.flicking || flickable.isMomentumActive || flickable._scrollBarActive) ? 1 : 0
+        visible: policy !== ScrollBar.AlwaysOff
+        Behavior on opacity { NumberAnimation { duration: 160; easing.type: Easing.OutQuad } }
+
+        contentItem: Rectangle {
+            implicitWidth: 6
+            radius: width / 2
+            color: vbar.pressed ? Theme.primary
+                  : (vbar.hovered || vbar.active || flickable.moving || flickable.flicking || flickable.isMomentumActive || flickable._scrollBarActive ? Theme.outline : Theme.outlineMedium)
+            opacity: vbar.pressed ? 1 : (vbar.hovered || vbar.active || flickable.moving || flickable.flicking || flickable.isMomentumActive || flickable._scrollBarActive ? 1 : 0.6)
+        }
+
+        background: Item {}
+    }
+
+    Timer {
+        id: hideScrollBarTimer
+        interval: 1200
+        onTriggered: flickable._scrollBarActive = false
     }
 }
