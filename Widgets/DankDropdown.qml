@@ -22,7 +22,7 @@ Rectangle {
     width: parent.width
     height: 60
     radius: Theme.cornerRadius
-    color: Theme.surfaceHover
+    color: "transparent"
     Component.onCompleted: {
         forceRecreateTimer.start();
     }
@@ -272,6 +272,8 @@ Rectangle {
                         DankListView {
                             id: listView
 
+                            property var popupRef: dropdownMenu
+
                             width: parent.width
                             height: parent.height - (root.enableFuzzySearch ? searchContainer.height + Theme.spacingXS : 0)
                             clip: true
@@ -339,7 +341,7 @@ Rectangle {
                                     onClicked: {
                                         root.currentValue = modelData;
                                         root.valueChanged(modelData);
-                                        close();
+                                        dropdownMenu.close();
                                     }
                                 }
 

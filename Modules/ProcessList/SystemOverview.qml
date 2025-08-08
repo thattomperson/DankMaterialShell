@@ -51,12 +51,44 @@ Row {
                 opacity: SysMonitorService.sortBy === "cpu" ? 1 : 0.8
             }
 
-            StyledText {
-                text: SysMonitorService.totalCpuUsage.toFixed(1) + "%"
-                font.pixelSize: Theme.fontSizeLarge
-                font.family: SettingsData.monoFontFamily
-                font.weight: Font.Bold
-                color: Theme.surfaceText
+            Row {
+                spacing: Theme.spacingS
+
+                StyledText {
+                    text: SysMonitorService.totalCpuUsage.toFixed(1) + "%"
+                    font.pixelSize: Theme.fontSizeLarge
+                    font.family: SettingsData.monoFontFamily
+                    font.weight: Font.Bold
+                    color: Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 20
+                    color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3)
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                StyledText {
+                    text: {
+                        if (SysMonitorService.cpuTemperature === undefined || SysMonitorService.cpuTemperature === null || SysMonitorService.cpuTemperature < 0) {
+                            return "--°";
+                        }
+                        return Math.round(SysMonitorService.cpuTemperature) + "°";
+                    }
+                    font.pixelSize: Theme.fontSizeMedium
+                    font.family: SettingsData.monoFontFamily
+                    font.weight: Font.Medium
+                    color: {
+                        if (SysMonitorService.cpuTemperature > 80)
+                            return Theme.error;
+                        if (SysMonitorService.cpuTemperature > 60)
+                            return Theme.warning;
+                        return Theme.surfaceText;
+                    }
+                    anchors.verticalCenter: parent.verticalCenter
+                }
             }
 
             StyledText {
@@ -123,16 +155,44 @@ Row {
                 opacity: SysMonitorService.sortBy === "memory" ? 1 : 0.8
             }
 
-            StyledText {
-                text: SysMonitorService.formatSystemMemory(SysMonitorService.usedMemoryKB)
-                font.pixelSize: Theme.fontSizeLarge
-                font.family: SettingsData.monoFontFamily
-                font.weight: Font.Bold
-                color: Theme.surfaceText
+            Row {
+                spacing: Theme.spacingS
+
+                StyledText {
+                    text: SysMonitorService.formatSystemMemory(SysMonitorService.usedMemoryKB)
+                    font.pixelSize: Theme.fontSizeLarge
+                    font.family: SettingsData.monoFontFamily
+                    font.weight: Font.Bold
+                    color: Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Rectangle {
+                    width: 1
+                    height: 20
+                    color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.3)
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: SysMonitorService.totalSwapKB > 0
+                }
+
+                StyledText {
+                    text: SysMonitorService.totalSwapKB > 0 ? SysMonitorService.formatSystemMemory(SysMonitorService.usedSwapKB) : ""
+                    font.pixelSize: Theme.fontSizeMedium
+                    font.family: SettingsData.monoFontFamily
+                    font.weight: Font.Medium
+                    color: SysMonitorService.usedSwapKB > 0 ? Theme.warning : Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: SysMonitorService.totalSwapKB > 0
+                }
             }
 
             StyledText {
-                text: "of " + SysMonitorService.formatSystemMemory(SysMonitorService.totalMemoryKB)
+                text: {
+                    if (SysMonitorService.totalSwapKB > 0) {
+                        return "of " + SysMonitorService.formatSystemMemory(SysMonitorService.totalMemoryKB) + " + swap";
+                    }
+                    return "of " + SysMonitorService.formatSystemMemory(SysMonitorService.totalMemoryKB);
+                }
                 font.pixelSize: Theme.fontSizeSmall
                 font.family: SettingsData.monoFontFamily
                 color: Theme.surfaceText
@@ -161,8 +221,8 @@ Row {
         width: (parent.width - Theme.spacingM * 2) / 3
         height: 80
         radius: Theme.cornerRadiusLarge
-        color: SysMonitorService.totalSwapKB > 0 ? Qt.rgba(Theme.warning.r, Theme.warning.g, Theme.warning.b, 0.08) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.04)
-        border.color: SysMonitorService.totalSwapKB > 0 ? Qt.rgba(Theme.warning.r, Theme.warning.g, Theme.warning.b, 0.2) : Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.12)
+        color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
+        border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
         border.width: 1
 
         Column {
@@ -172,23 +232,74 @@ Row {
             spacing: 2
 
             StyledText {
-                text: "Swap"
+                text: "Graphics"
                 font.pixelSize: Theme.fontSizeSmall
                 font.weight: Font.Medium
-                color: SysMonitorService.totalSwapKB > 0 ? Theme.warning : Theme.surfaceText
+                color: Theme.secondary
                 opacity: 0.8
             }
 
             StyledText {
-                text: SysMonitorService.totalSwapKB > 0 ? SysMonitorService.formatSystemMemory(SysMonitorService.usedSwapKB) : "None"
+                text: {
+                    if (!SysMonitorService.availableGpus || SysMonitorService.availableGpus.length === 0) {
+                        return "None";
+                    }
+                    if (SysMonitorService.availableGpus.length === 1) {
+                        var gpu = SysMonitorService.availableGpus[0];
+                        var temp = gpu.temperature;
+                        var tempText = (temp === undefined || temp === null || temp === 0) ? "--°" : Math.round(temp) + "°";
+                        return tempText;
+                    }
+                    // Multiple GPUs - show average temp
+                    var totalTemp = 0;
+                    var validTemps = 0;
+                    for (var i = 0; i < SysMonitorService.availableGpus.length; i++) {
+                        var temp = SysMonitorService.availableGpus[i].temperature;
+                        if (temp !== undefined && temp !== null && temp > 0) {
+                            totalTemp += temp;
+                            validTemps++;
+                        }
+                    }
+                    if (validTemps > 0) {
+                        return Math.round(totalTemp / validTemps) + "°";
+                    }
+                    return "--°";
+                }
                 font.pixelSize: Theme.fontSizeLarge
                 font.family: SettingsData.monoFontFamily
                 font.weight: Font.Bold
-                color: Theme.surfaceText
+                color: {
+                    if (!SysMonitorService.availableGpus || SysMonitorService.availableGpus.length === 0) {
+                        return Theme.surfaceText;
+                    }
+                    if (SysMonitorService.availableGpus.length === 1) {
+                        var temp = SysMonitorService.availableGpus[0].temperature || 0;
+                        if (temp > 80) return Theme.tempDanger;
+                        if (temp > 60) return Theme.tempWarning;
+                        return Theme.surfaceText;
+                    }
+                    // Multiple GPUs - get max temp for coloring
+                    var maxTemp = 0;
+                    for (var i = 0; i < SysMonitorService.availableGpus.length; i++) {
+                        var temp = SysMonitorService.availableGpus[i].temperature || 0;
+                        if (temp > maxTemp) maxTemp = temp;
+                    }
+                    if (maxTemp > 80) return Theme.tempDanger;
+                    if (maxTemp > 60) return Theme.tempWarning;
+                    return Theme.surfaceText;
+                }
             }
 
             StyledText {
-                text: SysMonitorService.totalSwapKB > 0 ? "of " + SysMonitorService.formatSystemMemory(SysMonitorService.totalSwapKB) : "No swap configured"
+                text: {
+                    if (!SysMonitorService.availableGpus || SysMonitorService.availableGpus.length === 0) {
+                        return "No GPUs detected";
+                    }
+                    if (SysMonitorService.availableGpus.length === 1) {
+                        return SysMonitorService.availableGpus[0].driver.toUpperCase();
+                    }
+                    return SysMonitorService.availableGpus.length + " GPUs detected";
+                }
                 font.pixelSize: Theme.fontSizeSmall
                 font.family: SettingsData.monoFontFamily
                 color: Theme.surfaceText

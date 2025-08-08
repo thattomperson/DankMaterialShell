@@ -370,7 +370,6 @@ PanelWindow {
 
                         DankListView {
                             id: appList
-                            mouseWheelSpeed: 20
 
                             property int itemHeight: 72
                             property int iconSize: 56

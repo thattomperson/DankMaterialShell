@@ -180,7 +180,13 @@ PanelWindow {
                     return true;
                 case "clipboard":
                     return true;
-                case "systemResources":
+                case "cpuUsage":
+                    return true;
+                case "memUsage":
+                    return true;
+                case "cpuTemp":
+                    return true;
+                case "gpuTemp":
                     return true;
                 case "notificationButton":
                     return true;
@@ -217,8 +223,14 @@ PanelWindow {
                     return privacyIndicatorComponent;
                 case "clipboard":
                     return clipboardComponent;
-                case "systemResources":
-                    return systemResourcesComponent;
+                case "cpuUsage":
+                    return cpuUsageComponent;
+                case "memUsage":
+                    return memUsageComponent;
+                case "cpuTemp":
+                    return cpuTempComponent;
+                case "gpuTemp":
+                    return gpuTempComponent;
                 case "notificationButton":
                     return notificationButtonComponent;
                 case "battery":
@@ -606,39 +618,78 @@ PanelWindow {
             }
 
             Component {
-                id: systemResourcesComponent
+                id: cpuUsageComponent
 
-                Row {
-                    spacing: Theme.spacingXS
-
-                    CpuMonitor {
-                        section: {
-                            if (parent && parent.parent && parent.parent.parent === leftSection) return "left";
-                            if (parent && parent.parent && parent.parent.parent === rightSection) return "right";
-                            if (parent && parent.parent && parent.parent.parent === centerSection) return "center";
-                            return "right";
-                        }
-                        popupTarget: processListPopout
-                        parentScreen: root.screen
-                        toggleProcessList: () => {
-                            return processListPopout.toggle();
-                        }
+                CpuMonitor {
+                    section: {
+                        if (parent && parent.parent === leftSection) return "left";
+                        if (parent && parent.parent === rightSection) return "right";
+                        if (parent && parent.parent === centerSection) return "center";
+                        return "right";
                     }
-
-                    RamMonitor {
-                        section: {
-                            if (parent && parent.parent && parent.parent.parent === leftSection) return "left";
-                            if (parent && parent.parent && parent.parent.parent === rightSection) return "right";
-                            if (parent && parent.parent && parent.parent.parent === centerSection) return "center";
-                            return "right";
-                        }
-                        popupTarget: processListPopout
-                        parentScreen: root.screen
-                        toggleProcessList: () => {
-                            return processListPopout.toggle();
-                        }
+                    popupTarget: processListPopout
+                    parentScreen: root.screen
+                    toggleProcessList: () => {
+                        return processListPopout.toggle();
                     }
+                }
 
+            }
+
+            Component {
+                id: memUsageComponent
+
+                RamMonitor {
+                    section: {
+                        if (parent && parent.parent === leftSection) return "left";
+                        if (parent && parent.parent === rightSection) return "right";
+                        if (parent && parent.parent === centerSection) return "center";
+                        return "right";
+                    }
+                    popupTarget: processListPopout
+                    parentScreen: root.screen
+                    toggleProcessList: () => {
+                        return processListPopout.toggle();
+                    }
+                }
+
+            }
+
+            Component {
+                id: cpuTempComponent
+
+                CpuTemperature {
+                    section: {
+                        if (parent && parent.parent === leftSection) return "left";
+                        if (parent && parent.parent === rightSection) return "right";
+                        if (parent && parent.parent === centerSection) return "center";
+                        return "right";
+                    }
+                    popupTarget: processListPopout
+                    parentScreen: root.screen
+                    toggleProcessList: () => {
+                        return processListPopout.toggle();
+                    }
+                }
+
+            }
+
+            Component {
+                id: gpuTempComponent
+
+                GpuTemperature {
+                    section: {
+                        if (parent && parent.parent === leftSection) return "left";
+                        if (parent && parent.parent === rightSection) return "right";
+                        if (parent && parent.parent === centerSection) return "center";
+                        return "right";
+                    }
+                    popupTarget: processListPopout
+                    parentScreen: root.screen
+                    widgetData: parent.widgetData
+                    toggleProcessList: () => {
+                        return processListPopout.toggle();
+                    }
                 }
 
             }

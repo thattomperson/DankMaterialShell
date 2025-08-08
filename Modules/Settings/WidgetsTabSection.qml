@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import qs.Common
 import qs.Widgets
+import qs.Services
 
 Column {
     id: root
@@ -15,9 +16,10 @@ Column {
     signal itemEnabledChanged(string sectionId, string itemId, bool enabled)
     signal itemOrderChanged(var newOrder)
     signal addWidget(string sectionId)
-    signal removeWidget(string sectionId, string itemId)
+    signal removeWidget(string sectionId, int widgetIndex)
     signal spacerSizeChanged(string sectionId, string itemId, int newSize)
     signal compactModeChanged(string widgetId, bool enabled)
+    signal gpuSelectionChanged(string sectionId, int widgetIndex, int selectedIndex)
 
     width: parent.width
     height: implicitHeight
@@ -134,6 +136,41 @@ Column {
                         spacing: Theme.spacingXS
 
                         Item {
+                            width: 120
+                            height: 32
+                            visible: modelData.id === "gpuTemp"
+                            
+                            DankDropdown {
+                                id: gpuDropdown
+                                anchors.fill: parent
+                                currentValue: {
+                                    var selectedIndex = modelData.selectedGpuIndex !== undefined ? modelData.selectedGpuIndex : 0;
+                                    if (SysMonitorService.availableGpus && SysMonitorService.availableGpus.length > selectedIndex && selectedIndex >= 0) {
+                                        var gpu = SysMonitorService.availableGpus[selectedIndex];
+                                        return gpu.driver.toUpperCase() + " (" + Math.round(gpu.temperature || 0) + "°C)";
+                                    }
+                                    return SysMonitorService.availableGpus && SysMonitorService.availableGpus.length > 0 ? SysMonitorService.availableGpus[0].driver.toUpperCase() + " (" + Math.round(SysMonitorService.availableGpus[0].temperature || 0) + "°C)" : "";
+                                }
+                                options: {
+                                    var gpuOptions = [];
+                                    if (SysMonitorService.availableGpus && SysMonitorService.availableGpus.length > 0) {
+                                        for (var i = 0; i < SysMonitorService.availableGpus.length; i++) {
+                                            var gpu = SysMonitorService.availableGpus[i];
+                                            gpuOptions.push(gpu.driver.toUpperCase() + " (" + Math.round(gpu.temperature || 0) + "°C)");
+                                        }
+                                    }
+                                    return gpuOptions;
+                                }
+                                onValueChanged: (value) => {
+                                    var gpuIndex = options.indexOf(value);
+                                    if (gpuIndex >= 0) {
+                                        root.gpuSelectionChanged(root.sectionId, index, gpuIndex);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Item {
                             width: 32
                             height: 32
                             visible: modelData.id === "clock" || modelData.id === "music"
@@ -240,7 +277,7 @@ Column {
                             iconSize: 18
                             iconColor: Theme.error
                             onClicked: {
-                                root.removeWidget(root.sectionId, modelData.id);
+                                root.removeWidget(root.sectionId, index);
                             }
                         }
 

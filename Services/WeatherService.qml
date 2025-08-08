@@ -246,26 +246,11 @@ Singleton {
     Timer {
         id: updateTimer
         interval: root.updateInterval
-        running: root.refCount > 0 && !IdleService.isIdle && SettingsData.weatherEnabled
+        running: root.refCount > 0 && SettingsData.weatherEnabled
         repeat: true
         triggeredOnStart: true
         onTriggered: {
             root.fetchWeather()
-        }
-    }
-    
-    Connections {
-        target: IdleService
-        function onIdleChanged(idle) {
-            if (idle) {
-                console.log("WeatherService: System idle, pausing weather updates")
-            } else {
-                console.log("WeatherService: System active, resuming weather updates")
-                if (root.refCount > 0 && !root.weather.available && SettingsData.weatherEnabled) {
-                    // Trigger immediate update when coming back from idle if no data and weather enabled
-                    root.fetchWeather()
-                }
-            }
         }
     }
     

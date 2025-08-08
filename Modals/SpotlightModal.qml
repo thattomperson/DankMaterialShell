@@ -285,7 +285,6 @@ DankModal {
 
                     DankListView {
                         id: resultsList
-                        mouseWheelSpeed: 20
 
                         property int itemHeight: 60
                         property int iconSize: 40

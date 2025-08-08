@@ -5,7 +5,7 @@ import qs.Common
 Flickable {
     id: flickable
 
-    property real mouseWheelSpeed: 12
+    property real mouseWheelSpeed: 60
     property real momentumVelocity: 0
     property bool isMomentumActive: false
     property real friction: 0.95

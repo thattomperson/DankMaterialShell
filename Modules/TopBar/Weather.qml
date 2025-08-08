@@ -39,7 +39,13 @@ Rectangle {
         }
 
         StyledText {
-            text: (SettingsData.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp) + "°" + (SettingsData.useFahrenheit ? "F" : "C")
+            text: {
+                var temp = SettingsData.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp;
+                if (temp === undefined || temp === null || temp === 0) {
+                    return "--°" + (SettingsData.useFahrenheit ? "F" : "C");
+                }
+                return temp + "°" + (SettingsData.useFahrenheit ? "F" : "C");
+            }
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter

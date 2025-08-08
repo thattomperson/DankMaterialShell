@@ -57,10 +57,10 @@ Rectangle {
             size: Theme.iconSize - 8
             color: {
                 if (SysMonitorService.memoryUsage > 90)
-                    return Theme.error;
+                    return Theme.tempDanger;
 
                 if (SysMonitorService.memoryUsage > 75)
-                    return Theme.warning;
+                    return Theme.tempWarning;
 
                 return Theme.surfaceText;
             }
@@ -68,7 +68,12 @@ Rectangle {
         }
 
         StyledText {
-            text: (SysMonitorService.memoryUsage || 0).toFixed(0) + "%"
+            text: {
+                if (SysMonitorService.memoryUsage === undefined || SysMonitorService.memoryUsage === null || SysMonitorService.memoryUsage === 0) {
+                    return "--%";
+                }
+                return SysMonitorService.memoryUsage.toFixed(0) + "%";
+            }
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
             color: Theme.surfaceText

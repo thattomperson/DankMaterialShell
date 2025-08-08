@@ -4,7 +4,7 @@ import QtQuick.Controls
 ListView {
     id: listView
 
-    property real mouseWheelSpeed: 12
+    property real mouseWheelSpeed: 60
 
     // Simple position preservation
     property real savedY: 0

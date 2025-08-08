@@ -22,7 +22,7 @@ GridView {
         id: wheelHandler
 
         // Tunable parameters for responsive scrolling
-        property real mouseWheelSpeed: 20
+        property real mouseWheelSpeed: 60
         // Higher = faster mouse wheel
         property real touchpadSpeed: 1.8
         // Touchpad sensitivity

@@ -41,7 +41,6 @@ Item {
             clip: true
             contentHeight: outputColumn.height
             contentWidth: width
-            mouseWheelSpeed: 20
             
             Column {
                 id: outputColumn
@@ -68,7 +67,6 @@ Item {
             clip: true
             contentHeight: inputColumn.height
             contentWidth: width
-            mouseWheelSpeed: 20
             
             Column {
                 id: inputColumn

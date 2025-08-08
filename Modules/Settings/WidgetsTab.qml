@@ -49,10 +49,28 @@ Item {
         "icon": "content_paste",
         "enabled": true
     }, {
-        "id": "systemResources",
-        "text": "System Resources",
-        "description": "CPU and memory usage indicators",
+        "id": "cpuUsage",
+        "text": "CPU Usage",
+        "description": "CPU usage indicator",
         "icon": "memory",
+        "enabled": true
+    }, {
+        "id": "memUsage",
+        "text": "Memory Usage",
+        "description": "Memory usage indicator",
+        "icon": "storage",
+        "enabled": true
+    }, {
+        "id": "cpuTemp",
+        "text": "CPU Temperature",
+        "description": "CPU temperature display",
+        "icon": "device_thermostat",
+        "enabled": true
+    }, {
+        "id": "gpuTemp",
+        "text": "GPU Temperature",
+        "description": "GPU temperature display",
+        "icon": "auto_awesome_mosaic",
         "enabled": true
     }, {
         "id": "systemTray",
@@ -127,7 +145,10 @@ Item {
         "id": "clipboard",
         "enabled": true
     }, {
-        "id": "systemResources",
+        "id": "cpuUsage",
+        "enabled": true
+    }, {
+        "id": "memUsage",
         "enabled": true
     }, {
         "id": "notificationButton",
@@ -147,6 +168,8 @@ Item {
         };
         if (widgetId === "spacer")
             widgetObj.size = 20;
+        if (widgetId === "gpuTemp")
+            widgetObj.selectedGpuIndex = 0;
 
         var widgets = [];
         if (targetSection === "left") {
@@ -164,28 +187,25 @@ Item {
         }
     }
 
-    function removeWidgetFromSection(sectionId, itemId) {
+    function removeWidgetFromSection(sectionId, widgetIndex) {
         var widgets = [];
         if (sectionId === "left") {
             widgets = SettingsData.topBarLeftWidgets.slice();
-            widgets = widgets.filter((widget) => {
-                var widgetId = typeof widget === "string" ? widget : widget.id;
-                return widgetId !== itemId;
-            });
+            if (widgetIndex >= 0 && widgetIndex < widgets.length) {
+                widgets.splice(widgetIndex, 1);
+            }
             SettingsData.setTopBarLeftWidgets(widgets);
         } else if (sectionId === "center") {
             widgets = SettingsData.topBarCenterWidgets.slice();
-            widgets = widgets.filter((widget) => {
-                var widgetId = typeof widget === "string" ? widget : widget.id;
-                return widgetId !== itemId;
-            });
+            if (widgetIndex >= 0 && widgetIndex < widgets.length) {
+                widgets.splice(widgetIndex, 1);
+            }
             SettingsData.setTopBarCenterWidgets(widgets);
         } else if (sectionId === "right") {
             widgets = SettingsData.topBarRightWidgets.slice();
-            widgets = widgets.filter((widget) => {
-                var widgetId = typeof widget === "string" ? widget : widget.id;
-                return widgetId !== itemId;
-            });
+            if (widgetIndex >= 0 && widgetIndex < widgets.length) {
+                widgets.splice(widgetIndex, 1);
+            }
             SettingsData.setTopBarRightWidgets(widgets);
         }
     }
@@ -208,7 +228,8 @@ Item {
                 } : {
                     "id": widget.id,
                     "enabled": enabled,
-                    "size": widget.size
+                    "size": widget.size,
+                    "selectedGpuIndex": widget.selectedGpuIndex
                 };
                 break;
             }
@@ -249,11 +270,43 @@ Item {
                 } : {
                     "id": widget.id,
                     "enabled": widget.enabled,
-                    "size": newSize
+                    "size": newSize,
+                    "selectedGpuIndex": widget.selectedGpuIndex
                 };
                 break;
             }
         }
+        if (sectionId === "left")
+            SettingsData.setTopBarLeftWidgets(widgets);
+        else if (sectionId === "center")
+            SettingsData.setTopBarCenterWidgets(widgets);
+        else if (sectionId === "right")
+            SettingsData.setTopBarRightWidgets(widgets);
+    }
+
+    function handleGpuSelectionChanged(sectionId, widgetIndex, selectedGpuIndex) {
+        var widgets = [];
+        if (sectionId === "left")
+            widgets = SettingsData.topBarLeftWidgets.slice();
+        else if (sectionId === "center")
+            widgets = SettingsData.topBarCenterWidgets.slice();
+        else if (sectionId === "right")
+            widgets = SettingsData.topBarRightWidgets.slice();
+        
+        if (widgetIndex >= 0 && widgetIndex < widgets.length) {
+            var widget = widgets[widgetIndex];
+            widgets[widgetIndex] = typeof widget === "string" ? {
+                "id": widget,
+                "enabled": true,
+                "selectedGpuIndex": selectedGpuIndex
+            } : {
+                "id": widget.id,
+                "enabled": widget.enabled,
+                "size": widget.size,
+                "selectedGpuIndex": selectedGpuIndex
+            };
+        }
+        
         if (sectionId === "left")
             SettingsData.setTopBarLeftWidgets(widgets);
         else if (sectionId === "center")
@@ -275,6 +328,7 @@ Item {
             var widgetId = typeof widget === "string" ? widget : widget.id;
             var widgetEnabled = typeof widget === "string" ? true : widget.enabled;
             var widgetSize = typeof widget === "string" ? undefined : widget.size;
+            var widgetSelectedGpuIndex = typeof widget === "string" ? undefined : widget.selectedGpuIndex;
             var widgetDef = baseWidgetDefinitions.find((w) => {
                 return w.id === widgetId;
             });
@@ -284,6 +338,8 @@ Item {
                 item.enabled = widgetEnabled;
                 if (widgetSize !== undefined)
                     item.size = widgetSize;
+                if (widgetSelectedGpuIndex !== undefined)
+                    item.selectedGpuIndex = widgetSelectedGpuIndex;
 
                 widgets.push(item);
             }
@@ -338,7 +394,6 @@ Item {
         clip: true
         contentHeight: mainColumn.height
         contentWidth: width
-        mouseWheelSpeed: 20
         
         Column {
             id: mainColumn
@@ -487,7 +542,7 @@ Item {
             width: parent.width
             spacing: Theme.spacingL
 
-            DankSections {
+            WidgetsTabSection {
                 width: parent.width
                 title: "Left Section"
                 titleIcon: "format_align_left"
@@ -505,8 +560,8 @@ Item {
                     widgetSelectionPopup.targetSection = sectionId;
                     widgetSelectionPopup.safeOpen();
                 }
-                onRemoveWidget: (sectionId, itemId) => {
-                    widgetsTab.removeWidgetFromSection(sectionId, itemId);
+                onRemoveWidget: (sectionId, widgetIndex) => {
+                    widgetsTab.removeWidgetFromSection(sectionId, widgetIndex);
                 }
                 onSpacerSizeChanged: (sectionId, itemId, newSize) => {
                     widgetsTab.handleSpacerSizeChanged(sectionId, itemId, newSize);
@@ -518,9 +573,12 @@ Item {
                         SettingsData.setMediaCompactMode(enabled);
                     }
                 }
+                onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
+                    widgetsTab.handleGpuSelectionChanged(sectionId, widgetIndex, selectedIndex);
+                }
             }
 
-            DankSections {
+            WidgetsTabSection {
                 width: parent.width
                 title: "Center Section"
                 titleIcon: "format_align_center"
@@ -538,8 +596,8 @@ Item {
                     widgetSelectionPopup.targetSection = sectionId;
                     widgetSelectionPopup.safeOpen();
                 }
-                onRemoveWidget: (sectionId, itemId) => {
-                    widgetsTab.removeWidgetFromSection(sectionId, itemId);
+                onRemoveWidget: (sectionId, widgetIndex) => {
+                    widgetsTab.removeWidgetFromSection(sectionId, widgetIndex);
                 }
                 onSpacerSizeChanged: (sectionId, itemId, newSize) => {
                     widgetsTab.handleSpacerSizeChanged(sectionId, itemId, newSize);
@@ -551,9 +609,12 @@ Item {
                         SettingsData.setMediaCompactMode(enabled);
                     }
                 }
+                onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
+                    widgetsTab.handleGpuSelectionChanged(sectionId, widgetIndex, selectedIndex);
+                }
             }
 
-            DankSections {
+            WidgetsTabSection {
                 width: parent.width
                 title: "Right Section"
                 titleIcon: "format_align_right"
@@ -571,8 +632,8 @@ Item {
                     widgetSelectionPopup.targetSection = sectionId;
                     widgetSelectionPopup.safeOpen();
                 }
-                onRemoveWidget: (sectionId, itemId) => {
-                    widgetsTab.removeWidgetFromSection(sectionId, itemId);
+                onRemoveWidget: (sectionId, widgetIndex) => {
+                    widgetsTab.removeWidgetFromSection(sectionId, widgetIndex);
                 }
                 onSpacerSizeChanged: (sectionId, itemId, newSize) => {
                     widgetsTab.handleSpacerSizeChanged(sectionId, itemId, newSize);
@@ -583,6 +644,9 @@ Item {
                     } else if (widgetId === "music") {
                         SettingsData.setMediaCompactMode(enabled);
                     }
+                }
+                onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
+                    widgetsTab.handleGpuSelectionChanged(sectionId, widgetIndex, selectedIndex);
                 }
             }
         }

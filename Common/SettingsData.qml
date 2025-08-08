@@ -29,7 +29,11 @@ Singleton {
     property bool showWeather: true
     property bool showMusic: true
     property bool showClipboard: true
-    property bool showSystemResources: true
+    property bool showCpuUsage: true
+    property bool showMemUsage: true
+    property bool showCpuTemp: true
+    property bool showGpuTemp: true
+    property int selectedGpuIndex: 0
     property bool showSystemTray: true
     property bool showClock: true
     property bool showNotificationButton: true
@@ -41,13 +45,14 @@ Singleton {
     property bool mediaCompactMode: false
     property var topBarLeftWidgets: ["launcherButton", "workspaceSwitcher", "focusedWindow"]
     property var topBarCenterWidgets: ["music", "clock", "weather"]
-    property var topBarRightWidgets: ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"]
+    property var topBarRightWidgets: ["systemTray", "clipboard", "cpuUsage", "memUsage", "notificationButton", "battery", "controlCenterButton"]
     
     property alias topBarLeftWidgetsModel: leftWidgetsModel
     property alias topBarCenterWidgetsModel: centerWidgetsModel
     property alias topBarRightWidgetsModel: rightWidgetsModel
     
     signal forceTopBarLayoutRefresh()
+    signal widgetDataChanged()
     
     ListModel {
         id: leftWidgetsModel
@@ -150,7 +155,11 @@ Singleton {
                 showWeather = settings.showWeather !== undefined ? settings.showWeather : true;
                 showMusic = settings.showMusic !== undefined ? settings.showMusic : true;
                 showClipboard = settings.showClipboard !== undefined ? settings.showClipboard : true;
-                showSystemResources = settings.showSystemResources !== undefined ? settings.showSystemResources : true;
+                showCpuUsage = settings.showCpuUsage !== undefined ? settings.showCpuUsage : true;
+                showMemUsage = settings.showMemUsage !== undefined ? settings.showMemUsage : true;
+                showCpuTemp = settings.showCpuTemp !== undefined ? settings.showCpuTemp : true;
+                showGpuTemp = settings.showGpuTemp !== undefined ? settings.showGpuTemp : true;
+                selectedGpuIndex = settings.selectedGpuIndex !== undefined ? settings.selectedGpuIndex : 0;
                 showSystemTray = settings.showSystemTray !== undefined ? settings.showSystemTray : true;
                 showClock = settings.showClock !== undefined ? settings.showClock : true;
                 showNotificationButton = settings.showNotificationButton !== undefined ? settings.showNotificationButton : true;
@@ -167,7 +176,7 @@ Singleton {
                 } else {
                     var leftWidgets = settings.topBarLeftWidgets !== undefined ? settings.topBarLeftWidgets : ["launcherButton", "workspaceSwitcher", "focusedWindow"];
                     var centerWidgets = settings.topBarCenterWidgets !== undefined ? settings.topBarCenterWidgets : ["music", "clock", "weather"];
-                    var rightWidgets = settings.topBarRightWidgets !== undefined ? settings.topBarRightWidgets : ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"];
+                    var rightWidgets = settings.topBarRightWidgets !== undefined ? settings.topBarRightWidgets : ["systemTray", "clipboard", "cpuUsage", "memUsage", "notificationButton", "battery", "controlCenterButton"];
                     
                     topBarLeftWidgets = leftWidgets;
                     topBarCenterWidgets = centerWidgets;
@@ -227,7 +236,11 @@ Singleton {
             "showWeather": showWeather,
             "showMusic": showMusic,
             "showClipboard": showClipboard,
-            "showSystemResources": showSystemResources,
+            "showCpuUsage": showCpuUsage,
+            "showMemUsage": showMemUsage,
+            "showCpuTemp": showCpuTemp,
+            "showGpuTemp": showGpuTemp,
+            "selectedGpuIndex": selectedGpuIndex,
             "showSystemTray": showSystemTray,
             "showClock": showClock,
             "showNotificationButton": showNotificationButton,
@@ -370,8 +383,28 @@ Singleton {
         saveSettings();
     }
 
-    function setShowSystemResources(enabled) {
-        showSystemResources = enabled;
+    function setShowCpuUsage(enabled) {
+        showCpuUsage = enabled;
+        saveSettings();
+    }
+
+    function setShowMemUsage(enabled) {
+        showMemUsage = enabled;
+        saveSettings();
+    }
+
+    function setShowCpuTemp(enabled) {
+        showCpuTemp = enabled;
+        saveSettings();
+    }
+
+    function setShowGpuTemp(enabled) {
+        showGpuTemp = enabled;
+        saveSettings();
+    }
+
+    function setSelectedGpuIndex(index) {
+        selectedGpuIndex = index;
         saveSettings();
     }
 
@@ -429,19 +462,25 @@ Singleton {
             var widgetId = typeof order[i] === "string" ? order[i] : order[i].id;
             var enabled = typeof order[i] === "string" ? true : order[i].enabled;
             var size = typeof order[i] === "string" ? undefined : order[i].size;
+            var selectedGpuIndex = typeof order[i] === "string" ? undefined : order[i].selectedGpuIndex;
             
             var item = {"widgetId": widgetId, "enabled": enabled};
             if (size !== undefined) {
                 item.size = size;
             }
+            if (selectedGpuIndex !== undefined) {
+                item.selectedGpuIndex = selectedGpuIndex;
+            }
             listModel.append(item);
         }
+        // Emit signal to notify widgets that data has changed
+        widgetDataChanged();
     }
 
     function resetTopBarWidgetsToDefault() {
         var defaultLeft = ["launcherButton", "workspaceSwitcher", "focusedWindow"];
         var defaultCenter = ["music", "clock", "weather"];
-        var defaultRight = ["systemTray", "clipboard", "systemResources", "notificationButton", "battery", "controlCenterButton"];
+        var defaultRight = ["systemTray", "clipboard", "cpuUsage", "memUsage", "notificationButton", "battery", "controlCenterButton"];
         
         topBarLeftWidgets = defaultLeft;
         topBarCenterWidgets = defaultCenter;
@@ -457,7 +496,10 @@ Singleton {
         showWeather = true;
         showMusic = true;
         showClipboard = true;
-        showSystemResources = true;
+        showCpuUsage = true;
+        showMemUsage = true;
+        showCpuTemp = true;
+        showGpuTemp = true;
         showSystemTray = true;
         showClock = true;
         showNotificationButton = true;

@@ -354,6 +354,10 @@ Singleton {
     property color info: "#2196F3"
     property color error: "#F2B8B5"
     
+    // Temperature-specific colors
+    property color tempWarning: "#ff9933"  // Balanced orange for warm temperatures
+    property color tempDanger: "#ff5555"   // Balanced red for dangerous temperatures
+    
     property color primaryHover: Qt.rgba(primary.r, primary.g, primary.b, 0.12)
     property color primaryHoverLight: Qt.rgba(primary.r, primary.g, primary.b, 0.08)
     property color primaryPressed: Qt.rgba(primary.r, primary.g, primary.b, 0.16)

@@ -14,7 +14,6 @@ Item {
         clip: true
         contentHeight: mainColumn.height
         contentWidth: width
-        mouseWheelSpeed: 20
         
         Column {
             id: mainColumn
