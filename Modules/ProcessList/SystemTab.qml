@@ -284,13 +284,21 @@ ScrollView {
                 text: {
                   if (!SysMonitorService.availableGpus
                       || SysMonitorService.availableGpus.length === 0) {
-                    return "Vendor: N/A"
+                    return "Nadda"
                   }
                   var gpu = SysMonitorService.availableGpus[Math.min(
                                                               SessionData.selectedGpuIndex,
                                                               SysMonitorService.availableGpus.length
                                                               - 1)]
-                  return "Vendor: " + gpu.vendor
+                  var vendor = gpu.vendor.toLowerCase()
+                  if (vendor.includes("nvidia")) {
+                    return "<font color='" + Theme.success + "'>The green company</font>"
+                  } else if (vendor.includes("amd")) {
+                    return "<font color='" + Theme.error + "'>The red company</font>"
+                  } else if (vendor.includes("intel")) {
+                    return "<font color='" + Theme.info + "'>The blue company</font>"
+                  }
+                  return gpu.vendor
                 }
                 font.pixelSize: Theme.fontSizeSmall
                 font.family: SettingsData.monoFontFamily
@@ -299,6 +307,7 @@ ScrollView {
                 width: parent.width
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
+                textFormat: Text.RichText
               }
 
               StyledText {

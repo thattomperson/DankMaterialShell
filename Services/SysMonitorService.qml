@@ -13,6 +13,7 @@ Singleton {
   property int updateInterval: refCount > 0 ? 3000 : 30000
   property int maxProcesses: 100
   property bool isUpdating: false
+  property bool staticDataInitialized: false
 
   property var processes: []
   property string sortBy: "cpu"
@@ -78,6 +79,9 @@ Singleton {
   function addRef() {
     refCount++
     if (refCount === 1) {
+      if (!staticDataInitialized) {
+        initializeStaticData()
+      }
       updateAllStats()
     }
   }
@@ -86,10 +90,17 @@ Singleton {
     refCount = Math.max(0, refCount - 1)
   }
 
+  function initializeStaticData() {
+    if (!staticDataInitialized) {
+      staticDataInitialized = true
+      staticDataProcess.running = true
+    }
+  }
+
   function updateAllStats() {
     if (refCount > 0) {
       isUpdating = true
-      unifiedStatsProcess.running = true
+      dynamicStatsProcess.running = true
     }
   }
 
@@ -179,6 +190,124 @@ Singleton {
     return Math.max(0, Math.min(100, (usedDiff / totalDiff) * 100))
   }
 
+  function parseStaticData(data) {
+    if (data.cpu) {
+      cpuCores = data.cpu.count || 1
+      cpuCount = data.cpu.count || 1
+      cpuModel = data.cpu.model || ""
+    }
+
+    if (data.system) {
+      kernelVersion = data.system.kernel || ""
+      distribution = data.system.distro || ""
+      hostname = data.system.hostname || ""
+      architecture = data.system.arch || ""
+      motherboard = data.system.motherboard || ""
+      biosVersion = data.system.bios || ""
+    }
+
+    if (data.gpus) {
+      const gpuList = []
+      for (const gpu of data.gpus) {
+        // Parse the display name from rawLine
+        let displayName = ""
+        let fullName = ""
+        
+        if (gpu.rawLine) {
+          // Remove BDF and class prefix
+          let s = gpu.rawLine.replace(/^[^:]+: /, "")
+          // Remove PCI ID [vvvv:dddd] and everything after
+          s = s.replace(/\[[0-9a-f]{4}:[0-9a-f]{4}\].*$/i, "")
+          
+          // Try to extract text after last ']'
+          const afterBracket = s.match(/\]\s*([^\[]+)$/)
+          if (afterBracket && afterBracket[1].trim()) {
+            displayName = afterBracket[1].trim()
+          } else {
+            // Try to get last bracketed text
+            const lastBracket = s.match(/\[([^\]]+)\]([^\[]*$)/)
+            if (lastBracket) {
+              displayName = lastBracket[1]
+            } else {
+              displayName = s
+            }
+          }
+          
+          // Remove vendor prefixes
+          displayName = displayName
+            .replace(/^NVIDIA Corporation\s+/i, "")
+            .replace(/^NVIDIA\s+/i, "")
+            .replace(/^GeForce\s+/i, "")
+            .replace(/^Advanced Micro Devices, Inc\.\s+/i, "")
+            .replace(/^AMD\/ATI\s+/i, "")
+            .replace(/^AMD\s+/i, "")
+            .replace(/^ATI\s+/i, "")
+            .replace(/^Intel Corporation\s+/i, "")
+            .replace(/^Intel\s+/i, "")
+            .trim()
+        } else if (gpu.rawLine && gpu.rawLine.startsWith("NVIDIA")) {
+          // nvidia-smi fallback case
+          displayName = gpu.rawLine.replace(/^NVIDIA\s+/, "")
+        } else {
+          displayName = "Unknown"
+        }
+        
+        // Build full name with vendor prefix
+        switch(gpu.vendor) {
+          case "NVIDIA": fullName = "NVIDIA " + displayName; break
+          case "AMD": fullName = "AMD " + displayName; break
+          case "Intel": fullName = "Intel " + displayName; break
+          default: fullName = displayName
+        }
+        
+        gpuList.push({
+          "driver": gpu.driver,
+          "vendor": gpu.vendor,
+          "displayName": displayName,
+          "fullName": fullName,
+          "temperature": 0,
+          "hwmon": "unknown"
+        })
+      }
+      availableGpus = gpuList
+    }
+  }
+
+  function parseDynamicStats(data) {
+    updateGpuTemperatures(data.gputemps || [])
+    parseUnifiedStats(JSON.stringify(data))
+  }
+
+  function updateGpuTemperatures(tempData) {
+    if (availableGpus.length === 0 || tempData.length === 0) return
+    
+    const updatedGpus = []
+    for (let i = 0; i < availableGpus.length; i++) {
+      const gpu = availableGpus[i]
+      const tempInfo = tempData.find(t => t.driver === gpu.driver)
+      if (tempInfo) {
+        updatedGpus.push({
+          "driver": gpu.driver,
+          "vendor": gpu.vendor,
+          "displayName": gpu.displayName,
+          "fullName": gpu.fullName,
+          "temperature": tempInfo.temperature || 0,
+          "hwmon": tempInfo.hwmon || "unknown"
+        })
+      } else {
+        updatedGpus.push({
+          "driver": gpu.driver,
+          "vendor": gpu.vendor,
+          "displayName": gpu.displayName,
+          "fullName": gpu.fullName,
+          "temperature": gpu.temperature || 0,
+          "hwmon": gpu.hwmon || "unknown"
+        })
+      }
+    }
+    availableGpus = updatedGpus
+  }
+
   function parseUnifiedStats(text) {
     function num(x) {
       return (typeof x === "number" && !isNaN(x)) ? x : 0
@@ -212,9 +341,6 @@ Singleton {
     }
 
     if (data.cpu) {
-      cpuCores = data.cpu.count || 1
-      cpuCount = data.cpu.count || 1
-      cpuModel = data.cpu.model || ""
       cpuFrequency = data.cpu.frequency || 0
       cpuTemperature = data.cpu.temperature || 0
 
@@ -339,25 +465,16 @@ Singleton {
     }
 
     if (data.system) {
-      kernelVersion = data.system.kernel || ""
-      distribution = data.system.distro || ""
-      hostname = data.system.hostname || ""
-      architecture = data.system.arch || ""
       loadAverage = data.system.loadavg || ""
       processCount = data.system.processes || 0
       threadCount = data.system.threads || 0
       bootTime = data.system.boottime || ""
-      motherboard = data.system.motherboard || ""
-      biosVersion = data.system.bios || ""
     }
 
     if (data.diskmounts) {
       diskMounts = data.diskmounts
     }
 
-    if (data.gpus) {
-      availableGpus = data.gpus
-    }
 
     addToHistory(cpuHistory, cpuUsage)
     addToHistory(memoryHistory, memoryUsage)
@@ -416,7 +533,104 @@ Singleton {
     onTriggered: root.updateAllStats()
   }
 
-  readonly property string scriptBody: `
+readonly property string staticDataScript: `exec 2>/dev/null
+  set -o pipefail
+  json_escape() { sed -e 's/\\\\/\\\\\\\\/g' -e 's/"/\\\\"/g' -e ':a;N;$!ba;s/\\n/\\\\n/g'; }
+
+  printf "{"
+
+  cpu_count=$(nproc)
+  cpu_model=$(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ *//' | json_escape || echo 'Unknown')
+  
+  printf '"cpu":{"count":%d,"model":"%s"},' "$cpu_count" "$cpu_model"
+
+  dmip="/sys/class/dmi/id"
+  [ -d "$dmip" ] || dmip="/sys/devices/virtual/dmi/id"
+  mb_vendor=$([ -r "$dmip/board_vendor" ] && cat "$dmip/board_vendor" | json_escape || echo "Unknown")
+  mb_name=$([ -r "$dmip/board_name" ] && cat "$dmip/board_name" | json_escape || echo "")
+  bios_ver=$([ -r "$dmip/bios_version" ] && cat "$dmip/bios_version" | json_escape || echo "Unknown")
+  bios_date=$([ -r "$dmip/bios_date" ] && cat "$dmip/bios_date" | json_escape || echo "")
+
+  kern_ver=$(uname -r | json_escape)
+  distro=$(grep PRETTY_NAME /etc/os-release 2>/dev/null | cut -d= -f2- | tr -d '"' | json_escape || echo 'Unknown')
+  host_name=$(hostname | json_escape)
+  arch_name=$(uname -m)
+
+  printf '"system":{"kernel":"%s","distro":"%s","hostname":"%s","arch":"%s","motherboard":"%s %s","bios":"%s %s"},' \\
+  "$kern_ver" "$distro" "$host_name" "$arch_name" "$mb_vendor" "$mb_name" "$bios_ver" "$bios_date"
+
+  printf '"gpus":['
+  gfirst=1
+  tmp_gpu=$(mktemp)
+
+  # Map driver -> vendor, else infer from lspci line
+  infer_vendor() {
+    case "$1" in
+      nvidia|nouveau) echo NVIDIA ;;
+      amdgpu|radeon) echo AMD ;;
+      i915|xe) echo Intel ;;
+      *) case "$2" in
+           *NVIDIA*|*Nvidia*|*nvidia*) echo NVIDIA ;;
+           *AMD*|*ATI*|*amd*|*ati*)    echo AMD ;;
+           *Intel*|*intel*)            echo Intel ;;
+           *)                          echo Unknown ;;
+         esac ;;
+    esac
+  }
+
+  # Priority for sorting (nvidia first, then dGPU AMD, then iGPU AMD/Intel)
+  prio_of() {
+    local drv="$1" bdf="$2"
+    case "$drv" in
+      nvidia) echo 3 ;;
+      amdgpu|radeon)
+        # crude: device number from BDF 0000:BB:DD.F  -> DD
+        local dd="\${bdf##*:}"; dd="\${dd%%.*}"
+        [ "$dd" = "00" ] && echo 1 || echo 2
+        ;;
+      i915|xe) echo 0 ;;
+      *) echo 0 ;;
+    esac
+  }
+
+  # Enumerate all VGA/3D/2D/Display devices (domain-aware)
+  LC_ALL=C lspci -nnD 2>/dev/null | grep -iE ' VGA| 3D| 2D| Display' | while IFS= read -r line; do
+    bdf="\${line%% *}"                                       # 0000:BB:DD.F
+    short_bdf="\${bdf#0000:}"
+
+    # kernel driver in use
+    drv=""; vendor="Unknown"
+    if [ -e "/sys/bus/pci/devices/\$bdf/driver" ]; then
+      drv="$(basename "$(readlink -f "/sys/bus/pci/devices/\$bdf/driver")")"
+    fi
+
+    vendor="$(infer_vendor "\$drv" "\$line")"
+
+    # Just pass the raw line, we'll parse it in JavaScript
+    raw_line="$(printf '%s' "\$line" | json_escape)"
+
+    # priority for sorting
+    prio="$(prio_of "\$drv" "\$bdf")"
+
+    printf '%s|%s|%s|%s\\n' "\$prio" "\$drv" "\$vendor" "\$raw_line" >> "\$tmp_gpu"
+  done
+
+  # Output JSON
+  if [ -s "\$tmp_gpu" ]; then
+    while IFS='|' read -r pr drv vendor raw_line; do
+      [ \$gfirst -eq 1 ] || printf ","
+      printf '{"driver":"%s","vendor":"%s","rawLine":"%s"}' \\
+        "\$drv" "\$vendor" "\$raw_line"
+      gfirst=0
+    done < <(sort -t'|' -k1,1nr -k2,2 "\$tmp_gpu")
+  fi
+
+  rm -f "\$tmp_gpu"
+  printf ']'
+
+  printf "}\\n"`
+
+  readonly property string dynamicDataScript: `
   sort_key=\${1:-cpu}
   max_procs=\${2:-20}
 
@@ -580,24 +794,13 @@ Singleton {
   rm -f "$tmp_ps"
   printf '],'
 
-  dmip="/sys/class/dmi/id"
-  [ -d "$dmip" ] || dmip="/sys/devices/virtual/dmi/id"
-  mb_vendor=$([ -r "$dmip/board_vendor" ] && cat "$dmip/board_vendor" | json_escape || echo "Unknown")
-  mb_name=$([ -r "$dmip/board_name" ] && cat "$dmip/board_name" | json_escape || echo "")
-  bios_ver=$([ -r "$dmip/bios_version" ] && cat "$dmip/bios_version" | json_escape || echo "Unknown")
-  bios_date=$([ -r "$dmip/bios_date" ] && cat "$dmip/bios_date" | json_escape || echo "")
-
-  kern_ver=$(uname -r | json_escape)
-  distro=$(grep PRETTY_NAME /etc/os-release 2>/dev/null | cut -d= -f2- | tr -d '"' | json_escape || echo 'Unknown')
-  host_name=$(hostname | json_escape)
-  arch_name=$(uname -m)
   load_avg=$(cut -d' ' -f1-3 /proc/loadavg)
   proc_count=$(ls -Ud /proc/[0-9]* 2>/dev/null | wc -l)
   thread_count=$(ls -Ud /proc/[0-9]*/task/[0-9]* 2>/dev/null | wc -l)
   boot_time=$(who -b 2>/dev/null | awk '{print $3, $4}' | json_escape || echo 'Unknown')
 
-  printf '"system":{"kernel":"%s","distro":"%s","hostname":"%s","arch":"%s","loadavg":"%s","processes":%d,"threads":%d,"boottime":"%s","motherboard":"%s %s","bios":"%s %s"},' \\
-  "$kern_ver" "$distro" "$host_name" "$arch_name" "$load_avg" "$proc_count" "$thread_count" "$boot_time" "$mb_vendor" "$mb_name" "$bios_ver" "$bios_date"
+  printf '"system":{"loadavg":"%s","processes":%d,"threads":%d,"boottime":"%s"},' \\
+  "$load_avg" "$proc_count" "$thread_count" "$boot_time"
 
   printf '"diskmounts":['
   tmp_mounts=$(mktemp)
@@ -620,197 +823,16 @@ Singleton {
   rm -f "$tmp_mounts"
   printf ']',
 
-  printf '"gpus":['
+  printf '"gputemps":['
   gfirst=1
   tmp_gpu=$(mktemp)
 
-  # Function to extract display name from full GPU name
-  extract_display_name() {
-  local full_name="$1"
-  local drv="$2"
-  local display_name=""
-
-  # NVIDIA patterns
-  if [[ "$full_name" =~ GeForce|Quadro|Tesla|NVIDIA ]]; then
-  # Extract model like "RTX 4070", "GTX 1080", "RTX 4090", etc.
-  display_name=$(echo "$full_name" | grep -oE '(RTX|GTX|GT|MX|Tesla|Quadro|TITAN) [0-9]{3,4}( Ti| SUPER| Ti SUPER| Max-Q| Mobile)?' | head -1)
-
-  # If not found, try alternate patterns
-  if [ -z "$display_name" ]; then
-  display_name=$(echo "$full_name" | grep -oE 'GeForce [0-9]{3,4}' | sed 's/GeForce //')
-  fi
-  # AMD patterns
-  elif [[ "$full_name" =~ AMD|Radeon|ATI|Navi|Raphael|Rembrandt|Phoenix|Strix ]]; then
-  # Check for our special integrated graphics format
-  if [[ "$full_name" =~ "AMD Raphael (Integrated Graphics)" ]]; then
-  display_name="Raphael"
-  elif [[ "$full_name" =~ "AMD Phoenix (Integrated Graphics)" ]]; then
-  display_name="Phoenix"
-  elif [[ "$full_name" =~ "AMD Rembrandt (Integrated Graphics)" ]]; then
-  display_name="Rembrandt"
-  else
-  # Check if it contains actual Radeon model numbers
-  display_name=$(echo "$full_name" | grep -oE 'Radeon [0-9]{3,4}[A-Z]*( / [0-9]{3,4}[A-Z]*)?' | head -1)
-
-  # If not, try RX/R series cards
-  if [ -z "$display_name" ]; then
-  display_name=$(echo "$full_name" | grep -oE '(RX|R9|R7|R5|Vega|VII) [0-9]{3,4}( XT| XTX)?' | head -1)
-  fi
-
-  # For Strix with Radeon model in brackets
-  if [ -z "$display_name" ] && [[ "$full_name" =~ "Strix" ]]; then
-  if [[ "$full_name" =~ Radeon ]]; then
-  # Extract everything after "Strix "
-  display_name=$(echo "$full_name" | sed 's/.*Strix //')
-  # Remove brackets if present
-  display_name=$(echo "$display_name" | tr -d '[]')
-  else
-  display_name="Strix"
-  fi
-  fi
-
-  # Check for Navi
-  if [ -z "$display_name" ] && [[ "$full_name" =~ Navi ]]; then
-  display_name=$(echo "$full_name" | grep -oE 'Navi [0-9]+' | head -1)
-  fi
-  fi
-  # Intel patterns
-  elif [[ "$full_name" =~ Intel ]]; then
-  # Extract Arc models
-  display_name=$(echo "$full_name" | grep -oE 'Arc A[0-9]{3,4}' | head -1)
-
-  # If not Arc, try Iris/UHD
-  if [ -z "$display_name" ]; then
-  display_name=$(echo "$full_name" | grep -oE '(Iris Xe|UHD|HD) Graphics( [0-9]+)?' | head -1)
-  fi
-
-  # Generic Intel graphics
-  if [ -z "$display_name" ]; then
-  display_name="Intel Graphics"
-  fi
-  fi
-
-  # Fallback - but don't cut off at 3 words if it's our special format
-  if [ -z "$display_name" ]; then
-  if [[ "$full_name" =~ "(Integrated Graphics)" ]]; then
-  # Just use the codename part
-  display_name=$(echo "$full_name" | sed 's/AMD //' | sed 's/ (Integrated Graphics)//')
-  else
-  display_name="$full_name"
-  fi
-  fi
-
-  echo "$display_name"
-  }
-
-  # Gather cards via DRM
+  # Gather GPU temperatures only
   for card in /sys/class/drm/card*; do
   [ -e "$card/device/driver" ] || continue
 
   drv=$(basename "$(readlink -f "$card/device/driver")")
   drv=\${drv##*/}
-
-  # Get PCI path and info
-  pci_path=$(readlink -f "$card/device")
-  func=\${pci_path##*/}
-  sec=\${func#*:}; sec=\${sec%%:*}
-
-  # Determine vendor
-  vendor="Unknown"
-  case "$drv" in
-  nvidia) vendor="NVIDIA" ;;
-  amdgpu|radeon) vendor="AMD" ;;
-  i915|xe) vendor="Intel" ;;
-  esac
-
-  # Priority
-  prio=0
-  case "$drv" in
-  nvidia) prio=3 ;;
-  amdgpu|radeon)
-  if [ "$sec" = "00" ]; then prio=1; else prio=2; fi
-  ;;
-  i915|xe) prio=0 ;;
-  *) prio=0 ;;
-  esac
-
-  # Get full GPU name
-  full_name=""
-  display_name=""
-
-  # Special handling for NVIDIA with nvidia-smi
-  if [ "$drv" = "nvidia" ] && command -v nvidia-smi >/dev/null 2>&1; then
-  # Get the GPU index for this card
-  gpu_name=$(nvidia-smi --query-gpu=name --format=csv,noheader,nounits 2>/dev/null | head -1 | sed 's/^ *//;s/ *$//' | json_escape)
-  if [ -n "$gpu_name" ]; then
-  full_name="$gpu_name"
-  # Extract display name from nvidia-smi output
-  display_name=$(echo "$gpu_name" | grep -oE '(RTX|GTX|GT|MX|Tesla|Quadro|TITAN) [0-9]{3,4}( Ti| SUPER| Ti SUPER)?' | head -1)
-  if [ -z "$display_name" ]; then
-  display_name="$gpu_name"
-  fi
-  fi
-  fi
-
-  # AMD specific detection
-  if [ -z "$full_name" ] && [ "$drv" = "amdgpu" -o "$drv" = "radeon" ]; then
-  # Try lspci with proper parsing for AMD GPUs
-  if command -v lspci >/dev/null 2>&1; then
-  pci_addr="\${func}"
-  # Get the full device name
-  lspci_out=$(lspci -s "$pci_addr" 2>/dev/null)
-  # Remove PCI address and device class prefix (everything before the colon)
-  temp_name=$(echo "$lspci_out" | cut -d: -f2- | sed 's/^ *//')
-
-  # Check for AMD/ATI format and extract the GPU name
-  if echo "$temp_name" | grep -q 'AMD/ATI'; then
-  # Extract everything after "] " which comes after [AMD/ATI]
-  # This handles both "Raphael" and "Strix [Radeon 880M / 890M]" formats
-  gpu_name=$(echo "$temp_name" | sed 's/.*\] //' | sed 's/ (rev .*)$//')
-
-  # For codenames like Raphael, add context for full name
-  if [[ "$gpu_name" == "Raphael" ]] || [[ "$gpu_name" == "Phoenix" ]] || [[ "$gpu_name" == "Rembrandt" ]]; then
-  full_name="AMD $gpu_name (Integrated Graphics)"
-  else
-  full_name="$gpu_name"
-  fi
-  else
-  # Fallback: just clean up vendor name
-  full_name=$(echo "$temp_name" | sed 's/Advanced Micro Devices, Inc\. //' | sed 's/ (rev .*)$//')
-  fi
-
-  # Clean up and escape for JSON
-  full_name=$(echo "$full_name" | json_escape)
-  fi
-  fi
-
-  # Intel and generic fallback
-  if [ -z "$full_name" ]; then
-  if command -v lspci >/dev/null 2>&1; then
-  pci_addr="\${func}"
-  lspci_out=$(lspci -s "$pci_addr" 2>/dev/null)
-  # Extract device name after the colon
-  full_name=$(echo "$lspci_out" | sed 's/^[0-9a-f:.]* [^:]*: //' | sed 's/ (rev .*)$//' | json_escape)
-  fi
-  fi
-
-  # Final fallback - use driver name
-  if [ -z "$full_name" ] || [[ "$full_name" =~ ^[0-9a-f] ]]; then
-  case "$drv" in
-  nvidia) full_name="NVIDIA GPU" ;;
-  amdgpu|radeon) full_name="AMD GPU" ;;
-  i915|xe) full_name="Intel GPU" ;;
-  *) full_name="Unknown GPU" ;;
-  esac
-  fi
-
-  # Extract display name
-  display_name=$(extract_display_name "$full_name" "$drv")
-
-  # If display name is still empty, use a simplified version of full name
-  if [ -z "$display_name" ]; then
-  display_name="$full_name"
-  fi
 
   # Temperature
   hw=""; temp="0"
@@ -827,31 +849,23 @@ Singleton {
   [ -n "$t" ] && { temp="$t"; hw="\${hw:-nvidia}"; }
   fi
 
-  printf '%s|%s|%s|%s|%s|%s|%s\n' "$prio" "$drv" "\${hw:-unknown}" "\${temp:-0}" "$vendor" "$display_name" "$full_name" >> "$tmp_gpu"
+  [ "$temp" != "0" ] && {
+  [ $gfirst -eq 1 ] || printf ","
+  printf '{"driver":"%s","hwmon":"%s","temperature":%s}' "$drv" "\${hw:-unknown}" "\${temp:-0}"
+  gfirst=0
+  }
   done
 
   # Fallback if no DRM cards found but nvidia-smi is available
-  if [ ! -s "$tmp_gpu" ]; then
+  if [ $gfirst -eq 1 ]; then
   if command -v nvidia-smi >/dev/null 2>&1; then
-  gpu_info=$(nvidia-smi --query-gpu=name,temperature.gpu --format=csv,noheader 2>/dev/null | head -1)
-  if [ -n "$gpu_info" ]; then
-  IFS=',' read -r gpu_name temp <<< "$gpu_info"
-  gpu_name=$(echo "$gpu_name" | sed 's/^ *//;s/ *$//' | json_escape)
-  temp=$(echo "$temp" | sed 's/^ *//;s/ *$//')
-  display_name=$(echo "$gpu_name" | grep -oE '(RTX|GTX|GT|MX|Tesla|Quadro) [0-9]{3,4}( Ti| SUPER| Ti SUPER)?' | head -1)
-  [ -z "$display_name" ] && display_name="$gpu_name"
-  printf '3|nvidia|nvidia|%s|NVIDIA|%s|%s\n' "\${temp:-0}" "$display_name" "$gpu_name" >> "$tmp_gpu"
-  fi
-  fi
-  fi
-
-  # Sort and output JSON
-  while IFS='|' read -r pr drv hw temp vendor display_name full_name; do
-  [ $gfirst -eq 1 ] || printf ","
-  printf '{"driver":"%s","hwmon":"%s","temperature":%s,"vendor":"%s","displayName":"%s","fullName":"%s"}' \\
-  "$drv" "$hw" "$temp" "$vendor" "$display_name" "$full_name"
+  temp=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | head -1)
+  [ -n "$temp" ] && {
+  printf '{"driver":"nvidia","hwmon":"nvidia","temperature":%s}' "$temp"
   gfirst=0
-  done < <(sort -t'|' -k1,1nr -k2,2 "$tmp_gpu")
+  }
+  fi
+  fi
 
   rm -f "$tmp_gpu"
   printf ']'
@@ -859,9 +873,42 @@ Singleton {
   printf "}\\n"`
 
   Process {
-    id: unifiedStatsProcess
+    id: staticDataProcess
+    command: ["bash", "-c", "bash -s <<'QS_EOF'\n"
+      + root.staticDataScript + "\nQS_EOF\n"]
+    running: false
+    onExited: exitCode => {
+      if (exitCode !== 0) {
+        console.warn("Static data collection failed with exit code:", exitCode)
+      }
+    }
+    stdout: StdioCollector {
+      onStreamFinished: {
+        if (text.trim()) {
+          const fullText = text.trim()
+          const lastBraceIndex = fullText.lastIndexOf('}')
+          if (lastBraceIndex === -1) {
+            console.warn("Invalid static data JSON")
+            return
+          }
+          const jsonText = fullText.substring(0, lastBraceIndex + 1)
+
+          try {
+            const data = JSON.parse(jsonText)
+            parseStaticData(data)
+          } catch (e) {
+            console.warn("Failed to parse static data JSON:", e)
+            return
+          }
+        }
+      }
+    }
+  }
+
+  Process {
+    id: dynamicStatsProcess
     command: ["bash", "-c", "bash -s \"$1\" \"$2\" <<'QS_EOF'\n"
-      + root.scriptBody + "\nQS_EOF\n", root.sortBy, String(root.maxProcesses)]
+      + root.dynamicDataScript + "\nQS_EOF\n", root.sortBy, String(root.maxProcesses)]
     running: false
     onExited: exitCode => {
       if (exitCode !== 0) {
@@ -881,7 +928,7 @@ Singleton {
 
           try {
             const data = JSON.parse(jsonText)
-            parseUnifiedStats(jsonText)
+            parseDynamicStats(data)
           } catch (e) {
             isUpdating = false
             return
