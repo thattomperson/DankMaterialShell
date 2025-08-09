@@ -188,6 +188,59 @@ Column {
             Item {
               width: 32
               height: 32
+              visible: modelData.id === "gpuTemp" && modelData.warning
+
+              DankIcon {
+                name: "warning"
+                size: 20
+                color: Theme.error
+                anchors.centerIn: parent
+                opacity: warningArea.containsMouse ? 1.0 : 0.8
+              }
+
+              MouseArea {
+                id: warningArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+              }
+
+              Rectangle {
+                id: warningTooltip
+                width: warningTooltipText.contentWidth + Theme.spacingM * 2
+                height: warningTooltipText.contentHeight + Theme.spacingS * 2
+                radius: Theme.cornerRadius
+                color: Theme.surfaceContainer
+                border.color: Theme.outline
+                border.width: 1
+                visible: warningArea.containsMouse
+                opacity: visible ? 1 : 0
+                x: -width - Theme.spacingS
+                y: (parent.height - height) / 2
+                z: 100
+
+                StyledText {
+                  id: warningTooltipText
+                  anchors.centerIn: parent
+                  text: modelData.warning || "Warning"
+                  font.pixelSize: Theme.fontSizeSmall
+                  color: Theme.surfaceText
+                  width: 300
+                  wrapMode: Text.WordWrap
+                }
+
+                Behavior on opacity {
+                  NumberAnimation {
+                    duration: Theme.shortDuration
+                    easing.type: Theme.standardEasing
+                  }
+                }
+              }
+            }
+
+            Item {
+              width: 32
+              height: 32
               visible: modelData.id === "clock" || modelData.id === "music"
 
               DankActionButton {

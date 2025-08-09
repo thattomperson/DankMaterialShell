@@ -71,6 +71,7 @@ Item {
       "text": "GPU Temperature",
       "description": "GPU temperature display",
       "icon": "auto_awesome_mosaic",
+      "warning": "This widget prevents GPU power off states, which can significantly impact battery life on laptops. It is not recommended to use this on laptops with hybrid graphics.",
       "enabled": true
     }, {
       "id": "systemTray",

@@ -6,6 +6,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.Services
+import qs.Common
 
 Singleton {
   id: root
@@ -75,6 +76,61 @@ Singleton {
   property string motherboard: ""
   property string biosVersion: ""
   property var availableGpus: []
+
+  // Check if any GPU temperature widgets are configured
+  function hasGpuTempWidgets() {
+    const allWidgets = [...(SettingsData.topBarLeftWidgets || []), 
+                       ...(SettingsData.topBarCenterWidgets || []), 
+                       ...(SettingsData.topBarRightWidgets || [])]
+    
+    return allWidgets.some(widget => {
+      const widgetId = typeof widget === "string" ? widget : widget.id
+      const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
+      return widgetId === "gpuTemp" && widgetEnabled
+    })
+  }
+  
+  // Check if any NVIDIA GPU temperature widgets are configured
+  function hasNvidiaGpuTempWidgets() {
+    if (!hasGpuTempWidgets()) return false
+    
+    const allWidgets = [...(SettingsData.topBarLeftWidgets || []), 
+                       ...(SettingsData.topBarCenterWidgets || []), 
+                       ...(SettingsData.topBarRightWidgets || [])]
+    
+    return allWidgets.some(widget => {
+      const widgetId = typeof widget === "string" ? widget : widget.id
+      const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
+      if (widgetId !== "gpuTemp" || !widgetEnabled) return false
+      
+      const selectedGpuIndex = typeof widget === "string" ? 0 : (widget.selectedGpuIndex || 0)
+      if (availableGpus && availableGpus[selectedGpuIndex]) {
+        return availableGpus[selectedGpuIndex].driver === "nvidia"
+      }
+      return false
+    })
+  }
+  
+  // Check if any non-NVIDIA GPU temperature widgets are configured
+  function hasNonNvidiaGpuTempWidgets() {
+    if (!hasGpuTempWidgets()) return false
+    
+    const allWidgets = [...(SettingsData.topBarLeftWidgets || []), 
+                       ...(SettingsData.topBarCenterWidgets || []), 
+                       ...(SettingsData.topBarRightWidgets || [])]
+    
+    return allWidgets.some(widget => {
+      const widgetId = typeof widget === "string" ? widget : widget.id
+      const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
+      if (widgetId !== "gpuTemp" || !widgetEnabled) return false
+      
+      const selectedGpuIndex = typeof widget === "string" ? 0 : (widget.selectedGpuIndex || 0)
+      if (availableGpus && availableGpus[selectedGpuIndex]) {
+        return availableGpus[selectedGpuIndex].driver !== "nvidia"
+      }
+      return true  // Default to true if GPU not found yet (static data might not be loaded)
+    })
+  }
 
   function addRef() {
     refCount++
@@ -642,7 +698,10 @@ readonly property string staticDataScript: `exec 2>/dev/null
   readonly property string dynamicDataScript: `
   sort_key=\${1:-cpu}
   max_procs=\${2:-20}
+  collect_gpu_temps=\${3:-0}
+  collect_nvidia_only=\${4:-0}
 
+  collect_non_nvidia=\${5:-1}
   json_escape() { sed -e 's/\\\\/\\\\\\\\/g' -e 's/"/\\\\"/g' -e ':a;N;$!ba;s/\\n/\\\\n/g'; }
 
   printf "{"
@@ -833,27 +892,30 @@ readonly property string staticDataScript: `exec 2>/dev/null
   printf ']',
 
   printf '"gputemps":['
-  gfirst=1
-  tmp_gpu=$(mktemp)
+  if [ "$collect_gpu_temps" = "1" ]; then
+    gfirst=1
+    tmp_gpu=$(mktemp)
 
-  # Gather GPU temperatures only
-  for card in /sys/class/drm/card*; do
+    # Gather GPU temperatures only
+    for card in /sys/class/drm/card*; do
   [ -e "$card/device/driver" ] || continue
 
   drv=$(basename "$(readlink -f "$card/device/driver")")
   drv=\${drv##*/}
 
-  # Temperature
+  # Temperature (only scan hwmon for non-NVIDIA GPUs)
   hw=""; temp="0"
-  for h in "$card/device"/hwmon/hwmon*; do
-  [ -e "$h/temp1_input" ] || continue
-  hw=$(basename "$h")
-  temp=$(awk '{printf "%.1f",$1/1000}' "$h/temp1_input" 2>/dev/null || echo "0")
-  break
-  done
+  if [ "$collect_non_nvidia" = "1" ]; then
+    for h in "$card/device"/hwmon/hwmon*; do
+    [ -e "$h/temp1_input" ] || continue
+    hw=$(basename "$h")
+    temp=$(awk '{printf "%.1f",$1/1000}' "$h/temp1_input" 2>/dev/null || echo "0")
+    break
+    done
+  fi
 
   # NVIDIA temperature fallback
-  if [ "$drv" = "nvidia" ] && [ "$temp" = "0" ] && command -v nvidia-smi >/dev/null 2>&1; then
+  if [ "$drv" = "nvidia" ] && [ "$temp" = "0" ] && [ "$collect_nvidia_only" = "1" ] && command -v nvidia-smi >/dev/null 2>&1; then
   t=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | head -1)
   [ -n "$t" ] && { temp="$t"; hw="\${hw:-nvidia}"; }
   fi
@@ -866,7 +928,7 @@ readonly property string staticDataScript: `exec 2>/dev/null
   done
 
   # Fallback if no DRM cards found but nvidia-smi is available
-  if [ $gfirst -eq 1 ]; then
+  if [ $gfirst -eq 1 ] && [ \"$collect_nvidia_only\" = \"1\" ]; then
   if command -v nvidia-smi >/dev/null 2>&1; then
   temp=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits 2>/dev/null | head -1)
   [ -n "$temp" ] && {
@@ -876,7 +938,8 @@ readonly property string staticDataScript: `exec 2>/dev/null
   fi
   fi
 
-  rm -f "$tmp_gpu"
+    rm -f "$tmp_gpu"
+  fi
   printf ']'
 
   printf "}\\n"`
@@ -916,8 +979,8 @@ readonly property string staticDataScript: `exec 2>/dev/null
 
   Process {
     id: dynamicStatsProcess
-    command: ["bash", "-c", "bash -s \"$1\" \"$2\" <<'QS_EOF'\n"
-      + root.dynamicDataScript + "\nQS_EOF\n", root.sortBy, String(root.maxProcesses)]
+    command: ["bash", "-c", "bash -s \"$1\" \"$2\" \"$3\" \"$4\" \"$5\" <<'QS_EOF'\n"
+      + root.dynamicDataScript + "\nQS_EOF\n", "-", root.sortBy, String(root.maxProcesses), root.hasGpuTempWidgets() ? "1" : "0", root.hasNvidiaGpuTempWidgets() ? "1" : "0", root.hasNonNvidiaGpuTempWidgets() ? "1" : "0"]
     running: false
     onExited: exitCode => {
       if (exitCode !== 0) {
