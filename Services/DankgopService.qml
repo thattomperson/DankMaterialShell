@@ -21,6 +21,10 @@ Singleton {
     property string processSort: "cpu"
     property bool noCpu: false
 
+    // Sampling data
+    property var cpuSampleData: null
+    property var procSampleData: null
+
     property real cpuUsage: 0
     property real cpuFrequency: 0
     property real cpuTemperature: 0
@@ -235,6 +239,14 @@ Singleton {
             return []
         }
 
+        // Add sampling data if available
+        if ((enabledModules.includes("cpu") || enabledModules.includes("all")) && cpuSampleData) {
+            cmd.push("--cpu-sample", JSON.stringify(cpuSampleData))
+        }
+        if ((enabledModules.includes("processes") || enabledModules.includes("all")) && procSampleData) {
+            cmd.push("--proc-sample", JSON.stringify(procSampleData))
+        }
+
         if (gpuPciIds.length > 0) {
             cmd.push("--gpu-pci-ids", gpuPciIds.join(","))
         }
@@ -262,6 +274,15 @@ Singleton {
             cpuModel = cpu.model || ""
             perCoreCpuUsage = cpu.coreUsage || []
             addToHistory(cpuHistory, cpuUsage)
+
+            // Update CPU sample data for the next run
+            if (cpu.total && cpu.cores) {
+                cpuSampleData = {
+                    previousTotal: cpu.total,
+                    previousCores: cpu.cores,
+                    sampleTime: new Date().getTime()
+                }
+            }
         }
 
         if (data.memory) {
@@ -338,6 +359,7 @@ Singleton {
 
         if (data.processes && Array.isArray(data.processes)) {
             const newProcesses = []
+            const newProcSample = []
             for (const proc of data.processes) {
                 newProcesses.push({
                     "pid": proc.pid || 0,
@@ -350,8 +372,19 @@ Singleton {
                     "displayName": (proc.command && proc.command.length > 15) ? 
                                    proc.command.substring(0, 15) + "..." : (proc.command || "")
                 })
+
+                if (proc.pid && typeof proc.pticks !== 'undefined') {
+                    newProcSample.push({
+                        pid: proc.pid,
+                        previousTicks: proc.pticks,
+                        sampleTime: new Date().getTime()
+                    })
+                }
             }
             processes = newProcesses
+            if (newProcSample.length > 0) {
+                procSampleData = newProcSample
+            }
         }
 
         // Handle both gpu and gpu-temp module data
@@ -485,7 +518,7 @@ Singleton {
         command: root.buildDankgopCommand()
         running: false
         onCommandChanged: {
-            console.log("DankgopService command:", JSON.stringify(command))
+            //console.log("DankgopService command:", JSON.stringify(command))
         }
         onExited: exitCode => {
             if (exitCode !== 0) {
