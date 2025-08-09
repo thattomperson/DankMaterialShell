@@ -20,6 +20,7 @@ Singleton {
   property int selectedGpuIndex: 0
   property bool nvidiaGpuTempEnabled: false  
   property bool nonNvidiaGpuTempEnabled: false
+  property var enabledGpuPciIds: []
 
   Component.onCompleted: {
     loadSettings()
@@ -43,6 +44,7 @@ Singleton {
         selectedGpuIndex = settings.selectedGpuIndex !== undefined ? settings.selectedGpuIndex : 0
         nvidiaGpuTempEnabled = settings.nvidiaGpuTempEnabled !== undefined ? settings.nvidiaGpuTempEnabled : false
         nonNvidiaGpuTempEnabled = settings.nonNvidiaGpuTempEnabled !== undefined ? settings.nonNvidiaGpuTempEnabled : false
+        enabledGpuPciIds = settings.enabledGpuPciIds !== undefined ? settings.enabledGpuPciIds : []
       }
     } catch (e) {
 
@@ -59,7 +61,8 @@ Singleton {
                                           "pinnedApps": pinnedApps,
                                           "selectedGpuIndex": selectedGpuIndex,
                                           "nvidiaGpuTempEnabled": nvidiaGpuTempEnabled,
-                                          "nonNvidiaGpuTempEnabled": nonNvidiaGpuTempEnabled
+                                          "nonNvidiaGpuTempEnabled": nonNvidiaGpuTempEnabled,
+                                          "enabledGpuPciIds": enabledGpuPciIds
                                         }, null, 2))
   }
 
@@ -136,6 +139,11 @@ Singleton {
 
   function setNonNvidiaGpuTempEnabled(enabled) {
     nonNvidiaGpuTempEnabled = enabled
+    saveSettings()
+  }
+
+  function setEnabledGpuPciIds(pciIds) {
+    enabledGpuPciIds = pciIds
     saveSettings()
   }
 

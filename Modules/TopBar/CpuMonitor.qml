@@ -23,10 +23,10 @@ Rectangle {
                    baseColor.a * Theme.widgetTransparency)
   }
   Component.onCompleted: {
-    SysMonitorService.addRef()
+    DankgopService.addRef(["cpu"])
   }
   Component.onDestruction: {
-    SysMonitorService.removeRef()
+    DankgopService.removeRef(["cpu"])
   }
 
   MouseArea {
@@ -45,7 +45,7 @@ Rectangle {
                                        Theme.barHeight + Theme.spacingXS,
                                        width, section, currentScreen)
       }
-      SysMonitorService.setSortBy("cpu")
+      DankgopService.setSortBy("cpu")
       if (root.toggleProcessList)
         root.toggleProcessList()
     }
@@ -59,10 +59,10 @@ Rectangle {
       name: "memory"
       size: Theme.iconSize - 8
       color: {
-        if (SysMonitorService.cpuUsage > 80)
+        if (DankgopService.cpuUsage > 80)
           return Theme.tempDanger
 
-        if (SysMonitorService.cpuUsage > 60)
+        if (DankgopService.cpuUsage > 60)
           return Theme.tempWarning
 
         return Theme.surfaceText
@@ -72,12 +72,12 @@ Rectangle {
 
     StyledText {
       text: {
-        if (SysMonitorService.cpuUsage === undefined
-            || SysMonitorService.cpuUsage === null
-            || SysMonitorService.cpuUsage === 0) {
+        if (DankgopService.cpuUsage === undefined
+            || DankgopService.cpuUsage === null
+            || DankgopService.cpuUsage === 0) {
           return "--%"
         }
-        return SysMonitorService.cpuUsage.toFixed(0) + "%"
+        return DankgopService.cpuUsage.toFixed(0) + "%"
       }
       font.pixelSize: Theme.fontSizeSmall
       font.weight: Font.Medium

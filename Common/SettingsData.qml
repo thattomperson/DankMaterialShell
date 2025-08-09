@@ -35,6 +35,7 @@ Singleton {
   property bool showCpuTemp: true
   property bool showGpuTemp: true
   property int selectedGpuIndex: 0
+  property var enabledGpuPciIds: []
   property bool showSystemTray: true
   property bool showClock: true
   property bool showNotificationButton: true
@@ -187,6 +188,7 @@ Singleton {
         showCpuTemp = settings.showCpuTemp !== undefined ? settings.showCpuTemp : true
         showGpuTemp = settings.showGpuTemp !== undefined ? settings.showGpuTemp : true
         selectedGpuIndex = settings.selectedGpuIndex !== undefined ? settings.selectedGpuIndex : 0
+        enabledGpuPciIds = settings.enabledGpuPciIds !== undefined ? settings.enabledGpuPciIds : []
         showSystemTray = settings.showSystemTray !== undefined ? settings.showSystemTray : true
         showClock = settings.showClock !== undefined ? settings.showClock : true
         showNotificationButton = settings.showNotificationButton
@@ -291,6 +293,7 @@ Singleton {
                                           "showCpuTemp": showCpuTemp,
                                           "showGpuTemp": showGpuTemp,
                                           "selectedGpuIndex": selectedGpuIndex,
+                                          "enabledGpuPciIds": enabledGpuPciIds,
                                           "showSystemTray": showSystemTray,
                                           "showClock": showClock,
                                           "showNotificationButton": showNotificationButton,
@@ -453,6 +456,11 @@ Singleton {
     saveSettings()
   }
 
+  function setEnabledGpuPciIds(pciIds) {
+    enabledGpuPciIds = pciIds
+    saveSettings()
+  }
+
   function setShowSystemTray(enabled) {
     showSystemTray = enabled
     saveSettings()
@@ -508,6 +516,7 @@ Singleton {
       var enabled = typeof order[i] === "string" ? true : order[i].enabled
       var size = typeof order[i] === "string" ? undefined : order[i].size
       var selectedGpuIndex = typeof order[i] === "string" ? undefined : order[i].selectedGpuIndex
+      var pciId = typeof order[i] === "string" ? undefined : order[i].pciId
 
       var item = {
         "widgetId": widgetId,
@@ -519,6 +528,9 @@ Singleton {
       if (selectedGpuIndex !== undefined) {
         item.selectedGpuIndex = selectedGpuIndex
       }
+      if (pciId !== undefined) {
+        item.pciId = pciId
+      }
       listModel.append(item)
     }
     // Emit signal to notify widgets that data has changed
@@ -528,7 +540,7 @@ Singleton {
   function resetTopBarWidgetsToDefault() {
     var defaultLeft = ["launcherButton", "workspaceSwitcher", "focusedWindow"]
     var defaultCenter = ["music", "clock", "weather"]
-    var defaultRight = ["systemTray", "clipboard", "cpuUsage", "memUsage", "notificationButton", "battery", "controlCenterButton"]
+    var defaultRight = ["systemTray", "clipboard", "notificationButton", "battery", "controlCenterButton"]
 
     topBarLeftWidgets = defaultLeft
     topBarCenterWidgets = defaultCenter

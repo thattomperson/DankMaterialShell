@@ -10,10 +10,10 @@ Column {
   property var contextMenu: null
 
   Component.onCompleted: {
-    SysMonitorService.addRef()
+    DankgopService.addRef(["processes"])
   }
   Component.onDestruction: {
-    SysMonitorService.removeRef()
+    DankgopService.removeRef(["processes"])
   }
 
   Item {
@@ -39,9 +39,9 @@ Column {
         text: "Process"
         font.pixelSize: Theme.fontSizeSmall
         font.family: SettingsData.monoFontFamily
-        font.weight: SysMonitorService.sortBy === "name" ? Font.Bold : Font.Medium
+        font.weight: DankgopService.sortBy === "name" ? Font.Bold : Font.Medium
         color: Theme.surfaceText
-        opacity: SysMonitorService.sortBy === "name" ? 1 : 0.7
+        opacity: DankgopService.sortBy === "name" ? 1 : 0.7
         anchors.centerIn: parent
       }
 
@@ -52,7 +52,7 @@ Column {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-          SysMonitorService.setSortBy("name")
+          DankgopService.setSortBy("name")
         }
       }
 
@@ -79,9 +79,9 @@ Column {
         text: "CPU"
         font.pixelSize: Theme.fontSizeSmall
         font.family: SettingsData.monoFontFamily
-        font.weight: SysMonitorService.sortBy === "cpu" ? Font.Bold : Font.Medium
+        font.weight: DankgopService.sortBy === "cpu" ? Font.Bold : Font.Medium
         color: Theme.surfaceText
-        opacity: SysMonitorService.sortBy === "cpu" ? 1 : 0.7
+        opacity: DankgopService.sortBy === "cpu" ? 1 : 0.7
         anchors.centerIn: parent
       }
 
@@ -92,7 +92,7 @@ Column {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-          SysMonitorService.setSortBy("cpu")
+          DankgopService.setSortBy("cpu")
         }
       }
 
@@ -119,9 +119,9 @@ Column {
         text: "RAM"
         font.pixelSize: Theme.fontSizeSmall
         font.family: SettingsData.monoFontFamily
-        font.weight: SysMonitorService.sortBy === "memory" ? Font.Bold : Font.Medium
+        font.weight: DankgopService.sortBy === "memory" ? Font.Bold : Font.Medium
         color: Theme.surfaceText
-        opacity: SysMonitorService.sortBy === "memory" ? 1 : 0.7
+        opacity: DankgopService.sortBy === "memory" ? 1 : 0.7
         anchors.centerIn: parent
       }
 
@@ -132,7 +132,7 @@ Column {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-          SysMonitorService.setSortBy("memory")
+          DankgopService.setSortBy("memory")
         }
       }
 
@@ -159,9 +159,9 @@ Column {
         text: "PID"
         font.pixelSize: Theme.fontSizeSmall
         font.family: SettingsData.monoFontFamily
-        font.weight: SysMonitorService.sortBy === "pid" ? Font.Bold : Font.Medium
+        font.weight: DankgopService.sortBy === "pid" ? Font.Bold : Font.Medium
         color: Theme.surfaceText
-        opacity: SysMonitorService.sortBy === "pid" ? 1 : 0.7
+        opacity: DankgopService.sortBy === "pid" ? 1 : 0.7
         horizontalAlignment: Text.AlignHCenter
         anchors.centerIn: parent
       }
@@ -173,7 +173,7 @@ Column {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-          SysMonitorService.setSortBy("pid")
+          DankgopService.setSortBy("pid")
         }
       }
 
@@ -197,7 +197,7 @@ Column {
       anchors.verticalCenter: parent.verticalCenter
 
       StyledText {
-        text: SysMonitorService.sortDescending ? "↓" : "↑"
+        text: DankgopService.sortDescending ? "↓" : "↑"
         font.pixelSize: Theme.fontSizeMedium
         color: Theme.surfaceText
         anchors.centerIn: parent
@@ -210,7 +210,7 @@ Column {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-          SysMonitorService.toggleSortOrder()
+          // ! TODO - we lost this with dankgop
         }
       }
 
@@ -231,7 +231,7 @@ Column {
     height: parent.height - columnHeaders.height
     clip: true
     spacing: 4
-    model: SysMonitorService.processes
+    model: DankgopService.processes
 
     delegate: ProcessListItem {
       process: modelData

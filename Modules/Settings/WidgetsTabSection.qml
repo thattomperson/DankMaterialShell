@@ -148,29 +148,23 @@ Column {
                 currentValue: {
                   var selectedIndex = modelData.selectedGpuIndex
                       !== undefined ? modelData.selectedGpuIndex : 0
-                  if (SysMonitorService.availableGpus
-                      && SysMonitorService.availableGpus.length > selectedIndex
+                  if (DankgopService.availableGpus
+                      && DankgopService.availableGpus.length > selectedIndex
                       && selectedIndex >= 0) {
-                    var gpu = SysMonitorService.availableGpus[selectedIndex]
-                    return gpu.driver.toUpperCase() + " (" + Math.round(
-                          gpu.temperature || 0) + "°C)"
+                    var gpu = DankgopService.availableGpus[selectedIndex]
+                    return gpu.driver.toUpperCase()
                   }
-                  return SysMonitorService.availableGpus
-                      && SysMonitorService.availableGpus.length
-                      > 0 ? SysMonitorService.availableGpus[0].driver.toUpperCase(
-                              ) + " (" + Math.round(
-                              SysMonitorService.availableGpus[0].temperature
-                              || 0) + "°C)" : ""
+                  return DankgopService.availableGpus
+                      && DankgopService.availableGpus.length
+                      > 0 ? DankgopService.availableGpus[0].driver.toUpperCase() : ""
                 }
                 options: {
                   var gpuOptions = []
-                  if (SysMonitorService.availableGpus
-                      && SysMonitorService.availableGpus.length > 0) {
-                    for (var i = 0; i < SysMonitorService.availableGpus.length; i++) {
-                      var gpu = SysMonitorService.availableGpus[i]
-                      gpuOptions.push(gpu.driver.toUpperCase(
-                                        ) + " (" + Math.round(gpu.temperature
-                                                              || 0) + "°C)")
+                  if (DankgopService.availableGpus
+                      && DankgopService.availableGpus.length > 0) {
+                    for (var i = 0; i < DankgopService.availableGpus.length; i++) {
+                      var gpu = DankgopService.availableGpus[i]
+                      gpuOptions.push(gpu.driver.toUpperCase())
                     }
                   }
                   return gpuOptions
@@ -188,7 +182,7 @@ Column {
             Item {
               width: 32
               height: 32
-              visible: modelData.id === "gpuTemp" && modelData.warning
+              visible: (modelData.warning !== undefined && modelData.warning !== "") && (modelData.id === "cpuUsage" || modelData.id === "memUsage" || modelData.id === "cpuTemp" || modelData.id === "gpuTemp")
 
               DankIcon {
                 name: "warning"
@@ -207,13 +201,16 @@ Column {
 
               Rectangle {
                 id: warningTooltip
-                width: warningTooltipText.contentWidth + Theme.spacingM * 2
-                height: warningTooltipText.contentHeight + Theme.spacingS * 2
+                
+                property string warningText: (modelData.warning !== undefined && modelData.warning !== "") ? modelData.warning : ""
+                
+                width: Math.min(250, warningTooltipText.implicitWidth) + Theme.spacingM * 2
+                height: warningTooltipText.implicitHeight + Theme.spacingS * 2
                 radius: Theme.cornerRadius
                 color: Theme.surfaceContainer
                 border.color: Theme.outline
                 border.width: 1
-                visible: warningArea.containsMouse
+                visible: warningArea.containsMouse && warningText !== ""
                 opacity: visible ? 1 : 0
                 x: -width - Theme.spacingS
                 y: (parent.height - height) / 2
@@ -222,10 +219,11 @@ Column {
                 StyledText {
                   id: warningTooltipText
                   anchors.centerIn: parent
-                  text: modelData.warning || "Warning"
+                  anchors.margins: Theme.spacingS
+                  text: warningTooltip.warningText
                   font.pixelSize: Theme.fontSizeSmall
                   color: Theme.surfaceText
-                  width: 300
+                  width: Math.min(250, implicitWidth)
                   wrapMode: Text.WordWrap
                 }
 

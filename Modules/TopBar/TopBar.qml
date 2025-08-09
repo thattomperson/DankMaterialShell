@@ -58,9 +58,9 @@ PanelWindow {
       return widgetId === "gpuTemp" && widgetEnabled
     })
     
-    SysMonitorService.gpuTempEnabled = hasGpuTempWidget || SessionData.nvidiaGpuTempEnabled || SessionData.nonNvidiaGpuTempEnabled
-    SysMonitorService.nvidiaGpuTempEnabled = hasGpuTempWidget || SessionData.nvidiaGpuTempEnabled
-    SysMonitorService.nonNvidiaGpuTempEnabled = hasGpuTempWidget || SessionData.nonNvidiaGpuTempEnabled
+    DankgopService.gpuTempEnabled = hasGpuTempWidget || SessionData.nvidiaGpuTempEnabled || SessionData.nonNvidiaGpuTempEnabled
+    DankgopService.nvidiaGpuTempEnabled = hasGpuTempWidget || SessionData.nvidiaGpuTempEnabled
+    DankgopService.nonNvidiaGpuTempEnabled = hasGpuTempWidget || SessionData.nonNvidiaGpuTempEnabled
   }
 
   Connections {
@@ -238,13 +238,13 @@ PanelWindow {
         case "clipboard":
           return true
         case "cpuUsage":
-          return true
+          return DankgopService.dankgopAvailable
         case "memUsage":
-          return true
+          return DankgopService.dankgopAvailable
         case "cpuTemp":
-          return true
+          return DankgopService.dankgopAvailable
         case "gpuTemp":
-          return true
+          return DankgopService.dankgopAvailable
         case "notificationButton":
           return true
         case "battery":

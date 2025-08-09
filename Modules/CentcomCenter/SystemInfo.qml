@@ -13,7 +13,7 @@ Rectangle {
   border.width: 1
 
   Ref {
-    service: SysMonitorService
+    service: DankgopService
   }
 
   Column {
@@ -36,7 +36,7 @@ Rectangle {
         spacing: Theme.spacingXS
 
         StyledText {
-          text: SysMonitorService.hostname
+          text: DankgopService.hostname
           font.pixelSize: Theme.fontSizeLarge
           font.weight: Font.Medium
           color: Theme.surfaceText
@@ -45,7 +45,7 @@ Rectangle {
         }
 
         StyledText {
-          text: SysMonitorService.distribution + " • " + SysMonitorService.architecture
+          text: DankgopService.distribution + " • " + DankgopService.architecture
           font.pixelSize: Theme.fontSizeSmall
           color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g,
                          Theme.surfaceText.b, 0.7)
@@ -74,7 +74,7 @@ Rectangle {
       }
 
       StyledText {
-        text: "Load: " + SysMonitorService.loadAverage
+        text: "Load: " + DankgopService.loadAverage
         font.pixelSize: Theme.fontSizeSmall
         color: Theme.surfaceText
         width: parent.width
@@ -82,8 +82,8 @@ Rectangle {
       }
 
       StyledText {
-        text: SysMonitorService.processCount + " proc, "
-              + SysMonitorService.threadCount + " threads"
+        text: DankgopService.processCount + " proc, "
+              + DankgopService.threadCount + " threads"
         font.pixelSize: Theme.fontSizeSmall
         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g,
                        Theme.surfaceText.b, 0.8)

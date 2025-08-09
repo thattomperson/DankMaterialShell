@@ -18,6 +18,10 @@ DankModal {
   property var tabNames: ["Processes", "Performance", "System"]
 
   function show() {
+    if (!DankgopService.dankgopAvailable) {
+      console.warn("ProcessListModal: dankgop is not available")
+      return
+    }
     processListModal.visible = true
     UserInfoService.getUptime()
   }
@@ -29,6 +33,10 @@ DankModal {
   }
 
   function toggle() {
+    if (!DankgopService.dankgopAvailable) {
+      console.warn("ProcessListModal: dankgop is not available")
+      return
+    }
     if (processListModal.visible)
       hide()
     else
@@ -44,9 +52,6 @@ DankModal {
   enableShadow: true
   onBackgroundClicked: hide()
 
-  Ref {
-    service: SysMonitorService
-  }
 
   Component {
     id: processesTabComponent
@@ -92,10 +97,52 @@ DankModal {
         }
       }
 
+      // Show error message when dankgop is not available
+      Rectangle {
+        anchors.centerIn: parent
+        width: 400
+        height: 200
+        radius: Theme.cornerRadius
+        color: Theme.errorBackground
+        border.color: Theme.error
+        border.width: 2
+        visible: !DankgopService.dankgopAvailable
+
+        Column {
+          anchors.centerIn: parent
+          spacing: Theme.spacingL
+
+          DankIcon {
+            name: "error"
+            size: 48
+            color: Theme.error
+            anchors.horizontalCenter: parent.horizontalCenter
+          }
+
+          StyledText {
+            text: "System Monitor Unavailable"
+            font.pixelSize: Theme.fontSizeLarge
+            font.weight: Font.Bold
+            color: Theme.error
+            anchors.horizontalCenter: parent.horizontalCenter
+          }
+
+          StyledText {
+            text: "The 'dankgop' tool is required for system monitoring.\nPlease install dankgop to use this feature."
+            font.pixelSize: Theme.fontSizeMedium
+            color: Theme.surfaceText
+            anchors.horizontalCenter: parent.horizontalCenter
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+          }
+        }
+      }
+
       ColumnLayout {
         anchors.fill: parent
         anchors.margins: Theme.spacingL
         spacing: Theme.spacingL
+        visible: DankgopService.dankgopAvailable
 
         RowLayout {
           Layout.fillWidth: true
@@ -233,7 +280,7 @@ DankModal {
 
             anchors.fill: parent
             anchors.margins: Theme.spacingS
-            active: currentTab === 0
+            active: processListModal.visible && currentTab === 0
             visible: currentTab === 0
             opacity: currentTab === 0 ? 1 : 0
             sourceComponent: processesTabComponent
@@ -251,7 +298,7 @@ DankModal {
 
             anchors.fill: parent
             anchors.margins: Theme.spacingS
-            active: currentTab === 1
+            active: processListModal.visible && currentTab === 1
             visible: currentTab === 1
             opacity: currentTab === 1 ? 1 : 0
             sourceComponent: performanceTabComponent
@@ -269,7 +316,7 @@ DankModal {
 
             anchors.fill: parent
             anchors.margins: Theme.spacingS
-            active: currentTab === 2
+            active: processListModal.visible && currentTab === 2
             visible: currentTab === 2
             opacity: currentTab === 2 ? 1 : 0
             sourceComponent: systemTabComponent

@@ -23,10 +23,10 @@ Rectangle {
                    baseColor.a * Theme.widgetTransparency)
   }
   Component.onCompleted: {
-    SysMonitorService.addRef()
+    DankgopService.addRef(["cpu"])
   }
   Component.onDestruction: {
-    SysMonitorService.removeRef()
+    DankgopService.removeRef(["cpu"])
   }
 
   MouseArea {
@@ -45,7 +45,7 @@ Rectangle {
                                        Theme.barHeight + Theme.spacingXS,
                                        width, section, currentScreen)
       }
-      SysMonitorService.setSortBy("cpu")
+      DankgopService.setSortBy("cpu")
       if (root.toggleProcessList)
         root.toggleProcessList()
     }
@@ -59,10 +59,10 @@ Rectangle {
       name: "memory"
       size: Theme.iconSize - 8
       color: {
-        if (SysMonitorService.cpuTemperature > 85)
+        if (DankgopService.cpuTemperature > 85)
           return Theme.tempDanger
 
-        if (SysMonitorService.cpuTemperature > 69)
+        if (DankgopService.cpuTemperature > 69)
           return Theme.tempWarning
 
         return Theme.surfaceText
@@ -72,12 +72,12 @@ Rectangle {
 
     StyledText {
       text: {
-        if (SysMonitorService.cpuTemperature === undefined
-            || SysMonitorService.cpuTemperature === null
-            || SysMonitorService.cpuTemperature < 0) {
+        if (DankgopService.cpuTemperature === undefined
+            || DankgopService.cpuTemperature === null
+            || DankgopService.cpuTemperature < 0) {
           return "--°"
         }
-        return Math.round(SysMonitorService.cpuTemperature) + "°"
+        return Math.round(DankgopService.cpuTemperature) + "°"
       }
       font.pixelSize: Theme.fontSizeSmall
       font.weight: Font.Medium

@@ -57,7 +57,7 @@ PanelWindow {
   color: "transparent"
 
   Ref {
-    service: SysMonitorService
+    service: DankgopService
   }
 
   anchors {

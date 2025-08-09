@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import qs.Common
+import qs.Services
 import qs.Widgets
 
 Item {
@@ -53,26 +54,29 @@ Item {
       "text": "CPU Usage",
       "description": "CPU usage indicator",
       "icon": "memory",
-      "enabled": true
+      "enabled": DankgopService.dankgopAvailable,
+      "warning": !DankgopService.dankgopAvailable ? "Requires 'dankgop' tool" : undefined
     }, {
       "id": "memUsage",
       "text": "Memory Usage",
       "description": "Memory usage indicator",
       "icon": "storage",
-      "enabled": true
+      "enabled": DankgopService.dankgopAvailable,
+      "warning": !DankgopService.dankgopAvailable ? "Requires 'dankgop' tool" : undefined
     }, {
       "id": "cpuTemp",
       "text": "CPU Temperature",
       "description": "CPU temperature display",
       "icon": "device_thermostat",
-      "enabled": true
+      "enabled": DankgopService.dankgopAvailable,
+      "warning": !DankgopService.dankgopAvailable ? "Requires 'dankgop' tool" : undefined
     }, {
       "id": "gpuTemp",
       "text": "GPU Temperature",
       "description": "GPU temperature display",
       "icon": "auto_awesome_mosaic",
-      "warning": "This widget prevents GPU power off states, which can significantly impact battery life on laptops. It is not recommended to use this on laptops with hybrid graphics.",
-      "enabled": true
+      "warning": !DankgopService.dankgopAvailable ? "Requires 'dankgop' tool" : "This widget prevents GPU power off states, which can significantly impact battery life on laptops. It is not recommended to use this on laptops with hybrid graphics.",
+      "enabled": DankgopService.dankgopAvailable
     }, {
       "id": "systemTray",
       "text": "System Tray",
@@ -146,12 +150,6 @@ Item {
       "id": "clipboard",
       "enabled": true
     }, {
-      "id": "cpuUsage",
-      "enabled": true
-    }, {
-      "id": "memUsage",
-      "enabled": true
-    }, {
       "id": "notificationButton",
       "enabled": true
     }, {
@@ -169,8 +167,10 @@ Item {
     }
     if (widgetId === "spacer")
       widgetObj.size = 20
-    if (widgetId === "gpuTemp")
+    if (widgetId === "gpuTemp") {
       widgetObj.selectedGpuIndex = 0
+      widgetObj.pciId = ""
+    }
 
     var widgets = []
     if (targetSection === "left") {
@@ -223,14 +223,22 @@ Item {
       var widget = widgets[i]
       var widgetId = typeof widget === "string" ? widget : widget.id
       if (widgetId === itemId) {
-        widgets[i] = typeof widget === "string" ? {
-                                                    "id": widget,
-                                                    "enabled": enabled
-                                                  } : {
-          "id": widget.id,
-          "enabled": enabled,
-          "size": widget.size,
-          "selectedGpuIndex": widget.selectedGpuIndex
+        if (typeof widget === "string") {
+          widgets[i] = {
+            "id": widget,
+            "enabled": enabled
+          }
+        } else {
+          var newWidget = {
+            "id": widget.id,
+            "enabled": enabled
+          }
+          if (widget.size !== undefined) newWidget.size = widget.size
+          if (widget.selectedGpuIndex !== undefined) newWidget.selectedGpuIndex = widget.selectedGpuIndex
+          else if (widget.id === "gpuTemp") newWidget.selectedGpuIndex = 0
+          if (widget.pciId !== undefined) newWidget.pciId = widget.pciId
+          else if (widget.id === "gpuTemp") newWidget.pciId = ""
+          widgets[i] = newWidget
         }
         break
       }
@@ -264,15 +272,21 @@ Item {
       var widget = widgets[i]
       var widgetId = typeof widget === "string" ? widget : widget.id
       if (widgetId === itemId && widgetId === "spacer") {
-        widgets[i] = typeof widget === "string" ? {
-                                                    "id": widget,
-                                                    "enabled": true,
-                                                    "size": newSize
-                                                  } : {
-          "id": widget.id,
-          "enabled": widget.enabled,
-          "size": newSize,
-          "selectedGpuIndex": widget.selectedGpuIndex
+        if (typeof widget === "string") {
+          widgets[i] = {
+            "id": widget,
+            "enabled": true,
+            "size": newSize
+          }
+        } else {
+          var newWidget = {
+            "id": widget.id,
+            "enabled": widget.enabled,
+            "size": newSize
+          }
+          if (widget.selectedGpuIndex !== undefined) newWidget.selectedGpuIndex = widget.selectedGpuIndex
+          if (widget.pciId !== undefined) newWidget.pciId = widget.pciId
+          widgets[i] = newWidget
         }
         break
       }
@@ -296,15 +310,22 @@ Item {
 
     if (widgetIndex >= 0 && widgetIndex < widgets.length) {
       var widget = widgets[widgetIndex]
-      widgets[widgetIndex] = typeof widget === "string" ? {
-                                                            "id": widget,
-                                                            "enabled": true,
-                                                            "selectedGpuIndex": selectedGpuIndex
-                                                          } : {
-        "id": widget.id,
-        "enabled": widget.enabled,
-        "size": widget.size,
-        "selectedGpuIndex": selectedGpuIndex
+      if (typeof widget === "string") {
+        widgets[widgetIndex] = {
+          "id": widget,
+          "enabled": true,
+          "selectedGpuIndex": selectedGpuIndex,
+          "pciId": DankgopService.availableGpus && DankgopService.availableGpus.length > selectedGpuIndex ? DankgopService.availableGpus[selectedGpuIndex].pciId : ""
+        }
+      } else {
+        var newWidget = {
+          "id": widget.id,
+          "enabled": widget.enabled,
+          "selectedGpuIndex": selectedGpuIndex,
+          "pciId": DankgopService.availableGpus && DankgopService.availableGpus.length > selectedGpuIndex ? DankgopService.availableGpus[selectedGpuIndex].pciId : ""
+        }
+        if (widget.size !== undefined) newWidget.size = widget.size
+        widgets[widgetIndex] = newWidget
       }
     }
 
@@ -331,6 +352,8 @@ Item {
                          var widgetSize = typeof widget === "string" ? undefined : widget.size
                          var widgetSelectedGpuIndex = typeof widget
                          === "string" ? undefined : widget.selectedGpuIndex
+                         var widgetPciId = typeof widget
+                         === "string" ? undefined : widget.pciId
                          var widgetDef = baseWidgetDefinitions.find(w => {
                                                                       return w.id === widgetId
                                                                     })
@@ -341,6 +364,8 @@ Item {
                            item.size = widgetSize
                            if (widgetSelectedGpuIndex !== undefined)
                            item.selectedGpuIndex = widgetSelectedGpuIndex
+                           if (widgetPciId !== undefined)
+                           item.pciId = widgetPciId
 
                            widgets.push(item)
                          }
@@ -359,8 +384,9 @@ Item {
 
     if (!SettingsData.topBarRightWidgets
         || SettingsData.topBarRightWidgets.length === 0)
-      SettingsData.setTopBarRightWidgets(
-            defaultRightWidgets)["left", "center", "right"].forEach(sectionId => {
+      SettingsData.setTopBarRightWidgets(defaultRightWidgets)
+    
+    ["left", "center", "right"].forEach(sectionId => {
                                                                   var widgets = []
                                                                   if (sectionId === "left")
                                                                   widgets = SettingsData.topBarLeftWidgets.slice()

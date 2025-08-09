@@ -28,10 +28,10 @@ Column {
   anchors.fill: parent
   spacing: Theme.spacingM
   Component.onCompleted: {
-    SysMonitorService.addRef()
+    DankgopService.addRef(["cpu", "memory", "network", "disk"])
   }
   Component.onDestruction: {
-    SysMonitorService.removeRef()
+    DankgopService.removeRef(["cpu", "memory", "network", "disk"])
   }
 
   Rectangle {
@@ -71,7 +71,7 @@ Column {
           anchors.verticalCenter: parent.verticalCenter
 
           StyledText {
-            text: SysMonitorService.totalCpuUsage.toFixed(1) + "%"
+            text: DankgopService.cpuUsage.toFixed(1) + "%"
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Bold
             color: Theme.primary
@@ -85,7 +85,7 @@ Column {
         }
 
         StyledText {
-          text: SysMonitorService.cpuCount + " cores"
+          text: DankgopService.cpuCores + " cores"
           font.pixelSize: Theme.fontSizeSmall
           color: Theme.surfaceVariantText
           anchors.verticalCenter: parent.verticalCenter
@@ -104,7 +104,7 @@ Column {
           spacing: 6
 
           Repeater {
-            model: SysMonitorService.perCoreCpuUsage
+            model: DankgopService.perCoreCpuUsage
 
             Row {
               width: parent.width
@@ -193,9 +193,9 @@ Column {
         }
 
         StyledText {
-          text: SysMonitorService.formatSystemMemory(
-                  SysMonitorService.usedMemoryKB) + " / " + SysMonitorService.formatSystemMemory(
-                  SysMonitorService.totalMemoryKB)
+          text: DankgopService.formatSystemMemory(
+                  DankgopService.usedMemoryKB) + " / " + DankgopService.formatSystemMemory(
+                  DankgopService.totalMemoryKB)
           font.pixelSize: Theme.fontSizeSmall
           color: Theme.surfaceVariantText
         }
@@ -218,15 +218,15 @@ Column {
           color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
 
           Rectangle {
-            width: SysMonitorService.totalMemoryKB
-                   > 0 ? parent.width * (SysMonitorService.usedMemoryKB
-                                         / SysMonitorService.totalMemoryKB) : 0
+            width: DankgopService.totalMemoryKB
+                   > 0 ? parent.width * (DankgopService.usedMemoryKB
+                                         / DankgopService.totalMemoryKB) : 0
             height: parent.height
             radius: parent.radius
             color: {
-              const usage = SysMonitorService.totalMemoryKB
-                          > 0 ? (SysMonitorService.usedMemoryKB
-                                 / SysMonitorService.totalMemoryKB) : 0
+              const usage = DankgopService.totalMemoryKB
+                          > 0 ? (DankgopService.usedMemoryKB
+                                 / DankgopService.totalMemoryKB) : 0
               if (usage > 0.9)
                 return Theme.error
 
@@ -245,9 +245,9 @@ Column {
         }
 
         StyledText {
-          text: SysMonitorService.totalMemoryKB
-                > 0 ? ((SysMonitorService.usedMemoryKB
-                        / SysMonitorService.totalMemoryKB) * 100).toFixed(
+          text: DankgopService.totalMemoryKB
+                > 0 ? ((DankgopService.usedMemoryKB
+                        / DankgopService.totalMemoryKB) * 100).toFixed(
                         1) + "% used" : "No data"
           font.pixelSize: Theme.fontSizeSmall
           font.weight: Font.Bold
@@ -272,11 +272,11 @@ Column {
         }
 
         StyledText {
-          text: SysMonitorService.totalSwapKB
-                > 0 ? SysMonitorService.formatSystemMemory(
-                        SysMonitorService.usedSwapKB) + " / "
-                      + SysMonitorService.formatSystemMemory(
-                        SysMonitorService.totalSwapKB) : "No swap configured"
+          text: DankgopService.totalSwapKB
+                > 0 ? DankgopService.formatSystemMemory(
+                        DankgopService.usedSwapKB) + " / "
+                      + DankgopService.formatSystemMemory(
+                        DankgopService.totalSwapKB) : "No swap configured"
           font.pixelSize: Theme.fontSizeSmall
           color: Theme.surfaceVariantText
         }
@@ -299,17 +299,17 @@ Column {
           color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
 
           Rectangle {
-            width: SysMonitorService.totalSwapKB
-                   > 0 ? parent.width * (SysMonitorService.usedSwapKB
-                                         / SysMonitorService.totalSwapKB) : 0
+            width: DankgopService.totalSwapKB
+                   > 0 ? parent.width * (DankgopService.usedSwapKB
+                                         / DankgopService.totalSwapKB) : 0
             height: parent.height
             radius: parent.radius
             color: {
-              if (!SysMonitorService.totalSwapKB)
+              if (!DankgopService.totalSwapKB)
                 return Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g,
                                Theme.surfaceText.b, 0.3)
 
-              const usage = SysMonitorService.usedSwapKB / SysMonitorService.totalSwapKB
+              const usage = DankgopService.usedSwapKB / DankgopService.totalSwapKB
               if (usage > 0.9)
                 return Theme.error
 
@@ -328,9 +328,9 @@ Column {
         }
 
         StyledText {
-          text: SysMonitorService.totalSwapKB
-                > 0 ? ((SysMonitorService.usedSwapKB
-                        / SysMonitorService.totalSwapKB) * 100).toFixed(
+          text: DankgopService.totalSwapKB
+                > 0 ? ((DankgopService.usedSwapKB
+                        / DankgopService.totalSwapKB) * 100).toFixed(
                         1) + "% used" : "Not available"
           font.pixelSize: Theme.fontSizeSmall
           font.weight: Font.Bold
@@ -381,9 +381,9 @@ Column {
             }
 
             StyledText {
-              text: SysMonitorService.networkRxRate
+              text: DankgopService.networkRxRate
                     > 0 ? formatNetworkSpeed(
-                            SysMonitorService.networkRxRate) : "0 B/s"
+                            DankgopService.networkRxRate) : "0 B/s"
               font.pixelSize: Theme.fontSizeSmall
               font.weight: Font.Bold
               color: Theme.surfaceText
@@ -400,9 +400,9 @@ Column {
             }
 
             StyledText {
-              text: SysMonitorService.networkTxRate
+              text: DankgopService.networkTxRate
                     > 0 ? formatNetworkSpeed(
-                            SysMonitorService.networkTxRate) : "0 B/s"
+                            DankgopService.networkTxRate) : "0 B/s"
               font.pixelSize: Theme.fontSizeSmall
               font.weight: Font.Bold
               color: Theme.surfaceText
@@ -448,7 +448,7 @@ Column {
             }
 
             StyledText {
-              text: formatDiskSpeed(SysMonitorService.diskReadRate)
+              text: formatDiskSpeed(DankgopService.diskReadRate)
               font.pixelSize: Theme.fontSizeSmall
               font.weight: Font.Bold
               color: Theme.surfaceText
@@ -465,7 +465,7 @@ Column {
             }
 
             StyledText {
-              text: formatDiskSpeed(SysMonitorService.diskWriteRate)
+              text: formatDiskSpeed(DankgopService.diskWriteRate)
               font.pixelSize: Theme.fontSizeSmall
               font.weight: Font.Bold
               color: Theme.surfaceText

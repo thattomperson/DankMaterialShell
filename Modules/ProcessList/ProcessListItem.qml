@@ -59,7 +59,7 @@ Rectangle {
     DankIcon {
       id: processIcon
 
-      name: SysMonitorService.getProcessIcon(process ? process.command : "")
+      name: DankgopService.getProcessIcon(process ? process.command : "")
       size: Theme.iconSize - 4
       color: {
         if (process && process.cpu > 80)
@@ -110,7 +110,7 @@ Rectangle {
       anchors.verticalCenter: parent.verticalCenter
 
       StyledText {
-        text: SysMonitorService.formatCpuUsage(process ? process.cpu : 0)
+        text: DankgopService.formatCpuUsage(process ? process.cpu : 0)
         font.pixelSize: Theme.fontSizeSmall
         font.family: SettingsData.monoFontFamily
         font.weight: Font.Bold
@@ -149,7 +149,7 @@ Rectangle {
       anchors.verticalCenter: parent.verticalCenter
 
       StyledText {
-        text: SysMonitorService.formatMemoryUsage(
+        text: DankgopService.formatMemoryUsage(
                 process ? process.memoryKB : 0)
         font.pixelSize: Theme.fontSizeSmall
         font.family: SettingsData.monoFontFamily
