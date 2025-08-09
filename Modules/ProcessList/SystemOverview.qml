@@ -57,9 +57,9 @@ Row {
 
                 StyledText {
                     text: {
-                        if (DankgopService.cpuUsage === undefined || DankgopService.cpuUsage === null)
+                        if (DankgopService.smoothedCpuUsage === undefined || DankgopService.smoothedCpuUsage === null)
                             return "--%"
-                        return DankgopService.cpuUsage.toFixed(1) + "%"
+                        return DankgopService.smoothedCpuUsage.toFixed(1) + "%"
                     }
                     font.pixelSize: Theme.fontSizeLarge
                     font.family: SettingsData.monoFontFamily

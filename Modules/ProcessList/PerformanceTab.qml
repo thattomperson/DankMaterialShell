@@ -71,7 +71,7 @@ Column {
           anchors.verticalCenter: parent.verticalCenter
 
           StyledText {
-            text: DankgopService.cpuUsage.toFixed(1) + "%"
+            text: DankgopService.smoothedCpuUsage.toFixed(1) + "%"
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Bold
             color: Theme.primary

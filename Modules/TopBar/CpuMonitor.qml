@@ -59,10 +59,10 @@ Rectangle {
       name: "memory"
       size: Theme.iconSize - 8
       color: {
-        if (DankgopService.cpuUsage > 80)
+        if (DankgopService.smoothedCpuUsage > 80)
           return Theme.tempDanger
 
-        if (DankgopService.cpuUsage > 60)
+        if (DankgopService.smoothedCpuUsage > 60)
           return Theme.tempWarning
 
         return Theme.surfaceText
@@ -72,12 +72,12 @@ Rectangle {
 
     StyledText {
       text: {
-        if (DankgopService.cpuUsage === undefined
-            || DankgopService.cpuUsage === null
-            || DankgopService.cpuUsage === 0) {
+        if (DankgopService.smoothedCpuUsage === undefined
+            || DankgopService.smoothedCpuUsage === null
+            || DankgopService.smoothedCpuUsage === 0) {
           return "--%"
         }
-        return DankgopService.cpuUsage.toFixed(0) + "%"
+        return DankgopService.smoothedCpuUsage.toFixed(0) + "%"
       }
       font.pixelSize: Theme.fontSizeSmall
       font.weight: Font.Medium
