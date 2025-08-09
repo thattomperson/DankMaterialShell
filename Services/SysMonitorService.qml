@@ -5,8 +5,6 @@ pragma ComponentBehavior
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import qs.Services
-import qs.Common
 
 Singleton {
   id: root
@@ -80,61 +78,11 @@ Singleton {
   property string motherboard: ""
   property string biosVersion: ""
   property var availableGpus: []
-
-  // Check if any GPU temperature widgets are configured
-  function hasGpuTempWidgets() {
-    const allWidgets = [...(SettingsData.topBarLeftWidgets || []), 
-                       ...(SettingsData.topBarCenterWidgets || []), 
-                       ...(SettingsData.topBarRightWidgets || [])]
-    
-    return allWidgets.some(widget => {
-      const widgetId = typeof widget === "string" ? widget : widget.id
-      const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
-      return widgetId === "gpuTemp" && widgetEnabled
-    })
-  }
   
-  // Check if any NVIDIA GPU temperature widgets are configured
-  function hasNvidiaGpuTempWidgets() {
-    if (!hasGpuTempWidgets()) return false
-    
-    const allWidgets = [...(SettingsData.topBarLeftWidgets || []), 
-                       ...(SettingsData.topBarCenterWidgets || []), 
-                       ...(SettingsData.topBarRightWidgets || [])]
-    
-    return allWidgets.some(widget => {
-      const widgetId = typeof widget === "string" ? widget : widget.id
-      const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
-      if (widgetId !== "gpuTemp" || !widgetEnabled) return false
-      
-      const selectedGpuIndex = typeof widget === "string" ? 0 : (widget.selectedGpuIndex || 0)
-      if (availableGpus && availableGpus[selectedGpuIndex]) {
-        return availableGpus[selectedGpuIndex].driver === "nvidia"
-      }
-      return false
-    })
-  }
-  
-  // Check if any non-NVIDIA GPU temperature widgets are configured
-  function hasNonNvidiaGpuTempWidgets() {
-    if (!hasGpuTempWidgets()) return false
-    
-    const allWidgets = [...(SettingsData.topBarLeftWidgets || []), 
-                       ...(SettingsData.topBarCenterWidgets || []), 
-                       ...(SettingsData.topBarRightWidgets || [])]
-    
-    return allWidgets.some(widget => {
-      const widgetId = typeof widget === "string" ? widget : widget.id
-      const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
-      if (widgetId !== "gpuTemp" || !widgetEnabled) return false
-      
-      const selectedGpuIndex = typeof widget === "string" ? 0 : (widget.selectedGpuIndex || 0)
-      if (availableGpus && availableGpus[selectedGpuIndex]) {
-        return availableGpus[selectedGpuIndex].driver !== "nvidia"
-      }
-      return true  // Default to true if GPU not found yet (static data might not be loaded)
-    })
-  }
+  // Properties to control GPU temperature collection - set externally by shell.qml
+  property bool gpuTempEnabled: false
+  property bool nvidiaGpuTempEnabled: false  
+  property bool nonNvidiaGpuTempEnabled: false
 
   function addRef() {
     refCount++
@@ -636,7 +584,7 @@ Singleton {
 
   Process {
     id: dynamicStatsProcess
-    command: [root.shellDir + "/sysmon_dynamic.sh", root.sortBy, String(root.maxProcesses), root.hasGpuTempWidgets() ? "1" : "0", root.hasNvidiaGpuTempWidgets() ? "1" : "0", root.hasNonNvidiaGpuTempWidgets() ? "1" : "0"]
+    command: [root.shellDir + "/sysmon_dynamic_lite.sh", root.sortBy, String(root.maxProcesses), root.gpuTempEnabled ? "1" : "0", root.nvidiaGpuTempEnabled ? "1" : "0", root.nonNvidiaGpuTempEnabled ? "1" : "0"]
     running: false
     onExited: exitCode => {
       if (exitCode !== 0) {

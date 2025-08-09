@@ -6,7 +6,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Widgets
-import qs.Services
 import qs.Common
 import "../Common/markdown2html.js" as Markdown2Html
 

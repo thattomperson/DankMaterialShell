@@ -42,11 +42,71 @@ PanelWindow {
                                   })
                    })
     })
+    
+    // Configure GPU temperature monitoring based on widget configuration
+    updateGpuTempConfig()
+  }
+  
+  function updateGpuTempConfig() {
+    const allWidgets = [...(SettingsData.topBarLeftWidgets || []), 
+                       ...(SettingsData.topBarCenterWidgets || []), 
+                       ...(SettingsData.topBarRightWidgets || [])]
+    
+    const hasGpuTempWidget = allWidgets.some(widget => {
+      const widgetId = typeof widget === "string" ? widget : widget.id
+      const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
+      return widgetId === "gpuTemp" && widgetEnabled
+    })
+    
+    let hasNvidiaGpuWidget = false
+    let hasNonNvidiaGpuWidget = false
+    
+    if (hasGpuTempWidget) {
+      hasNvidiaGpuWidget = allWidgets.some(widget => {
+        const widgetId = typeof widget === "string" ? widget : widget.id
+        const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
+        if (widgetId !== "gpuTemp" || !widgetEnabled) return false
+        
+        const selectedGpuIndex = typeof widget === "string" ? 0 : (widget.selectedGpuIndex || 0)
+        if (SysMonitorService.availableGpus && SysMonitorService.availableGpus[selectedGpuIndex]) {
+          return SysMonitorService.availableGpus[selectedGpuIndex].driver === "nvidia"
+        }
+        return false
+      })
+      
+      hasNonNvidiaGpuWidget = allWidgets.some(widget => {
+        const widgetId = typeof widget === "string" ? widget : widget.id
+        const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
+        if (widgetId !== "gpuTemp" || !widgetEnabled) return false
+        
+        const selectedGpuIndex = typeof widget === "string" ? 0 : (widget.selectedGpuIndex || 0)
+        if (SysMonitorService.availableGpus && SysMonitorService.availableGpus[selectedGpuIndex]) {
+          return SysMonitorService.availableGpus[selectedGpuIndex].driver !== "nvidia"
+        }
+        return true
+      })
+    }
+    
+    SysMonitorService.gpuTempEnabled = hasGpuTempWidget
+    SysMonitorService.nvidiaGpuTempEnabled = hasNvidiaGpuWidget
+    SysMonitorService.nonNvidiaGpuTempEnabled = hasNonNvidiaGpuWidget
   }
 
   Connections {
     function onTopBarTransparencyChanged() {
       root.backgroundTransparency = SettingsData.topBarTransparency
+    }
+    
+    function onTopBarLeftWidgetsChanged() {
+      root.updateGpuTempConfig()
+    }
+    
+    function onTopBarCenterWidgetsChanged() {
+      root.updateGpuTempConfig()
+    }
+    
+    function onTopBarRightWidgetsChanged() {
+      root.updateGpuTempConfig()
     }
 
     target: SettingsData
