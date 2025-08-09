@@ -323,15 +323,20 @@ Row {
         text: {
           if (!SysMonitorService.availableGpus
               || SysMonitorService.availableGpus.length === 0) {
-            return "--°"
+            return "No GPU"
           }
 
           var gpu = SysMonitorService.availableGpus[Math.min(
                                                       SessionData.selectedGpuIndex,
                                                       SysMonitorService.availableGpus.length - 1)]
           var temp = gpu.temperature
-          return (temp === undefined || temp === null
-                  || temp === 0) ? "--°" : Math.round(temp) + "°"
+          var hasTemp = temp !== undefined && temp !== null && temp !== 0
+          
+          if (hasTemp) {
+            return Math.round(temp) + "°"
+          } else {
+            return gpu.vendor
+          }
         }
         font.pixelSize: Theme.fontSizeLarge
         font.family: SettingsData.monoFontFamily
@@ -364,7 +369,14 @@ Row {
           var gpu = SysMonitorService.availableGpus[Math.min(
                                                       SessionData.selectedGpuIndex,
                                                       SysMonitorService.availableGpus.length - 1)]
-          return gpu.vendor + " " + gpu.displayName
+          var temp = gpu.temperature
+          var hasTemp = temp !== undefined && temp !== null && temp !== 0
+          
+          if (hasTemp) {
+            return gpu.vendor + " " + gpu.displayName
+          } else {
+            return gpu.displayName
+          }
         }
         font.pixelSize: Theme.fontSizeSmall
         font.family: SettingsData.monoFontFamily
