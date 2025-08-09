@@ -238,16 +238,56 @@ Row {
     height: 80
     radius: Theme.cornerRadius
     color: {
-      if (gpuCardMouseArea.containsMouse
-          && SysMonitorService.availableGpus.length > 1)
-        return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
-                       Theme.surfaceVariant.b, 0.16)
+      if (!SysMonitorService.availableGpus || SysMonitorService.availableGpus.length === 0) {
+        if (gpuCardMouseArea.containsMouse && SysMonitorService.availableGpus.length > 1)
+          return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.16)
+        else
+          return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
+      }
+      
+      var gpu = SysMonitorService.availableGpus[Math.min(SessionData.selectedGpuIndex, SysMonitorService.availableGpus.length - 1)]
+      var vendor = gpu.vendor.toLowerCase()
+      
+      if (vendor.includes("nvidia")) {
+        if (gpuCardMouseArea.containsMouse && SysMonitorService.availableGpus.length > 1)
+          return Qt.rgba(Theme.success.r, Theme.success.g, Theme.success.b, 0.2)
+        else
+          return Qt.rgba(Theme.success.r, Theme.success.g, Theme.success.b, 0.12)
+      } else if (vendor.includes("amd")) {
+        if (gpuCardMouseArea.containsMouse && SysMonitorService.availableGpus.length > 1)
+          return Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.2)
+        else
+          return Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
+      } else if (vendor.includes("intel")) {
+        if (gpuCardMouseArea.containsMouse && SysMonitorService.availableGpus.length > 1)
+          return Qt.rgba(Theme.info.r, Theme.info.g, Theme.info.b, 0.2)
+        else
+          return Qt.rgba(Theme.info.r, Theme.info.g, Theme.info.b, 0.12)
+      }
+      
+      if (gpuCardMouseArea.containsMouse && SysMonitorService.availableGpus.length > 1)
+        return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.16)
       else
-        return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
-                       Theme.surfaceVariant.b, 0.08)
+        return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08)
     }
-    border.color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
-                          Theme.surfaceVariant.b, 0.2)
+    border.color: {
+      if (!SysMonitorService.availableGpus || SysMonitorService.availableGpus.length === 0) {
+        return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
+      }
+      
+      var gpu = SysMonitorService.availableGpus[Math.min(SessionData.selectedGpuIndex, SysMonitorService.availableGpus.length - 1)]
+      var vendor = gpu.vendor.toLowerCase()
+      
+      if (vendor.includes("nvidia")) {
+        return Qt.rgba(Theme.success.r, Theme.success.g, Theme.success.b, 0.3)
+      } else if (vendor.includes("amd")) {
+        return Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.3)
+      } else if (vendor.includes("intel")) {
+        return Qt.rgba(Theme.info.r, Theme.info.g, Theme.info.b, 0.3)
+      }
+      
+      return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
+    }
     border.width: 1
 
     MouseArea {

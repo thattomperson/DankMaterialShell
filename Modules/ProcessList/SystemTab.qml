@@ -199,19 +199,60 @@ ScrollView {
             height: gpuColumn.implicitHeight + Theme.spacingL
             radius: Theme.cornerRadius
             color: {
-              if (gpuCardMouseArea.containsMouse
-                  && SysMonitorService.availableGpus.length > 1)
-                return Qt.rgba(Theme.surfaceContainerHigh.r,
-                               Theme.surfaceContainerHigh.g,
-                               Theme.surfaceContainerHigh.b, 0.6)
-              else
-                return Qt.rgba(Theme.surfaceContainerHigh.r,
-                               Theme.surfaceContainerHigh.g,
-                               Theme.surfaceContainerHigh.b, 0.4)
+              var baseColor = Qt.rgba(Theme.surfaceContainerHigh.r,
+                                     Theme.surfaceContainerHigh.g,
+                                     Theme.surfaceContainerHigh.b, 0.4)
+              var hoverColor = Qt.rgba(Theme.surfaceContainerHigh.r,
+                                      Theme.surfaceContainerHigh.g,
+                                      Theme.surfaceContainerHigh.b, 0.6)
+              
+              if (!SysMonitorService.availableGpus || SysMonitorService.availableGpus.length === 0) {
+                return gpuCardMouseArea.containsMouse && SysMonitorService.availableGpus.length > 1 ? hoverColor : baseColor
+              }
+              
+              var gpu = SysMonitorService.availableGpus[Math.min(SessionData.selectedGpuIndex, SysMonitorService.availableGpus.length - 1)]
+              var vendor = gpu.fullName.split(' ')[0].toLowerCase()
+              var tintColor
+              
+              if (vendor.includes("nvidia")) {
+                tintColor = Theme.success
+              } else if (vendor.includes("amd")) {
+                tintColor = Theme.error
+              } else if (vendor.includes("intel")) {
+                tintColor = Theme.info
+              } else {
+                return gpuCardMouseArea.containsMouse && SysMonitorService.availableGpus.length > 1 ? hoverColor : baseColor
+              }
+              
+              if (gpuCardMouseArea.containsMouse && SysMonitorService.availableGpus.length > 1) {
+                return Qt.rgba((hoverColor.r + tintColor.r * 0.1) / 1.1,
+                              (hoverColor.g + tintColor.g * 0.1) / 1.1,
+                              (hoverColor.b + tintColor.b * 0.1) / 1.1, 0.6)
+              } else {
+                return Qt.rgba((baseColor.r + tintColor.r * 0.08) / 1.08,
+                              (baseColor.g + tintColor.g * 0.08) / 1.08,
+                              (baseColor.b + tintColor.b * 0.08) / 1.08, 0.4)
+              }
             }
             border.width: 1
-            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                  Theme.outline.b, 0.1)
+            border.color: {
+              if (!SysMonitorService.availableGpus || SysMonitorService.availableGpus.length === 0) {
+                return Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.1)
+              }
+              
+              var gpu = SysMonitorService.availableGpus[Math.min(SessionData.selectedGpuIndex, SysMonitorService.availableGpus.length - 1)]
+              var vendor = gpu.fullName.split(' ')[0].toLowerCase()
+              
+              if (vendor.includes("nvidia")) {
+                return Qt.rgba(Theme.success.r, Theme.success.g, Theme.success.b, 0.3)
+              } else if (vendor.includes("amd")) {
+                return Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.3)
+              } else if (vendor.includes("intel")) {
+                return Qt.rgba(Theme.info.r, Theme.info.g, Theme.info.b, 0.3)
+              }
+              
+              return Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.1)
+            }
 
             MouseArea {
               id: gpuCardMouseArea
@@ -284,21 +325,13 @@ ScrollView {
                 text: {
                   if (!SysMonitorService.availableGpus
                       || SysMonitorService.availableGpus.length === 0) {
-                    return "Nadda"
+                    return "Device: N/A"
                   }
                   var gpu = SysMonitorService.availableGpus[Math.min(
                                                               SessionData.selectedGpuIndex,
                                                               SysMonitorService.availableGpus.length
                                                               - 1)]
-                  var vendor = gpu.vendor.toLowerCase()
-                  if (vendor.includes("nvidia")) {
-                    return "<font color='" + Theme.success + "'>The green company</font>"
-                  } else if (vendor.includes("amd")) {
-                    return "<font color='" + Theme.error + "'>The red company</font>"
-                  } else if (vendor.includes("intel")) {
-                    return "<font color='" + Theme.info + "'>The blue company</font>"
-                  }
-                  return gpu.vendor
+                  return "Device: " + gpu.pciId
                 }
                 font.pixelSize: Theme.fontSizeSmall
                 font.family: SettingsData.monoFontFamily

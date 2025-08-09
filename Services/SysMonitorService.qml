@@ -209,11 +209,18 @@ Singleton {
     if (data.gpus) {
       const gpuList = []
       for (const gpu of data.gpus) {
-        // Parse the display name from rawLine
+        // Parse the display name and PCI ID from rawLine
         let displayName = ""
         let fullName = ""
+        let pciId = ""
         
         if (gpu.rawLine) {
+          // Extract PCI ID [vvvv:dddd]
+          const pciMatch = gpu.rawLine.match(/\[([0-9a-f]{4}:[0-9a-f]{4})\]/i)
+          if (pciMatch) {
+            pciId = pciMatch[1]
+          }
+          
           // Remove BDF and class prefix
           let s = gpu.rawLine.replace(/^[^:]+: /, "")
           // Remove PCI ID [vvvv:dddd] and everything after
@@ -237,7 +244,6 @@ Singleton {
           displayName = displayName
             .replace(/^NVIDIA Corporation\s+/i, "")
             .replace(/^NVIDIA\s+/i, "")
-            .replace(/^GeForce\s+/i, "")
             .replace(/^Advanced Micro Devices, Inc\.\s+/i, "")
             .replace(/^AMD\/ATI\s+/i, "")
             .replace(/^AMD\s+/i, "")
@@ -265,6 +271,7 @@ Singleton {
           "vendor": gpu.vendor,
           "displayName": displayName,
           "fullName": fullName,
+          "pciId": pciId,
           "temperature": 0,
           "hwmon": "unknown"
         })
@@ -291,6 +298,7 @@ Singleton {
           "vendor": gpu.vendor,
           "displayName": gpu.displayName,
           "fullName": gpu.fullName,
+          "pciId": gpu.pciId,
           "temperature": tempInfo.temperature || 0,
           "hwmon": tempInfo.hwmon || "unknown"
         })
@@ -300,6 +308,7 @@ Singleton {
           "vendor": gpu.vendor,
           "displayName": gpu.displayName,
           "fullName": gpu.fullName,
+          "pciId": gpu.pciId,
           "temperature": gpu.temperature || 0,
           "hwmon": gpu.hwmon || "unknown"
         })
