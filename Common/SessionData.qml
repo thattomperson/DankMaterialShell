@@ -18,6 +18,8 @@ Singleton {
   property bool doNotDisturb: false
   property var pinnedApps: []
   property int selectedGpuIndex: 0
+  property bool nvidiaGpuTempEnabled: false  
+  property bool nonNvidiaGpuTempEnabled: false
 
   Component.onCompleted: {
     loadSettings()
@@ -39,6 +41,8 @@ Singleton {
         doNotDisturb = settings.doNotDisturb !== undefined ? settings.doNotDisturb : false
         pinnedApps = settings.pinnedApps !== undefined ? settings.pinnedApps : []
         selectedGpuIndex = settings.selectedGpuIndex !== undefined ? settings.selectedGpuIndex : 0
+        nvidiaGpuTempEnabled = settings.nvidiaGpuTempEnabled !== undefined ? settings.nvidiaGpuTempEnabled : false
+        nonNvidiaGpuTempEnabled = settings.nonNvidiaGpuTempEnabled !== undefined ? settings.nonNvidiaGpuTempEnabled : false
       }
     } catch (e) {
 
@@ -53,7 +57,9 @@ Singleton {
                                           "profileLastPath": profileLastPath,
                                           "doNotDisturb": doNotDisturb,
                                           "pinnedApps": pinnedApps,
-                                          "selectedGpuIndex": selectedGpuIndex
+                                          "selectedGpuIndex": selectedGpuIndex,
+                                          "nvidiaGpuTempEnabled": nvidiaGpuTempEnabled,
+                                          "nonNvidiaGpuTempEnabled": nonNvidiaGpuTempEnabled
                                         }, null, 2))
   }
 
@@ -120,6 +126,16 @@ Singleton {
 
   function setSelectedGpuIndex(index) {
     selectedGpuIndex = index
+    saveSettings()
+  }
+
+  function setNvidiaGpuTempEnabled(enabled) {
+    nvidiaGpuTempEnabled = enabled
+    saveSettings()
+  }
+
+  function setNonNvidiaGpuTempEnabled(enabled) {
+    nonNvidiaGpuTempEnabled = enabled
     saveSettings()
   }
 

@@ -294,7 +294,12 @@ Singleton {
   }
 
   function updateGpuTemperatures(tempData) {
-    if (availableGpus.length === 0 || tempData.length === 0) return
+    if (availableGpus.length === 0) return
+    
+    if (!gpuTempEnabled || tempData.length === 0) {
+      clearGpuTemperatures()
+      return
+    }
     
     const updatedGpus = []
     for (let i = 0; i < availableGpus.length; i++) {
@@ -323,6 +328,25 @@ Singleton {
       }
     }
     availableGpus = updatedGpus
+  }
+
+  function clearGpuTemperatures() {
+    if (availableGpus.length === 0) return
+    
+    const clearedGpus = []
+    for (let i = 0; i < availableGpus.length; i++) {
+      const gpu = availableGpus[i]
+      clearedGpus.push({
+        "driver": gpu.driver,
+        "vendor": gpu.vendor,
+        "displayName": gpu.displayName,
+        "fullName": gpu.fullName,
+        "pciId": gpu.pciId,
+        "temperature": 0,
+        "hwmon": "unknown"
+      })
+    }
+    availableGpus = clearedGpus
   }
 
   function parseUnifiedStats(text) {

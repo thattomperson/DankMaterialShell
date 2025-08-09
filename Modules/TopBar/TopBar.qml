@@ -58,38 +58,9 @@ PanelWindow {
       return widgetId === "gpuTemp" && widgetEnabled
     })
     
-    let hasNvidiaGpuWidget = false
-    let hasNonNvidiaGpuWidget = false
-    
-    if (hasGpuTempWidget) {
-      hasNvidiaGpuWidget = allWidgets.some(widget => {
-        const widgetId = typeof widget === "string" ? widget : widget.id
-        const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
-        if (widgetId !== "gpuTemp" || !widgetEnabled) return false
-        
-        const selectedGpuIndex = typeof widget === "string" ? 0 : (widget.selectedGpuIndex || 0)
-        if (SysMonitorService.availableGpus && SysMonitorService.availableGpus[selectedGpuIndex]) {
-          return SysMonitorService.availableGpus[selectedGpuIndex].driver === "nvidia"
-        }
-        return false
-      })
-      
-      hasNonNvidiaGpuWidget = allWidgets.some(widget => {
-        const widgetId = typeof widget === "string" ? widget : widget.id
-        const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
-        if (widgetId !== "gpuTemp" || !widgetEnabled) return false
-        
-        const selectedGpuIndex = typeof widget === "string" ? 0 : (widget.selectedGpuIndex || 0)
-        if (SysMonitorService.availableGpus && SysMonitorService.availableGpus[selectedGpuIndex]) {
-          return SysMonitorService.availableGpus[selectedGpuIndex].driver !== "nvidia"
-        }
-        return true
-      })
-    }
-    
-    SysMonitorService.gpuTempEnabled = hasGpuTempWidget
-    SysMonitorService.nvidiaGpuTempEnabled = hasNvidiaGpuWidget
-    SysMonitorService.nonNvidiaGpuTempEnabled = hasNonNvidiaGpuWidget
+    SysMonitorService.gpuTempEnabled = hasGpuTempWidget || SessionData.nvidiaGpuTempEnabled || SessionData.nonNvidiaGpuTempEnabled
+    SysMonitorService.nvidiaGpuTempEnabled = hasGpuTempWidget || SessionData.nvidiaGpuTempEnabled
+    SysMonitorService.nonNvidiaGpuTempEnabled = hasGpuTempWidget || SessionData.nonNvidiaGpuTempEnabled
   }
 
   Connections {
@@ -110,6 +81,18 @@ PanelWindow {
     }
 
     target: SettingsData
+  }
+  
+  Connections {
+    function onNvidiaGpuTempEnabledChanged() {
+      root.updateGpuTempConfig()
+    }
+    
+    function onNonNvidiaGpuTempEnabledChanged() {
+      root.updateGpuTempConfig()
+    }
+    
+    target: SessionData
   }
 
   Connections {
