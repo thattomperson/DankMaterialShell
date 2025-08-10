@@ -72,8 +72,6 @@ Singleton {
     property var memoryHistory: []
     property var networkHistory: ({ "rx": [], "tx": [] })
     property var diskHistory: ({ "read": [], "write": [] })
-    property var processCpuHistory: ({})
-    property real smoothedCpuUsage: 0
 
     function addRef(modules = null) {
         refCount++
@@ -126,13 +124,6 @@ Singleton {
                         enabledModules.splice(index, 1)
                         modulesChanged = true
                         console.log("Disabling module:", module, "(no more refs)")
-
-                        // Clear sample data when module is disabled
-                        if (module === "cpu") {
-                            cpuSampleData = null
-                        } else if (module === "processes") {
-                            procSampleData = null
-                        }
                     }
                 }
             }
@@ -283,7 +274,6 @@ Singleton {
             cpuModel = cpu.model || ""
             perCoreCpuUsage = cpu.coreUsage || []
             addToHistory(cpuHistory, cpuUsage)
-            updateSmoothedCpuUsage()
 
             // Update CPU sample data for the next run
             if (cpu.total && cpu.cores) {
@@ -370,34 +360,11 @@ Singleton {
         if (data.processes && Array.isArray(data.processes)) {
             const newProcesses = []
             const newProcSample = []
-            const currentPids = {}
-
             for (const proc of data.processes) {
-                const pid = proc.pid || 0
-                if (pid === 0) continue
-
-                currentPids[pid] = true
-                const cpu = proc.cpu || 0
-
-                let history = processCpuHistory[pid]
-                if (!history) {
-                    history = []
-                }
-
-                history.push(cpu)
-                if (history.length > 3) {
-                    history.shift()
-                }
-                processCpuHistory[pid] = history
-
-                const sum = history.reduce((a, b) => a + b, 0)
-                const smoothedCpu = sum / history.length
-
                 newProcesses.push({
-                    "pid": pid,
+                    "pid": proc.pid || 0,
                     "ppid": proc.ppid || 0,
-                    "cpu": cpu,
-                    "smoothedCpu": smoothedCpu,
+                    "cpu": proc.cpu || 0,
                     "memoryPercent": proc.memoryPercent || proc.pssPercent || 0,
                     "memoryKB": proc.memoryKB || proc.pssKB || 0,
                     "command": proc.command || "",
@@ -418,14 +385,6 @@ Singleton {
             if (newProcSample.length > 0) {
                 procSampleData = newProcSample
             }
-
-            // Garbage collect old PIDs from history
-            for (const pid in processCpuHistory) {
-                if (!currentPids[pid]) {
-                    delete processCpuHistory[pid]
-                }
-            }
-            processCpuHistory = Object.assign({}, processCpuHistory)
         }
 
         // Handle both gpu and gpu-temp module data
@@ -483,16 +442,6 @@ Singleton {
         }
 
         isUpdating = false
-    }
-
-    function updateSmoothedCpuUsage() {
-        if (cpuHistory.length === 0) {
-            smoothedCpuUsage = 0
-            return
-        }
-        const valuesToAverage = cpuHistory.slice(-3) // Average last 3 values
-        const sum = valuesToAverage.reduce((a, b) => a + b, 0)
-        smoothedCpuUsage = sum / valuesToAverage.length
     }
 
     function addToHistory(array, value) {

@@ -62,10 +62,10 @@ Rectangle {
       name: DankgopService.getProcessIcon(process ? process.command : "")
       size: Theme.iconSize - 4
       color: {
-        if (process && process.smoothedCpu > 80)
+        if (process && process.cpu > 80)
           return Theme.error
 
-        if (process && process.smoothedCpu > 50)
+        if (process && process.cpu > 50)
           return Theme.warning
 
         return Theme.surfaceText
@@ -95,10 +95,10 @@ Rectangle {
       height: 20
       radius: Theme.cornerRadius
       color: {
-        if (process && process.smoothedCpu > 80)
+        if (process && process.cpu > 80)
           return Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
 
-        if (process && process.smoothedCpu > 50)
+        if (process && process.cpu > 50)
           return Qt.rgba(Theme.warning.r, Theme.warning.g,
                          Theme.warning.b, 0.12)
 
@@ -110,15 +110,15 @@ Rectangle {
       anchors.verticalCenter: parent.verticalCenter
 
       StyledText {
-        text: DankgopService.formatCpuUsage(process ? process.smoothedCpu : 0)
+        text: DankgopService.formatCpuUsage(process ? process.cpu : 0)
         font.pixelSize: Theme.fontSizeSmall
         font.family: SettingsData.monoFontFamily
         font.weight: Font.Bold
         color: {
-          if (process && process.smoothedCpu > 80)
+          if (process && process.cpu > 80)
             return Theme.error
 
-          if (process && process.smoothedCpu > 50)
+          if (process && process.cpu > 50)
             return Theme.warning
 
           return Theme.surfaceText
