@@ -24,6 +24,8 @@ Singleton {
     // Sampling data
     property var cpuSampleData: null
     property var procSampleData: null
+    property int cpuSampleCount: 0
+    property int processSampleCount: 0
 
     property real cpuUsage: 0
     property real cpuFrequency: 0
@@ -132,6 +134,16 @@ Singleton {
         if (modulesChanged) {
             enabledModules = enabledModules.slice() // Force property change
             moduleRefCounts = Object.assign({}, moduleRefCounts) // Force property change
+            
+            // Clear cursor data when CPU or process modules are no longer active
+            if (!enabledModules.includes("cpu")) {
+                cpuSampleData = null
+                cpuSampleCount = 0
+            }
+            if (!enabledModules.includes("processes")) {
+                procSampleData = null
+                processSampleCount = 0
+            }
         }
     }
 
@@ -267,15 +279,20 @@ Singleton {
     function parseData(data) {
         if (data.cpu) {
             const cpu = data.cpu
-            cpuUsage = cpu.usage || 0
-            cpuFrequency = cpu.frequency || 0
-            cpuTemperature = cpu.temperature || 0
-            cpuCores = cpu.count || 1
-            cpuModel = cpu.model || ""
-            perCoreCpuUsage = cpu.coreUsage || []
-            addToHistory(cpuHistory, cpuUsage)
+            cpuSampleCount++
+            
+            // Only update CPU data if we have had at least 2 samples (first sample is inaccurate)
+            if (cpuSampleCount >= 2) {
+                cpuUsage = cpu.usage || 0
+                cpuFrequency = cpu.frequency || 0
+                cpuTemperature = cpu.temperature || 0
+                cpuCores = cpu.count || 1
+                cpuModel = cpu.model || ""
+                perCoreCpuUsage = cpu.coreUsage || []
+                addToHistory(cpuHistory, cpuUsage)
+            }
 
-            // Update CPU sample data for the next run using cursor data
+            // Always update cursor data for next sampling
             if (cpu.cursor) {
                 cpuSampleData = {
                     previousTotal: cpu.cursor.total,
@@ -360,11 +377,16 @@ Singleton {
         if (data.processes && Array.isArray(data.processes)) {
             const newProcesses = []
             const newProcSample = []
+            processSampleCount++
+            
             for (const proc of data.processes) {
+                // Only show CPU usage if we have had at least 2 samples (first sample is inaccurate)
+                const cpuUsage = processSampleCount >= 2 ? (proc.cpu || 0) : 0
+                
                 newProcesses.push({
                     "pid": proc.pid || 0,
                     "ppid": proc.ppid || 0,
-                    "cpu": proc.cpu || 0,
+                    "cpu": cpuUsage,
                     "memoryPercent": proc.memoryPercent || proc.pssPercent || 0,
                     "memoryKB": proc.memoryKB || proc.pssKB || 0,
                     "command": proc.command || "",
@@ -373,7 +395,7 @@ Singleton {
                                    proc.command.substring(0, 15) + "..." : (proc.command || "")
                 })
 
-                // Extract cursor data from pticks for next sampling call
+                // Always extract cursor data from pticks for next sampling call
                 if (proc.pid && typeof proc.pticks !== 'undefined') {
                     newProcSample.push({
                         pid: proc.pid,

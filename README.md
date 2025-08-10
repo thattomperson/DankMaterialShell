@@ -2,9 +2,9 @@
 
 <div align=center>
 
-![GitHub last commit](https://img.shields.io/github/last-commit/bbedward/DankMaterialShell?style=for-the-badge&labelColor=101418&color=9ccbfb)
-![GitHub License](https://img.shields.io/github/license/bbedward/DankMaterialShell?style=for-the-badge&labelColor=101418&color=b9c8da)
-![GitHub repo size](https://img.shields.io/github/repo-size/bbedward/DankMaterialShell?style=for-the-badge&labelColor=101418&color=d3bfe6)
+![GitHub last commit](https://img.shields.io/github/last-commit/AvengeMedia/DankMaterialShell?style=for-the-badge&labelColor=101418&color=9ccbfb)
+![GitHub License](https://img.shields.io/github/license/AvengeMedia/DankMaterialShell?style=for-the-badge&labelColor=101418&color=b9c8da)
+![GitHub repo size](https://img.shields.io/github/repo-size/AvengeMedia/DankMaterialShell?style=for-the-badge&labelColor=101418&color=d3bfe6)
 
 </div>
 
@@ -116,7 +116,7 @@ paru -S dankmaterialshell-git
 
 # Manual install
 mkdir -p ~/.config/quickshell
-git clone https://github.com/bbedward/DankMaterialShell.git ~/.config/quickshell/DankMaterialShell
+git clone https://github.com/AvengeMedia/DankMaterialShell.git ~/.config/quickshell/DankMaterialShell
 qs -c DankMaterialShell
 ```
 
@@ -423,7 +423,7 @@ All settings are configurable in `~/.config/DankMaterialShell/settings.json`, or
 
 **Getting help:**
 
-- Check the [issues](https://github.com/bbedward/DankMaterialShell/issues) for known problems
+- Check the [issues](https://github.com/AvengeMedia/DankMaterialShell/issues) for known problems
 - Share logs from `qs -c DankMaterialShell` for debugging
 - Join the niri community for compositor-specific questions
 
