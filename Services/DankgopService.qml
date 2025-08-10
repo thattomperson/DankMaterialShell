@@ -281,16 +281,14 @@ Singleton {
             const cpu = data.cpu
             cpuSampleCount++
             
-            // Only update CPU data if we have had at least 2 samples (first sample is inaccurate)
-            if (cpuSampleCount >= 2) {
-                cpuUsage = cpu.usage || 0
-                cpuFrequency = cpu.frequency || 0
-                cpuTemperature = cpu.temperature || 0
-                cpuCores = cpu.count || 1
-                cpuModel = cpu.model || ""
-                perCoreCpuUsage = cpu.coreUsage || []
-                addToHistory(cpuHistory, cpuUsage)
-            }
+            // Use dankgop CPU numbers directly without modification
+            cpuUsage = cpu.usage || 0
+            cpuFrequency = cpu.frequency || 0
+            cpuTemperature = cpu.temperature || 0
+            cpuCores = cpu.count || 1
+            cpuModel = cpu.model || ""
+            perCoreCpuUsage = cpu.coreUsage || []
+            addToHistory(cpuHistory, cpuUsage)
 
             // Always update cursor data for next sampling
             if (cpu.cursor) {
