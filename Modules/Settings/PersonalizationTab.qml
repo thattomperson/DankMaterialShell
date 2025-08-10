@@ -48,6 +48,11 @@ Item {
 
       Loader {
         width: parent.width
+        sourceComponent: topBarAutoHideComponent
+      }
+
+      Loader {
+        width: parent.width
         sourceComponent: notificationOverlayComponent
       }
     }
@@ -944,6 +949,71 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             checked: SettingsData.notificationOverlayEnabled
             onToggled: toggled => SettingsData.setNotificationOverlayEnabled(toggled)
+          }
+        }
+      }
+    }
+  }
+
+  // TopBar Auto-hide Component
+  Component {
+    id: topBarAutoHideComponent
+
+    StyledRect {
+      width: parent.width
+      height: topBarAutoHideSection.implicitHeight + Theme.spacingL * 2
+      radius: Theme.cornerRadius
+      color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                     Theme.surfaceVariant.b, 0.3)
+      border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                            Theme.outline.b, 0.2)
+      border.width: 1
+
+      Column {
+        id: topBarAutoHideSection
+
+        anchors.fill: parent
+        anchors.margins: Theme.spacingL
+        spacing: Theme.spacingM
+
+        Row {
+          width: parent.width
+          spacing: Theme.spacingM
+
+          DankIcon {
+            name: "visibility_off"
+            size: Theme.iconSize
+            color: Theme.primary
+            anchors.verticalCenter: parent.verticalCenter
+          }
+
+          Column {
+            width: parent.width - Theme.iconSize - Theme.spacingM - autoHideToggle.width - Theme.spacingM
+            spacing: Theme.spacingXS
+            anchors.verticalCenter: parent.verticalCenter
+
+            StyledText {
+              text: "TopBar Auto-hide"
+              font.pixelSize: Theme.fontSizeLarge
+              font.weight: Font.Medium
+              color: Theme.surfaceText
+            }
+
+            StyledText {
+              text: "Automatically hide the top bar to expand screen real estate"
+              font.pixelSize: Theme.fontSizeSmall
+              color: Theme.surfaceVariantText
+              wrapMode: Text.WordWrap
+              width: parent.width
+            }
+          }
+
+          DankToggle {
+            id: autoHideToggle
+
+            anchors.verticalCenter: parent.verticalCenter
+            checked: SettingsData.topBarAutoHide
+            onToggled: toggled => SettingsData.setTopBarAutoHide(toggled)
           }
         }
       }
