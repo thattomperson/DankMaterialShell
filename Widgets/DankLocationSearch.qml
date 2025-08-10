@@ -51,7 +51,7 @@ Item {
         const searchLocation = locationInput.text
         root.currentSearchText = searchLocation
         const encodedLocation = encodeURIComponent(searchLocation)
-        const curlCommand = `curl -s --connect-timeout 5 --max-time 10 'https://nominatim.openstreetmap.org/search?q=${encodedLocation}&format=json&limit=5&addressdetails=1'`
+        const curlCommand = `curl -4 -s --connect-timeout 5 --max-time 10 'https://nominatim.openstreetmap.org/search?q=${encodedLocation}&format=json&limit=5&addressdetails=1'`
         locationSearcher.command = ["bash", "-c", curlCommand]
         locationSearcher.running = true
       }

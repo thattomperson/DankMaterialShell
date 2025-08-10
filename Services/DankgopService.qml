@@ -275,12 +275,12 @@ Singleton {
             perCoreCpuUsage = cpu.coreUsage || []
             addToHistory(cpuHistory, cpuUsage)
 
-            // Update CPU sample data for the next run
-            if (cpu.total && cpu.cores) {
+            // Update CPU sample data for the next run using cursor data
+            if (cpu.cursor) {
                 cpuSampleData = {
-                    previousTotal: cpu.total,
-                    previousCores: cpu.cores,
-                    sampleTime: new Date().getTime()
+                    previousTotal: cpu.cursor.total,
+                    previousCores: cpu.cursor.cores,
+                    timestamp: cpu.cursor.timestamp
                 }
             }
         }
@@ -373,11 +373,12 @@ Singleton {
                                    proc.command.substring(0, 15) + "..." : (proc.command || "")
                 })
 
+                // Extract cursor data from pticks for next sampling call
                 if (proc.pid && typeof proc.pticks !== 'undefined') {
                     newProcSample.push({
                         pid: proc.pid,
                         previousTicks: proc.pticks,
-                        sampleTime: new Date().getTime()
+                        timestamp: new Date().getTime()
                     })
                 }
             }
