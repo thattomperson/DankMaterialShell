@@ -48,24 +48,6 @@ Rectangle {
       }
       anchors.verticalCenter: parent.verticalCenter
 
-      SequentialAnimation on opacity {
-        running: BatteryService.isCharging
-        loops: Animation.Infinite
-
-        NumberAnimation {
-          to: 0.6
-          duration: Anims.durLong
-          easing.type: Easing.BezierSpline
-          easing.bezierCurve: Anims.standard
-        }
-
-        NumberAnimation {
-          to: 1
-          duration: Anims.durLong
-          easing.type: Easing.BezierSpline
-          easing.bezierCurve: Anims.standard
-        }
-      }
     }
 
     StyledText {
