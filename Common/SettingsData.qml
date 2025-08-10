@@ -89,6 +89,7 @@ Singleton {
   property bool showDock: false
   property bool dockAutoHide: false
   property real cornerRadius: 12
+  property bool notificationOverlayEnabled: false
 
   readonly property string defaultFontFamily: "Inter Variable"
   readonly property string defaultMonoFontFamily: "Fira Code"
@@ -253,6 +254,7 @@ Singleton {
         showDock = settings.showDock !== undefined ? settings.showDock : false
         dockAutoHide = settings.dockAutoHide !== undefined ? settings.dockAutoHide : false
         cornerRadius = settings.cornerRadius !== undefined ? settings.cornerRadius : 12
+        notificationOverlayEnabled = settings.notificationOverlayEnabled !== undefined ? settings.notificationOverlayEnabled : false
         applyStoredTheme()
         detectAvailableIconThemes()
         detectQtTools()
@@ -321,7 +323,8 @@ Singleton {
                                           "qtThemingEnabled": qtThemingEnabled,
                                           "showDock": showDock,
                                           "dockAutoHide": dockAutoHide,
-                                          "cornerRadius": cornerRadius
+                                          "cornerRadius": cornerRadius,
+                                          "notificationOverlayEnabled": notificationOverlayEnabled
                                         }, null, 2))
   }
 
@@ -735,6 +738,11 @@ Singleton {
 
   function setCornerRadius(radius) {
     cornerRadius = radius
+    saveSettings()
+  }
+
+  function setNotificationOverlayEnabled(enabled) {
+    notificationOverlayEnabled = enabled
     saveSettings()
   }
 

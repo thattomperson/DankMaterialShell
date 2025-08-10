@@ -45,6 +45,11 @@ Item {
         width: parent.width
         sourceComponent: dynamicThemeComponent
       }
+
+      Loader {
+        width: parent.width
+        sourceComponent: notificationOverlayComponent
+      }
     }
   }
 
@@ -876,6 +881,71 @@ Item {
                       }
       onDialogClosed: {
 
+      }
+    }
+  }
+
+  // Notification Overlay Component
+  Component {
+    id: notificationOverlayComponent
+
+    StyledRect {
+      width: parent.width
+      height: notificationOverlaySection.implicitHeight + Theme.spacingL * 2
+      radius: Theme.cornerRadius
+      color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                     Theme.surfaceVariant.b, 0.3)
+      border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                            Theme.outline.b, 0.2)
+      border.width: 1
+
+      Column {
+        id: notificationOverlaySection
+
+        anchors.fill: parent
+        anchors.margins: Theme.spacingL
+        spacing: Theme.spacingM
+
+        Row {
+          width: parent.width
+          spacing: Theme.spacingM
+
+          DankIcon {
+            name: "notifications_active"
+            size: Theme.iconSize
+            color: Theme.primary
+            anchors.verticalCenter: parent.verticalCenter
+          }
+
+          Column {
+            width: parent.width - Theme.iconSize - Theme.spacingM - overlayToggle.width - Theme.spacingM
+            spacing: Theme.spacingXS
+            anchors.verticalCenter: parent.verticalCenter
+
+            StyledText {
+              text: "Notification Overlay"
+              font.pixelSize: Theme.fontSizeLarge
+              font.weight: Font.Medium
+              color: Theme.surfaceText
+            }
+
+            StyledText {
+              text: "Enable to display all notification priorities over fullscreen apps"
+              font.pixelSize: Theme.fontSizeSmall
+              color: Theme.surfaceVariantText
+              wrapMode: Text.WordWrap
+              width: parent.width
+            }
+          }
+
+          DankToggle {
+            id: overlayToggle
+
+            anchors.verticalCenter: parent.verticalCenter
+            checked: SettingsData.notificationOverlayEnabled
+            onToggled: toggled => SettingsData.setNotificationOverlayEnabled(toggled)
+          }
+        }
       }
     }
   }
