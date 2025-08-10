@@ -21,9 +21,9 @@ Singleton {
     property string processSort: "cpu"
     property bool noCpu: false
 
-    // Sampling data
-    property var cpuSampleData: null
-    property var procSampleData: null
+    // Cursor data for accurate CPU calculations
+    property string cpuCursor: ""
+    property string procCursor: ""
     property int cpuSampleCount: 0
     property int processSampleCount: 0
 
@@ -137,11 +137,11 @@ Singleton {
             
             // Clear cursor data when CPU or process modules are no longer active
             if (!enabledModules.includes("cpu")) {
-                cpuSampleData = null
+                cpuCursor = ""
                 cpuSampleCount = 0
             }
             if (!enabledModules.includes("processes")) {
-                procSampleData = null
+                procCursor = ""
                 processSampleCount = 0
             }
         }
@@ -251,12 +251,12 @@ Singleton {
             return []
         }
 
-        // Add sampling data if available
-        if ((enabledModules.includes("cpu") || enabledModules.includes("all")) && cpuSampleData) {
-            cmd.push("--cpu-sample", JSON.stringify(cpuSampleData))
+        // Add cursor data if available for accurate CPU percentages
+        if ((enabledModules.includes("cpu") || enabledModules.includes("all")) && cpuCursor) {
+            cmd.push("--cpu-cursor", cpuCursor)
         }
-        if ((enabledModules.includes("processes") || enabledModules.includes("all")) && procSampleData) {
-            cmd.push("--proc-sample", JSON.stringify(procSampleData))
+        if ((enabledModules.includes("processes") || enabledModules.includes("all")) && procCursor) {
+            cmd.push("--proc-cursor", procCursor)
         }
 
         if (gpuPciIds.length > 0) {
@@ -290,13 +290,9 @@ Singleton {
             perCoreCpuUsage = cpu.coreUsage || []
             addToHistory(cpuHistory, cpuUsage)
 
-            // Always update cursor data for next sampling
+            // Store the opaque cursor string for next sampling
             if (cpu.cursor) {
-                cpuSampleData = {
-                    previousTotal: cpu.cursor.total,
-                    previousCores: cpu.cursor.cores,
-                    timestamp: cpu.cursor.timestamp
-                }
+                cpuCursor = cpu.cursor
             }
         }
 
@@ -374,7 +370,6 @@ Singleton {
 
         if (data.processes && Array.isArray(data.processes)) {
             const newProcesses = []
-            const newProcSample = []
             processSampleCount++
             
             for (const proc of data.processes) {
@@ -392,19 +387,12 @@ Singleton {
                     "displayName": (proc.command && proc.command.length > 15) ? 
                                    proc.command.substring(0, 15) + "..." : (proc.command || "")
                 })
-
-                // Always extract cursor data from pticks for next sampling call
-                if (proc.pid && typeof proc.pticks !== 'undefined') {
-                    newProcSample.push({
-                        pid: proc.pid,
-                        previousTicks: proc.pticks,
-                        timestamp: new Date().getTime()
-                    })
-                }
             }
             processes = newProcesses
-            if (newProcSample.length > 0) {
-                procSampleData = newProcSample
+            
+            // Store the single opaque cursor string for the entire process list
+            if (data.cursor) {
+                procCursor = data.cursor
             }
         }
 
