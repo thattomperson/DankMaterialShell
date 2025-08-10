@@ -371,6 +371,7 @@ PanelWindow {
                                 active: topBarContent.getWidgetVisible(model.widgetId)
                                 sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
                                 opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
+                                asynchronous: true
                             }
                         }
                     }
@@ -491,6 +492,8 @@ PanelWindow {
                                 active: topBarContent.getWidgetVisible(model.widgetId)
                                 sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
                                 opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
+                                asynchronous: true
+                                
                                 onLoaded: {
                                     if (item) {
                                         item.onWidthChanged.connect(centerSection.updateLayout)
@@ -498,7 +501,6 @@ PanelWindow {
                                             item.spacerSize = Qt.binding(() => {
                                                 return model.size || 20
                                             })
-
                                         Qt.callLater(centerSection.updateLayout)
                                     }
                                 }
@@ -537,6 +539,48 @@ PanelWindow {
                                 active: topBarContent.getWidgetVisible(model.widgetId)
                                 sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
                                 opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
+                                asynchronous: true
+                            }
+                        }
+                    }
+
+
+                    Component {
+                        id: clipboardComponent
+
+                        Rectangle {
+                            width: 40
+                            height: 30
+                            radius: Theme.cornerRadius
+                            color: {
+                                const baseColor = clipboardArea.containsMouse ? Theme.primaryHover : Theme.secondaryHover
+                                return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
+                                               baseColor.a * Theme.widgetTransparency)
+                            }
+
+                            DankIcon {
+                                anchors.centerIn: parent
+                                name: "content_paste"
+                                size: Theme.iconSize - 6
+                                color: Theme.surfaceText
+                            }
+
+                            MouseArea {
+                                id: clipboardArea
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    clipboardHistoryModalPopup.toggle()
+                                }
+                            }
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Theme.shortDuration
+                                    easing.type: Theme.standardEasing
+                                }
                             }
                         }
                     }
@@ -547,7 +591,6 @@ PanelWindow {
                         LauncherButton {
                             isActive: appDrawerPopout ? appDrawerPopout.isVisible : false
                             section: {
-                                // Determine which section this loader is in by checking parent
                                 if (parent && parent.parent) {
                                     if (parent.parent === leftSection)
                                         return "left"
@@ -556,7 +599,7 @@ PanelWindow {
                                     if (parent.parent === centerSection)
                                         return "center"
                                 }
-                                return "left" // default fallback
+                                return "left"
                             }
                             popupTarget: appDrawerPopout
                             parentScreen: root.screen
@@ -672,46 +715,6 @@ PanelWindow {
                                 return "right"
                             }
                             parentScreen: root.screen
-                        }
-                    }
-
-                    Component {
-                        id: clipboardComponent
-
-                        Rectangle {
-                            width: 40
-                            height: 30
-                            radius: Theme.cornerRadius
-                            color: {
-                                const baseColor = clipboardArea.containsMouse ? Theme.primaryHover : Theme.secondaryHover
-                                return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
-                                               baseColor.a * Theme.widgetTransparency)
-                            }
-
-                            DankIcon {
-                                anchors.centerIn: parent
-                                name: "content_paste"
-                                size: Theme.iconSize - 6
-                                color: Theme.surfaceText
-                            }
-
-                            MouseArea {
-                                id: clipboardArea
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    clipboardHistoryModalPopup.toggle()
-                                }
-                            }
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.shortDuration
-                                    easing.type: Theme.standardEasing
-                                }
-                            }
                         }
                     }
 
