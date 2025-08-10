@@ -103,7 +103,7 @@ DankModal {
         width: 400
         height: 200
         radius: Theme.cornerRadius
-        color: Theme.errorBackground
+        color: Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.1)
         border.color: Theme.error
         border.width: 2
         visible: !DankgopService.dankgopAvailable
