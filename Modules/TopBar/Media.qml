@@ -161,7 +161,7 @@ Rectangle {
               property: "scrollOffset"
               from: 0
               to: mediaText.implicitWidth - textContainer.width + 5
-              duration: 5000
+              duration: Math.max(1000, (mediaText.implicitWidth - textContainer.width + 5) * 60)
               easing.type: Easing.Linear
             }
             
@@ -171,7 +171,7 @@ Rectangle {
               target: mediaText
               property: "scrollOffset"
               to: 0
-              duration: 5000
+              duration: Math.max(1000, (mediaText.implicitWidth - textContainer.width + 5) * 60)
               easing.type: Easing.Linear
             }
           }
