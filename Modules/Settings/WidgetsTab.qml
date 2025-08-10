@@ -614,11 +614,11 @@ Item {
                                                                   itemId,
                                                                   newSize)
                              }
-        onCompactModeChanged: (widgetId, enabled) => {
+        onCompactModeChanged: (widgetId, value) => {
                                 if (widgetId === "clock") {
-                                  SettingsData.setClockCompactMode(enabled)
+                                  SettingsData.setClockCompactMode(value)
                                 } else if (widgetId === "music") {
-                                  SettingsData.setMediaCompactMode(enabled)
+                                  SettingsData.setMediaSize(value)
                                 }
                               }
         onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
@@ -657,11 +657,11 @@ Item {
                                                                   itemId,
                                                                   newSize)
                              }
-        onCompactModeChanged: (widgetId, enabled) => {
+        onCompactModeChanged: (widgetId, value) => {
                                 if (widgetId === "clock") {
-                                  SettingsData.setClockCompactMode(enabled)
+                                  SettingsData.setClockCompactMode(value)
                                 } else if (widgetId === "music") {
-                                  SettingsData.setMediaCompactMode(enabled)
+                                  SettingsData.setMediaSize(value)
                                 }
                               }
         onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
@@ -700,11 +700,11 @@ Item {
                                                                   itemId,
                                                                   newSize)
                              }
-        onCompactModeChanged: (widgetId, enabled) => {
+        onCompactModeChanged: (widgetId, value) => {
                                 if (widgetId === "clock") {
-                                  SettingsData.setClockCompactMode(enabled)
+                                  SettingsData.setClockCompactMode(value)
                                 } else if (widgetId === "music") {
-                                  SettingsData.setMediaCompactMode(enabled)
+                                  SettingsData.setMediaSize(value)
                                 }
                               }
         onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {

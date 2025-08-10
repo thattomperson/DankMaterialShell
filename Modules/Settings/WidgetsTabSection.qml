@@ -18,7 +18,7 @@ Column {
   signal addWidget(string sectionId)
   signal removeWidget(string sectionId, int widgetIndex)
   signal spacerSizeChanged(string sectionId, string itemId, int newSize)
-  signal compactModeChanged(string widgetId, bool enabled)
+  signal compactModeChanged(string widgetId, var value)
   signal gpuSelectionChanged(string sectionId, int widgetIndex, int selectedIndex)
 
   width: parent.width
@@ -236,32 +236,55 @@ Column {
               }
             }
 
-            Item {
-              width: 32
-              height: 32
+            Row {
+              spacing: Theme.spacingXS
               visible: modelData.id === "clock" || modelData.id === "music"
-
+              
+              DankActionButton {
+                id: smallSizeButton
+                buttonSize: 28
+                visible: modelData.id === "music"
+                iconName: "photo_size_select_small"
+                iconSize: 16
+                iconColor: SettingsData.mediaSize === 0 ? Theme.primary : Theme.outline
+                onClicked: {
+                  root.compactModeChanged("music", 0)
+                }
+              }
+              
+              DankActionButton {
+                id: mediumSizeButton
+                buttonSize: 28
+                visible: modelData.id === "music"
+                iconName: "photo_size_select_actual"
+                iconSize: 16
+                iconColor: SettingsData.mediaSize === 1 ? Theme.primary : Theme.outline
+                onClicked: {
+                  root.compactModeChanged("music", 1)
+                }
+              }
+              
+              DankActionButton {
+                id: largeSizeButton
+                buttonSize: 28
+                visible: modelData.id === "music"
+                iconName: "photo_size_select_large"
+                iconSize: 16
+                iconColor: SettingsData.mediaSize === 2 ? Theme.primary : Theme.outline
+                onClicked: {
+                  root.compactModeChanged("music", 2)
+                }
+              }
+              
               DankActionButton {
                 id: compactModeButton
-                anchors.fill: parent
-                buttonSize: 32
-                iconName: (modelData.id === "clock"
-                           && SettingsData.clockCompactMode)
-                          || (modelData.id === "music"
-                              && SettingsData.mediaCompactMode) ? "zoom_out" : "zoom_in"
-                iconSize: 18
-                iconColor: ((modelData.id === "clock"
-                             && SettingsData.clockCompactMode)
-                            || (modelData.id === "music"
-                                && SettingsData.mediaCompactMode)) ? Theme.primary : Theme.outline
+                buttonSize: 28
+                visible: modelData.id === "clock"
+                iconName: SettingsData.clockCompactMode ? "zoom_out" : "zoom_in"
+                iconSize: 16
+                iconColor: SettingsData.clockCompactMode ? Theme.primary : Theme.outline
                 onClicked: {
-                  if (modelData.id === "clock") {
-                    root.compactModeChanged("clock",
-                                            !SettingsData.clockCompactMode)
-                  } else if (modelData.id === "music") {
-                    root.compactModeChanged("music",
-                                            !SettingsData.mediaCompactMode)
-                  }
+                  root.compactModeChanged("clock", !SettingsData.clockCompactMode)
                 }
               }
 
@@ -273,8 +296,7 @@ Column {
                 color: Theme.surfaceContainer
                 border.color: Theme.outline
                 border.width: 1
-                visible: compactModeButton.children[1]
-                         && compactModeButton.children[1].containsMouse
+                visible: false
                 opacity: visible ? 1 : 0
                 x: -width - Theme.spacingS
                 y: (parent.height - height) / 2

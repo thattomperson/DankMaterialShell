@@ -44,7 +44,7 @@ Singleton {
   property bool showWorkspaceIndex: false
   property bool showWorkspacePadding: false
   property bool clockCompactMode: false
-  property bool mediaCompactMode: false
+  property int mediaSize: 1
   property var topBarLeftWidgets: ["launcherButton", "workspaceSwitcher", "focusedWindow"]
   property var topBarCenterWidgets: ["music", "clock", "weather"]
   property var topBarRightWidgets: ["systemTray", "clipboard", "cpuUsage", "memUsage", "notificationButton", "battery", "controlCenterButton"]
@@ -202,8 +202,7 @@ Singleton {
             !== undefined ? settings.showWorkspacePadding : false
         clockCompactMode = settings.clockCompactMode
             !== undefined ? settings.clockCompactMode : false
-        mediaCompactMode = settings.mediaCompactMode
-            !== undefined ? settings.mediaCompactMode : false
+        mediaSize = settings.mediaSize !== undefined ? settings.mediaSize : (settings.mediaCompactMode !== undefined ? (settings.mediaCompactMode ? 0 : 1) : 1)
         if (settings.topBarWidgetOrder) {
           topBarLeftWidgets = settings.topBarWidgetOrder.filter(
                 w => ["launcherButton", "workspaceSwitcher", "focusedWindow"].includes(
@@ -302,7 +301,7 @@ Singleton {
                                           "showWorkspaceIndex": showWorkspaceIndex,
                                           "showWorkspacePadding": showWorkspacePadding,
                                           "clockCompactMode": clockCompactMode,
-                                          "mediaCompactMode": mediaCompactMode,
+                                          "mediaSize": mediaSize,
                                           "topBarLeftWidgets": topBarLeftWidgets,
                                           "topBarCenterWidgets": topBarCenterWidgets,
                                           "topBarRightWidgets": topBarRightWidgets,
@@ -341,8 +340,8 @@ Singleton {
     saveSettings()
   }
 
-  function setMediaCompactMode(enabled) {
-    mediaCompactMode = enabled
+  function setMediaSize(size) {
+    mediaSize = size
     saveSettings()
   }
 
