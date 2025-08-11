@@ -95,7 +95,7 @@ Rectangle {
                         if (!trayItem)
                         return
 
-                        if (mouse.button === Qt.LeftButon && !trayItem.onlyMenu) {
+                        if (mouse.button === Qt.LeftButton && !trayItem.onlyMenu) {
                             trayItem.activate()
                             return
                         }
