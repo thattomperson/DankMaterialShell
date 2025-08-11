@@ -7,7 +7,7 @@
     quickshell.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, niri, quickshell, ... }:
+  outputs = { self, nixpkgs, quickshell, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
