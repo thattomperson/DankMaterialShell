@@ -148,22 +148,22 @@ Column {
                 currentValue: {
                   var selectedIndex = modelData.selectedGpuIndex
                       !== undefined ? modelData.selectedGpuIndex : 0
-                  if (DankgopService.availableGpus
-                      && DankgopService.availableGpus.length > selectedIndex
+                  if (DgopService.availableGpus
+                      && DgopService.availableGpus.length > selectedIndex
                       && selectedIndex >= 0) {
-                    var gpu = DankgopService.availableGpus[selectedIndex]
+                    var gpu = DgopService.availableGpus[selectedIndex]
                     return gpu.driver.toUpperCase()
                   }
-                  return DankgopService.availableGpus
-                      && DankgopService.availableGpus.length
-                      > 0 ? DankgopService.availableGpus[0].driver.toUpperCase() : ""
+                  return DgopService.availableGpus
+                      && DgopService.availableGpus.length
+                      > 0 ? DgopService.availableGpus[0].driver.toUpperCase() : ""
                 }
                 options: {
                   var gpuOptions = []
-                  if (DankgopService.availableGpus
-                      && DankgopService.availableGpus.length > 0) {
-                    for (var i = 0; i < DankgopService.availableGpus.length; i++) {
-                      var gpu = DankgopService.availableGpus[i]
+                  if (DgopService.availableGpus
+                      && DgopService.availableGpus.length > 0) {
+                    for (var i = 0; i < DgopService.availableGpus.length; i++) {
+                      var gpu = DgopService.availableGpus[i]
                       gpuOptions.push(gpu.driver.toUpperCase())
                     }
                   }
