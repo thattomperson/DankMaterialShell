@@ -13,6 +13,35 @@ Item {
     loader.activeAsync = true
   }
 
+  function checkLockedOnStartup() {
+    lockStateChecker.running = true
+  }
+
+  Component.onCompleted: {
+    checkLockedOnStartup()
+  }
+
+  Process {
+    id: lockStateChecker
+    command: ["sh", "-c", "loginctl show-session $(loginctl list-sessions --no-legend | awk '{print $1}' | head -1) --property=LockedHint"]
+    running: false
+    
+    onExited: (exitCode, exitStatus) => {
+      if (exitCode !== 0) {
+        console.warn("Failed to check session lock state, exit code:", exitCode)
+      }
+    }
+    
+    stdout: StdioCollector {
+      onStreamFinished: {
+        if (text.trim() === "LockedHint=yes") {
+          console.log("Session is locked on startup, activating lock screen")
+          loader.activeAsync = true
+        }
+      }
+    }
+  }
+
   LazyLoader {
     id: loader
 
