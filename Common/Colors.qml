@@ -148,26 +148,45 @@ Singleton {
 
       onStreamFinished: {
         const out = matugenCollector.text
-        if (!out.length) {
+        const startIndex = out.indexOf('{')
+        const endIndex = out.lastIndexOf('}')
+        let jsonStringOnly = ""
+        if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+            jsonStringOnly = out.substring(startIndex, endIndex + 1)
+        }
+        if (!jsonStringOnly.length) {
           ToastService.wallpaperErrorStatus = "error"
-          ToastService.showError("Wallpaper Processing Failed")
+          ToastService.showError("Wallpaper Processing Failed: Empty JSON extracted from matugen output.")
           return
         }
         try {
-          root.matugenJson = out
-          root.matugenColors = JSON.parse(out)
+          root.matugenJson = jsonStringOnly
+          root.matugenColors = JSON.parse(jsonStringOnly)
           root.colorsUpdated()
           generateAppConfigs()
           ToastService.clearWallpaperError()
         } catch (e) {
           ToastService.wallpaperErrorStatus = "error"
-          ToastService.showError("Wallpaper Processing Failed")
+          const stderr = matugenErr.text
+          const msg = "Wallpaper processing failed (JSON parse error after extraction)"
+              + (stderr ? `: ${stderr}` : ` with output: ${jsonStringOnly}`)
+          ToastService.showError(msg)
         }
       }
     }
 
     stderr: StdioCollector {
       id: matugenErr
+    }
+
+    onExited: code => {
+      if (code !== 0) {
+        ToastService.wallpaperErrorStatus = "error"
+        const stderr = matugenErr.text
+        const msg = "Matugen command failed with exit code " + code
+            + (stderr ? `: ${stderr}` : ". No stderr output.")
+        ToastService.showError(msg)
+      }
     }
   }
 
