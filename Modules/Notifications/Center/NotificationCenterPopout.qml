@@ -123,18 +123,26 @@ PanelWindow {
       }
     }
 
-    Column {
+    FocusScope {
       id: contentColumn
 
       anchors.fill: parent
       anchors.margins: Theme.spacingL
-      spacing: Theme.spacingM
       focus: true
+      
       Component.onCompleted: {
         if (notificationHistoryVisible)
           forceActiveFocus()
       }
-      Keys.onPressed: keyboardController.handleKey
+      
+      Keys.onPressed: function(event) {
+        keyboardController.handleKey(event)
+      }
+      
+      Column {
+        id: contentColumnInner
+        anchors.fill: parent
+        spacing: Theme.spacingM
 
       Connections {
         function onNotificationHistoryVisibleChanged() {
@@ -156,7 +164,7 @@ PanelWindow {
         id: notificationList
 
         width: parent.width
-        height: parent.height - notificationHeader.height - contentColumn.spacing
+        height: parent.height - notificationHeader.height - contentColumnInner.spacing
         // keyboardController set via Component.onCompleted to avoid binding loop
         enableKeyboardNavigation: true
         
@@ -167,7 +175,9 @@ PanelWindow {
           }
         }
       }
-    }
+      
+      } // Column
+    } // FocusScope
 
     Connections {
       function onNotificationsChanged() {

@@ -9,43 +9,41 @@ import qs.Modules.Notifications.Center
 import qs.Services
 import qs.Widgets
 
-DankModal {
-    id: notificationModal
+Item {
+    id: root
+    
+    // Keyboard controller defined outside modal to ensure proper creation order
+    NotificationKeyboardController {
+        id: modalKeyboardController
+        listView: null
+        isOpen: notificationModal.notificationModalOpen
+        onClose: function() { notificationModal.hide() }
+    }
+
+    property alias notificationModal: notificationModal
+    
+    DankModal {
+        id: notificationModal
 
     property bool notificationModalOpen: false
     property var notificationListRef: null
-    
-    // Keyboard controller for navigation
-    NotificationKeyboardController {
-        id: keyboardController
-        listView: null  // Set later to avoid binding loop
-        isOpen: notificationModalOpen
-        onClose: function() { hide() }
-        
-        Component.onCompleted: {
-            console.log("KeyboardController created")
-        }
-    }
 
 
 
     function show() {
-        console.log("NotificationModal.show() called")
         notificationModalOpen = true
-        keyboardController.reset()
+        modalKeyboardController.reset()
         
         // Set the listView reference when modal is shown
-        console.log("SHOW: keyboardController:", !!keyboardController, "notificationListRef:", !!notificationListRef)
-        if (keyboardController && notificationListRef) {
-            console.log("FIXING listView reference in show()")
-            keyboardController.listView = notificationListRef
-            keyboardController.rebuildFlatNavigation()
+        if (modalKeyboardController && notificationListRef) {
+            modalKeyboardController.listView = notificationListRef
+            modalKeyboardController.rebuildFlatNavigation()
         }
     }
 
     function hide() {
         notificationModalOpen = false
-        keyboardController.reset()
+        modalKeyboardController.reset()
     }
 
     function toggle() {
@@ -88,8 +86,7 @@ DankModal {
         }
 
         function toggle() {
-            console.log("IPC toggle() called")
-                        notificationModal.toggle()
+            notificationModal.toggle()
             return "NOTIFICATION_MODAL_TOGGLE_SUCCESS"
         }
 
@@ -104,7 +101,7 @@ DankModal {
             focus: true
             
             Keys.onPressed: function(event) {
-                keyboardController.handleKey(event)
+                modalKeyboardController.handleKey(event)
             }
             
             Component.onCompleted: {
@@ -151,7 +148,7 @@ DankModal {
                             width: 32
                             height: 32
                             radius: Theme.cornerRadius
-                            color: helpButtonArea.containsMouse ? Theme.primaryHover : (keyboardController.showKeyboardHints ? Theme.primaryPressed : "transparent")
+                            color: helpButtonArea.containsMouse ? Theme.primaryHover : (modalKeyboardController.showKeyboardHints ? Theme.primaryPressed : "transparent")
                             border.color: Theme.primary
                             border.width: 1
 
@@ -168,7 +165,7 @@ DankModal {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: keyboardController.showKeyboardHints = !keyboardController.showKeyboardHints
+                                onClicked: modalKeyboardController.showKeyboardHints = !modalKeyboardController.showKeyboardHints
                             }
                         }
 
@@ -214,16 +211,14 @@ DankModal {
                         
                         anchors.fill: parent
                         anchors.margins: Theme.spacingS
-                        keyboardController: notificationModal.keyboardController
+                        keyboardController: modalKeyboardController
                         enableKeyboardNavigation: true
                         
                         Component.onCompleted: {
-                            console.log("ListView onCompleted: keyboardController:", !!keyboardController)
                             notificationModal.notificationListRef = notificationList
-                            if (keyboardController) {
-                                console.log("SETTING listView reference")
-                                keyboardController.listView = notificationList
-                                keyboardController.rebuildFlatNavigation()
+                            if (modalKeyboardController) {
+                                modalKeyboardController.listView = notificationList
+                                modalKeyboardController.rebuildFlatNavigation()
                             }
                         }
                     }
@@ -239,7 +234,7 @@ DankModal {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.margins: Theme.spacingL
-                showHints: keyboardController.showKeyboardHints
+                showHints: modalKeyboardController.showKeyboardHints
             }
 
             Connections {
@@ -265,4 +260,5 @@ DankModal {
 
         }
     }
+}
 }

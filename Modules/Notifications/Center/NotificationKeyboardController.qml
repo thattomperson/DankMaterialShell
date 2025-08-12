@@ -33,7 +33,6 @@ QtObject {
         
         var nav = []
         var groups = NotificationService.groupedNotifications
-        console.log("rebuildFlatNavigation: groups.length:", groups.length)
         
         for (var i = 0; i < groups.length; i++) {
             var group = groups[i]
@@ -65,8 +64,6 @@ QtObject {
         }
         
         flatNavigation = nav
-        console.log("rebuildFlatNavigation: nav.length:", nav.length, "selectedFlatIndex:", selectedFlatIndex)
-        // Highlight is now handled by NotificationCard properties
         updateSelectedIndexFromId()
         isRebuilding = false
     }
@@ -80,16 +77,36 @@ QtObject {
             
             if (selectedItemType === "group" && item.type === "group" && item.groupKey === selectedGroupKey) {
                 selectedFlatIndex = i
+                selectionVersion++  // Trigger UI update
                 return
             } else if (selectedItemType === "notification" && item.type === "notification" && String(item.notificationId) === String(selectedNotificationId)) {
                 selectedFlatIndex = i
+                selectionVersion++  // Trigger UI update
                 return
             }
         }
         
-        // If not found, default to first item
-        selectedFlatIndex = 0
-        updateSelectedIdFromIndex()
+        // If not found, try to find the same group but select the group header instead
+        if (selectedItemType === "notification") {
+            for (var j = 0; j < flatNavigation.length; j++) {
+                var groupItem = flatNavigation[j]
+                if (groupItem.type === "group" && groupItem.groupKey === selectedGroupKey) {
+                    selectedFlatIndex = j
+                    selectedItemType = "group"
+                    selectedNotificationId = ""
+                    selectionVersion++  // Trigger UI update
+                    return
+                }
+            }
+        }
+        
+        // If still not found, clamp to valid range and update
+        if (flatNavigation.length > 0) {
+            selectedFlatIndex = Math.min(selectedFlatIndex, flatNavigation.length - 1)
+            selectedFlatIndex = Math.max(selectedFlatIndex, 0)
+            updateSelectedIdFromIndex()
+            selectionVersion++  // Trigger UI update
+        }
     }
     
     function updateSelectedIdFromIndex() {
@@ -116,10 +133,8 @@ QtObject {
         keyboardNavigationActive = true
         if (flatNavigation.length === 0) return
         
-        console.log("selectNext: before -", selectedFlatIndex, "flatNav.length:", flatNavigation.length)
         selectedFlatIndex = Math.min(selectedFlatIndex + 1, flatNavigation.length - 1)
         updateSelectedIdFromIndex()
-        console.log("selectNext: after -", selectedFlatIndex)
         selectionVersion++
         ensureVisible()
     }
@@ -350,20 +365,22 @@ QtObject {
         const currentItem = flatNavigation[selectedFlatIndex]
         
         if (keyboardNavigationActive && currentItem && currentItem.groupIndex >= 0) {
-            // For individual notifications in expanded groups, we still position based on the group
-            // but we need to ensure the notification is visible within that group
+            // Always center the selected item for better visibility
+            // This ensures the selected item stays in view even when new notifications arrive
             if (currentItem.type === "notification") {
-                // Position at the group containing the selected notification
-                listView.positionViewAtIndex(currentItem.groupIndex, ListView.Contain)
+                // For individual notifications, center on the group but bias towards the notification
+                listView.positionViewAtIndex(currentItem.groupIndex, ListView.Center)
             } else {
                 // For group headers, center on the group
                 listView.positionViewAtIndex(currentItem.groupIndex, ListView.Center)
             }
+            
+            // Force immediate update
+            listView.forceLayout()
         }
     }
     
     function handleKey(event) {
-        console.log("HANDLEKEY CALLED:", event.key)
         if (event.key === Qt.Key_Escape) {
             if (keyboardNavigationActive) {
                 keyboardNavigationActive = false
@@ -373,16 +390,15 @@ QtObject {
                 event.accepted = true
             }
         } else if (event.key === Qt.Key_Down || event.key === 16777237) {
-            console.log("DOWN KEY DETECTED")
             if (!keyboardNavigationActive) {
                 keyboardNavigationActive = true
+                rebuildFlatNavigation()  // Ensure we have fresh navigation data
                 selectedFlatIndex = 0
                 updateSelectedIdFromIndex()
                 // Set keyboardActive on listView to show highlight
                 if (listView) {
                     listView.keyboardActive = true
                 }
-                // Initial selection is now handled by NotificationCard properties
                 selectionVersion++
                 ensureVisible()
                 event.accepted = true
@@ -391,16 +407,15 @@ QtObject {
                 event.accepted = true
             }
         } else if (event.key === Qt.Key_Up || event.key === 16777235) {
-            console.log("UP KEY DETECTED")
             if (!keyboardNavigationActive) {
                 keyboardNavigationActive = true
+                rebuildFlatNavigation()  // Ensure we have fresh navigation data
                 selectedFlatIndex = 0
                 updateSelectedIdFromIndex()
                 // Set keyboardActive on listView to show highlight
                 if (listView) {
                     listView.keyboardActive = true
                 }
-                // Initial selection is now handled by NotificationCard properties
                 selectionVersion++
                 ensureVisible()
                 event.accepted = true
@@ -445,12 +460,10 @@ QtObject {
     
     // Get current selection info for UI
     function getCurrentSelection() {
-        if (!keyboardNavigationActive || selectedFlatIndex >= flatNavigation.length) {
-            console.log("getCurrentSelection: inactive or out of bounds")
+        if (!keyboardNavigationActive || selectedFlatIndex < 0 || selectedFlatIndex >= flatNavigation.length) {
             return { type: "", groupIndex: -1, notificationIndex: -1 }
         }
         const result = flatNavigation[selectedFlatIndex] || { type: "", groupIndex: -1, notificationIndex: -1 }
-        console.log("getCurrentSelection:", JSON.stringify(result))
         return result
     }
 }

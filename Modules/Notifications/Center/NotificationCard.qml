@@ -34,18 +34,47 @@ Rectangle {
     return baseHeight
   }
   radius: Theme.cornerRadius
-  color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
-                 Theme.surfaceVariant.b, 0.1)
-  border.color: notificationGroup?.latestNotification?.urgency
-                === NotificationUrgency.Critical ? Qt.rgba(Theme.primary.r,
-                                                           Theme.primary.g,
-                                                           Theme.primary.b,
-                                                           0.3) : Qt.rgba(
-                                                     Theme.outline.r,
-                                                     Theme.outline.g,
-                                                     Theme.outline.b, 0.05)
-  border.width: notificationGroup?.latestNotification?.urgency
-                === NotificationUrgency.Critical ? 2 : 1
+  color: {
+    // Keyboard selection highlighting for collapsed groups
+    if (isGroupSelected && keyboardNavigationActive && !expanded) {
+      return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.15)
+    }
+    // Subtle group highlighting when navigating within expanded group
+    if (keyboardNavigationActive && expanded && selectedNotificationIndex >= 0) {
+      return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08)
+    }
+    return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
+  }
+  border.color: {
+    // Keyboard selection highlighting for collapsed groups
+    if (isGroupSelected && keyboardNavigationActive && !expanded) {
+      return Theme.primary
+    }
+    // Subtle group border when navigating within expanded group
+    if (keyboardNavigationActive && expanded && selectedNotificationIndex >= 0) {
+      return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.4)
+    }
+    // Critical notification styling
+    if (notificationGroup?.latestNotification?.urgency === NotificationUrgency.Critical) {
+      return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3)
+    }
+    return Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+  }
+  border.width: {
+    // Keyboard selection highlighting for collapsed groups
+    if (isGroupSelected && keyboardNavigationActive && !expanded) {
+      return 2
+    }
+    // Subtle group border when navigating within expanded group
+    if (keyboardNavigationActive && expanded && selectedNotificationIndex >= 0) {
+      return 1.5
+    }
+    // Critical notification styling
+    if (notificationGroup?.latestNotification?.urgency === NotificationUrgency.Critical) {
+      return 2
+    }
+    return 1
+  }
   clip: true
 
   Rectangle {
@@ -265,6 +294,19 @@ Rectangle {
     Item {
       width: parent.width
       height: 40
+      
+      // Subtle background for expanded group header when navigating within
+      Rectangle {
+        anchors.fill: parent
+        radius: Theme.cornerRadius / 2
+        color: (keyboardNavigationActive && selectedNotificationIndex >= 0) 
+               ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
+               : "transparent"
+        border.color: (keyboardNavigationActive && selectedNotificationIndex >= 0)
+                      ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3)
+                      : "transparent"
+        border.width: (keyboardNavigationActive && selectedNotificationIndex >= 0) ? 1 : 0
+      }
 
       Row {
         anchors.left: parent.left
@@ -275,7 +317,8 @@ Rectangle {
 
         StyledText {
           text: notificationGroup?.appName || ""
-          color: Theme.surfaceText
+          color: (keyboardNavigationActive && selectedNotificationIndex >= 0) 
+                 ? Theme.primary : Theme.surfaceText
           font.pixelSize: Theme.fontSizeLarge
           font.weight: Font.Bold
           anchors.verticalCenter: parent.verticalCenter

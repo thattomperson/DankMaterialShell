@@ -20,6 +20,19 @@ DankListView {
     model: NotificationService.groupedNotifications
     spacing: Theme.spacingL
     
+    // Timer to periodically ensure selected item stays visible during active keyboard navigation
+    Timer {
+        id: positionPreservationTimer
+        interval: 200
+        running: keyboardController && keyboardController.keyboardNavigationActive
+        repeat: true
+        onTriggered: {
+            if (keyboardController && keyboardController.keyboardNavigationActive) {
+                keyboardController.ensureVisible()
+            }
+        }
+    }
+    
     NotificationEmptyState {
         visible: listView.count === 0
         anchors.centerIn: parent
@@ -28,7 +41,8 @@ DankListView {
     // Override position restoration during keyboard nav
     onModelChanged: {
         if (keyboardController && keyboardController.keyboardNavigationActive) {
-            // Preserve scroll position during model updates
+            // Rebuild navigation and preserve position aggressively
+            keyboardController.rebuildFlatNavigation()
             Qt.callLater(function() {
                 if (keyboardController && keyboardController.keyboardNavigationActive) {
                     keyboardController.ensureVisible()
@@ -42,13 +56,6 @@ DankListView {
         required property int index
         
         readonly property bool isExpanded: NotificationService.expandedGroups[modelData?.key] || false
-        readonly property bool isHighlighted: {
-            if (!keyboardController) return false
-            keyboardController.selectionVersion // Trigger re-evaluation
-            if (!listView.keyboardActive) return false
-            const selection = keyboardController.getCurrentSelection()
-            return selection.type === "group" && selection.groupIndex === index
-        }
         
         width: ListView.view.width
         height: notificationCardWrapper.height
@@ -65,16 +72,15 @@ DankListView {
                 
                 isGroupSelected: {
                     // Force re-evaluation when selection changes
-                    if (!keyboardController) return false
+                    if (!keyboardController || !keyboardController.keyboardNavigationActive) return false
                     keyboardController.selectionVersion // Trigger re-evaluation
                     if (!listView.keyboardActive) return false
                     const selection = keyboardController.getCurrentSelection()
-                    console.log("isGroupSelected check for index", index, "selection:", JSON.stringify(selection))
                     return selection.type === "group" && selection.groupIndex === index
                 }
                 selectedNotificationIndex: {
                     // Force re-evaluation when selection changes
-                    if (!keyboardController) return -1
+                    if (!keyboardController || !keyboardController.keyboardNavigationActive) return -1
                     keyboardController.selectionVersion // Trigger re-evaluation
                     if (!listView.keyboardActive) return -1
                     const selection = keyboardController.getCurrentSelection()
@@ -84,23 +90,6 @@ DankListView {
                 keyboardNavigationActive: listView.keyboardActive
             }
             
-            // Group-level overlay only for collapsed groups when selected
-            Rectangle {
-                anchors.fill: parent
-                visible: {
-                    if (!isHighlighted) return false
-                    if (!keyboardController) return false
-                    const selection = keyboardController.getCurrentSelection()
-                    // Only show group overlay when selecting collapsed groups
-                    return selection.type === "group" && (!modelData || !NotificationService.expandedGroups[modelData.key])
-                }
-                
-                color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
-                border.color: Theme.primary
-                border.width: 2
-                radius: Theme.cornerRadius
-                z: 10
-            }
         }
         
     }
@@ -116,8 +105,32 @@ DankListView {
                 }
                 
                 keyboardController.rebuildFlatNavigation()
+                
+                // If keyboard navigation is active, ensure selected item stays visible
+                if (keyboardController.keyboardNavigationActive) {
+                    Qt.callLater(function() {
+                        keyboardController.ensureVisible()
+                    })
+                }
             }
         }
+        
+        function onExpandedGroupsChanged() {
+            if (keyboardController && keyboardController.keyboardNavigationActive) {
+                Qt.callLater(function() {
+                    keyboardController.ensureVisible()
+                })
+            }
+        }
+        
+        function onExpandedMessagesChanged() {
+            if (keyboardController && keyboardController.keyboardNavigationActive) {
+                Qt.callLater(function() {
+                    keyboardController.ensureVisible()
+                })
+            }
+        }
+        
         target: NotificationService
     }
     
