@@ -23,7 +23,7 @@ Item {
 
   Process {
     id: lockStateChecker
-    command: ["sh", "-c", "loginctl show-session $(loginctl list-sessions --no-legend | awk '{print $1}' | head -1) --property=LockedHint"]
+    command: ["loginctl", "show-session", Quickshell.env("XDG_SESSION_ID"), "--property=LockedHint"]
     running: false
     
     onExited: (exitCode, exitStatus) => {
