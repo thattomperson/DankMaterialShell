@@ -1,211 +1,207 @@
-pragma Singleton
-
-pragma ComponentBehavior
-
 import QtQuick
 import Quickshell
 import Quickshell.Io
+pragma Singleton
+pragma ComponentBehavior
 
 Singleton {
-  id: root
+    id: root
 
-  property bool brightnessAvailable: laptopBacklightAvailable || ddcAvailable
-  property bool laptopBacklightAvailable: false
-  property bool ddcAvailable: false
-  property int brightnessLevel: 50
-  property int maxBrightness: 100
-  property int currentRawBrightness: 0
-  property bool brightnessInitialized: false
+    property bool brightnessAvailable: devices.length > 0
+    property var devices: []
+    property string currentDevice: ""
+    property int brightnessLevel: 50
+    property int maxBrightness: 100
+    property bool brightnessInitialized: false
 
-  signal brightnessChanged
+    signal brightnessChanged()
 
-  function setBrightnessInternal(percentage) {
-    brightnessLevel = Math.max(1, Math.min(100, percentage))
-
-    if (laptopBacklightAvailable) {
-      laptopBrightnessProcess.command = ["brightnessctl", "set", brightnessLevel + "%"]
-      laptopBrightnessProcess.running = true
-    } else if (ddcAvailable) {
-
-      Quickshell.execDetached(
-            ["ddcutil", "setvcp", "10", brightnessLevel.toString()])
+    function setBrightnessInternal(percentage, device) {
+        const clampedValue = Math.max(1, Math.min(100, percentage));
+        brightnessLevel = clampedValue;
+        if (device)
+            brightnessSetProcess.command = ["brightnessctl", "-d", device, "set", clampedValue + "%"];
+        else
+            brightnessSetProcess.command = ["brightnessctl", "set", clampedValue + "%"];
+        brightnessSetProcess.running = true;
     }
-  }
 
-  function setBrightness(percentage) {
-    setBrightnessInternal(percentage)
-    brightnessChanged()
-  }
-
-  Component.onCompleted: {
-    ddcAvailabilityChecker.running = true
-    laptopBacklightChecker.running = true
-  }
-
-  onLaptopBacklightAvailableChanged: {
-    if (laptopBacklightAvailable && !brightnessInitialized) {
-      laptopBrightnessInitProcess.running = true
+    function setBrightness(percentage, device) {
+        setBrightnessInternal(percentage, device);
+        brightnessChanged();
     }
-  }
 
-  onDdcAvailableChanged: {
-    if (ddcAvailable && !laptopBacklightAvailable && !brightnessInitialized) {
-      ddcBrightnessInitProcess.running = true
+    function setCurrentDevice(deviceName) {
+        if (currentDevice === deviceName)
+            return ;
+
+        currentDevice = deviceName;
+        brightnessGetProcess.command = ["brightnessctl", "-m", "-d", deviceName, "get"];
+        brightnessGetProcess.running = true;
     }
-  }
 
-  Process {
-    id: ddcAvailabilityChecker
-    command: ["which", "ddcutil"]
-    onExited: function (exitCode) {
-      ddcAvailable = (exitCode === 0)
+    function refreshDevices() {
+        deviceListProcess.running = true;
     }
-  }
 
-  Process {
-    id: laptopBacklightChecker
-    command: ["brightnessctl", "--list"]
-    onExited: function (exitCode) {
-      laptopBacklightAvailable = (exitCode === 0)
+    Component.onCompleted: {
+        refreshDevices();
     }
-  }
 
-  Process {
-    id: laptopBrightnessProcess
-    running: false
+    Process {
+        id: deviceListProcess
 
-    onExited: function (exitCode) {
-      if (exitCode !== 0) {
-
-      }
-    }
-  }
-
-  Process {
-    id: laptopBrightnessInitProcess
-    command: ["brightnessctl", "get"]
-    running: false
-
-    stdout: StdioCollector {
-      onStreamFinished: {
-        if (text.trim()) {
-          currentRawBrightness = parseInt(text.trim())
-          laptopMaxBrightnessProcess.running = true
+        command: ["brightnessctl", "-m", "-l"]
+        onExited: function(exitCode) {
+            if (exitCode !== 0) {
+                console.warn("BrightnessService: Failed to list devices:", exitCode);
+                brightnessAvailable = false;
+            }
         }
-      }
-    }
 
-    onExited: function (exitCode) {
-      if (exitCode !== 0) {
-        console.warn("BrightnessService: Failed to read current brightness:",
-                     exitCode)
-      }
-    }
-  }
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (!text.trim()) {
+                    console.warn("BrightnessService: No devices found");
+                    return ;
+                }
+                const lines = text.trim().split("\n");
+                const newDevices = [];
+                for (const line of lines) {
+                    const parts = line.split(",");
+                    if (parts.length >= 5)
+                        newDevices.push({
+                        "name": parts[0],
+                        "class": parts[1],
+                        "current": parseInt(parts[2]),
+                        "percentage": parseInt(parts[3]),
+                        "max": parseInt(parts[4])
+                    });
 
-  Process {
-    id: laptopMaxBrightnessProcess
-    command: ["brightnessctl", "max"]
-    running: false
+                }
+                newDevices.sort((a, b) => {
+                    if (a.class === "backlight" && b.class !== "backlight")
+                        return -1;
 
-    stdout: StdioCollector {
-      onStreamFinished: {
-        if (text.trim()) {
-          maxBrightness = parseInt(text.trim())
-          brightnessLevel = Math.round(
-            (currentRawBrightness / maxBrightness) * 100)
-          brightnessInitialized = true
-          console.log("BrightnessService: Initialized with brightness level:",
-                      brightnessLevel + "%")
+                    if (a.class !== "backlight" && b.class === "backlight")
+                        return 1;
+
+                    return a.name.localeCompare(b.name);
+                });
+                devices = newDevices;
+                if (devices.length > 0 && !currentDevice)
+                    setCurrentDevice(devices[0].name);
+
+            }
         }
-      }
+
     }
 
-    onExited: function (exitCode) {
-      if (exitCode !== 0) {
-        console.warn("BrightnessService: Failed to read max brightness:",
-                     exitCode)
-      }
-    }
-  }
+    Process {
+        id: brightnessSetProcess
 
-  Process {
-    id: ddcBrightnessInitProcess
-    command: ["ddcutil", "getvcp", "10", "--brief"]
-    running: false
+        running: false
+        onExited: function(exitCode) {
+            if (exitCode !== 0)
+                console.warn("BrightnessService: Failed to set brightness:", exitCode);
 
-    stdout: StdioCollector {
-      onStreamFinished: {
-        if (text.trim()) {
-          const parts = text.trim().split(" ")
-          if (parts.length >= 5) {
-            const current = parseInt(parts[3]) || 50
-            const max = parseInt(parts[4]) || 100
-            brightnessLevel = Math.round((current / max) * 100)
-            brightnessInitialized = true
-          }
         }
-      }
     }
 
-    onExited: function (exitCode) {
-      if (exitCode !== 0) {
-        if (!laptopBacklightAvailable) {
-          console.warn("BrightnessService: DDC brightness read failed:",
-                       exitCode)
+    Process {
+        id: brightnessGetProcess
+
+        running: false
+        onExited: function(exitCode) {
+            if (exitCode !== 0)
+                console.warn("BrightnessService: Failed to get brightness:", exitCode);
+
         }
-      }
-    }
-  }
 
-  // IPC Handler for external control
-  IpcHandler {
-    target: "brightness"
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (!text.trim())
+                    return ;
 
-    function set(percentage: string): string {
-      if (!root.brightnessAvailable) {
-        return "Brightness control not available"
-      }
+                const parts = text.trim().split(",");
+                if (parts.length >= 5) {
+                    const current = parseInt(parts[2]);
+                    const max = parseInt(parts[4]);
+                    maxBrightness = max;
+                    brightnessLevel = Math.round((current / max) * 100);
+                    brightnessInitialized = true;
+                    console.log("BrightnessService: Device", currentDevice, "brightness:", brightnessLevel + "%");
+                }
+            }
+        }
 
-      const value = parseInt(percentage)
-      const clampedValue = Math.max(1, Math.min(100, value))
-      root.setBrightness(clampedValue)
-      return "Brightness set to " + clampedValue + "%"
-    }
-
-    function increment(step: string): string {
-      if (!root.brightnessAvailable) {
-        return "Brightness control not available"
-      }
-
-      const currentLevel = root.brightnessLevel
-      const newLevel = Math.max(1,
-                                Math.min(100,
-                                         currentLevel + parseInt(step || "10")))
-      root.setBrightness(newLevel)
-      return "Brightness increased to " + newLevel + "%"
     }
 
-    function decrement(step: string): string {
-      if (!root.brightnessAvailable) {
-        return "Brightness control not available"
-      }
+    // IPC Handler for external control
+    IpcHandler {
+        function set(percentage: string, device: string) : string {
+            if (!root.brightnessAvailable)
+                return "Brightness control not available";
 
-      const currentLevel = root.brightnessLevel
-      const newLevel = Math.max(1,
-                                Math.min(100,
-                                         currentLevel - parseInt(step || "10")))
-      root.setBrightness(newLevel)
-      return "Brightness decreased to " + newLevel + "%"
+            const value = parseInt(percentage);
+            const clampedValue = Math.max(1, Math.min(100, value));
+            const targetDevice = device || "";
+            root.setBrightness(clampedValue, targetDevice);
+            if (targetDevice)
+                return "Brightness set to " + clampedValue + "% on " + targetDevice;
+            else
+                return "Brightness set to " + clampedValue + "%";
+        }
+
+        function increment(step: string, device: string) : string {
+            if (!root.brightnessAvailable)
+                return "Brightness control not available";
+
+            const currentLevel = root.brightnessLevel;
+            const stepValue = parseInt(step || "10");
+            const newLevel = Math.max(1, Math.min(100, currentLevel + stepValue));
+            const targetDevice = device || "";
+            root.setBrightness(newLevel, targetDevice);
+            if (targetDevice)
+                return "Brightness increased to " + newLevel + "% on " + targetDevice;
+            else
+                return "Brightness increased to " + newLevel + "%";
+        }
+
+        function decrement(step: string, device: string) : string {
+            if (!root.brightnessAvailable)
+                return "Brightness control not available";
+
+            const currentLevel = root.brightnessLevel;
+            const stepValue = parseInt(step || "10");
+            const newLevel = Math.max(1, Math.min(100, currentLevel - stepValue));
+            const targetDevice = device || "";
+            root.setBrightness(newLevel, targetDevice);
+            if (targetDevice)
+                return "Brightness decreased to " + newLevel + "% on " + targetDevice;
+            else
+                return "Brightness decreased to " + newLevel + "%";
+        }
+
+        function status() : string {
+            if (!root.brightnessAvailable)
+                return "Brightness control not available";
+
+            return "Device: " + root.currentDevice + " - Brightness: " + root.brightnessLevel + "%";
+        }
+
+        function list() : string {
+            if (!root.brightnessAvailable)
+                return "No brightness devices available";
+
+            let result = "Available devices:\n";
+            for (const device of root.devices) {
+                result += device.name + " (" + device.class + ")\n";
+            }
+            return result;
+        }
+
+        target: "brightness"
     }
 
-    function status(): string {
-      if (!root.brightnessAvailable) {
-        return "Brightness control not available"
-      }
-
-      return "Brightness: " + root.brightnessLevel + "% ("
-          + (root.laptopBacklightAvailable ? "laptop backlight" : "DDC") + ")"
-    }
-  }
 }

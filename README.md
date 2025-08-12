@@ -164,11 +164,11 @@ make && sudo make install
 
 ```bash
 # Arch Linux
-pacman -S cava wl-clipboard cliphist ddcutil brightnessctl
+pacman -S cava wl-clipboard cliphist brightnessctl
 paru -S matugen dgop-git
 
 # Fedora
-sudo dnf install cava wl-clipboard ddcutil brightnessctl
+sudo dnf install cava wl-clipboard brightnessctl
 sudo dnf copr enable wef/cliphist && sudo dnf install cliphist
 sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 ```
@@ -177,8 +177,7 @@ sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 
 - `dgop-git`: Ability to have system resource widgets, process list modal, and temperature monitoring.
 - `matugen`: Wallpaper-based dynamic theming
-- `ddcutil`: External monitor brightness control
-- `brightnessctl`: Laptop display brightness
+- `brightnessctl`: Backlight and LED brightness control
 - `wl-clipboard`: Required for copying various elements to clipboard.
 - `cava`: Audio visualizer
 - `cliphist`: Clipboard history
@@ -239,10 +238,11 @@ binds {
       spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "audio" "micmute";
    }
    XF86MonBrightnessUp allow-when-locked=true {
-      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "brightness" "increment" "5";
+      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "brightness" "increment" "5" "";
    }
+   // You can override the default device for e.g. keyboards by adding the device name to the last param
    XF86MonBrightnessDown allow-when-locked=true {
-      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "brightness" "decrement" "5";
+      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "brightness" "decrement" "5" "";
    }
 }
 ```
