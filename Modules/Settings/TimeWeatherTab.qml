@@ -98,7 +98,7 @@ Item {
                     DankDropdown {
                         width: parent.width
                         height: 50
-                        text: "Format"
+                        text: "Top Bar Format"
                         description: "Preview: " + Qt.formatDate(new Date(), SettingsData.clockDateFormat)
                         currentValue: {
                             // Find matching preset or show "Custom"
@@ -153,16 +153,88 @@ Item {
                         }
                     }
 
+                    DankDropdown {
+                        width: parent.width
+                        height: 50
+                        text: "Lock Screen Format"
+                        description: "Preview: " + Qt.formatDate(new Date(), SettingsData.lockDateFormat)
+                        currentValue: {
+                            // Find matching preset or show "Custom"
+                            const presets = [{
+                                "format": "ddd d",
+                                "label": "Day Date"
+                            }, {
+                                "format": "ddd MMM d",
+                                "label": "Day Month Date"
+                            }, {
+                                "format": "MMM d",
+                                "label": "Month Date"
+                            }, {
+                                "format": "M/d",
+                                "label": "Numeric (M/D)"
+                            }, {
+                                "format": "d/M",
+                                "label": "Numeric (D/M)"
+                            }, {
+                                "format": "ddd d MMM yyyy",
+                                "label": "Full with Year"
+                            }, {
+                                "format": "yyyy-MM-dd",
+                                "label": "ISO Date"
+                            }, {
+                                "format": "dddd, MMMM d",
+                                "label": "Full Day & Month"
+                            }];
+                            const match = presets.find((p) => {
+                                return p.format === SettingsData.lockDateFormat;
+                            });
+                            return match ? match.label : "Custom: " + SettingsData.lockDateFormat;
+                        }
+                        options: ["Day Date", "Day Month Date", "Month Date", "Numeric (M/D)", "Numeric (D/M)", "Full with Year", "ISO Date", "Full Day & Month", "Custom..."]
+                        onValueChanged: (value) => {
+                            const formatMap = {
+                                "Day Date": "ddd d",
+                                "Day Month Date": "ddd MMM d",
+                                "Month Date": "MMM d",
+                                "Numeric (M/D)": "M/d",
+                                "Numeric (D/M)": "d/M",
+                                "Full with Year": "ddd d MMM yyyy",
+                                "ISO Date": "yyyy-MM-dd",
+                                "Full Day & Month": "dddd, MMMM d"
+                            };
+                            if (value === "Custom...") {
+                                customLockFormatInput.visible = true;
+                            } else {
+                                customLockFormatInput.visible = false;
+                                SettingsData.setLockDateFormat(formatMap[value]);
+                            }
+                        }
+                    }
+
                     DankTextField {
                         id: customFormatInput
 
                         width: parent.width
                         visible: false
-                        placeholderText: "Enter custom format (e.g., ddd MMM d)"
+                        placeholderText: "Enter custom top bar format (e.g., ddd MMM d)"
                         text: SettingsData.clockDateFormat
                         onTextChanged: {
                             if (visible && text)
                                 SettingsData.setClockDateFormat(text);
+
+                        }
+                    }
+
+                    DankTextField {
+                        id: customLockFormatInput
+
+                        width: parent.width
+                        visible: false
+                        placeholderText: "Enter custom lock screen format (e.g., dddd, MMMM d)"
+                        text: SettingsData.lockDateFormat
+                        onTextChanged: {
+                            if (visible && text)
+                                SettingsData.setLockDateFormat(text);
 
                         }
                     }
