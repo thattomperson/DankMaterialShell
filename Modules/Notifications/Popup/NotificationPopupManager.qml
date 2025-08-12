@@ -172,16 +172,44 @@ QtObject {
     if (activeWindows.length <= maxTargetNotifications + 1)
       return
 
-    // Find the bottom-most non-critical notification to remove
-    const candidates = activeWindows.filter(p => {
-      return p.notificationData && p.notificationData.notification && 
-             p.notificationData.notification.urgency !== 2 // NotificationUrgency.Critical = 2
-    }).sort((a, b) => b.screenY - a.screenY) // Sort by Y position, highest first
+    const expiredCandidates = activeWindows.filter(p => {
+      if (!p.notificationData || !p.notificationData.notification) return false
+      if (p.notificationData.notification.urgency === 2) return false
+      
+      const timeoutMs = p.notificationData.timer ? p.notificationData.timer.interval : 5000
+      if (timeoutMs === 0) return false
+      
+      return !p.notificationData.timer.running
+    }).sort((a, b) => b.screenY - a.screenY)
     
-    const toRemove = candidates[0] // Get the bottom-most non-critical notification
-    if (toRemove && !toRemove.exiting) {
-      toRemove.notificationData.removedByLimit = true
-      toRemove.notificationData.popup = false
+    if (expiredCandidates.length > 0) {
+      const toRemove = expiredCandidates[0]
+      if (toRemove && !toRemove.exiting) {
+        toRemove.notificationData.removedByLimit = true
+        toRemove.notificationData.popup = false
+      }
+      return
+    }
+
+    const timeoutCandidates = activeWindows.filter(p => {
+      if (!p.notificationData || !p.notificationData.notification) return false
+      if (p.notificationData.notification.urgency === 2) return false
+      
+      const timeoutMs = p.notificationData.timer ? p.notificationData.timer.interval : 5000
+      return timeoutMs > 0
+    }).sort((a, b) => {
+      const aTimeout = a.notificationData.timer ? a.notificationData.timer.interval : 5000
+      const bTimeout = b.notificationData.timer ? b.notificationData.timer.interval : 5000
+      if (aTimeout !== bTimeout) return aTimeout - bTimeout
+      return b.screenY - a.screenY
+    })
+    
+    if (timeoutCandidates.length > 0) {
+      const toRemove = timeoutCandidates[0]
+      if (toRemove && !toRemove.exiting) {
+        toRemove.notificationData.removedByLimit = true
+        toRemove.notificationData.popup = false
+      }
     }
   }
 

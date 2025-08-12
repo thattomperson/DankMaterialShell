@@ -34,25 +34,40 @@ Rectangle {
     return baseHeight
   }
   radius: Theme.cornerRadius
-  color: {
-    // Keyboard selection highlighting for collapsed groups
-    if (isGroupSelected && keyboardNavigationActive && !expanded) {
-      return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.15)
+  
+  Behavior on color {
+    ColorAnimation {
+      duration: Theme.shortDuration
+      easing.type: Theme.standardEasing
     }
-    // Subtle group highlighting when navigating within expanded group
+  }
+  
+  Behavior on border.color {
+    ColorAnimation {
+      duration: Theme.shortDuration
+      easing.type: Theme.standardEasing
+    }
+  }
+  
+  color: {
+    // Keyboard selection highlighting for groups (both collapsed and expanded)
+    if (isGroupSelected && keyboardNavigationActive) {
+      return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2)
+    }
+    // Very subtle group highlighting when navigating within expanded group
     if (keyboardNavigationActive && expanded && selectedNotificationIndex >= 0) {
-      return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08)
+      return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.12)
     }
     return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.1)
   }
   border.color: {
-    // Keyboard selection highlighting for collapsed groups
-    if (isGroupSelected && keyboardNavigationActive && !expanded) {
-      return Theme.primary
+    // Keyboard selection highlighting for groups (both collapsed and expanded)
+    if (isGroupSelected && keyboardNavigationActive) {
+      return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.5)
     }
     // Subtle group border when navigating within expanded group
     if (keyboardNavigationActive && expanded && selectedNotificationIndex >= 0) {
-      return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.4)
+      return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
     }
     // Critical notification styling
     if (notificationGroup?.latestNotification?.urgency === NotificationUrgency.Critical) {
@@ -61,13 +76,13 @@ Rectangle {
     return Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
   }
   border.width: {
-    // Keyboard selection highlighting for collapsed groups
-    if (isGroupSelected && keyboardNavigationActive && !expanded) {
-      return 2
+    // Keyboard selection highlighting for groups (both collapsed and expanded)
+    if (isGroupSelected && keyboardNavigationActive) {
+      return 1.5
     }
     // Subtle group border when navigating within expanded group
     if (keyboardNavigationActive && expanded && selectedNotificationIndex >= 0) {
-      return 1.5
+      return 1
     }
     // Critical notification styling
     if (notificationGroup?.latestNotification?.urgency === NotificationUrgency.Critical) {
@@ -295,18 +310,6 @@ Rectangle {
       width: parent.width
       height: 40
       
-      // Subtle background for expanded group header when navigating within
-      Rectangle {
-        anchors.fill: parent
-        radius: Theme.cornerRadius / 2
-        color: (keyboardNavigationActive && selectedNotificationIndex >= 0) 
-               ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
-               : "transparent"
-        border.color: (keyboardNavigationActive && selectedNotificationIndex >= 0)
-                      ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.3)
-                      : "transparent"
-        border.width: (keyboardNavigationActive && selectedNotificationIndex >= 0) ? 1 : 0
-      }
 
       Row {
         anchors.left: parent.left
@@ -317,8 +320,7 @@ Rectangle {
 
         StyledText {
           text: notificationGroup?.appName || ""
-          color: (keyboardNavigationActive && selectedNotificationIndex >= 0) 
-                 ? Theme.primary : Theme.surfaceText
+          color: Theme.surfaceText
           font.pixelSize: Theme.fontSizeLarge
           font.weight: Font.Bold
           anchors.verticalCenter: parent.verticalCenter
@@ -374,9 +376,23 @@ Rectangle {
             return baseHeight
           }
           radius: Theme.cornerRadius
-          color: isSelected ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.15) : "transparent"
-          border.color: isSelected ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
-          border.width: isSelected ? 2 : 1
+          color: isSelected ? Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.25) : "transparent"
+          border.color: isSelected ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.4) : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+          border.width: isSelected ? 1 : 1
+          
+          Behavior on color {
+            ColorAnimation {
+              duration: Theme.shortDuration
+              easing.type: Theme.standardEasing
+            }
+          }
+          
+          Behavior on border.color {
+            ColorAnimation {
+              duration: Theme.shortDuration
+              easing.type: Theme.standardEasing
+            }
+          }
 
           Behavior on height {
             enabled: false
@@ -548,7 +564,7 @@ Rectangle {
                       StyledText {
                         id: actionText
                         text: {
-                          const baseText = modelData.text || ""
+                          const baseText = modelData.text || "View"
                           if (keyboardNavigationActive && (isGroupSelected || selectedNotificationIndex >= 0)) {
                             return `${baseText} (${index + 1})`
                           }
@@ -638,7 +654,7 @@ Rectangle {
         StyledText {
           id: actionText
           text: {
-            const baseText = modelData.text || ""
+            const baseText = modelData.text || "View"
             if (keyboardNavigationActive && isGroupSelected) {
               return `${baseText} (${index + 1})`
             }

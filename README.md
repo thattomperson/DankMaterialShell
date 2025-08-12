@@ -217,6 +217,9 @@ binds {
    Mod+M hotkey-overlay-title="Task Manager" {
       spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "processlist" "toggle";
    }
+   Mod+N hotkey-overlay-title="Notification Center" {
+      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "notifications" "toggle";
+   }
    Mod+Comma hotkey-overlay-title="Settings" {
       spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "settings" "toggle";
    }

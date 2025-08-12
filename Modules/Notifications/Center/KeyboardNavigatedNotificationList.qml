@@ -7,12 +7,19 @@ DankListView {
     id: listView
     
     property var keyboardController: null
-    property bool enableKeyboardNavigation: false
-    property int currentSelectedGroupIndex: -1
     property bool keyboardActive: false
+    property bool autoScrollDisabled: false
     
+    onIsUserScrollingChanged: {
+        if (isUserScrolling && keyboardController && keyboardController.keyboardNavigationActive) {
+            autoScrollDisabled = true
+        }
+    }
     
-    // Compatibility aliases for NotificationList
+    function enableAutoScroll() {
+        autoScrollDisabled = false
+    }
+    
     property alias count: listView.count
     property alias listContentHeight: listView.contentHeight
     
@@ -20,14 +27,13 @@ DankListView {
     model: NotificationService.groupedNotifications
     spacing: Theme.spacingL
     
-    // Timer to periodically ensure selected item stays visible during active keyboard navigation
     Timer {
         id: positionPreservationTimer
         interval: 200
-        running: keyboardController && keyboardController.keyboardNavigationActive
+        running: keyboardController && keyboardController.keyboardNavigationActive && !autoScrollDisabled
         repeat: true
         onTriggered: {
-            if (keyboardController && keyboardController.keyboardNavigationActive) {
+            if (keyboardController && keyboardController.keyboardNavigationActive && !autoScrollDisabled) {
                 keyboardController.ensureVisible()
             }
         }
@@ -38,13 +44,11 @@ DankListView {
         anchors.centerIn: parent
     }
     
-    // Override position restoration during keyboard nav
     onModelChanged: {
         if (keyboardController && keyboardController.keyboardNavigationActive) {
-            // Rebuild navigation and preserve position aggressively
             keyboardController.rebuildFlatNavigation()
             Qt.callLater(function() {
-                if (keyboardController && keyboardController.keyboardNavigationActive) {
+                if (keyboardController && keyboardController.keyboardNavigationActive && !autoScrollDisabled) {
                     keyboardController.ensureVisible()
                 }
             })
@@ -71,17 +75,15 @@ DankListView {
                 notificationGroup: modelData
                 
                 isGroupSelected: {
-                    // Force re-evaluation when selection changes
                     if (!keyboardController || !keyboardController.keyboardNavigationActive) return false
-                    keyboardController.selectionVersion // Trigger re-evaluation
+                    keyboardController.selectionVersion
                     if (!listView.keyboardActive) return false
                     const selection = keyboardController.getCurrentSelection()
                     return selection.type === "group" && selection.groupIndex === index
                 }
                 selectedNotificationIndex: {
-                    // Force re-evaluation when selection changes
                     if (!keyboardController || !keyboardController.keyboardNavigationActive) return -1
-                    keyboardController.selectionVersion // Trigger re-evaluation
+                    keyboardController.selectionVersion
                     if (!listView.keyboardActive) return -1
                     const selection = keyboardController.getCurrentSelection()
                     return (selection.type === "notification" && selection.groupIndex === index) 
@@ -95,7 +97,6 @@ DankListView {
     }
     
 
-    // Connect to notification changes and rebuild navigation
     Connections {
         function onGroupedNotificationsChanged() {
             if (keyboardController) {
@@ -106,10 +107,11 @@ DankListView {
                 
                 keyboardController.rebuildFlatNavigation()
                 
-                // If keyboard navigation is active, ensure selected item stays visible
                 if (keyboardController.keyboardNavigationActive) {
                     Qt.callLater(function() {
-                        keyboardController.ensureVisible()
+                        if (!autoScrollDisabled) {
+                            keyboardController.ensureVisible()
+                        }
                     })
                 }
             }
@@ -118,7 +120,9 @@ DankListView {
         function onExpandedGroupsChanged() {
             if (keyboardController && keyboardController.keyboardNavigationActive) {
                 Qt.callLater(function() {
-                    keyboardController.ensureVisible()
+                    if (!autoScrollDisabled) {
+                        keyboardController.ensureVisible()
+                    }
                 })
             }
         }
@@ -126,7 +130,9 @@ DankListView {
         function onExpandedMessagesChanged() {
             if (keyboardController && keyboardController.keyboardNavigationActive) {
                 Qt.callLater(function() {
-                    keyboardController.ensureVisible()
+                    if (!autoScrollDisabled) {
+                        keyboardController.ensureVisible()
+                    }
                 })
             }
         }

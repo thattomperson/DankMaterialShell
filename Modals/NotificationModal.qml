@@ -12,7 +12,6 @@ import qs.Widgets
 Item {
     id: root
     
-    // Keyboard controller defined outside modal to ensure proper creation order
     NotificationKeyboardController {
         id: modalKeyboardController
         listView: null
@@ -34,7 +33,6 @@ Item {
         notificationModalOpen = true
         modalKeyboardController.reset()
         
-        // Set the listView reference when modal is shown
         if (modalKeyboardController && notificationListRef) {
             modalKeyboardController.listView = notificationListRef
             modalKeyboardController.rebuildFlatNavigation()
@@ -111,123 +109,36 @@ Item {
             Column {
                 anchors.fill: parent
                 anchors.margins: Theme.spacingL
-                spacing: Theme.spacingL
+                spacing: Theme.spacingM
 
-                Rectangle {
-                    width: parent.width
-                    height: 48
-                    color: "transparent"
-
-                    Row {
-                        anchors.left: parent.left
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: Theme.spacingM
-
-                        DankIcon {
-                            name: "notifications"
-                            size: Theme.iconSize
-                            color: Theme.surfaceText
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        StyledText {
-                            text: "Notification Center"
-                            font.pixelSize: Theme.fontSizeXLarge
-                            font.weight: Font.Bold
-                            color: Theme.surfaceText
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                    }
-
-                    Row {
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: Theme.spacingS
-
-                        Rectangle {
-                            width: 32
-                            height: 32
-                            radius: Theme.cornerRadius
-                            color: helpButtonArea.containsMouse ? Theme.primaryHover : (modalKeyboardController.showKeyboardHints ? Theme.primaryPressed : "transparent")
-                            border.color: Theme.primary
-                            border.width: 1
-
-                            StyledText {
-                                text: "?"
-                                font.pixelSize: Theme.fontSizeMedium
-                                font.weight: Font.Bold
-                                color: Theme.primary
-                                anchors.centerIn: parent
-                            }
-
-                            MouseArea {
-                                id: helpButtonArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: modalKeyboardController.showKeyboardHints = !modalKeyboardController.showKeyboardHints
-                            }
-                        }
-
-                        Rectangle {
-                            width: clearAllText.implicitWidth + Theme.spacingM
-                            height: 32
-                            radius: Theme.cornerRadius
-                            color: clearAllArea.containsMouse ? Theme.primaryHover : "transparent"
-                            border.color: Theme.primary
-                            border.width: 1
-                            visible: NotificationService.groupedNotifications.length > 0
-
-                            StyledText {
-                                id: clearAllText
-                                text: "Clear All"
-                                font.pixelSize: Theme.fontSizeSmall
-                                color: Theme.primary
-                                anchors.centerIn: parent
-                            }
-
-                            MouseArea {
-                                id: clearAllArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: NotificationService.clearAllNotifications()
-                            }
-                        }
-                    }
+                NotificationHeader {
+                    id: notificationHeader
+                    keyboardController: modalKeyboardController
+                }
+                
+                NotificationSettings {
+                    id: notificationSettings
+                    expanded: notificationHeader.showSettings
                 }
 
-                Rectangle {
+                KeyboardNavigatedNotificationList {
+                    id: notificationList
+                    
                     width: parent.width
                     height: parent.height - y
-                    radius: Theme.cornerRadius
-                    color: Theme.surfaceLight
-                    border.color: Theme.outlineLight
-                    border.width: 1
-                    clip: false
-
-                    KeyboardNavigatedNotificationList {
-                        id: notificationList
-                        
-                        anchors.fill: parent
-                        anchors.margins: Theme.spacingS
-                        keyboardController: modalKeyboardController
-                        enableKeyboardNavigation: true
-                        
-                        Component.onCompleted: {
-                            notificationModal.notificationListRef = notificationList
-                            if (modalKeyboardController) {
-                                modalKeyboardController.listView = notificationList
-                                modalKeyboardController.rebuildFlatNavigation()
-                            }
+                    keyboardController: modalKeyboardController
+                    
+                    Component.onCompleted: {
+                        notificationModal.notificationListRef = notificationList
+                        if (modalKeyboardController) {
+                            modalKeyboardController.listView = notificationList
+                            modalKeyboardController.rebuildFlatNavigation()
                         }
                     }
-
                 }
 
             }
 
-            // Keyboard hints overlay
             NotificationKeyboardHints {
                 id: keyboardHints
                 anchors.bottom: parent.bottom

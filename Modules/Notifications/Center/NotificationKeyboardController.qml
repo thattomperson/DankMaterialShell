@@ -5,29 +5,23 @@ import qs.Services
 QtObject {
     id: controller
     
-    // Properties that need to be set by parent
     property var listView: null
     property bool isOpen: false
-    property var onClose: null  // Function to call when closing
+    property var onClose: null
     
-    // Property that changes to trigger binding updates
     property int selectionVersion: 0
     
-    // Keyboard navigation state
     property bool keyboardNavigationActive: false
     property int selectedFlatIndex: 0
     property var flatNavigation: []
-    property int flatNavigationVersion: 0  // For triggering bindings
     property bool showKeyboardHints: false
     
-    // Track selection by ID for position preservation
     property string selectedNotificationId: ""
     property string selectedGroupKey: ""
     property string selectedItemType: ""
     property bool isTogglingGroup: false
     property bool isRebuilding: false
     
-    // Build flat navigation array
     function rebuildFlatNavigation() {
         isRebuilding = true
         
@@ -133,6 +127,11 @@ QtObject {
         keyboardNavigationActive = true
         if (flatNavigation.length === 0) return
         
+        // Re-enable auto-scrolling when arrow keys are used
+        if (listView && listView.enableAutoScroll) {
+            listView.enableAutoScroll()
+        }
+        
         selectedFlatIndex = Math.min(selectedFlatIndex + 1, flatNavigation.length - 1)
         updateSelectedIdFromIndex()
         selectionVersion++
@@ -142,6 +141,11 @@ QtObject {
     function selectPrevious() {
         keyboardNavigationActive = true
         if (flatNavigation.length === 0) return
+        
+        // Re-enable auto-scrolling when arrow keys are used
+        if (listView && listView.enableAutoScroll) {
+            listView.enableAutoScroll()
+        }
         
         selectedFlatIndex = Math.max(selectedFlatIndex - 1, 0)
         updateSelectedIdFromIndex()
@@ -200,18 +204,14 @@ QtObject {
         if (!group) return
         
         if (currentItem.type === "group") {
-            // On group: expand/collapse the group (only if it has > 1 notification)
             const notificationCount = group.notifications ? group.notifications.length : 0
             if (notificationCount >= 2) {
                 toggleGroupExpanded()
-            }
-        } else if (currentItem.type === "notification") {
-            // On individual notification: execute first action if available
-            const notification = group.notifications[currentItem.notificationIndex]
-            const actions = notification?.actions || []
-            if (actions.length > 0) {
+            } else {
                 executeAction(0)
             }
+        } else if (currentItem.type === "notification") {
+            executeAction(0)
         }
     }
     
@@ -313,9 +313,18 @@ QtObject {
                     nextTargetGroupKey = groups[currentItem.groupIndex - 1].key
                 }
             } else if (isLastNotificationInList) {
-                nextTargetType = "group"
-                nextTargetGroupKey = currentGroupKey
-                nextTargetNotificationIndex = -1
+                // If group still has notifications after this one is removed, select the new last one
+                if (group.count > 1) {
+                    nextTargetType = "notification"
+                    nextTargetGroupKey = currentGroupKey
+                    // After removing current notification, the new last index will be count-2
+                    nextTargetNotificationIndex = group.count - 2
+                } else {
+                    // Group will be empty or collapsed, select the group header
+                    nextTargetType = "group"
+                    nextTargetGroupKey = currentGroupKey
+                    nextTargetNotificationIndex = -1
+                }
             } else {
                 nextTargetType = "notification"
                 nextTargetGroupKey = currentGroupKey

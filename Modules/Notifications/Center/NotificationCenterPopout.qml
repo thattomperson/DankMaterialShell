@@ -18,15 +18,13 @@ PanelWindow {
   property real triggerWidth: 40
   property string triggerSection: "right"
   
-  // Keyboard navigation controller
   NotificationKeyboardController {
     id: keyboardController
-    listView: null  // Set later to avoid binding loop
+    listView: null
     isOpen: notificationHistoryVisible
     onClose: function() { notificationHistoryVisible = false }
   }
   
-  // Keyboard hints overlay  
   NotificationKeyboardHints {
     id: keyboardHints
     anchors.bottom: mainRect.bottom
@@ -72,18 +70,6 @@ PanelWindow {
   Rectangle {
     id: mainRect
 
-    function calculateHeight() {
-      let baseHeight = Theme.spacingL * 2
-      baseHeight += notificationHeader.height
-      baseHeight += Theme.spacingM
-      let listHeight = notificationList.listContentHeight
-      if (NotificationService.groupedNotifications.length === 0)
-        listHeight = 200
-
-      baseHeight += Math.min(listHeight, 600)
-      return Math.max(300, baseHeight)
-    }
-
     readonly property real popupWidth: 400
     readonly property real calculatedX: {
       var centerX = root.triggerX + (root.triggerWidth / 2) - (popupWidth / 2)
@@ -105,7 +91,19 @@ PanelWindow {
     }
 
     width: popupWidth
-    height: calculateHeight()
+    height: {
+      let baseHeight = Theme.spacingL * 2
+      baseHeight += notificationHeader.height
+      // Use the final content height when expanded, not the animating height
+      baseHeight += (notificationSettings.expanded ? notificationSettings.contentHeight : 0)
+      baseHeight += Theme.spacingM * 2
+      let listHeight = notificationList.listContentHeight
+      if (NotificationService.groupedNotifications.length === 0)
+        listHeight = 200
+
+      baseHeight += Math.min(listHeight, 600)
+      return Math.max(300, Math.min(baseHeight, Screen.height * 0.8))
+    }
     x: calculatedX
     y: root.triggerY
     color: Theme.popupBackground()
@@ -158,15 +156,19 @@ PanelWindow {
 
       NotificationHeader {
         id: notificationHeader
+        keyboardController: keyboardController
+      }
+      
+      NotificationSettings {
+        id: notificationSettings
+        expanded: notificationHeader.showSettings
       }
 
       KeyboardNavigatedNotificationList {
         id: notificationList
 
         width: parent.width
-        height: parent.height - notificationHeader.height - contentColumnInner.spacing
-        // keyboardController set via Component.onCompleted to avoid binding loop
-        enableKeyboardNavigation: true
+        height: parent.height - notificationHeader.height - notificationSettings.height - contentColumnInner.spacing * 2
         
         Component.onCompleted: {
           if (keyboardController && notificationList) {
@@ -176,33 +178,15 @@ PanelWindow {
         }
       }
       
-      } // Column
-    } // FocusScope
-
-    Connections {
-      function onNotificationsChanged() {
-        mainRect.height = mainRect.calculateHeight()
       }
-
-      function onGroupedNotificationsChanged() {
-        mainRect.height = mainRect.calculateHeight()
-      }
-
-      function onExpandedGroupsChanged() {
-        mainRect.height = mainRect.calculateHeight()
-      }
-
-      function onExpandedMessagesChanged() {
-        mainRect.height = mainRect.calculateHeight()
-      }
-
-      target: NotificationService
     }
+
 
     Behavior on height {
       NumberAnimation {
-        duration: Theme.mediumDuration
-        easing.type: Theme.emphasizedEasing
+        duration: Anims.durShort
+        easing.type: Easing.BezierSpline
+        easing.bezierCurve: Anims.emphasized
       }
     }
 
