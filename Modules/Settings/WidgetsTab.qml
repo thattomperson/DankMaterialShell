@@ -456,6 +456,12 @@ Item {
         width: parent.width
         sourceComponent: workspaceComponent
       }
+
+      Loader {
+        width: parent.width
+        sourceComponent: workspaceIconsComponent
+        visible: SettingsData.hasNamedWorkspaces()
+      }
     }
   }
 
@@ -774,6 +780,159 @@ Item {
           onToggled: checked => {
                        return SettingsData.setShowWorkspacePadding(checked)
                      }
+        }
+      }
+    }
+  }
+
+  // Workspace Icons Component
+  Component {
+    id: workspaceIconsComponent
+
+    StyledRect {
+      width: parent.width
+      height: workspaceIconsSection.implicitHeight + Theme.spacingL * 2
+      radius: Theme.cornerRadius
+      color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                     Theme.surfaceVariant.b, 0.3)
+      border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                            Theme.outline.b, 0.2)
+      border.width: 1
+
+      Column {
+        id: workspaceIconsSection
+
+        anchors.fill: parent
+        anchors.margins: Theme.spacingL
+        spacing: Theme.spacingM
+
+        Row {
+          width: parent.width
+          spacing: Theme.spacingM
+
+          DankIcon {
+            name: "label"
+            size: Theme.iconSize
+            color: Theme.primary
+            anchors.verticalCenter: parent.verticalCenter
+          }
+
+          StyledText {
+            text: "Named Workspace Icons"
+            font.pixelSize: Theme.fontSizeLarge
+            font.weight: Font.Medium
+            color: Theme.surfaceText
+            anchors.verticalCenter: parent.verticalCenter
+          }
+        }
+
+        StyledText {
+          width: parent.width
+          text: "Configure icons for named workspaces. Icons take priority over numbers when both are enabled."
+          font.pixelSize: Theme.fontSizeSmall
+          color: Theme.outline
+          wrapMode: Text.WordWrap
+        }
+
+        Repeater {
+          model: SettingsData.getNamedWorkspaces()
+
+          Rectangle {
+            width: parent.width
+            height: workspaceIconRow.implicitHeight + Theme.spacingM
+            radius: Theme.cornerRadius
+            color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g,
+                           Theme.surfaceContainer.b, 0.5)
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                  Theme.outline.b, 0.3)
+            border.width: 1
+
+            Row {
+              id: workspaceIconRow
+
+              anchors.left: parent.left
+              anchors.right: parent.right
+              anchors.verticalCenter: parent.verticalCenter
+              anchors.leftMargin: Theme.spacingM
+              anchors.rightMargin: Theme.spacingM
+              spacing: Theme.spacingM
+
+              StyledText {
+                text: "\"" + modelData + "\""
+                font.pixelSize: Theme.fontSizeMedium
+                font.weight: Font.Medium
+                color: Theme.surfaceText
+                anchors.verticalCenter: parent.verticalCenter
+                width: 150
+                elide: Text.ElideRight
+              }
+
+              DankIconPicker {
+                id: iconPicker
+                anchors.verticalCenter: parent.verticalCenter
+
+                Component.onCompleted: {
+                  var iconData = SettingsData.getWorkspaceNameIcon(modelData)
+                  if (iconData) {
+                    setIcon(iconData.value, iconData.type)
+                  }
+                }
+
+                onIconSelected: (iconName, iconType) => {
+                  SettingsData.setWorkspaceNameIcon(modelData, {
+                    type: iconType,
+                    value: iconName
+                  })
+                  setIcon(iconName, iconType)
+                }
+
+                Connections {
+                  target: SettingsData
+                  function onWorkspaceIconsUpdated() {
+                    var iconData = SettingsData.getWorkspaceNameIcon(modelData)
+                    if (iconData) {
+                      iconPicker.setIcon(iconData.value, iconData.type)
+                    } else {
+                      iconPicker.setIcon("", "icon")
+                    }
+                  }
+                }
+              }
+
+              Rectangle {
+                width: 28
+                height: 28
+                radius: Theme.cornerRadius
+                color: clearMouseArea.containsMouse ? Theme.errorHover : Theme.surfaceContainer
+                border.color: clearMouseArea.containsMouse ? Theme.error : Theme.outline
+                border.width: 1
+                anchors.verticalCenter: parent.verticalCenter
+
+                DankIcon {
+                  name: "close"
+                  size: 16
+                  color: clearMouseArea.containsMouse ? Theme.error : Theme.outline
+                  anchors.centerIn: parent
+                }
+
+                MouseArea {
+                  id: clearMouseArea
+
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: {
+                    SettingsData.removeWorkspaceNameIcon(modelData)
+                  }
+                }
+              }
+
+              Item {
+                width: parent.width - 150 - 240 - 28 - Theme.spacingM * 4
+                height: 1
+              }
+            }
+          }
         }
       }
     }

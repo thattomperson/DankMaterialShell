@@ -40,6 +40,7 @@ Singleton {
     property bool showControlCenterButton: true
     property bool showWorkspaceIndex: false
     property bool showWorkspacePadding: false
+    property var workspaceNameIcons: ({})
     property bool clockCompactMode: false
     property string clockDateFormat: "ddd d"
     property string lockDateFormat: "dddd, MMMM d"
@@ -85,6 +86,7 @@ Singleton {
 
     signal forceTopBarLayoutRefresh()
     signal widgetDataChanged()
+    signal workspaceIconsUpdated()
 
     function initializeListModels() {
         updateListModel(leftWidgetsModel, topBarLeftWidgets);
@@ -132,6 +134,7 @@ Singleton {
                 showControlCenterButton = settings.showControlCenterButton !== undefined ? settings.showControlCenterButton : true;
                 showWorkspaceIndex = settings.showWorkspaceIndex !== undefined ? settings.showWorkspaceIndex : false;
                 showWorkspacePadding = settings.showWorkspacePadding !== undefined ? settings.showWorkspacePadding : false;
+                workspaceNameIcons = settings.workspaceNameIcons !== undefined ? settings.workspaceNameIcons : ({});
                 clockCompactMode = settings.clockCompactMode !== undefined ? settings.clockCompactMode : false;
                 clockDateFormat = settings.clockDateFormat !== undefined ? settings.clockDateFormat : "ddd d";
                 lockDateFormat = settings.lockDateFormat !== undefined ? settings.lockDateFormat : "dddd, MMMM d";
@@ -226,6 +229,7 @@ Singleton {
             "showControlCenterButton": showControlCenterButton,
             "showWorkspaceIndex": showWorkspaceIndex,
             "showWorkspacePadding": showWorkspacePadding,
+            "workspaceNameIcons": workspaceNameIcons,
             "clockCompactMode": clockCompactMode,
             "clockDateFormat": clockDateFormat,
             "lockDateFormat": lockDateFormat,
@@ -266,6 +270,52 @@ Singleton {
     function setShowWorkspacePadding(enabled) {
         showWorkspacePadding = enabled;
         saveSettings();
+    }
+
+    function setWorkspaceNameIcon(workspaceName, iconData) {
+        var iconMap = JSON.parse(JSON.stringify(workspaceNameIcons));
+        iconMap[workspaceName] = iconData;
+        workspaceNameIcons = iconMap;
+        saveSettings();
+        workspaceIconsUpdated();
+    }
+
+    function removeWorkspaceNameIcon(workspaceName) {
+        var iconMap = JSON.parse(JSON.stringify(workspaceNameIcons));
+        delete iconMap[workspaceName];
+        workspaceNameIcons = iconMap;
+        saveSettings();
+        workspaceIconsUpdated();
+    }
+
+    function getWorkspaceNameIcon(workspaceName) {
+        return workspaceNameIcons[workspaceName] || null;
+    }
+
+    function hasNamedWorkspaces() {
+        if (typeof NiriService === "undefined" || !NiriService.niriAvailable)
+            return false;
+        
+        for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
+            var ws = NiriService.allWorkspaces[i];
+            if (ws.name && ws.name.trim() !== "")
+                return true;
+        }
+        return false;
+    }
+
+    function getNamedWorkspaces() {
+        var namedWorkspaces = [];
+        if (typeof NiriService === "undefined" || !NiriService.niriAvailable)
+            return namedWorkspaces;
+        
+        for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
+            var ws = NiriService.allWorkspaces[i];
+            if (ws.name && ws.name.trim() !== "") {
+                namedWorkspaces.push(ws.name);
+            }
+        }
+        return namedWorkspaces;
     }
 
     function setClockCompactMode(enabled) {
