@@ -91,6 +91,9 @@ Singleton {
   property real cornerRadius: 12
   property bool notificationOverlayEnabled: false
   property bool topBarAutoHide: false
+  property int notificationTimeoutLow: 5000
+  property int notificationTimeoutNormal: 5000  
+  property int notificationTimeoutCritical: 0
 
   readonly property string defaultFontFamily: "Inter Variable"
   readonly property string defaultMonoFontFamily: "Fira Code"
@@ -257,6 +260,9 @@ Singleton {
         cornerRadius = settings.cornerRadius !== undefined ? settings.cornerRadius : 12
         notificationOverlayEnabled = settings.notificationOverlayEnabled !== undefined ? settings.notificationOverlayEnabled : false
         topBarAutoHide = settings.topBarAutoHide !== undefined ? settings.topBarAutoHide : false
+        notificationTimeoutLow = settings.notificationTimeoutLow !== undefined ? settings.notificationTimeoutLow : 5000
+        notificationTimeoutNormal = settings.notificationTimeoutNormal !== undefined ? settings.notificationTimeoutNormal : 5000
+        notificationTimeoutCritical = settings.notificationTimeoutCritical !== undefined ? settings.notificationTimeoutCritical : 0
         applyStoredTheme()
         detectAvailableIconThemes()
         detectQtTools()
@@ -327,7 +333,10 @@ Singleton {
                                           "dockAutoHide": dockAutoHide,
                                           "cornerRadius": cornerRadius,
                                           "notificationOverlayEnabled": notificationOverlayEnabled,
-                                          "topBarAutoHide": topBarAutoHide
+                                          "topBarAutoHide": topBarAutoHide,
+                                          "notificationTimeoutLow": notificationTimeoutLow,
+                                          "notificationTimeoutNormal": notificationTimeoutNormal,
+                                          "notificationTimeoutCritical": notificationTimeoutCritical
                                         }, null, 2))
   }
 
@@ -751,6 +760,21 @@ Singleton {
 
   function setTopBarAutoHide(enabled) {
     topBarAutoHide = enabled
+    saveSettings()
+  }
+
+  function setNotificationTimeoutLow(timeout) {
+    notificationTimeoutLow = timeout
+    saveSettings()
+  }
+
+  function setNotificationTimeoutNormal(timeout) {
+    notificationTimeoutNormal = timeout
+    saveSettings()
+  }
+
+  function setNotificationTimeoutCritical(timeout) {
+    notificationTimeoutCritical = timeout
     saveSettings()
   }
 

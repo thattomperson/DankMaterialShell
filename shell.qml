@@ -125,6 +125,10 @@ ShellRoot {
     id: clipboardHistoryModalPopup
   }
 
+  NotificationModal {
+    id: notificationModal
+  }
+
   LazyLoader {
     id: processListModalLoader
 

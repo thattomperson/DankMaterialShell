@@ -7,6 +7,7 @@ import Quickshell.Widgets
 import qs.Common
 import qs.Services
 import qs.Widgets
+import qs.Modules.Notifications.Center
 
 PanelWindow {
   id: root
@@ -16,6 +17,25 @@ PanelWindow {
   property real triggerY: Theme.barHeight + Theme.spacingXS
   property real triggerWidth: 40
   property string triggerSection: "right"
+  
+  // Keyboard navigation controller
+  NotificationKeyboardController {
+    id: keyboardController
+    listView: null  // Set later to avoid binding loop
+    isOpen: notificationHistoryVisible
+    onClose: function() { notificationHistoryVisible = false }
+  }
+  
+  // Keyboard hints overlay  
+  NotificationKeyboardHints {
+    id: keyboardHints
+    anchors.bottom: mainRect.bottom
+    anchors.left: mainRect.left
+    anchors.right: mainRect.right
+    anchors.margins: Theme.spacingL
+    showHints: keyboardController.showKeyboardHints
+    z: 200
+  }
 
   function setTriggerPosition(x, y, width, section) {
     triggerX = x
@@ -114,12 +134,7 @@ PanelWindow {
         if (notificationHistoryVisible)
           forceActiveFocus()
       }
-      Keys.onPressed: function (event) {
-        if (event.key === Qt.Key_Escape) {
-          notificationHistoryVisible = false
-          event.accepted = true
-        }
-      }
+      Keys.onPressed: keyboardController.handleKey
 
       Connections {
         function onNotificationHistoryVisibleChanged() {
@@ -137,11 +152,20 @@ PanelWindow {
         id: notificationHeader
       }
 
-      NotificationList {
+      KeyboardNavigatedNotificationList {
         id: notificationList
 
         width: parent.width
         height: parent.height - notificationHeader.height - contentColumn.spacing
+        // keyboardController set via Component.onCompleted to avoid binding loop
+        enableKeyboardNavigation: true
+        
+        Component.onCompleted: {
+          if (keyboardController && notificationList) {
+            keyboardController.listView = notificationList
+            notificationList.keyboardController = keyboardController
+          }
+        }
       }
     }
 

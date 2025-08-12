@@ -69,6 +69,7 @@ Singleton {
     bodyMarkupSupported: true
     imageSupported: true
     inlineReplySupported: true
+    persistenceSupported: true
 
     onNotification: notif => {
       notif.tracked = true
@@ -106,11 +107,24 @@ Singleton {
     }
 
     readonly property Timer timer: Timer {
-      interval: 5000
+      interval: {
+        if (!wrapper.notification) return 5000
+        
+        switch (wrapper.notification.urgency) {
+          case NotificationUrgency.Low:
+            return SettingsData.notificationTimeoutLow
+          case NotificationUrgency.Critical:
+            return SettingsData.notificationTimeoutCritical
+          default:
+            return SettingsData.notificationTimeoutNormal
+        }
+      }
       repeat: false
       running: false
       onTriggered: {
-        wrapper.popup = false
+        if (interval > 0) {
+          wrapper.popup = false
+        }
       }
     }
     
@@ -301,6 +315,11 @@ Singleton {
     next.seq = ++seqCounter
     visibleNotifications = [...visibleNotifications, next]
     next.popup = true
+
+    // Start timeout timer if timeout > 0 (0 means never timeout)
+    if (next.timer.interval > 0) {
+      next.timer.start()
+    }
 
     addGateBusy = true
     addGate.restart()

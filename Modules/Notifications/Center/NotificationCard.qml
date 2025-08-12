@@ -16,6 +16,11 @@ Rectangle {
   property bool descriptionExpanded: NotificationService.expandedMessages[notificationGroup?.latestNotification?.notification?.id + "_desc"]
                                      || false
   property bool userInitiatedExpansion: false
+  
+  // Selection properties for keyboard navigation
+  property bool isGroupSelected: false
+  property int selectedNotificationIndex: -1
+  property bool keyboardNavigationActive: false
 
   width: parent ? parent.width : 400
   height: {
@@ -308,8 +313,10 @@ Rectangle {
 
         delegate: Rectangle {
           required property var modelData
+          required property int index
           readonly property bool messageExpanded: NotificationService.expandedMessages[modelData?.notification?.id]
                                                   || false
+          readonly property bool isSelected: root.selectedNotificationIndex === index
 
           width: parent.width
           height: {
@@ -324,10 +331,9 @@ Rectangle {
             return baseHeight
           }
           radius: Theme.cornerRadius
-          color: "transparent"
-          border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                Theme.outline.b, 0.05)
-          border.width: 1
+          color: isSelected ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.15) : "transparent"
+          border.color: isSelected ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.05)
+          border.width: isSelected ? 2 : 1
 
           Behavior on height {
             enabled: false
@@ -498,7 +504,13 @@ Rectangle {
 
                       StyledText {
                         id: actionText
-                        text: modelData.text || ""
+                        text: {
+                          const baseText = modelData.text || ""
+                          if (keyboardNavigationActive && (isGroupSelected || selectedNotificationIndex >= 0)) {
+                            return `${baseText} (${index + 1})`
+                          }
+                          return baseText
+                        }
                         color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
                         font.pixelSize: Theme.fontSizeSmall
                         font.weight: Font.Medium
@@ -582,7 +594,13 @@ Rectangle {
 
         StyledText {
           id: actionText
-          text: modelData.text || ""
+          text: {
+            const baseText = modelData.text || ""
+            if (keyboardNavigationActive && isGroupSelected) {
+              return `${baseText} (${index + 1})`
+            }
+            return baseText
+          }
           color: parent.isHovered ? Theme.primary : Theme.surfaceVariantText
           font.pixelSize: Theme.fontSizeSmall
           font.weight: Font.Medium

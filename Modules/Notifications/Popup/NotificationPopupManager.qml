@@ -172,10 +172,16 @@ QtObject {
     if (activeWindows.length <= maxTargetNotifications + 1)
       return
 
-    const b = _bottom()
-    if (b && !b.exiting) {
-      b.notificationData.removedByLimit = true
-      b.notificationData.popup = false
+    // Find the bottom-most non-critical notification to remove
+    const candidates = activeWindows.filter(p => {
+      return p.notificationData && p.notificationData.notification && 
+             p.notificationData.notification.urgency !== 2 // NotificationUrgency.Critical = 2
+    }).sort((a, b) => b.screenY - a.screenY) // Sort by Y position, highest first
+    
+    const toRemove = candidates[0] // Get the bottom-most non-critical notification
+    if (toRemove && !toRemove.exiting) {
+      toRemove.notificationData.removedByLimit = true
+      toRemove.notificationData.popup = false
     }
   }
 
