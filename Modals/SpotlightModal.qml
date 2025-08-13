@@ -563,7 +563,12 @@ DankModal {
         spotlightOpen = true;
         if (contentLoader.item && contentLoader.item.appLauncher)
             contentLoader.item.appLauncher.searchQuery = "";
-
+        
+        Qt.callLater(function() {
+            if (contentLoader.item && contentLoader.item.searchField) {
+                contentLoader.item.searchField.forceActiveFocus();
+            }
+        });
     }
 
 
