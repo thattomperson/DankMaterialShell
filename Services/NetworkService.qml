@@ -745,15 +745,15 @@ Singleton {
         if (type === "wifi") {
             setRouteMetrics.command = ["bash", "-c",
                 "nmcli -t -f NAME,TYPE connection show | grep 802-11-wireless | cut -d: -f1 | " +
-                "xargs -I {} nmcli connection modify {} ipv4.route-metric 50; " +
+                "xargs -I {} bash -c 'nmcli connection modify \"{}\" ipv4.route-metric 50 ipv6.route-metric 50'; " +
                 "nmcli -t -f NAME,TYPE connection show | grep 802-3-ethernet | cut -d: -f1 | " +
-                "xargs -I {} nmcli connection modify {} ipv4.route-metric 100"]
+                "xargs -I {} bash -c 'nmcli connection modify \"{}\" ipv4.route-metric 100 ipv6.route-metric 100'"]
         } else if (type === "ethernet") {
             setRouteMetrics.command = ["bash", "-c",
                 "nmcli -t -f NAME,TYPE connection show | grep 802-3-ethernet | cut -d: -f1 | " +
-                "xargs -I {} nmcli connection modify {} ipv4.route-metric 50; " +
+                "xargs -I {} bash -c 'nmcli connection modify \"{}\" ipv4.route-metric 50 ipv6.route-metric 50'; " +
                 "nmcli -t -f NAME,TYPE connection show | grep 802-11-wireless | cut -d: -f1 | " +
-                "xargs -I {} nmcli connection modify {} ipv4.route-metric 100"]
+                "xargs -I {} bash -c 'nmcli connection modify \"{}\" ipv4.route-metric 100 ipv6.route-metric 100'"]
         }
         setRouteMetrics.running = true
     }
@@ -763,6 +763,7 @@ Singleton {
         running: false
         
         onExited: (exitCode) => {
+            console.log("Set route metrics process exited with code:", exitCode)
             if (exitCode === 0) {
                 restartConnections.running = true
             }

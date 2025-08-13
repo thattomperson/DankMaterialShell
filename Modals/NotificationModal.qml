@@ -9,8 +9,14 @@ import qs.Modules.Notifications.Center
 import qs.Services
 import qs.Widgets
 
-Item {
-    id: root
+DankModal {
+    id: notificationModal
+    
+    width: 500
+    height: 700
+    visible: notificationModalOpen
+    keyboardFocus: "ondemand"
+    onBackgroundClicked: hide()
     
     NotificationKeyboardController {
         id: modalKeyboardController
@@ -18,11 +24,6 @@ Item {
         isOpen: notificationModal.notificationModalOpen
         onClose: function() { notificationModal.hide() }
     }
-
-    property alias notificationModal: notificationModal
-    
-    DankModal {
-        id: notificationModal
 
     property bool notificationModalOpen: false
     property var notificationListRef: null
@@ -51,26 +52,6 @@ Item {
             show()
     }
 
-    
-
-    visible: notificationModalOpen
-    width: 500
-    height: 700
-    keyboardFocus: "ondemand"
-    backgroundColor: Theme.popupBackground()
-    cornerRadius: Theme.cornerRadius
-    borderColor: Theme.outlineMedium
-    borderWidth: 1
-    enableShadow: true
-
-    onVisibleChanged: {
-        if (visible && !notificationModalOpen)
-            show()
-    }
-
-    onBackgroundClicked: {
-        notificationModalOpen = false
-    }
 
     IpcHandler {
         function open() {
@@ -91,7 +72,7 @@ Item {
         target: "notifications"
     }
 
-    content: Component {
+    property Component notificationContent: Component {
         FocusScope {
             id: notificationKeyHandler
 
@@ -171,5 +152,6 @@ Item {
 
         }
     }
-}
+
+    content: notificationContent
 }

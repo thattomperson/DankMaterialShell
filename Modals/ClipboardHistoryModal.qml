@@ -312,7 +312,7 @@ DankModal {
     target: "clipboard"
   }
 
-  content: Component {
+  property Component clipboardContent: Component {
     Column {
       anchors.fill: parent
       anchors.margins: Theme.spacingL
@@ -637,4 +637,6 @@ DankModal {
       }
     }
   }
+
+  content: clipboardContent
 }

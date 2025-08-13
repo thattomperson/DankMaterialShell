@@ -89,7 +89,7 @@ DankModal {
     target: "spotlight"
   }
 
-  content: Component {
+  property Component spotlightContent: Component {
     Item {
       id: spotlightKeyHandler
 
@@ -846,4 +846,6 @@ DankModal {
       }
     }
   }
+
+  content: spotlightContent
 }

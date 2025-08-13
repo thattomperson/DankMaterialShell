@@ -1,5 +1,6 @@
 pragma ComponentBehavior
 
+import Quickshell
 import Quickshell.Io
 import QtQuick
 import QtQuick.Controls
@@ -33,7 +34,7 @@ DankModal {
   keyboardFocus: "ondemand"
   onBackgroundClicked: hide()
 
-  content: Component {
+  property Component settingsContent: Component {
     Item {
       anchors.fill: parent
       focus: true
@@ -180,6 +181,8 @@ DankModal {
       }
     }
   }
+
+  content: settingsContent
 
   IpcHandler {
     function open() {
