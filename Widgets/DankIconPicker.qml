@@ -19,7 +19,7 @@ Rectangle {
   height: 32
   radius: Theme.cornerRadius
   color: Theme.surfaceContainer
-  border.color: dropdownPopup.visible ? Theme.primary : (mouseArea.containsMouse ? Theme.outline : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.5))
+  border.color: dropdownLoader.active ? Theme.primary : (mouseArea.containsMouse ? Theme.outline : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.5))
   border.width: 1
 
   property var iconCategories: [
@@ -66,11 +66,7 @@ Rectangle {
     anchors.fill: parent
     hoverEnabled: true
     onClicked: {
-      if (dropdownPopup.visible) {
-        dropdownPopup.visible = false
-      } else {
-        dropdownPopup.visible = true
-      }
+      dropdownLoader.active = !dropdownLoader.active
     }
   }
 
@@ -102,7 +98,7 @@ Rectangle {
   }
 
   DankIcon {
-    name: dropdownPopup.visible ? "expand_less" : "expand_more"
+    name: dropdownLoader.active ? "expand_less" : "expand_more"
     size: 16
     color: Theme.outline
     anchors.right: parent.right
@@ -110,200 +106,206 @@ Rectangle {
     anchors.verticalCenter: parent.verticalCenter
   }
 
-  PanelWindow {
-    id: dropdownPopup
+  Loader {
+    id: dropdownLoader
+    active: false
+    asynchronous: true
     
-    visible: false
-    implicitWidth: 320
-    implicitHeight: Math.min(500, dropdownContent.implicitHeight + 32)
-    color: "transparent"
-    WlrLayershell.layer: WlrLayershell.Overlay
-    WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
-    
-    anchors {
-      top: true
-      left: true  
-      right: true
-      bottom: true
-    }
-
-    // Click outside to close
-    MouseArea {
-      anchors.fill: parent
-      onClicked: dropdownPopup.visible = false
-    }
-
-    Rectangle {
-      width: 320
-      height: Math.min(500, dropdownContent.implicitHeight + 32)
-      x: {
-        // Get the root picker's position relative to the screen
-        var pickerPos = root.mapToItem(null, 0, 0)
-        return Math.max(16, Math.min(pickerPos.x, parent.width - width - 16))
+    sourceComponent: PanelWindow {
+      id: dropdownPopup
+      
+      visible: true
+      implicitWidth: 320
+      implicitHeight: Math.min(500, dropdownContent.implicitHeight + 32)
+      color: "transparent"
+      WlrLayershell.layer: WlrLayershell.Overlay
+      WlrLayershell.exclusiveZone: -1
+      WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+      
+      anchors {
+        top: true
+        left: true  
+        right: true
+        bottom: true
       }
-      y: {
-        // Position below the picker button
-        var pickerPos = root.mapToItem(null, 0, root.height + 4)
-        return Math.max(16, Math.min(pickerPos.y, parent.height - height - 16))
-      }
-      radius: Theme.cornerRadius
-      color: Theme.surface
-      border.color: Theme.outline
-      border.width: 1
 
-      // Prevent this from closing the dropdown when clicked
+      // Click outside to close
       MouseArea {
         anchors.fill: parent
-        // Don't propagate clicks to parent
-      }
-      
-      layer.enabled: true
-      layer.effect: MultiEffect {
-        shadowEnabled: true
-        shadowColor: Theme.shadowDark
-        shadowBlur: 0.8
-        shadowHorizontalOffset: 0
-        shadowVerticalOffset: 4
+        onClicked: dropdownLoader.active = false
       }
 
-      DankFlickable {
-        anchors.fill: parent
-        anchors.margins: Theme.spacingS
-        contentHeight: dropdownContent.height
-        clip: true
+      Rectangle {
+        width: 320
+        height: Math.min(500, dropdownContent.implicitHeight + 32)
+        x: {
+          // Get the root picker's position relative to the screen
+          var pickerPos = root.mapToItem(null, 0, 0)
+          return Math.max(16, Math.min(pickerPos.x, parent.width - width - 16))
+        }
+        y: {
+          // Position below the picker button
+          var pickerPos = root.mapToItem(null, 0, root.height + 4)
+          return Math.max(16, Math.min(pickerPos.y, parent.height - height - 16))
+        }
+        radius: Theme.cornerRadius
+        color: Theme.surface
+        border.color: Theme.outline
+        border.width: 1
 
-        Column {
-          id: dropdownContent
-          width: parent.width
-          spacing: Theme.spacingM
+        // Prevent this from closing the dropdown when clicked
+        MouseArea {
+          anchors.fill: parent
+          // Don't propagate clicks to parent
+        }
+        
+        layer.enabled: true
+        layer.effect: MultiEffect {
+          shadowEnabled: true
+          shadowColor: Theme.shadowDark
+          shadowBlur: 0.8
+          shadowHorizontalOffset: 0
+          shadowVerticalOffset: 4
+        }
 
-          // Custom text section
-          Rectangle {
+        DankFlickable {
+          anchors.fill: parent
+          anchors.margins: Theme.spacingS
+          contentHeight: dropdownContent.height
+          clip: true
+
+          Column {
+            id: dropdownContent
             width: parent.width
-            height: customTextSection.implicitHeight + Theme.spacingS * 2
-            radius: Theme.cornerRadius
-            color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+            spacing: Theme.spacingM
 
-            Column {
-              id: customTextSection
-              anchors.fill: parent
-              anchors.margins: Theme.spacingS
-              spacing: Theme.spacingS
+            // Custom text section
+            Rectangle {
+              width: parent.width
+              height: customTextSection.implicitHeight + Theme.spacingS * 2
+              radius: Theme.cornerRadius
+              color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
 
-              StyledText {
-                text: "Custom Text"
-                font.pixelSize: Theme.fontSizeSmall
-                font.weight: Font.Medium
-                color: Theme.surfaceText
-              }
+              Column {
+                id: customTextSection
+                anchors.fill: parent
+                anchors.margins: Theme.spacingS
+                spacing: Theme.spacingS
 
-              Rectangle {
-                width: parent.width
-                height: 28
-                radius: Theme.cornerRadius
-                color: Theme.surfaceContainer
-                border.color: customTextInput.activeFocus ? Theme.primary : Theme.outline
-                border.width: 1
+                StyledText {
+                  text: "Custom Text"
+                  font.pixelSize: Theme.fontSizeSmall
+                  font.weight: Font.Medium
+                  color: Theme.surfaceText
+                }
 
-                Row {
-                  anchors.left: parent.left
-                  anchors.verticalCenter: parent.verticalCenter
-                  anchors.leftMargin: Theme.spacingS
-                  spacing: Theme.spacingS
+                Rectangle {
+                  width: parent.width
+                  height: 28
+                  radius: Theme.cornerRadius
+                  color: Theme.surfaceContainer
+                  border.color: customTextInput.activeFocus ? Theme.primary : Theme.outline
+                  border.width: 1
 
-                  DankIcon {
-                    name: "text_fields"
-                    size: 14
-                    color: Theme.outline
+                  Row {
+                    anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                  }
+                    anchors.leftMargin: Theme.spacingS
+                    spacing: Theme.spacingS
 
-                  TextInput {
-                    id: customTextInput
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 200
-                    text: root.iconType === "text" ? root.currentText : ""
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.surfaceText
-                    selectByMouse: true
+                    DankIcon {
+                      name: "text_fields"
+                      size: 14
+                      color: Theme.outline
+                      anchors.verticalCenter: parent.verticalCenter
+                    }
 
-                    onEditingFinished: {
-                      var trimmedText = text.trim()
-                      if (trimmedText) {
-                        root.iconSelected(trimmedText, "text")
-                        dropdownPopup.visible = false
+                    TextInput {
+                      id: customTextInput
+                      anchors.verticalCenter: parent.verticalCenter
+                      width: 200
+                      text: root.iconType === "text" ? root.currentText : ""
+                      font.pixelSize: Theme.fontSizeSmall
+                      color: Theme.surfaceText
+                      selectByMouse: true
+
+                      onEditingFinished: {
+                        var trimmedText = text.trim()
+                        if (trimmedText) {
+                          root.iconSelected(trimmedText, "text")
+                          dropdownLoader.active = false
+                        }
                       }
                     }
                   }
-                }
 
-                StyledText {
-                  anchors.left: parent.left
-                  anchors.leftMargin: Theme.spacingS + 14 + Theme.spacingS
-                  anchors.verticalCenter: parent.verticalCenter
-                  text: "1-2 characters"
-                  font.pixelSize: Theme.fontSizeSmall
-                  color: Theme.outline
-                  opacity: 0.6
-                  visible: customTextInput.text === ""
+                  StyledText {
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.spacingS + 14 + Theme.spacingS
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "1-2 characters"
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.outline
+                    opacity: 0.6
+                    visible: customTextInput.text === ""
+                  }
                 }
               }
             }
-          }
 
-          // Icon categories
-          Repeater {
-            model: root.iconCategories
+            // Icon categories
+            Repeater {
+              model: root.iconCategories
 
-            Column {
-              width: parent.width
-              spacing: Theme.spacingS
-
-              StyledText {
-                text: modelData.name
-                font.pixelSize: Theme.fontSizeSmall
-                font.weight: Font.Medium
-                color: Theme.surfaceText
-              }
-
-              Flow {
+              Column {
                 width: parent.width
-                spacing: 4
+                spacing: Theme.spacingS
 
-                Repeater {
-                  model: modelData.icons
+                StyledText {
+                  text: modelData.name
+                  font.pixelSize: Theme.fontSizeSmall
+                  font.weight: Font.Medium
+                  color: Theme.surfaceText
+                }
 
-                  Rectangle {
-                    width: 36
-                    height: 36
-                    radius: Theme.cornerRadius
-                    color: iconMouseArea.containsMouse ? Theme.primaryHover : "transparent"
-                    border.color: root.currentIcon === modelData ? Theme.primary : "transparent"
-                    border.width: 2
+                Flow {
+                  width: parent.width
+                  spacing: 4
 
-                    DankIcon {
-                      name: modelData
-                      size: 20
-                      color: root.currentIcon === modelData ? Theme.primary : Theme.surfaceText
-                      anchors.centerIn: parent
-                    }
+                  Repeater {
+                    model: modelData.icons
 
-                    MouseArea {
-                      id: iconMouseArea
-                      anchors.fill: parent
-                      hoverEnabled: true
-                      cursorShape: Qt.PointingHandCursor
-                      onClicked: {
-                        root.iconSelected(modelData, "icon")
-                        dropdownPopup.visible = false
+                    Rectangle {
+                      width: 36
+                      height: 36
+                      radius: Theme.cornerRadius
+                      color: iconMouseArea.containsMouse ? Theme.primaryHover : "transparent"
+                      border.color: root.currentIcon === modelData ? Theme.primary : "transparent"
+                      border.width: 2
+
+                      DankIcon {
+                        name: modelData
+                        size: 20
+                        color: root.currentIcon === modelData ? Theme.primary : Theme.surfaceText
+                        anchors.centerIn: parent
                       }
-                    }
 
-                    Behavior on color {
-                      ColorAnimation {
-                        duration: Theme.shortDuration
-                        easing.type: Theme.standardEasing
+                      MouseArea {
+                        id: iconMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                          root.iconSelected(modelData, "icon")
+                          dropdownLoader.active = false
+                        }
+                      }
+
+                      Behavior on color {
+                        ColorAnimation {
+                          duration: Theme.shortDuration
+                          easing.type: Theme.standardEasing
+                        }
                       }
                     }
                   }
