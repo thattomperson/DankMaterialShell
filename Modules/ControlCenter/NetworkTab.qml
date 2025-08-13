@@ -11,8 +11,14 @@ import qs.Modules.ControlCenter.Network
 Item {
   id: networkTab
 
-  property var wifiPasswordModalRef: wifiPasswordModal
-  property var networkInfoModalRef: networkInfoModal
+  property var wifiPasswordModalRef: {
+    wifiPasswordModalLoader.active = true
+    return wifiPasswordModalLoader.item
+  }
+  property var networkInfoModalRef: {
+    networkInfoModalLoader.active = true
+    return networkInfoModalLoader.item
+  }
 
   property var sortedWifiNetworks: {
     if (!NetworkService.wifiAvailable || !NetworkService.wifiEnabled) {
