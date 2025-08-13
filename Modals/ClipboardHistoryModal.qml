@@ -47,6 +47,19 @@ DankModal {
     clipboardHistoryModal.visible = true
     initializeThumbnailSystem()
     refreshClipboard()
+    
+    Qt.callLater(function() {
+      if (contentLoader.item) {
+        const content = contentLoader.item
+        if (content.children && content.children.length > 1) {
+          const searchField = content.children[1]
+          if (searchField && searchField.forceActiveFocus) {
+            searchField.text = ""
+            searchField.forceActiveFocus()
+          }
+        }
+      }
+    })
   }
 
   function hide() {
@@ -385,18 +398,6 @@ DankModal {
         onTextChanged: {
           clipboardHistoryModal.searchText = text
           updateFilteredModel()
-        }
-
-        Connections {
-          function onVisibleChanged() {
-            if (clipboardHistoryModal.visible) {
-              Qt.callLater(function () {
-                searchField.forceActiveFocus()
-              })
-            }
-          }
-
-          target: clipboardHistoryModal
         }
       }
 
