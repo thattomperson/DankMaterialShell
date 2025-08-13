@@ -19,7 +19,35 @@ Item {
     property bool unlocking: false
     property var powerModal: null
     property string confirmAction: ""
-    property var facts: ["Light takes 100,000 years to escape the Sun's core, then just 8 minutes to reach us.", "A teaspoon of neutron star matter would weigh a billion tons here on Earth.", "Right now, 100 trillion solar neutrinos are passing through your body every second.", "The Sun burns 4 million tons of itself into pure energy every second.", "The universe still glows with leftover heat from the Big Bang—just 2.7 degrees above absolute zero.", "There's a nebula out there that's actually colder than empty space itself.", "We've detected black holes crashing together by measuring spacetime stretch by less than 1/10,000th the width of a proton.", "Some cosmic radio bursts release more energy in milliseconds than our Sun does in days.", "Our galaxy might be crawling with billions of rogue planets drifting alone in the dark.", "Distant galaxies can move away from us faster than light because space itself is stretching.", "The edge of what we can see is 46.5 billion light-years away, even though the universe is only 13.8 billion years old.", "The universe is mostly invisible: 5% regular matter, 27% dark matter, 68% dark energy.", "A day on Venus lasts longer than its entire year around the Sun.", "On Mercury, the time between sunrises is 176 Earth days long.", "In about 4.5 billion years, our galaxy will smash into Andromeda.", "Most of the gold in your jewelry was forged when neutron stars collided somewhere in space.", "A black hole the mass of our Sun would take longer to evaporate than the current age of the universe... times a trillion trillion trillion trillion trillion.", "The fastest spinning star we know rotates 716 times per second.", "Cosmic rays create particles that shouldn't make it to Earth's surface, but time dilation lets them sneak through.", "Jupiter's magnetic field is so huge that if we could see it, it would look bigger than the Moon in our sky."]
+    property var facts: [
+        "Light takes 100,000 years to escape the Sun's core, then just 8 minutes to reach us.",
+        "A teaspoon of neutron star matter would weigh a billion tons here on Earth.",
+        "Right now, 100 trillion solar neutrinos are passing through your body every second.",
+        "The Sun burns 4 million tons of itself into pure energy every second.",
+        "The universe still glows with leftover heat from the Big Bang—just 2.7 degrees above absolute zero.",
+        "There's a nebula out there that's actually colder than empty space itself.",
+        "We've detected black holes crashing together by measuring spacetime stretch by less than 1/10,000th the width of a proton.",
+        "Some cosmic radio bursts release more energy in milliseconds than our Sun does in days.",
+        "Our galaxy might be crawling with billions of rogue planets drifting alone in the dark.",
+        "Distant galaxies can move away from us faster than light because space itself is stretching.",
+        "The edge of what we can see is 46.5 billion light-years away, even though the universe is only 13.8 billion years old.",
+        "The universe is mostly invisible: 5% regular matter, 27% dark matter, 68% dark energy.",
+        "A day on Venus lasts longer than its entire year around the Sun.",
+        "On Mercury, the time between sunrises is 176 Earth days long.",
+        "In about 4.5 billion years, our galaxy will smash into Andromeda.",
+        "Most of the gold in your jewelry was forged when neutron stars collided somewhere in space.",
+        "The fastest spinning star we know rotates 716 times per second.",
+        "Cosmic rays create particles that shouldn't make it to Earth's surface, but time dilation lets them sneak through.",
+        "Jupiter's magnetic field is so huge that if we could see it, it would look bigger than the Moon in our sky.",
+        "Space is as empty as a 20-mile cube with a single grain of sand in it.",
+        "Voyager 1 launched in 1977—50 years later, it just barely left our solar system.",
+        "Counting to 2 septillion at one number per second takes the universe's age x 4.6 million.",
+        "A neutron star the size of your fist can spin 716 times per second.",
+        "After stars burn out, the universe will last trillions more years before black holes vanish.",
+        "Space is so vast, even speeding at light-speed, you'd never return past the cosmic horizon.",
+        "Space and time are linked: speeding through space slows your flow through time.",
+        "Ethyl formate found in the Milky Way smells like raspberries and rum."
+    ];
     property string randomFact: ""
 
     signal unlockRequested()
