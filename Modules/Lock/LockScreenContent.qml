@@ -583,26 +583,192 @@ Item {
             visible: demoMode
         }
 
-        StyledText {
+        // Status bar at top
+        Row {
             anchors.top: parent.top
             anchors.right: parent.right
             anchors.margins: Theme.spacingXL
-            text: WeatherService.weather.available && WeatherService.weather.city && WeatherService.weather.city !== "Unknown" ? `${WeatherService.weather.city} ${(SettingsData.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp)}°${(SettingsData.useFahrenheit ? "F" : "C")}` : ""
-            font.pixelSize: Theme.fontSizeMedium
-            color: "white"
-            horizontalAlignment: Text.AlignRight
-            visible: text !== ""
-        }
+            spacing: Theme.spacingL
 
-        StyledText {
-            anchors.bottom: parent.bottom
-            anchors.right: parent.right
-            anchors.margins: Theme.spacingXL
-            text: BatteryService.batteryAvailable ? `Battery: ${BatteryService.batteryLevel}%` : ""
-            font.pixelSize: Theme.fontSizeMedium
-            color: "white"
-            visible: text !== ""
-        }
+                // Weather section
+                Row {
+                    spacing: 6
+                    visible: WeatherService.weather.available
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    DankIcon {
+                        name: WeatherService.getWeatherIcon(WeatherService.weather.wCode)
+                        size: Theme.iconSize
+                        color: "white"
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    StyledText {
+                        text: (SettingsData.useFahrenheit ? WeatherService.weather.tempF : WeatherService.weather.temp) + "°"
+                        font.pixelSize: Theme.fontSizeLarge
+                        font.weight: Font.Light
+                        color: "white"
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                // Separator
+                Rectangle {
+                    width: 1
+                    height: 24
+                    color: Qt.rgba(255, 255, 255, 0.2)
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: WeatherService.weather.available && (NetworkService.networkAvailable || BluetoothService.enabled || AudioService.audioAvailable || BatteryService.batteryAvailable)
+                }
+
+                // System status icons
+                Row {
+                    spacing: Theme.spacingM
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: NetworkService.networkAvailable || (BluetoothService.available && BluetoothService.enabled) || AudioService.audioAvailable
+
+                    // Network icon
+                    DankIcon {
+                        name: {
+                            if (NetworkService.networkStatus === "ethernet")
+                                return "lan"
+                            else if (NetworkService.networkStatus === "wifi") {
+                                switch (NetworkService.wifiSignalStrengthStr) {
+                                case "excellent":
+                                    return "wifi"
+                                case "good":
+                                    return "wifi_2_bar"
+                                case "fair":
+                                    return "wifi_1_bar"
+                                case "poor":
+                                    return "signal_wifi_0_bar"
+                                default:
+                                    return "wifi"
+                                }
+                            }
+                            else
+                                return "wifi_off"
+                        }
+                        size: Theme.iconSize - 2
+                        color: NetworkService.networkStatus !== "disconnected" ? "white" : Qt.rgba(255, 255, 255, 0.5)
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: NetworkService.networkAvailable
+                    }
+
+                    // Bluetooth icon
+                    DankIcon {
+                        name: "bluetooth"
+                        size: Theme.iconSize - 2
+                        color: "white"
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: BluetoothService.available && BluetoothService.enabled
+                    }
+
+                    // Volume icon
+                    DankIcon {
+                        name: {
+                            if (AudioService.sink && AudioService.sink.audio) {
+                                if (AudioService.sink.audio.muted || AudioService.sink.audio.volume === 0)
+                                    return "volume_off"
+                                else if (AudioService.sink.audio.volume * 100 < 33)
+                                    return "volume_down"
+                                else
+                                    return "volume_up"
+                            }
+                            return "volume_up"
+                        }
+                        size: Theme.iconSize - 2
+                        color: (AudioService.sink && AudioService.sink.audio && (AudioService.sink.audio.muted || AudioService.sink.audio.volume === 0)) ? Qt.rgba(255, 255, 255, 0.5) : "white"
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: AudioService.audioAvailable
+                    }
+                }
+
+                // Separator
+                Rectangle {
+                    width: 1
+                    height: 24
+                    color: Qt.rgba(255, 255, 255, 0.2)
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: BatteryService.batteryAvailable && (NetworkService.networkAvailable || BluetoothService.enabled || AudioService.audioAvailable)
+                }
+
+                // Battery section
+                Row {
+                    spacing: 4
+                    visible: BatteryService.batteryAvailable
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    DankIcon {
+                        name: {
+                            if (BatteryService.isCharging) {
+                                if (BatteryService.batteryLevel >= 90)
+                                    return "battery_charging_full"
+                                if (BatteryService.batteryLevel >= 80)
+                                    return "battery_charging_90"
+                                if (BatteryService.batteryLevel >= 60)
+                                    return "battery_charging_80"
+                                if (BatteryService.batteryLevel >= 50)
+                                    return "battery_charging_60"
+                                if (BatteryService.batteryLevel >= 30)
+                                    return "battery_charging_50"
+                                if (BatteryService.batteryLevel >= 20)
+                                    return "battery_charging_30"
+                                return "battery_charging_20"
+                            }
+
+                            // Check if plugged in but not charging (like at 80% charge limit)
+                            if (BatteryService.isPluggedIn) {
+                                if (BatteryService.batteryLevel >= 90)
+                                    return "battery_charging_full"
+                                if (BatteryService.batteryLevel >= 80)
+                                    return "battery_charging_90"
+                                if (BatteryService.batteryLevel >= 60)
+                                    return "battery_charging_80"
+                                if (BatteryService.batteryLevel >= 50)
+                                    return "battery_charging_60"
+                                if (BatteryService.batteryLevel >= 30)
+                                    return "battery_charging_50"
+                                if (BatteryService.batteryLevel >= 20)
+                                    return "battery_charging_30"
+                                return "battery_charging_20"
+                            }
+
+                            // On battery power
+                            if (BatteryService.batteryLevel >= 95)
+                                return "battery_full"
+                            if (BatteryService.batteryLevel >= 85)
+                                return "battery_6_bar"
+                            if (BatteryService.batteryLevel >= 70)
+                                return "battery_5_bar"
+                            if (BatteryService.batteryLevel >= 55)
+                                return "battery_4_bar"
+                            if (BatteryService.batteryLevel >= 40)
+                                return "battery_3_bar"
+                            if (BatteryService.batteryLevel >= 25)
+                                return "battery_2_bar"
+                            return "battery_1_bar"
+                        }
+                        size: Theme.iconSize
+                        color: {
+                            if (BatteryService.isLowBattery && !BatteryService.isCharging)
+                                return Theme.error
+                            if (BatteryService.isCharging || BatteryService.isPluggedIn)
+                                return Theme.primary
+                            return "white"
+                        }
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    StyledText {
+                        text: BatteryService.batteryLevel + "%"
+                        font.pixelSize: Theme.fontSizeLarge
+                        font.weight: Font.Light
+                        color: "white"
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+            }
 
         Row {
             anchors.bottom: parent.bottom
