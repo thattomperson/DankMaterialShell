@@ -47,6 +47,14 @@ PanelWindow {
         
         // Configure GPU temperature monitoring based on widget configuration
         updateGpuTempConfig()
+        
+        // Activate loaders needed for TopBar components
+        centcomPopoutLoader.active = true
+        processListPopoutLoader.active = true
+        notificationCenterLoader.active = true
+        batteryPopoutLoader.active = true
+        controlCenterLoader.active = true
+        appDrawerLoader.active = true
     }
     
     function updateGpuTempConfig() {
@@ -642,10 +650,7 @@ PanelWindow {
                                     return "center"
                                 return "center"
                             }
-                            popupTarget: {
-                                centcomPopoutLoader.active = true
-                                return centcomPopoutLoader.item
-                            }
+                            popupTarget: centcomPopoutLoader.item
                             parentScreen: root.screen
                             onClockClicked: {
                                 centcomPopoutLoader.active = true
@@ -670,10 +675,7 @@ PanelWindow {
                                     return "center"
                                 return "center"
                             }
-                            popupTarget: {
-                                centcomPopoutLoader.active = true
-                                return centcomPopoutLoader.item
-                            }
+                            popupTarget: centcomPopoutLoader.item
                             parentScreen: root.screen
                             onClicked: {
                                 centcomPopoutLoader.active = true
@@ -697,10 +699,7 @@ PanelWindow {
                                     return "center"
                                 return "center"
                             }
-                            popupTarget: {
-                                centcomPopoutLoader.active = true
-                                return centcomPopoutLoader.item
-                            }
+                            popupTarget: centcomPopoutLoader.item
                             parentScreen: root.screen
                             onClicked: {
                                 centcomPopoutLoader.active = true
@@ -750,10 +749,7 @@ PanelWindow {
                                     return "center"
                                 return "right"
                             }
-                            popupTarget: {
-                                processListPopoutLoader.active = true
-                                return processListPopoutLoader.item
-                            }
+                            popupTarget: processListPopoutLoader.item
                             parentScreen: root.screen
                             toggleProcessList: () => {
                                 processListPopoutLoader.active = true
@@ -776,10 +772,7 @@ PanelWindow {
                                     return "center"
                                 return "right"
                             }
-                            popupTarget: {
-                                processListPopoutLoader.active = true
-                                return processListPopoutLoader.item
-                            }
+                            popupTarget: processListPopoutLoader.item
                             parentScreen: root.screen
                             toggleProcessList: () => {
                                 processListPopoutLoader.active = true
@@ -802,10 +795,7 @@ PanelWindow {
                                     return "center"
                                 return "right"
                             }
-                            popupTarget: {
-                                processListPopoutLoader.active = true
-                                return processListPopoutLoader.item
-                            }
+                            popupTarget: processListPopoutLoader.item
                             parentScreen: root.screen
                             toggleProcessList: () => {
                                 processListPopoutLoader.active = true
@@ -828,10 +818,7 @@ PanelWindow {
                                     return "center"
                                 return "right"
                             }
-                            popupTarget: {
-                                processListPopoutLoader.active = true
-                                return processListPopoutLoader.item
-                            }
+                            popupTarget: processListPopoutLoader.item
                             parentScreen: root.screen
                             widgetData: parent.widgetData
                             toggleProcessList: () => {
@@ -857,10 +844,7 @@ PanelWindow {
                                     return "center"
                                 return "right"
                             }
-                            popupTarget: {
-                                notificationCenterLoader.active = true
-                                return notificationCenterLoader.item
-                            }
+                            popupTarget: notificationCenterLoader.item
                             parentScreen: root.screen
                             onClicked: {
                                 notificationCenterLoader.active = true
@@ -886,10 +870,7 @@ PanelWindow {
                                     return "center"
                                 return "right"
                             }
-                            popupTarget: {
-                                batteryPopoutLoader.active = true
-                                return batteryPopoutLoader.item
-                            }
+                            popupTarget: batteryPopoutLoader.item
                             parentScreen: root.screen
                             onToggleBatteryPopup: {
                                 batteryPopoutLoader.active = true
@@ -914,10 +895,7 @@ PanelWindow {
                                     return "center"
                                 return "right"
                             }
-                            popupTarget: {
-                                controlCenterLoader.active = true
-                                return controlCenterLoader.item
-                            }
+                            popupTarget: controlCenterLoader.item
                             parentScreen: root.screen
                             onClicked: {
                                 controlCenterLoader.active = true
