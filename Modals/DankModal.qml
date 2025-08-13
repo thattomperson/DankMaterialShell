@@ -8,6 +8,7 @@ PanelWindow {
     id: root
 
     property alias content: contentLoader.sourceComponent
+    property alias contentLoader: contentLoader
     property real width: 400
     property real height: 300
     readonly property real screenWidth: screen ? screen.width : 1920
@@ -201,8 +202,8 @@ PanelWindow {
         onVisibleChanged: {
             if (visible)
                 Qt.callLater(function() {
-                    focusScope.forceActiveFocus();
-                });
+                focusScope.forceActiveFocus();
+            });
 
         }
     }
