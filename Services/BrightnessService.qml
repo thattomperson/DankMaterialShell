@@ -22,12 +22,8 @@ Singleton {
 
     signal brightnessChanged()
     signal deviceSwitched()
-    signal nightModeActiveChanged()
     
     property bool nightModeActive: false
-    onNightModeActiveChanged: {
-        // Emit signal when property changes for UI reactivity
-    }
 
     function setBrightnessInternal(percentage, device) {
         const clampedValue = Math.max(1, Math.min(100, percentage));
