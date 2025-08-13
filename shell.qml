@@ -42,50 +42,25 @@ ShellRoot {
 
     delegate: Dock {
       modelData: item
-      contextMenu: dockContextMenuLoader.item ? dockContextMenuLoader.item : null
-      windowsMenu: dockWindowsMenuLoader.item ? dockWindowsMenuLoader.item : null
-      
-      Component.onCompleted: {
-        dockContextMenuLoader.active = true
-        dockWindowsMenuLoader.active = true
-      }
+      contextMenu: dockContextMenu
+      windowsMenu: dockWindowsMenu
     }
   }
 
-  LazyLoader {
-    id: centcomPopoutLoader
-    active: false
-    
-    CentcomPopout {
-      id: centcomPopout
-    }
+  CentcomPopout {
+    id: centcomPopout
   }
 
-  LazyLoader {
-    id: dockContextMenuLoader
-    active: false
-    
-    DockContextMenu {
-      id: dockContextMenu
-    }
+  DockContextMenu {
+    id: dockContextMenu
   }
 
-  LazyLoader {
-    id: dockWindowsMenuLoader
-    active: false
-    
-    DockWindowsMenu {
-      id: dockWindowsMenu
-    }
+  DockWindowsMenu {
+    id: dockWindowsMenu
   }
 
-  LazyLoader {
-    id: notificationCenterLoader
-    active: false
-    
-    NotificationCenterPopout {
-      id: notificationCenter
-    }
+  NotificationCenterPopout {
+    id: notificationCenter
   }
 
   Variants {
@@ -96,93 +71,50 @@ ShellRoot {
     }
   }
 
-  LazyLoader {
-    id: controlCenterLoader
-    active: false
-    
-    ControlCenterPopout {
-      id: controlCenterPopout
+  ControlCenterPopout {
+    id: controlCenterPopout
 
-      onPowerActionRequested: (action, title, message) => {
-                              powerConfirmModalLoader.active = true
-                              if (powerConfirmModalLoader.item) {
-                                powerConfirmModalLoader.item.powerConfirmAction = action
-                                powerConfirmModalLoader.item.powerConfirmTitle = title
-                                powerConfirmModalLoader.item.powerConfirmMessage = message
-                                powerConfirmModalLoader.item.powerConfirmVisible = true
-                              }
+    onPowerActionRequested: (action, title, message) => {
+                              powerConfirmModal.powerConfirmAction = action
+                              powerConfirmModal.powerConfirmTitle = title
+                              powerConfirmModal.powerConfirmMessage = message
+                              powerConfirmModal.powerConfirmVisible = true
                             }
-      onLockRequested: {
-        lock.activate()
-      }
+    onLockRequested: {
+      lock.activate()
     }
   }
 
-  LazyLoader {
-    id: wifiPasswordModalLoader
-    active: false
-    
-    WifiPasswordModal {
-      id: wifiPasswordModal
-    }
+  WifiPasswordModal {
+    id: wifiPasswordModal
   }
 
-  LazyLoader {
-    id: networkInfoModalLoader
-    active: false
-    
-    NetworkInfoModal {
-      id: networkInfoModal
-    }
+  NetworkInfoModal {
+    id: networkInfoModal
   }
 
-  LazyLoader {
-    id: batteryPopoutLoader
-    active: false
-    
-    BatteryPopout {
-      id: batteryPopout
-    }
+  BatteryPopout {
+    id: batteryPopout
   }
 
-  LazyLoader {
-    id: powerMenuLoader
-    active: false
-    
-    PowerMenu {
-      id: powerMenu
-    }
+  PowerMenu {
+    id: powerMenu
   }
 
-  LazyLoader {
-    id: powerConfirmModalLoader
-    active: false
-    
-    PowerConfirmModal {
-      id: powerConfirmModal
-    }
+  PowerConfirmModal {
+    id: powerConfirmModal
   }
 
-  LazyLoader {
-    id: processListPopoutLoader
-    active: false
-    
-    ProcessListPopout {
-      id: processListPopout
-    }
+  ProcessListPopout {
+    id: processListPopout
   }
 
   SettingsModal {
     id: settingsModal
   }
 
-  LazyLoader {
-    id: appDrawerLoader
-    active: false
-    
-    AppDrawerPopout {
-      id: appDrawerPopout
-    }
+  AppDrawerPopout {
+    id: appDrawerPopout
   }
 
   SpotlightModal {

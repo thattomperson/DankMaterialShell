@@ -145,13 +145,13 @@ Singleton {
       id: matugenCollector
 
       onStreamFinished: {
-        if (!matugenCollector.text) {
+        if (!text) {
           ToastService.wallpaperErrorStatus = "error"
           ToastService.showError("Wallpaper Processing Failed: Empty JSON extracted from matugen output.")
           return
         }
         try {
-          root.matugenColors = JSON.parse(matugenCollector.text)
+          root.matugenColors = JSON.parse(text)
           root.colorsUpdated()
           generateAppConfigs()
           ToastService.clearWallpaperError()
