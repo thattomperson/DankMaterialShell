@@ -93,8 +93,8 @@ Singleton {
     function enableNightMode() {
         if (nightModeActive) return;
         
-        nightModeActive = true;
-        SessionData.setNightModeEnabled(true);
+        // Test if gammastep exists before enabling
+        gammaStepTestProcess.running = true;
     }
     
     function updateNightModeTemperature(temperature) {
@@ -236,6 +236,25 @@ Singleton {
     }
 
     Process {
+        id: gammaStepTestProcess
+        
+        command: ["which", "gammastep"]
+        running: false
+        
+        onExited: function(exitCode) {
+            if (exitCode === 0) {
+                // gammastep exists, enable night mode
+                nightModeActive = true;
+                SessionData.setNightModeEnabled(true);
+            } else {
+                // gammastep not found
+                console.warn("BrightnessService: gammastep not found");
+                ToastService.showWarning("Night mode failed: gammastep not found");
+            }
+        }
+    }
+    
+    Process {
         id: gammaStepProcess
         
         command: {
@@ -245,12 +264,12 @@ Singleton {
         running: nightModeActive
         
         onExited: function(exitCode) {
-            // Only show error if we're still supposed to be active (not manually disabled)
-            if (exitCode !== 0 && nightModeActive) {
-                console.warn("BrightnessService: Failed to enable night mode (gammastep not found or error)");
+            // If process exits with non-zero code while we think it should be running
+            if (nightModeActive && exitCode !== 0) {
+                console.warn("BrightnessService: Night mode process crashed with exit code:", exitCode);
                 nightModeActive = false;
                 SessionData.setNightModeEnabled(false);
-                ToastService.showWarning("Night mode failed: gammastep not found or error occurred");
+                ToastService.showWarning("Night mode failed: process crashed");
             }
         }
     }
