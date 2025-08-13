@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs.Common
 pragma Singleton
 pragma ComponentBehavior
 
@@ -21,6 +22,12 @@ Singleton {
 
     signal brightnessChanged()
     signal deviceSwitched()
+    signal nightModeActiveChanged()
+    
+    property bool nightModeActive: false
+    onNightModeActiveChanged: {
+        // Emit signal when property changes for UI reactivity
+    }
 
     function setBrightnessInternal(percentage, device) {
         const clampedValue = Math.max(1, Math.min(100, percentage));
@@ -86,9 +93,52 @@ Singleton {
         }
         return null;
     }
+    
+    function enableNightMode() {
+        if (nightModeActive) return;
+        
+        nightModeActive = true;
+        SessionData.setNightModeEnabled(true);
+    }
+    
+    function updateNightModeTemperature(temperature) {
+        SessionData.setNightModeTemperature(temperature);
+        
+        // If night mode is active, restart it with new temperature
+        if (nightModeActive) {
+            // Temporarily disable and re-enable to restart with new temp
+            nightModeActive = false;
+            Qt.callLater(() => {
+                if (SessionData.nightModeEnabled) {
+                    nightModeActive = true;
+                }
+            });
+        }
+    }
+    
+    function disableNightMode() {
+        nightModeActive = false;
+        SessionData.setNightModeEnabled(false);
+        
+        // Also kill any stray gammastep processes
+        Quickshell.execDetached(["pkill", "gammastep"]);
+    }
+    
+    function toggleNightMode() {
+        if (nightModeActive) {
+            disableNightMode();
+        } else {
+            enableNightMode();
+        }
+    }
 
     Component.onCompleted: {
         refreshDevices();
+        
+        // Check if night mode was enabled on startup
+        if (SessionData.nightModeEnabled) {
+            enableNightMode();
+        }
     }
 
     Process {
@@ -189,6 +239,26 @@ Singleton {
 
     }
 
+    Process {
+        id: gammaStepProcess
+        
+        command: {
+            const temperature = SessionData.nightModeTemperature || 4500;
+            return ["gammastep", "-m", "wayland", "-O", String(temperature)];
+        }
+        running: nightModeActive
+        
+        onExited: function(exitCode) {
+            // Only show error if we're still supposed to be active (not manually disabled)
+            if (exitCode !== 0 && nightModeActive) {
+                console.warn("BrightnessService: Failed to enable night mode (gammastep not found or error)");
+                nightModeActive = false;
+                SessionData.setNightModeEnabled(false);
+                ToastService.showWarning("Night mode failed: gammastep not found or error occurred");
+            }
+        }
+    }
+    
     // IPC Handler for external control
     IpcHandler {
         function set(percentage: string, device: string) : string {
@@ -268,6 +338,65 @@ Singleton {
         }
 
         target: "brightness"
+    }
+    
+    // IPC Handler for night mode control
+    IpcHandler {
+        function toggle() : string {
+            root.toggleNightMode();
+            return root.nightModeActive ? "Night mode enabled" : "Night mode disabled";
+        }
+        
+        function enable() : string {
+            root.enableNightMode();
+            return "Night mode enabled";
+        }
+        
+        function disable() : string {
+            root.disableNightMode();
+            return "Night mode disabled";
+        }
+        
+        function status() : string {
+            return root.nightModeActive ? "Night mode is enabled" : "Night mode is disabled";
+        }
+        
+        function temperature(value: string) : string {
+            if (!value) {
+                return "Current temperature: " + SessionData.nightModeTemperature + "K";
+            }
+            
+            const temp = parseInt(value);
+            if (isNaN(temp)) {
+                return "Invalid temperature. Use a value between 2500 and 6000 (in steps of 500)";
+            }
+            
+            // Validate temperature is in valid range and steps
+            if (temp < 2500 || temp > 6000) {
+                return "Temperature must be between 2500K and 6000K";
+            }
+            
+            // Round to nearest 500
+            const rounded = Math.round(temp / 500) * 500;
+            
+            SessionData.setNightModeTemperature(rounded);
+            
+            // If night mode is active, restart it with new temperature
+            if (root.nightModeActive) {
+                root.nightModeActive = false;
+                Qt.callLater(() => {
+                    root.nightModeActive = true;
+                });
+            }
+            
+            if (rounded !== temp) {
+                return "Night mode temperature set to " + rounded + "K (rounded from " + temp + "K)";
+            } else {
+                return "Night mode temperature set to " + rounded + "K";
+            }
+        }
+        
+        target: "night"
     }
 
 }

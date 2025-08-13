@@ -39,28 +39,6 @@ Item {
 
     }
 
-    Process {
-        id: nightModeEnableProcess
-
-        command: ["bash", "-c", "if command -v wlsunset > /dev/null; then pkill wlsunset; wlsunset -t 3000 & elif command -v redshift > /dev/null; then pkill redshift; redshift -P -O 3000 & else echo 'No night mode tool available'; fi"]
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode !== 0)
-                SettingsData.setNightModeEnabled(false);
-
-        }
-    }
-
-    Process {
-        id: nightModeDisableProcess
-
-        command: ["bash", "-c", "pkill wlsunset; pkill redshift; if command -v wlsunset > /dev/null; then wlsunset -t 6500 -T 6500 & sleep 1; pkill wlsunset; elif command -v redshift > /dev/null; then redshift -P -O 6500; redshift -x; fi"]
-        running: false
-        onExited: (exitCode) => {
-            if (exitCode !== 0) {
-            }
-        }
-    }
 
     Component {
         id: brightnessComponent
@@ -155,25 +133,25 @@ Item {
                     width: (parent.width - Theme.spacingM) / 2
                     height: 80
                     radius: Theme.cornerRadius
-                    color: SettingsData.nightModeEnabled ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : (nightModeToggle.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08))
-                    border.color: SettingsData.nightModeEnabled ? Theme.primary : "transparent"
-                    border.width: SettingsData.nightModeEnabled ? 1 : 0
+                    color: BrightnessService.nightModeActive ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : (nightModeToggle.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08))
+                    border.color: BrightnessService.nightModeActive ? Theme.primary : "transparent"
+                    border.width: BrightnessService.nightModeActive ? 1 : 0
 
                     Column {
                         anchors.centerIn: parent
                         spacing: Theme.spacingS
 
                         DankIcon {
-                            name: SettingsData.nightModeEnabled ? "nightlight" : "dark_mode"
+                            name: BrightnessService.nightModeActive ? "nightlight" : "dark_mode"
                             size: Theme.iconSizeLarge
-                            color: SettingsData.nightModeEnabled ? Theme.primary : Theme.surfaceText
+                            color: BrightnessService.nightModeActive ? Theme.primary : Theme.surfaceText
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
 
                         StyledText {
                             text: "Night Mode"
                             font.pixelSize: Theme.fontSizeMedium
-                            color: SettingsData.nightModeEnabled ? Theme.primary : Theme.surfaceText
+                            color: BrightnessService.nightModeActive ? Theme.primary : Theme.surfaceText
                             font.weight: Font.Medium
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
@@ -187,13 +165,7 @@ Item {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            if (SettingsData.nightModeEnabled) {
-                                nightModeDisableProcess.running = true;
-                                SettingsData.setNightModeEnabled(false);
-                            } else {
-                                nightModeEnableProcess.running = true;
-                                SettingsData.setNightModeEnabled(true);
-                            }
+                            BrightnessService.toggleNightMode();
                         }
                     }
 

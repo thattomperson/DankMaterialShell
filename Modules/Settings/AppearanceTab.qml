@@ -60,17 +60,46 @@ Item {
           }
 
           DankToggle {
+            id: nightModeToggle
             width: parent.width
             text: "Night Mode"
             description: "Apply warm color temperature to reduce eye strain"
-            checked: SettingsData.nightModeEnabled
+            checked: BrightnessService.nightModeActive
             onToggled: checked => {
-                         SettingsData.setNightModeEnabled(checked)
-                         if (checked)
-                         nightModeEnableProcess.running = true
-                         else
-                         nightModeDisableProcess.running = true
+                         if (checked !== BrightnessService.nightModeActive) {
+                           if (checked)
+                             BrightnessService.enableNightMode()
+                           else
+                             BrightnessService.disableNightMode()
+                         }
                        }
+            
+            Connections {
+              target: BrightnessService
+              function onNightModeActiveChanged() {
+                nightModeToggle.checked = BrightnessService.nightModeActive
+              }
+            }
+          }
+
+          DankDropdown {
+            width: parent.width
+            text: "Night Mode Temperature"
+            description: BrightnessService.nightModeActive ? "Disable night mode to adjust" : "Set temperature for night mode"
+            enabled: !BrightnessService.nightModeActive
+            opacity: !BrightnessService.nightModeActive ? 1.0 : 0.6
+            currentValue: SessionData.nightModeTemperature + "K"
+            options: {
+              var temps = [];
+              for (var i = 2500; i <= 6000; i += 500) {
+                temps.push(i + "K");
+              }
+              return temps;
+            }
+            onValueChanged: value => {
+                              var temp = parseInt(value.replace("K", ""));
+                              SessionData.setNightModeTemperature(temp);
+                            }
           }
 
           DankToggle {
@@ -904,25 +933,4 @@ Item {
   }
 
 
-  Process {
-    id: nightModeEnableProcess
-
-    command: ["bash", "-c", "if command -v wlsunset > /dev/null; then pkill wlsunset; wlsunset -t 3000 & elif command -v redshift > /dev/null; then pkill redshift; redshift -P -O 3000 & else echo 'No night mode tool available'; fi"]
-    running: false
-    onExited: exitCode => {
-                if (exitCode !== 0)
-                SettingsData.setNightModeEnabled(true)
-              }
-  }
-
-  Process {
-    id: nightModeDisableProcess
-
-    command: ["bash", "-c", "pkill wlsunset; pkill redshift; if command -v wlsunset > /dev/null; then wlsunset -t 6500 -T 6500 & sleep 1; pkill wlsunset; elif command -v redshift > /dev/null; then redshift -P -O 6500; redshift -x; fi"]
-    running: false
-    onExited: exitCode => {
-                if (exitCode !== 0)
-                SettingsData.setNightModeEnabled(false)
-              }
-  }
 }

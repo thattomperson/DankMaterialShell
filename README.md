@@ -165,7 +165,7 @@ make && sudo make install
 ```bash
 # Arch Linux
 pacman -S cava wl-clipboard cliphist brightnessctl
-paru -S matugen dgop-git
+paru -S matugen dgop
 
 # Fedora
 sudo dnf install cava wl-clipboard brightnessctl
@@ -175,12 +175,13 @@ sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 
 **What you get:**
 
-- `dgop-git`: Ability to have system resource widgets, process list modal, and temperature monitoring.
+- `dgop`: Ability to have system resource widgets, process list modal, and temperature monitoring.
 - `matugen`: Wallpaper-based dynamic theming
 - `brightnessctl`: Backlight and LED brightness control
 - `wl-clipboard`: Required for copying various elements to clipboard.
 - `cava`: Audio visualizer
 - `cliphist`: Clipboard history
+- `gammastep`: Night mode support
 
 </details>
 
