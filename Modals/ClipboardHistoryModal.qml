@@ -388,12 +388,12 @@ DankModal {
         }
 
         Connections {
-          function onOpened() {
-            searchField.forceActiveFocus()
-          }
-
-          function onDialogClosed() {
-            searchField.clearFocus()
+          function onVisibleChanged() {
+            if (clipboardHistoryModal.visible) {
+              Qt.callLater(function () {
+                searchField.forceActiveFocus()
+              })
+            }
           }
 
           target: clipboardHistoryModal
