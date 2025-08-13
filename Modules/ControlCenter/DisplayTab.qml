@@ -102,6 +102,7 @@ Item {
             }
 
             DankSlider {
+                id: brightnessSlider
                 width: parent.width
                 value: BrightnessService.brightnessLevel
                 leftIcon: "brightness_low"
@@ -114,6 +115,17 @@ Item {
                 onSliderDragFinished: function(finalValue) {
                     brightnessDebounceTimer.stop();
                     BrightnessService.setBrightnessInternal(finalValue, BrightnessService.currentDevice);
+                }
+
+                Connections {
+                    target: BrightnessService
+                    function onBrightnessChanged() {
+                        brightnessSlider.value = BrightnessService.brightnessLevel;
+                    }
+                    
+                    function onDeviceSwitched() {
+                        brightnessSlider.value = BrightnessService.brightnessLevel;
+                    }
                 }
             }
 
