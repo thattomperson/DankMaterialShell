@@ -121,16 +121,18 @@ DankModal {
               color: "transparent"
 
               Loader {
+                id: personalizationLoader
                 anchors.fill: parent
                 active: settingsTabBar.currentIndex === 0
                 visible: active
-                asynchronous: false
+                asynchronous: true
                 sourceComponent: Component {
                   PersonalizationTab {}
                 }
               }
 
               Loader {
+                id: timeWeatherLoader
                 anchors.fill: parent
                 active: settingsTabBar.currentIndex === 1
                 visible: active
@@ -141,6 +143,7 @@ DankModal {
               }
 
               Loader {
+                id: widgetsLoader
                 anchors.fill: parent
                 active: settingsTabBar.currentIndex === 2
                 visible: active
@@ -151,6 +154,7 @@ DankModal {
               }
 
               Loader {
+                id: launcherLoader
                 anchors.fill: parent
                 active: settingsTabBar.currentIndex === 3
                 visible: active
@@ -161,10 +165,11 @@ DankModal {
               }
 
               Loader {
+                id: appearanceLoader
                 anchors.fill: parent
                 active: settingsTabBar.currentIndex === 4
                 visible: active
-                asynchronous: false
+                asynchronous: true
                 sourceComponent: Component {
                   AppearanceTab {}
                 }

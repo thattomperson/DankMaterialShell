@@ -29,7 +29,6 @@ Singleton {
   property bool gtkThemingEnabled: false
   property bool qtThemingEnabled: false
   property bool systemThemeGenerationInProgress: false
-  property string matugenJson: ""
   property var matugenColors: ({})
   property bool extractionRequested: false
   property int colorUpdateTrigger: 0
@@ -141,51 +140,33 @@ Singleton {
   Process {
     id: matugenProcess
 
-    command: ["matugen", "-v", "image", wallpaperPath, "--json", "hex"]
+    command: ["matugen", "image", wallpaperPath, "--json", "hex"]
 
     stdout: StdioCollector {
       id: matugenCollector
 
       onStreamFinished: {
-        const out = matugenCollector.text
-        const startIndex = out.indexOf('{')
-        const endIndex = out.lastIndexOf('}')
-        let jsonStringOnly = ""
-        if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-            jsonStringOnly = out.substring(startIndex, endIndex + 1)
-        }
-        if (!jsonStringOnly.length) {
+        if (!matugenCollector.text) {
           ToastService.wallpaperErrorStatus = "error"
           ToastService.showError("Wallpaper Processing Failed: Empty JSON extracted from matugen output.")
           return
         }
         try {
-          root.matugenJson = jsonStringOnly
-          root.matugenColors = JSON.parse(jsonStringOnly)
+          root.matugenColors = JSON.parse(matugenCollector.text)
           root.colorsUpdated()
           generateAppConfigs()
           ToastService.clearWallpaperError()
         } catch (e) {
           ToastService.wallpaperErrorStatus = "error"
-          const stderr = matugenErr.text
-          const msg = "Wallpaper processing failed (JSON parse error after extraction)"
-              + (stderr ? `: ${stderr}` : ` with output: ${jsonStringOnly}`)
-          ToastService.showError(msg)
+          ToastService.showError("Wallpaper processing failed (JSON parse error after extraction)")
         }
       }
-    }
-
-    stderr: StdioCollector {
-      id: matugenErr
     }
 
     onExited: code => {
       if (code !== 0) {
         ToastService.wallpaperErrorStatus = "error"
-        const stderr = matugenErr.text
-        const msg = "Matugen command failed with exit code " + code
-            + (stderr ? `: ${stderr}` : ". No stderr output.")
-        ToastService.showError(msg)
+        ToastService.showError("Matugen command failed with exit code " + code)
       }
     }
   }

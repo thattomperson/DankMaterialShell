@@ -175,5 +175,53 @@ Rectangle {
                 }
             }
         }
+        
+        Rectangle {
+            width: parent.width
+            height: 1
+            color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.1)
+        }
+        
+        Item {
+            width: parent.width
+            height: 36
+            
+            Row {
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: Theme.spacingM
+                
+                DankIcon {
+                    name: "notifications_active"
+                    size: Theme.iconSizeSmall
+                    color: SettingsData.notificationOverlayEnabled ? Theme.primary : Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                
+                Column {
+                    spacing: 2
+                    anchors.verticalCenter: parent.verticalCenter
+                    
+                    StyledText {
+                        text: "Notification Overlay"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceText
+                    }
+                    
+                    StyledText {
+                        text: "Display all priorities over fullscreen apps"
+                        font.pixelSize: Theme.fontSizeSmall - 1
+                        color: Theme.surfaceVariantText
+                    }
+                }
+            }
+            
+            DankToggle {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                checked: SettingsData.notificationOverlayEnabled
+                onToggled: (toggled) => SettingsData.setNotificationOverlayEnabled(toggled)
+            }
+        }
     }
 }
