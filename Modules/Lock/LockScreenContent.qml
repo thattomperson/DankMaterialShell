@@ -618,14 +618,14 @@ Item {
                     height: 24
                     color: Qt.rgba(255, 255, 255, 0.2)
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: WeatherService.weather.available && (NetworkService.networkAvailable || BluetoothService.enabled || AudioService.audioAvailable || BatteryService.batteryAvailable)
+                    visible: WeatherService.weather.available && (NetworkService.networkStatus !== "disconnected" || BluetoothService.enabled || (AudioService.sink && AudioService.sink.audio) || BatteryService.batteryAvailable)
                 }
 
                 // System status icons
                 Row {
                     spacing: Theme.spacingM
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: NetworkService.networkAvailable || (BluetoothService.available && BluetoothService.enabled) || AudioService.audioAvailable
+                    visible: NetworkService.networkStatus !== "disconnected" || (BluetoothService.available && BluetoothService.enabled) || (AudioService.sink && AudioService.sink.audio)
 
                     // Network icon
                     DankIcon {
@@ -652,7 +652,7 @@ Item {
                         size: Theme.iconSize - 2
                         color: NetworkService.networkStatus !== "disconnected" ? "white" : Qt.rgba(255, 255, 255, 0.5)
                         anchors.verticalCenter: parent.verticalCenter
-                        visible: NetworkService.networkAvailable
+                        visible: NetworkService.networkStatus !== "disconnected"
                     }
 
                     // Bluetooth icon
@@ -680,7 +680,7 @@ Item {
                         size: Theme.iconSize - 2
                         color: (AudioService.sink && AudioService.sink.audio && (AudioService.sink.audio.muted || AudioService.sink.audio.volume === 0)) ? Qt.rgba(255, 255, 255, 0.5) : "white"
                         anchors.verticalCenter: parent.verticalCenter
-                        visible: AudioService.audioAvailable
+                        visible: AudioService.sink && AudioService.sink.audio
                     }
                 }
 
@@ -690,7 +690,7 @@ Item {
                     height: 24
                     color: Qt.rgba(255, 255, 255, 0.2)
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: BatteryService.batteryAvailable && (NetworkService.networkAvailable || BluetoothService.enabled || AudioService.audioAvailable)
+                    visible: BatteryService.batteryAvailable && (NetworkService.networkStatus !== "disconnected" || BluetoothService.enabled || (AudioService.sink && AudioService.sink.audio))
                 }
 
                 // Battery section
