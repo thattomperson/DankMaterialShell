@@ -362,16 +362,23 @@ PanelWindow {
                         Repeater {
                             model: SettingsData.topBarLeftWidgetsModel
 
-                            Loader {
+                            Item {
                                 property string widgetId: model.widgetId
                                 property var widgetData: model
                                 property int spacerSize: model.size || 20
 
                                 anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                                active: topBarContent.getWidgetVisible(model.widgetId)
-                                sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
-                                opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
-                                asynchronous: true
+                                width: loader.width
+                                height: loader.height
+
+                                Loader {
+                                    id: loader
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    active: topBarContent.getWidgetVisible(parent.widgetId)
+                                    sourceComponent: topBarContent.getWidgetComponent(parent.widgetId)
+                                    opacity: topBarContent.getWidgetEnabled(parent.widgetData.enabled !== undefined ? parent.widgetData.enabled : true) ? 1 : 0
+                                    asynchronous: true
+                                }
                             }
                         }
                     }
@@ -396,10 +403,10 @@ PanelWindow {
                             totalWidth = 0
                             for (var i = 0; i < centerRepeater.count; i++) {
                                 let item = centerRepeater.itemAt(i)
-                                if (item && item.active && item.item) {
-                                    centerWidgets.push(item.item)
+                                if (item && item.loader && item.loader.active && item.loader.item) {
+                                    centerWidgets.push(item.loader.item)
                                     totalWidgets++
-                                    totalWidth += item.item.width
+                                    totalWidth += item.loader.item.width
                                 }
                             }
                             if (totalWidgets > 1)
@@ -483,29 +490,37 @@ PanelWindow {
 
                             model: SettingsData.topBarCenterWidgetsModel
 
-                            Loader {
+                            Item {
                                 property string widgetId: model.widgetId
                                 property var widgetData: model
                                 property int spacerSize: model.size || 20
+                                property alias loader: loader
 
                                 anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                                active: topBarContent.getWidgetVisible(model.widgetId)
-                                sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
-                                opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
-                                asynchronous: true
-                                
-                                onLoaded: {
-                                    if (item) {
-                                        item.onWidthChanged.connect(centerSection.updateLayout)
-                                        if (model.widgetId === "spacer")
-                                            item.spacerSize = Qt.binding(() => {
-                                                return model.size || 20
-                                            })
+                                width: loader.width
+                                height: loader.height
+
+                                Loader {
+                                    id: loader
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    active: topBarContent.getWidgetVisible(parent.widgetId)
+                                    sourceComponent: topBarContent.getWidgetComponent(parent.widgetId)
+                                    opacity: topBarContent.getWidgetEnabled(parent.widgetData.enabled !== undefined ? parent.widgetData.enabled : true) ? 1 : 0
+                                    asynchronous: true
+                                    
+                                    onLoaded: {
+                                        if (item) {
+                                            item.onWidthChanged.connect(centerSection.updateLayout)
+                                            if (parent.widgetId === "spacer")
+                                                item.spacerSize = Qt.binding(() => {
+                                                    return parent.spacerSize
+                                                })
+                                            Qt.callLater(centerSection.updateLayout)
+                                        }
+                                    }
+                                    onActiveChanged: {
                                         Qt.callLater(centerSection.updateLayout)
                                     }
-                                }
-                                onActiveChanged: {
-                                    Qt.callLater(centerSection.updateLayout)
                                 }
                             }
                         }
@@ -530,16 +545,23 @@ PanelWindow {
                         Repeater {
                             model: SettingsData.topBarRightWidgetsModel
 
-                            Loader {
+                            Item {
                                 property string widgetId: model.widgetId
                                 property var widgetData: model
                                 property int spacerSize: model.size || 20
 
                                 anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                                active: topBarContent.getWidgetVisible(model.widgetId)
-                                sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
-                                opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
-                                asynchronous: true
+                                width: loader.width
+                                height: loader.height
+
+                                Loader {
+                                    id: loader
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    active: topBarContent.getWidgetVisible(parent.widgetId)
+                                    sourceComponent: topBarContent.getWidgetComponent(parent.widgetId)
+                                    opacity: topBarContent.getWidgetEnabled(parent.widgetData.enabled !== undefined ? parent.widgetData.enabled : true) ? 1 : 0
+                                    asynchronous: true
+                                }
                             }
                         }
                     }
