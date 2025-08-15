@@ -82,19 +82,6 @@ PanelWindow {
             root.updateGpuTempConfig()
         }
 
-        function onWidgetDataChanged() {
-            Qt.callLater(() => {
-                leftSection.visible = false
-                centerSection.visible = false
-                rightSection.visible = false
-                Qt.callLater(() => {
-                    leftSection.visible = true
-                    centerSection.visible = true
-                    rightSection.visible = true
-                })
-            })
-        }
-
         target: SettingsData
     }
     
