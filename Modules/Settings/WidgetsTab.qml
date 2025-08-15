@@ -374,16 +374,14 @@ Item {
   }
 
   Component.onCompleted: {
-    if (!SettingsData.topBarLeftWidgets
-        || SettingsData.topBarLeftWidgets.length === 0)
+    // Only set defaults if widgets have never been configured (null/undefined, not empty array)
+    if (!SettingsData.topBarLeftWidgets)
       SettingsData.setTopBarLeftWidgets(defaultLeftWidgets)
 
-    if (!SettingsData.topBarCenterWidgets
-        || SettingsData.topBarCenterWidgets.length === 0)
+    if (!SettingsData.topBarCenterWidgets)
       SettingsData.setTopBarCenterWidgets(defaultCenterWidgets)
 
-    if (!SettingsData.topBarRightWidgets
-        || SettingsData.topBarRightWidgets.length === 0)
+    if (!SettingsData.topBarRightWidgets)
       SettingsData.setTopBarRightWidgets(defaultRightWidgets)
     
     ["left", "center", "right"].forEach(sectionId => {
