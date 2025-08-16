@@ -42,27 +42,6 @@ Rectangle {
         }
     }
     
-    ToolTip {
-        visible: mouseArea.containsMouse
-        delay: 1000
-        text: IdleInhibitorService.idleInhibited 
-            ? "Screen timeout disabled\nClick to enable" 
-            : "Screen timeout enabled\nClick to disable"
-        
-        contentItem: Text {
-            text: parent.text || ""
-            font.family: Theme.fontFamily || "Sans"
-            font.pixelSize: Theme.fontSize - 2
-            color: Theme.surfaceText
-        }
-        
-        background: Rectangle {
-            color: Theme.surfaceContainer
-            radius: Theme.cornerRadius
-            border.color: Theme.outline
-            border.width: 1
-        }
-    }
     
     Behavior on color {
         ColorAnimation {
