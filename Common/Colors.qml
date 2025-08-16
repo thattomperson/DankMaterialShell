@@ -151,6 +151,12 @@ Singleton {
           return
         }
         const extractedJson = extractJsonFromText(matugenCollector.text)
+        if (!extractedJson) {
+          ToastService.wallpaperErrorStatus = "error"
+          ToastService.showError("Wallpaper Processing Failed: Invalid JSON extracted from matugen output.")
+          console.log("Raw matugen output:", matugenCollector.text)
+          return
+        }
         try {
           root.matugenColors = JSON.parse(extractedJson)
           root.colorsUpdated()
@@ -320,49 +326,56 @@ Singleton {
     systemThemeRestoreProcess.running = true
   }
 
+  // Returns the first complete JSON substring (object or array) or null.
   function extractJsonFromText(text) {
-    if (!text) return null
-    
-    // Try to find JSON object boundaries
-    const firstBrace = text.indexOf('{')
-    if (firstBrace === -1) return null
-    
-    // Find matching closing brace by counting depth
-    let depth = 0
-    let inString = false
-    let escapeNext = false
-    
-    for (let i = firstBrace; i < text.length; i++) {
-      const ch = text[i]
-      
-      if (escapeNext) {
-        escapeNext = false
-        continue
+    if (!text) return null;
+
+    const start = text.search(/[{\[]/);
+    if (start === -1) return null;
+
+    const open = text[start];
+    const pairs = { '{': '}', '[': ']' };
+    const close = pairs[open];
+    if (!close) return null;
+
+    let inString = false;
+    let escape = false;
+    const stack = [open];
+
+    for (let i = start + 1; i < text.length; i++) {
+      const ch = text[i];
+
+      if (inString) {
+        if (escape) {
+          escape = false;
+        } else if (ch === '\\') {
+          escape = true;
+        } else if (ch === '"') {
+          inString = false;
+        }
+        continue;
       }
-      
-      if (ch === '\\') {
-        escapeNext = true
-        continue
-      }
-      
+
       if (ch === '"') {
-        inString = !inString
-        continue
+        inString = true;
+        continue;
       }
-      
-      if (!inString) {
-        if (ch === '{') depth++
-        else if (ch === '}') {
-          depth--
-          if (depth === 0) {
-            // Found matching closing brace
-            return text.substring(firstBrace, i + 1)
-          }
+      if (ch === '{' || ch === '[') {
+        stack.push(ch);
+        continue;
+      }
+      if (ch === '}' || ch === ']') {
+        const last = stack.pop();
+        if (!last || pairs[last] !== ch) {
+          return null;
+        }
+        if (stack.length === 0) {
+          return text.slice(start, i + 1);
         }
       }
     }
-    
-    return null
+
+    return null;
   }
 
   Process {
