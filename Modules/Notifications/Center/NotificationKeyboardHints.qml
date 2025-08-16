@@ -34,7 +34,7 @@ Rectangle {
         }
         
         StyledText {
-            text: "Del: Clear • 1-9: Actions • ?: Help • Esc: Close"
+            text: "Del: Clear • Shift+Del: Clear All • 1-9: Actions • ?: Help • Esc: Close"
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceText
             anchors.horizontalCenter: parent.horizontalCenter
