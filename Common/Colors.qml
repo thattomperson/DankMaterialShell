@@ -150,8 +150,9 @@ Singleton {
           ToastService.showError("Wallpaper Processing Failed: Empty JSON extracted from matugen output.")
           return
         }
+        const extractedJson = extractJsonFromText(matugenCollector.text)
         try {
-          root.matugenColors = JSON.parse(matugenCollector.text)
+          root.matugenColors = JSON.parse(extractedJson)
           root.colorsUpdated()
           generateAppConfigs()
           ToastService.clearWallpaperError()
@@ -317,6 +318,51 @@ Singleton {
 
     systemThemeRestoreProcess.command = [shellDir + "/generate-themes.sh", "", shellDir, configDir, "restore", isLight, iconTheme, gtkTheming, qtTheming]
     systemThemeRestoreProcess.running = true
+  }
+
+  function extractJsonFromText(text) {
+    if (!text) return null
+    
+    // Try to find JSON object boundaries
+    const firstBrace = text.indexOf('{')
+    if (firstBrace === -1) return null
+    
+    // Find matching closing brace by counting depth
+    let depth = 0
+    let inString = false
+    let escapeNext = false
+    
+    for (let i = firstBrace; i < text.length; i++) {
+      const ch = text[i]
+      
+      if (escapeNext) {
+        escapeNext = false
+        continue
+      }
+      
+      if (ch === '\\') {
+        escapeNext = true
+        continue
+      }
+      
+      if (ch === '"') {
+        inString = !inString
+        continue
+      }
+      
+      if (!inString) {
+        if (ch === '{') depth++
+        else if (ch === '}') {
+          depth--
+          if (depth === 0) {
+            // Found matching closing brace
+            return text.substring(firstBrace, i + 1)
+          }
+        }
+      }
+    }
+    
+    return null
   }
 
   Process {
