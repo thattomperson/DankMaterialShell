@@ -49,7 +49,7 @@ Singleton {
         if (workspace.name && workspace.name.length > 0) {
           root.focusedWindowTitle = workspace.name
         } else {
-          root.focusedWindowTitle = "Workspace " + (workspace.idx + 1)
+          root.focusedWindowTitle = "workspace " + workspace.idx
         }
         root.focusedWindowId = -1
       } else {
