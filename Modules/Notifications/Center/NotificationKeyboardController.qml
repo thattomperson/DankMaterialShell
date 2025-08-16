@@ -478,7 +478,7 @@ QtObject {
             }
         }
         
-        if (event.key === Qt.Key_Question || event.key === Qt.Key_H) {
+        if (event.key === Qt.Key_F10) {
             showKeyboardHints = !showKeyboardHints
             event.accepted = true
         }
