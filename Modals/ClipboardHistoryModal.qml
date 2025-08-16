@@ -38,6 +38,16 @@ DankModal {
             }
         }
         clipboardHistoryModal.totalCount = filteredClipboardModel.count;
+        
+        // Clamp selectedIndex to valid range
+        if (filteredClipboardModel.count === 0) {
+            keyboardNavigationActive = false;
+            selectedIndex = 0;
+        } else if (selectedIndex >= filteredClipboardModel.count) {
+            selectedIndex = filteredClipboardModel.count - 1;
+        }
+        
+        
     }
 
     function toggle() {
@@ -49,6 +59,10 @@ DankModal {
 
     function show() {
         clipboardHistoryModal.visible = true;
+        clipboardHistoryModal.searchText = "";
+        if (typeof searchField !== 'undefined' && searchField) {
+            searchField.text = "";
+        }
         initializeThumbnailSystem();
         refreshClipboard();
         keyboardController.reset();
@@ -57,6 +71,10 @@ DankModal {
     function hide() {
         clipboardHistoryModal.visible = false;
         clipboardHistoryModal.searchText = "";
+        if (typeof searchField !== 'undefined' && searchField) {
+            searchField.text = "";
+        }
+        updateFilteredModel();
         keyboardController.reset();
         cleanupTempFiles();
     }
@@ -83,6 +101,7 @@ DankModal {
     }
 
     function deleteEntry(entry) {
+        deleteProcess.deletedEntry = entry;
         deleteProcess.command = ["sh", "-c", `echo '${entry.replace(
                                /'/g, "'\\''")}' | cliphist delete`];
         deleteProcess.running = true;
@@ -180,13 +199,8 @@ DankModal {
 
             var selectedEntry = filteredClipboardModel.get(selectedIndex).entry;
             deleteEntry(selectedEntry);
-            if (selectedIndex >= filteredClipboardModel.count && filteredClipboardModel.count > 0)
-                selectedIndex = filteredClipboardModel.count - 1;
-
         }
 
-        function ensureVisible() {
-        }
 
         function handleKey(event) {
             if (event.key === Qt.Key_Escape) {
@@ -230,18 +244,17 @@ DankModal {
                     selectPrevious();
                     event.accepted = true;
                 }
+            } else if (event.key === Qt.Key_Delete && (event.modifiers & Qt.ShiftModifier)) {
+                clearAll();
+                hide();
+                event.accepted = true;
             } else if (keyboardNavigationActive) {
-                if (event.key === Qt.Key_C && (event.modifiers & Qt.ControlModifier)) {
+                if ((event.key === Qt.Key_C && (event.modifiers & Qt.ControlModifier)) || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                     copySelected();
                     event.accepted = true;
                 } else if (event.key === Qt.Key_Delete) {
-                    if (event.modifiers & Qt.ShiftModifier) {
-                        showClearConfirmation = true;
-                        event.accepted = true;
-                    } else {
-                        deleteSelected();
-                        event.accepted = true;
-                    }
+                    deleteSelected();
+                    event.accepted = true;
                 }
             }
             if (event.key === Qt.Key_F10) {
@@ -392,12 +405,35 @@ DankModal {
     Process {
         id: deleteProcess
 
+        property string deletedEntry: ""
         running: false
         onExited: (exitCode) => {
-            if (exitCode === 0)
-                refreshClipboard();
-            else
+            if (exitCode === 0) {
+                // Just remove the item from models instead of re-fetching everything
+                for (var i = 0; i < clipboardModel.count; i++) {
+                    if (clipboardModel.get(i).entry === deleteProcess.deletedEntry) {
+                        clipboardModel.remove(i);
+                        break;
+                    }
+                }
+                for (var j = 0; j < filteredClipboardModel.count; j++) {
+                    if (filteredClipboardModel.get(j).entry === deleteProcess.deletedEntry) {
+                        filteredClipboardModel.remove(j);
+                        break;
+                    }
+                }
+                clipboardHistoryModal.totalCount = filteredClipboardModel.count;
+                
+                // Clamp selectedIndex to valid range
+                if (filteredClipboardModel.count === 0) {
+                    keyboardNavigationActive = false;
+                    selectedIndex = 0;
+                } else if (selectedIndex >= filteredClipboardModel.count) {
+                    selectedIndex = filteredClipboardModel.count - 1;
+                }
+            } else {
                 console.warn("Failed to delete clipboard entry");
+            }
         }
     }
 
@@ -559,6 +595,26 @@ DankModal {
                         pressDelay: 0
                         flickableDirection: Flickable.VerticalFlick
                         
+                        function ensureVisible(index) {
+                            if (index < 0 || index >= count)
+                                return;
+
+                            var itemHeight = 72 + spacing;
+                            var itemY = index * itemHeight;
+                            var itemBottom = itemY + itemHeight;
+                            if (itemY < contentY)
+                                contentY = itemY;
+                            else if (itemBottom > contentY + height)
+                                contentY = itemBottom - height;
+                        }
+                        
+                        onCurrentIndexChanged: {
+                            if (keyboardNavigationActive && currentIndex >= 0) {
+                                ensureVisible(currentIndex);
+                            }
+                        }
+                        
+                        
 
                         StyledText {
                             text: "No clipboard entries found"
@@ -584,7 +640,7 @@ DankModal {
                             property alias thumbnailImageSource: thumbnailImageSource
 
                             width: clipboardListView.width
-                            height: Math.max(entryType === "image" ? 72 : 60, contentText.contentHeight + Theme.spacingL)
+                            height: 72
                             radius: Theme.cornerRadius
                             color: {
                                 if (keyboardNavigationActive && index === selectedIndex)
@@ -815,7 +871,7 @@ DankModal {
                     spacing: 2
 
                     StyledText {
-                        text: "↑/↓: Navigate • Ctrl+C: Copy • Del: Delete • F10: Help"
+                        text: "↑/↓: Navigate • Enter/Ctrl+C: Copy • Del: Delete • F10: Help"
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceText
                         anchors.horizontalCenter: parent.horizontalCenter
