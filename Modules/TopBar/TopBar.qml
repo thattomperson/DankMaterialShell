@@ -312,6 +312,8 @@ PanelWindow {
                             return true
                         case "controlCenterButton":
                             return true
+                        case "idleInhibitor":
+                            return true
                         case "spacer":
                             return true
                         case "separator":
@@ -355,6 +357,8 @@ PanelWindow {
                             return batteryComponent
                         case "controlCenterButton":
                             return controlCenterButtonComponent
+                        case "idleInhibitor":
+                            return idleInhibitorComponent
                         case "spacer":
                             return spacerComponent
                         case "separator":
@@ -950,6 +954,23 @@ PanelWindow {
                                     }
                                 }
                             }
+                        }
+                    }
+
+                    Component {
+                        id: idleInhibitorComponent
+
+                        IdleInhibitor {
+                            section: {
+                                if (parent && parent.parent === leftSection)
+                                    return "left"
+                                if (parent && parent.parent === rightSection)
+                                    return "right"
+                                if (parent && parent.parent === centerSection)
+                                    return "center"
+                                return "right"
+                            }
+                            parentScreen: root.screen
                         }
                     }
 
