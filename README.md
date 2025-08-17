@@ -211,6 +211,12 @@ spawn-at-startup "/usr/lib/mate-polkit/polkit-mate-authentication-agent-1"
 // Starts DankShell
 spawn-at-startup "qs" "-c" "DankMaterialShell"
 
+// If using niri newer than 271534e115e5915231c99df287bbfe396185924d (~aug 17 2025)
+// you can add this to disable built in config load errors since dank shell provides this
+config-notification {
+    disable-failed
+}
+
 // Dank keybinds
 // 1. These should not be in conflict with any pre-existing keybindings
 // 2. You need to merge them with your existing config if you want to use these

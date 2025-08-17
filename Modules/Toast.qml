@@ -42,7 +42,7 @@ PanelWindow {
     width: ToastService.hasDetails ? 380 : messageText.implicitWidth + Theme.iconSize + Theme.spacingM * 3 + Theme.spacingL * 2
     height: toastContent.height + Theme.spacingL * 2
     anchors.horizontalCenter: parent.horizontalCenter
-    y: Theme.barHeight + Theme.spacingL
+    y: Theme.barHeight + 2
     color: {
       switch (ToastService.currentLevel) {
       case ToastService.levelError:
