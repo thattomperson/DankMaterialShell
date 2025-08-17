@@ -155,7 +155,7 @@ PanelWindow {
           text: ToastService.currentDetails
           font.pixelSize: Theme.fontSizeSmall
           color: Theme.background
-          font.family: "JetBrains Mono"
+          isMonospace: true
           anchors.left: parent.left
           anchors.right: copyButton.left
           anchors.verticalCenter: parent.verticalCenter
