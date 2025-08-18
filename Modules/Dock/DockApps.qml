@@ -48,7 +48,10 @@ Item {
           clear()
 
           var items = []
-          var runningApps = NiriService.getRunningAppIds()
+          // Use ordered app IDs if available from Niri, fallback to unordered
+          var runningApps = NiriService.niriAvailable && NiriService.getRunningAppIdsOrdered 
+                           ? NiriService.getRunningAppIdsOrdered() 
+                           : NiriService.getRunningAppIds()
           var pinnedApps = [...(SessionData.pinnedApps || [])]
           var addedApps = new Set()
 
@@ -73,6 +76,7 @@ Item {
           var unpinnedAppsSet = new Set()
 
           // First: Add ALL currently running apps that aren't pinned
+          // They come pre-ordered from NiriService if Niri is available
           runningApps.forEach(appId => {
                                 var lowerAppId = appId.toLowerCase()
                                 if (!addedApps.has(lowerAppId)) {

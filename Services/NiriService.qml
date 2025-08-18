@@ -16,6 +16,9 @@ Singleton {
   property string focusedWorkspaceId: ""
   property var currentOutputWorkspaces: []
   property string currentOutput: ""
+  
+  // Output/Monitor management
+  property var outputs: ({})  // Map of output name to output info with positions
 
   // Window management
   property var windows: []
@@ -47,12 +50,46 @@ Singleton {
       root.niriAvailable = exitCode === 0
       if (root.niriAvailable) {
         eventStreamSocket.connected = true
+        fetchOutputs()
       }
     }
   }
 
   function checkNiriAvailability() {
     niriCheck.running = true
+  }
+  
+  function fetchOutputs() {
+    if (niriAvailable) {
+      outputsProcess.running = true
+    }
+  }
+  
+  Process {
+    id: outputsProcess
+    command: ["niri", "msg", "-j", "outputs"]
+    
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          var outputsData = JSON.parse(text)
+          outputs = outputsData
+          console.log("NiriService: Loaded", Object.keys(outputsData).length, "outputs")
+          // Re-sort windows with monitor positions
+          if (windows.length > 0) {
+            windows = sortWindowsByLayout(windows)
+          }
+        } catch (e) {
+          console.warn("NiriService: Failed to parse outputs:", e)
+        }
+      }
+    }
+    
+    onExited: exitCode => {
+      if (exitCode !== 0) {
+        console.warn("NiriService: Failed to fetch outputs, exit code:", exitCode)
+      }
+    }
   }
 
   Socket {
@@ -84,6 +121,66 @@ Singleton {
     connected: root.niriAvailable
   }
 
+  function sortWindowsByLayout(windowList) {
+    return [...windowList].sort((a, b) => {
+      // Get workspace info for both windows
+      var aWorkspace = workspaces[a.workspace_id]
+      var bWorkspace = workspaces[b.workspace_id]
+      
+      if (aWorkspace && bWorkspace) {
+        var aOutput = aWorkspace.output
+        var bOutput = bWorkspace.output
+        
+        // 1. First, sort by monitor position (left to right, top to bottom)
+        var aOutputInfo = outputs[aOutput]
+        var bOutputInfo = outputs[bOutput]
+        
+        if (aOutputInfo && bOutputInfo && 
+            aOutputInfo.logical && bOutputInfo.logical) {
+          // Sort by monitor X position (left to right)
+          if (aOutputInfo.logical.x !== bOutputInfo.logical.x) {
+            return aOutputInfo.logical.x - bOutputInfo.logical.x
+          }
+          // If same X, sort by Y position (top to bottom)
+          if (aOutputInfo.logical.y !== bOutputInfo.logical.y) {
+            return aOutputInfo.logical.y - bOutputInfo.logical.y
+          }
+        }
+        
+        // 2. If same monitor, sort by workspace index
+        if (aOutput === bOutput && aWorkspace.idx !== bWorkspace.idx) {
+          return aWorkspace.idx - bWorkspace.idx
+        }
+      }
+      
+      // 3. If same workspace, sort by actual position within workspace
+      if (a.workspace_id === b.workspace_id && 
+          a.layout && b.layout) {
+        
+        // Use pos_in_scrolling_layout [x, y] coordinates
+        if (a.layout.pos_in_scrolling_layout && 
+            b.layout.pos_in_scrolling_layout) {
+          var aPos = a.layout.pos_in_scrolling_layout
+          var bPos = b.layout.pos_in_scrolling_layout
+          
+          if (aPos.length > 1 && bPos.length > 1) {
+            // Sort by X (horizontal) position first
+            if (aPos[0] !== bPos[0]) {
+              return aPos[0] - bPos[0]
+            }
+            // Then sort by Y (vertical) position
+            if (aPos[1] !== bPos[1]) {
+              return aPos[1] - bPos[1]
+            }
+          }
+        }
+      }
+      
+      // 4. Fallback to window ID for consistent ordering
+      return a.id - b.id
+    })
+  }
+
   function handleNiriEvent(event) {
     if (event.WorkspacesChanged) {
       handleWorkspacesChanged(event.WorkspacesChanged)
@@ -99,6 +196,10 @@ Singleton {
       handleWindowFocusChanged(event.WindowFocusChanged)
     } else if (event.WindowOpenedOrChanged) {
       handleWindowOpenedOrChanged(event.WindowOpenedOrChanged)
+    } else if (event.WindowLayoutsChanged) {
+      handleWindowLayoutsChanged(event.WindowLayoutsChanged)
+    } else if (event.OutputsChanged) {
+      handleOutputsChanged(event.OutputsChanged)
     } else if (event.OverviewOpenedOrClosed) {
       handleOverviewChanged(event.OverviewOpenedOrClosed)
     } else if (event.ConfigLoaded) {
@@ -205,7 +306,7 @@ Singleton {
   }
 
   function handleWindowsChanged(data) {
-    windows = [...data.windows].sort((a, b) => a.id - b.id)
+    windows = sortWindowsByLayout(data.windows)
     updateFocusedWindow()
   }
 
@@ -235,9 +336,9 @@ Singleton {
     if (existingIndex >= 0) {
       let updatedWindows = [...windows]
       updatedWindows[existingIndex] = window
-      windows = updatedWindows.sort((a, b) => a.id - b.id)
+      windows = sortWindowsByLayout(updatedWindows)
     } else {
-      windows = [...windows, window].sort((a, b) => a.id - b.id)
+      windows = sortWindowsByLayout([...windows, window])
     }
 
     if (window.is_focused) {
@@ -249,7 +350,47 @@ Singleton {
 
     windowOpenedOrChanged(window)
   }
+  
+  function handleWindowLayoutsChanged(data) {
+    // Update layout positions for windows that have changed
+    if (!data.changes)
+      return
+      
+    let updatedWindows = [...windows]
+    let hasChanges = false
+    
+    for (const change of data.changes) {
+      const windowId = change[0]
+      const layoutData = change[1]
+      
+      const windowIndex = updatedWindows.findIndex(w => w.id === windowId)
+      if (windowIndex >= 0) {
+        // Create a new object with updated layout
+        var updatedWindow = {}
+        for (var prop in updatedWindows[windowIndex]) {
+          updatedWindow[prop] = updatedWindows[windowIndex][prop]
+        }
+        updatedWindow.layout = layoutData
+        updatedWindows[windowIndex] = updatedWindow
+        hasChanges = true
+      }
+    }
+    
+    if (hasChanges) {
+      windows = sortWindowsByLayout(updatedWindows)
+      // Trigger update in dock and widgets
+      windowsChanged()
+    }
+  }
 
+  function handleOutputsChanged(data) {
+    if (data.outputs) {
+      outputs = data.outputs
+      // Re-sort windows with new monitor positions
+      windows = sortWindowsByLayout(windows)
+    }
+  }
+  
   function handleOverviewChanged(data) {
     inOverview = data.is_open
   }
@@ -392,5 +533,43 @@ Singleton {
                       }
                     })
     return Array.from(appIds)
+  }
+  
+  function getRunningAppIdsOrdered() {
+    // Get unique app IDs in order they appear in the Niri layout
+    // Windows are sorted by workspace and then by position within the workspace
+    var sortedWindows = [...windows].sort((a, b) => {
+      // If both have layout info, sort by position
+      if (a.layout && b.layout && 
+          a.layout.pos_in_scrolling_layout && 
+          b.layout.pos_in_scrolling_layout) {
+        var aPos = a.layout.pos_in_scrolling_layout
+        var bPos = b.layout.pos_in_scrolling_layout
+        
+        // First compare workspace index
+        if (aPos[0] !== bPos[0]) {
+          return aPos[0] - bPos[0]
+        }
+        // Then compare position within workspace
+        return aPos[1] - bPos[1]
+      }
+      // Fallback to window ID if no layout info
+      return a.id - b.id
+    })
+    
+    var appIds = []
+    var seenApps = new Set()
+    
+    sortedWindows.forEach(w => {
+      if (w.app_id) {
+        var lowerAppId = w.app_id.toLowerCase()
+        if (!seenApps.has(lowerAppId)) {
+          appIds.push(lowerAppId)
+          seenApps.add(lowerAppId)
+        }
+      }
+    })
+    
+    return appIds
   }
 }

@@ -10,6 +10,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Modules
+import qs.Modules.TopBar
 import qs.Services
 import qs.Widgets
 
@@ -285,6 +286,8 @@ PanelWindow {
                             return true
                         case "focusedWindow":
                             return true
+                        case "runningApps":
+                            return true
                         case "clock":
                             return true
                         case "music":
@@ -330,6 +333,8 @@ PanelWindow {
                             return workspaceSwitcherComponent
                         case "focusedWindow":
                             return focusedWindowComponent
+                        case "runningApps":
+                            return runningAppsComponent
                         case "clock":
                             return clockComponent
                         case "music":
@@ -648,6 +653,23 @@ PanelWindow {
                         FocusedApp {
                             compactMode: topBarContent.spacingTight
                             availableWidth: topBarContent.leftToMediaGap
+                        }
+                    }
+
+                    Component {
+                        id: runningAppsComponent
+
+                        RunningApps {
+                            section: {
+                                if (parent && parent.parent === leftSection)
+                                    return "left"
+                                if (parent && parent.parent === rightSection)
+                                    return "right"
+                                if (parent && parent.parent === centerSection)
+                                    return "center"
+                                return "left"
+                            }
+                            parentScreen: root.screen
                         }
                     }
 

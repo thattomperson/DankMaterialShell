@@ -26,6 +26,12 @@ Item {
       "icon": "window",
       "enabled": true
     }, {
+      "id": "runningApps",
+      "text": "Running Apps",
+      "description": "Shows all running applications with focus indication",
+      "icon": "apps",
+      "enabled": true
+    }, {
       "id": "clock",
       "text": "Clock",
       "description": "Current time and date display",
