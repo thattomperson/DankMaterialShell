@@ -1,97 +1,108 @@
+import Quickshell
 import QtQuick
 import qs.Common
 import qs.Services
 import qs.Widgets
 
 Rectangle {
-  id: root
+    id: root
 
-  property bool compactMode: SettingsData.focusedWindowCompactMode
-  property int availableWidth: 400
-  readonly property int baseWidth: contentRow.implicitWidth + Theme.spacingS * 2
-  readonly property int maxNormalWidth: 456
-  readonly property int maxCompactWidth: 288
+    property bool compactMode: SettingsData.focusedWindowCompactMode
+    property int availableWidth: 400
+    readonly property int baseWidth: contentRow.implicitWidth + Theme.spacingS * 2
+    readonly property int maxNormalWidth: 456
+    readonly property int maxCompactWidth: 288
 
-  width: compactMode ? Math.min(baseWidth,
-                                maxCompactWidth) : Math.min(baseWidth,
-                                                            maxNormalWidth)
-  height: 30
-  radius: Theme.cornerRadius
-  color: {
-    if (!FocusedWindowService.focusedAppName
-        && !FocusedWindowService.focusedWindowTitle)
-      return "transparent"
+    width: compactMode ? Math.min(baseWidth, maxCompactWidth) : Math.min(baseWidth, maxNormalWidth)
+    height: 30
+    radius: Theme.cornerRadius
+    color: {
+        if (!NiriService.focusedWindowTitle)
+            return "transparent";
 
-    const baseColor = mouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
-    return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
-                   baseColor.a * Theme.widgetTransparency)
-  }
-  clip: true
-  visible: FocusedWindowService.niriAvailable
-           && (FocusedWindowService.focusedAppName
-               || FocusedWindowService.focusedWindowTitle)
+        const baseColor = mouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover;
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+    }
+    clip: true
+    visible: NiriService.niriAvailable && NiriService.focusedWindowTitle
 
-  Row {
-    id: contentRow
+    Row {
+        id: contentRow
 
-    anchors.centerIn: parent
-    spacing: Theme.spacingS
+        anchors.centerIn: parent
+        spacing: Theme.spacingS
 
-    StyledText {
-      id: appText
+        StyledText {
+            id: appText
 
-      text: FocusedWindowService.focusedAppName || ""
-      font.pixelSize: Theme.fontSizeSmall
-      font.weight: Font.Medium
-      color: Theme.surfaceText
-      anchors.verticalCenter: parent.verticalCenter
-      elide: Text.ElideRight
-      maximumLineCount: 1
-      width: Math.min(implicitWidth, compactMode ? 80 : 180)
-      visible: !compactMode && text.length > 0
+            text: {
+                if (!NiriService.focusedWindowId)
+                    return "";
+
+                var window = NiriService.windows.find((w) => {
+                    return w.id == NiriService.focusedWindowId;
+                });
+                if (!window || !window.app_id)
+                    return "";
+
+                var desktopEntry = DesktopEntries.byId(window.app_id);
+                return desktopEntry && desktopEntry.name ? desktopEntry.name : window.app_id;
+            }
+            font.pixelSize: Theme.fontSizeSmall
+            font.weight: Font.Medium
+            color: Theme.surfaceText
+            anchors.verticalCenter: parent.verticalCenter
+            elide: Text.ElideRight
+            maximumLineCount: 1
+            width: Math.min(implicitWidth, compactMode ? 80 : 180)
+            visible: !compactMode && text.length > 0
+        }
+
+        StyledText {
+            text: "•"
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.outlineButton
+            anchors.verticalCenter: parent.verticalCenter
+            visible: !compactMode && appText.text && titleText.text
+        }
+
+        StyledText {
+            id: titleText
+
+            text: NiriService.focusedWindowTitle || ""
+            font.pixelSize: Theme.fontSizeSmall
+            font.weight: Font.Medium
+            color: Theme.surfaceText
+            anchors.verticalCenter: parent.verticalCenter
+            elide: Text.ElideRight
+            maximumLineCount: 1
+            width: Math.min(implicitWidth, compactMode ? 280 : 250)
+            visible: text.length > 0
+        }
+
     }
 
-    StyledText {
-      text: "•"
-      font.pixelSize: Theme.fontSizeSmall
-      color: Theme.outlineButton
-      anchors.verticalCenter: parent.verticalCenter
-      visible: !compactMode && appText.text && titleText.text
+    MouseArea {
+        id: mouseArea
+
+        anchors.fill: parent
+        hoverEnabled: true
     }
 
-    StyledText {
-      id: titleText
+    Behavior on color {
+        ColorAnimation {
+            duration: Theme.shortDuration
+            easing.type: Theme.standardEasing
+        }
 
-      text: FocusedWindowService.focusedWindowTitle || ""
-      font.pixelSize: Theme.fontSizeSmall
-      font.weight: Font.Medium
-      color: Theme.surfaceText
-      anchors.verticalCenter: parent.verticalCenter
-      elide: Text.ElideRight
-      maximumLineCount: 1
-      width: Math.min(implicitWidth, compactMode ? 280 : 250)
-      visible: text.length > 0
     }
-  }
 
-  MouseArea {
-    id: mouseArea
+    Behavior on width {
+        NumberAnimation {
+            duration: Theme.shortDuration
+            easing.type: Theme.standardEasing
+        }
 
-    anchors.fill: parent
-    hoverEnabled: true
-  }
-
-  Behavior on color {
-    ColorAnimation {
-      duration: Theme.shortDuration
-      easing.type: Theme.standardEasing
     }
-  }
 
-  Behavior on width {
-    NumberAnimation {
-      duration: Theme.shortDuration
-      easing.type: Theme.standardEasing
-    }
-  }
 }

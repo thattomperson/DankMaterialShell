@@ -48,87 +48,65 @@ Item {
           clear()
 
           var items = []
-          // Use ordered app IDs if available from Niri, fallback to unordered
-          var runningApps = NiriService.niriAvailable && NiriService.getRunningAppIdsOrdered 
-                           ? NiriService.getRunningAppIdsOrdered() 
-                           : NiriService.getRunningAppIds()
           var pinnedApps = [...(SessionData.pinnedApps || [])]
-          var addedApps = new Set()
-
+          
+          // First section: Pinned apps (always visible, not representing running windows)
           pinnedApps.forEach(appId => {
-                               var lowerAppId = appId.toLowerCase()
-                               if (!addedApps.has(lowerAppId)) {
-                                 var windows = NiriService.getWindowsByAppId(
-                                   appId)
-                                 items.push({
-                                              "appId": appId,
-                                              "windows": windows,
-                                              "isPinned": true,
-                                              "isRunning": windows.length > 0
-                                            })
-                                 addedApps.add(lowerAppId)
-                               }
-                             })
-          root.pinnedAppCount = pinnedApps.length
-          var appUsageRanking = AppUsageHistoryData.appUsageRanking || {}
-
-          var unpinnedApps = []
-          var unpinnedAppsSet = new Set()
-
-          // First: Add ALL currently running apps that aren't pinned
-          // They come pre-ordered from NiriService if Niri is available
-          runningApps.forEach(appId => {
-                                var lowerAppId = appId.toLowerCase()
-                                if (!addedApps.has(lowerAppId)) {
-                                  unpinnedApps.push(appId)
-                                  unpinnedAppsSet.add(lowerAppId)
-                                }
-                              })
-
-          // Then: Fill remaining slots up to 3 with recently used apps
-          var remainingSlots = Math.max(0, 3 - unpinnedApps.length)
-          if (remainingSlots > 0) {
-            // Sort recent apps by usage
-            var recentApps = []
-            for (var appId in appUsageRanking) {
-              var lowerAppId = appId.toLowerCase()
-              if (!addedApps.has(lowerAppId) && !unpinnedAppsSet.has(
-                    lowerAppId)) {
-                recentApps.push({
-                                  "appId": appId,
-                                  "lastUsed": appUsageRanking[appId].lastUsed
-                                  || 0
-                                })
-              }
-            }
-            recentApps.sort((a, b) => b.lastUsed - a.lastUsed)
-
-            var recentToAdd = Math.min(remainingSlots, recentApps.length)
-            for (var i = 0; i < recentToAdd; i++) {
-              unpinnedApps.push(recentApps[i].appId)
-            }
-          }
-          if (pinnedApps.length > 0 && unpinnedApps.length > 0) {
             items.push({
-                         "appId": "__SEPARATOR__",
-                         "windows": [],
-                         "isPinned": false,
-                         "isRunning": false
-                       })
+              "type": "pinned",
+              "appId": appId, 
+              "windowId": -1,  // Use -1 instead of null to avoid ListModel warnings
+              "windowTitle": "",
+              "workspaceId": -1,  // Use -1 instead of null
+              "isPinned": true,
+              "isRunning": false,
+              "isFocused": false
+            })
+          })
+          
+          root.pinnedAppCount = pinnedApps.length
+          
+          // Add separator between pinned and running if both exist
+          if (pinnedApps.length > 0 && NiriService.windows.length > 0) {
+            items.push({
+              "type": "separator",
+              "appId": "__SEPARATOR__",
+              "windowId": -1,  // Use -1 instead of null
+              "windowTitle": "",
+              "workspaceId": -1,  // Use -1 instead of null
+              "isPinned": false,
+              "isRunning": false,
+              "isFocused": false
+            })
           }
-          unpinnedApps.forEach(appId => {
-                                 var windows = NiriService.getWindowsByAppId(
-                                   appId)
-                                 items.push({
-                                              "appId": appId,
-                                              "windows": windows,
-                                              "isPinned": false,
-                                              "isRunning": windows.length > 0
-                                            })
-                               })
+          
+          // Second section: Running windows (sorted by display->workspace->position)
+          // NiriService.windows is already sorted by sortWindowsByLayout
+          NiriService.windows.forEach(window => {
+            // Limit window title length for tooltip
+            var title = window.title || "(Unnamed)"
+            if (title.length > 50) {
+              title = title.substring(0, 47) + "..."
+            }
+            
+            // Check if this window is focused - compare as numbers
+            var isFocused = window.id == NiriService.focusedWindowId
+            
+            items.push({
+              "type": "window",
+              "appId": window.app_id || "",
+              "windowId": window.id || -1,
+              "windowTitle": title,
+              "workspaceId": window.workspace_id || -1,
+              "isPinned": false, 
+              "isRunning": true,
+              "isFocused": isFocused
+            })
+          })
+          
           items.forEach(item => {
-                          append(item)
-                        })
+            append(item)
+          })
         }
       }
 
@@ -136,11 +114,11 @@ Item {
         id: delegateItem
         property alias dockButton: button
 
-        width: model.appId === "__SEPARATOR__" ? 16 : 40
+        width: model.type === "separator" ? 16 : 40
         height: 40
 
         Rectangle {
-          visible: model.appId === "__SEPARATOR__"
+          visible: model.type === "separator"
           width: 2
           height: 20
           color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
@@ -150,7 +128,7 @@ Item {
 
         DockAppButton {
           id: button
-          visible: model.appId !== "__SEPARATOR__"
+          visible: model.type !== "separator"
           anchors.centerIn: parent
 
           width: 40
@@ -161,6 +139,10 @@ Item {
           windowsMenu: root.windowsMenu
           dockApps: root
           index: model.index
+          
+          // Override tooltip for windows to show window title
+          showWindowTitle: model.type === "window"
+          windowTitle: model.windowTitle || ""
         }
       }
     }
@@ -174,7 +156,11 @@ Item {
     function onWindowOpenedOrChanged() {
       dockModel.updateModel()
     }
+    function onFocusedWindowIdChanged() {
+      dockModel.updateModel()
+    }
   }
+
 
   Connections {
     target: SessionData

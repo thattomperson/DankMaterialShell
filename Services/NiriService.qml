@@ -307,6 +307,17 @@ Singleton {
 
   function handleWindowsChanged(data) {
     windows = sortWindowsByLayout(data.windows)
+    
+    // Extract focused window from initial state
+    var focusedWindow = windows.find(w => w.is_focused)
+    if (focusedWindow) {
+      focusedWindowId = String(focusedWindow.id)
+      focusedWindowIndex = windows.findIndex(w => w.id === focusedWindow.id)
+    } else {
+      focusedWindowId = ""
+      focusedWindowIndex = -1
+    }
+    
     updateFocusedWindow()
   }
 
