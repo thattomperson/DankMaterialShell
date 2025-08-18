@@ -71,14 +71,17 @@ https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
   - **App Launcher** with fuzzy search, categories, and auto-sorting by most used apps.
   - **Workspace Switcher** Dynamically resizing niri workspace switcher.
   - **Focused Window** Displays the currently focused window app name and title.
+  - **Running Apps** A view of all running apps, sorted by monitor, workspace, then position on workspace.
   - **Media Player** Short form media player with equalizer, song title, and controls.
   - **Clock** Clock and date widget
   - **Weather** Weather widget with customizable location
   - **System Tray** System tray applets with context menus.
-  - **Process Monitor** CPU/Ram usage indicators - with a detailed process list PopUp
+  - **Process Monitor** CPU, RAM, and GPU usage percentages, temperatures. (requires [dgop](https://github.com/AvengeMedia/dgop))
   - **Power/Battery** Power/Battery widget for battery metrics and power profile changing.
   - **Notifications** Notification bell with a notification center popup
   - **Control Center** High-level view of network, bluetooth, and audio status
+  - **Privacy Indicator** Attempts to reveal if a microphone or screen recording session is active, relying on Pipewire data sources
+  - **Idle Inhibitor** Creates a systemd idle inhibitor to prevent sleep/locking from occuring.
 - **Spotlight Launcher** A central app launcher/search that can be triggered via an IPC keybinding.
 - **Central Command** A combined music, weather, calendar, and events PopUp.
 - **Process List** A process list, with system metrics and information. More detailed modal available via IPC.
@@ -265,7 +268,7 @@ binds {
 
 ### IPC Commands
 
-Control everything from the command line, or via keybinds:
+Control everything from the command line, or via keybinds. For comprehensive documentation of all available IPC commands, see [docs/IPC.md](docs/IPC.md).
 
 ```bash
 # Audio control
