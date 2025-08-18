@@ -595,6 +595,8 @@ Item {
                                     SettingsData.setMediaSize(value)
                                   } else if (widgetId === "focusedWindow") {
                                     SettingsData.setFocusedWindowCompactMode(value)
+                                  } else if (widgetId === "runningApps") {
+                                    SettingsData.setRunningAppsCompactMode(value)
                                   }
                                 }
           onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
@@ -640,6 +642,8 @@ Item {
                                     SettingsData.setMediaSize(value)
                                   } else if (widgetId === "focusedWindow") {
                                     SettingsData.setFocusedWindowCompactMode(value)
+                                  } else if (widgetId === "runningApps") {
+                                    SettingsData.setRunningAppsCompactMode(value)
                                   }
                                 }
           onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
@@ -685,6 +689,8 @@ Item {
                                     SettingsData.setMediaSize(value)
                                   } else if (widgetId === "focusedWindow") {
                                     SettingsData.setFocusedWindowCompactMode(value)
+                                  } else if (widgetId === "runningApps") {
+                                    SettingsData.setRunningAppsCompactMode(value)
                                   }
                                 }
           onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {

@@ -43,6 +43,7 @@ Singleton {
     property var workspaceNameIcons: ({})
     property bool clockCompactMode: false
     property bool focusedWindowCompactMode: false
+    property bool runningAppsCompactMode: true
     property string clockDateFormat: "ddd d"
     property string lockDateFormat: "dddd, MMMM d"
     property int mediaSize: 1
@@ -139,6 +140,8 @@ Singleton {
                 showWorkspacePadding = settings.showWorkspacePadding !== undefined ? settings.showWorkspacePadding : false;
                 workspaceNameIcons = settings.workspaceNameIcons !== undefined ? settings.workspaceNameIcons : ({});
                 clockCompactMode = settings.clockCompactMode !== undefined ? settings.clockCompactMode : false;
+                focusedWindowCompactMode = settings.focusedWindowCompactMode !== undefined ? settings.focusedWindowCompactMode : false;
+                runningAppsCompactMode = settings.runningAppsCompactMode !== undefined ? settings.runningAppsCompactMode : true;
                 clockDateFormat = settings.clockDateFormat !== undefined ? settings.clockDateFormat : "ddd d";
                 lockDateFormat = settings.lockDateFormat !== undefined ? settings.lockDateFormat : "dddd, MMMM d";
                 mediaSize = settings.mediaSize !== undefined ? settings.mediaSize : (settings.mediaCompactMode !== undefined ? (settings.mediaCompactMode ? 0 : 1) : 1);
@@ -236,6 +239,8 @@ Singleton {
             "showWorkspacePadding": showWorkspacePadding,
             "workspaceNameIcons": workspaceNameIcons,
             "clockCompactMode": clockCompactMode,
+            "focusedWindowCompactMode": focusedWindowCompactMode,
+            "runningAppsCompactMode": runningAppsCompactMode,
             "clockDateFormat": clockDateFormat,
             "lockDateFormat": lockDateFormat,
             "mediaSize": mediaSize,
@@ -332,6 +337,11 @@ Singleton {
 
     function setFocusedWindowCompactMode(enabled) {
         focusedWindowCompactMode = enabled;
+        saveSettings();
+    }
+
+    function setRunningAppsCompactMode(enabled) {
+        runningAppsCompactMode = enabled;
         saveSettings();
     }
 

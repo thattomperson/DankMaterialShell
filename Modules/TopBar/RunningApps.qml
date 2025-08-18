@@ -16,7 +16,14 @@ Rectangle {
     // The visual root for this window
     property Item windowRoot: (Window.window ? Window.window.contentItem : null)
     readonly property int windowCount: NiriService.windows.length
-    readonly property int calculatedWidth: windowCount > 0 ? windowCount * 24 + (windowCount - 1) * Theme.spacingXS + Theme.spacingS * 2 : 0
+    readonly property int calculatedWidth: {
+        if (windowCount === 0) return 0;
+        if (SettingsData.runningAppsCompactMode) {
+            return windowCount * 24 + (windowCount - 1) * Theme.spacingXS + Theme.spacingS * 2;
+        } else {
+            return windowCount * (24 + Theme.spacingXS + 120) + (windowCount - 1) * Theme.spacingXS + Theme.spacingS * 2;
+        }
+    }
 
     width: calculatedWidth
     height: 30
@@ -58,7 +65,7 @@ Rectangle {
                     return appName + (windowTitle ? " • " + windowTitle : "");
                 }
 
-                width: 24
+                width: SettingsData.runningAppsCompactMode ? 24 : (24 + Theme.spacingXS + 120)
                 height: 24
 
                 Rectangle {
@@ -85,7 +92,9 @@ Rectangle {
                 IconImage {
                     id: iconImg
 
-                    anchors.centerIn: parent
+                    anchors.left: parent.left
+                    anchors.leftMargin: SettingsData.runningAppsCompactMode ? (parent.width - 18) / 2 : Theme.spacingXS
+                    anchors.verticalCenter: parent.verticalCenter
                     width: 18
                     height: 18
                     source: {
@@ -107,7 +116,9 @@ Rectangle {
 
                 // Fallback text if no icon found
                 Text {
-                    anchors.centerIn: parent
+                    anchors.left: parent.left
+                    anchors.leftMargin: SettingsData.runningAppsCompactMode ? (parent.width - 18) / 2 : Theme.spacingXS
+                    anchors.verticalCenter: parent.verticalCenter
                     visible: !iconImg.visible
                     text: {
                         if (!appId)
@@ -122,6 +133,22 @@ Rectangle {
                     font.pixelSize: 10
                     color: Theme.surfaceText
                     font.weight: Font.Medium
+                }
+
+                // Window title text (only visible in expanded mode)
+                StyledText {
+                    anchors.left: iconImg.right
+                    anchors.leftMargin: Theme.spacingXS
+                    anchors.right: parent.right
+                    anchors.rightMargin: Theme.spacingS
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: !SettingsData.runningAppsCompactMode
+                    text: windowTitle
+                    font.pixelSize: Theme.fontSizeMedium - 1
+                    color: Theme.surfaceText
+                    font.weight: Font.Medium
+                    elide: Text.ElideRight
+                    maximumLineCount: 1
                 }
 
                 MouseArea {

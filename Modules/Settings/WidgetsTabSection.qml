@@ -238,7 +238,7 @@ Column {
 
             Row {
               spacing: Theme.spacingXS
-              visible: modelData.id === "clock" || modelData.id === "music" || modelData.id === "focusedWindow"
+              visible: modelData.id === "clock" || modelData.id === "music" || modelData.id === "focusedWindow" || modelData.id === "runningApps"
               
               DankActionButton {
                 id: smallSizeButton
@@ -279,16 +279,18 @@ Column {
               DankActionButton {
                 id: compactModeButton
                 buttonSize: 28
-                visible: modelData.id === "clock" || modelData.id === "focusedWindow"
+                visible: modelData.id === "clock" || modelData.id === "focusedWindow" || modelData.id === "runningApps"
                 iconName: {
                   if (modelData.id === "clock") return SettingsData.clockCompactMode ? "zoom_out" : "zoom_in"
                   if (modelData.id === "focusedWindow") return SettingsData.focusedWindowCompactMode ? "zoom_out" : "zoom_in"
+                  if (modelData.id === "runningApps") return SettingsData.runningAppsCompactMode ? "zoom_out" : "zoom_in"
                   return "zoom_in"
                 }
                 iconSize: 16
                 iconColor: {
                   if (modelData.id === "clock") return SettingsData.clockCompactMode ? Theme.primary : Theme.outline
                   if (modelData.id === "focusedWindow") return SettingsData.focusedWindowCompactMode ? Theme.primary : Theme.outline
+                  if (modelData.id === "runningApps") return SettingsData.runningAppsCompactMode ? Theme.primary : Theme.outline
                   return Theme.outline
                 }
                 onClicked: {
@@ -296,6 +298,8 @@ Column {
                     root.compactModeChanged("clock", !SettingsData.clockCompactMode)
                   } else if (modelData.id === "focusedWindow") {
                     root.compactModeChanged("focusedWindow", !SettingsData.focusedWindowCompactMode)
+                  } else if (modelData.id === "runningApps") {
+                    root.compactModeChanged("runningApps", !SettingsData.runningAppsCompactMode)
                   }
                 }
               }
