@@ -11,6 +11,11 @@ Rectangle {
     
     property string section: "left"
     property var parentScreen
+    property var hoveredItem: null
+    property var topBar: null
+    
+    // The visual root for this window
+    property Item windowRoot: (Window.window ? Window.window.contentItem : null)
     
     readonly property int windowCount: NiriService.windows.length
     readonly property int calculatedWidth: windowCount > 0 ? windowCount * 24 + (windowCount - 1) * Theme.spacingXS + Theme.spacingS * 2 : 0
@@ -19,6 +24,7 @@ Rectangle {
     height: 30
     radius: Theme.cornerRadius
     visible: windowCount > 0
+    clip: false
     color: {
         if (windowCount === 0)
             return "transparent"
@@ -38,6 +44,7 @@ Rectangle {
             model: NiriService.windows
             
             delegate: Item {
+                id: delegateItem
                 property bool isFocused: String(modelData.id) === String(FocusedWindowService.focusedWindowId)
                 property string appId: modelData.app_id || ""
                 property string windowTitle: modelData.title || "(Unnamed)"
@@ -122,8 +129,33 @@ Rectangle {
                     onClicked: {
                         NiriService.focusWindow(windowId)
                     }
+                    onEntered: {
+                        root.hoveredItem = delegateItem
+                        var globalPos = delegateItem.mapToGlobal(delegateItem.width / 2, delegateItem.height)
+                        tooltipLoader.active = true
+                        if (tooltipLoader.item) {
+                            var tooltipY = Theme.barHeight + SettingsData.topBarSpacing + Theme.spacingXS
+                            tooltipLoader.item.showTooltip(delegateItem.tooltipText, globalPos.x, tooltipY, root.parentScreen)
+                        }
+                    }
+                    onExited: {
+                        if (root.hoveredItem === delegateItem) {
+                            root.hoveredItem = null
+                            if (tooltipLoader.item) {
+                                tooltipLoader.item.hideTooltip()
+                            }
+                            tooltipLoader.active = false
+                        }
+                    }
                 }
             }
+        }
+    }
+    
+    Loader {
+        id: tooltipLoader
+        active: false
+        sourceComponent: RunningAppsTooltip {
         }
     }
 }

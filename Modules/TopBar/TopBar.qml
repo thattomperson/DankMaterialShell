@@ -670,6 +670,7 @@ PanelWindow {
                                 return "left"
                             }
                             parentScreen: root.screen
+                            topBar: topBarContent
                         }
                     }
 
