@@ -6,7 +6,7 @@ import qs.Widgets
 Rectangle {
   id: root
 
-  property bool compactMode: false
+  property bool compactMode: SettingsData.focusedWindowCompactMode
   property int availableWidth: 400
   readonly property int baseWidth: contentRow.implicitWidth + Theme.spacingS * 2
   readonly property int maxNormalWidth: 456
@@ -48,6 +48,7 @@ Rectangle {
       elide: Text.ElideRight
       maximumLineCount: 1
       width: Math.min(implicitWidth, compactMode ? 80 : 180)
+      visible: !compactMode && text.length > 0
     }
 
     StyledText {
@@ -55,7 +56,7 @@ Rectangle {
       font.pixelSize: Theme.fontSizeSmall
       color: Theme.outlineButton
       anchors.verticalCenter: parent.verticalCenter
-      visible: appText.text && titleText.text
+      visible: !compactMode && appText.text && titleText.text
     }
 
     StyledText {
@@ -68,7 +69,7 @@ Rectangle {
       anchors.verticalCenter: parent.verticalCenter
       elide: Text.ElideRight
       maximumLineCount: 1
-      width: Math.min(implicitWidth, compactMode ? 180 : 250)
+      width: Math.min(implicitWidth, compactMode ? 280 : 250)
       visible: text.length > 0
     }
   }

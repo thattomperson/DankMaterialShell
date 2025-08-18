@@ -42,6 +42,7 @@ Singleton {
     property bool showWorkspacePadding: false
     property var workspaceNameIcons: ({})
     property bool clockCompactMode: false
+    property bool focusedWindowCompactMode: false
     property string clockDateFormat: "ddd d"
     property string lockDateFormat: "dddd, MMMM d"
     property int mediaSize: 1
@@ -326,6 +327,11 @@ Singleton {
 
     function setClockCompactMode(enabled) {
         clockCompactMode = enabled;
+        saveSettings();
+    }
+
+    function setFocusedWindowCompactMode(enabled) {
+        focusedWindowCompactMode = enabled;
         saveSettings();
     }
 

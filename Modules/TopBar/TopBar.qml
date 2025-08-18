@@ -651,7 +651,6 @@ PanelWindow {
                         id: focusedWindowComponent
 
                         FocusedApp {
-                            compactMode: topBarContent.spacingTight
                             availableWidth: topBarContent.leftToMediaGap
                         }
                     }

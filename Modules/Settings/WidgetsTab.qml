@@ -593,6 +593,8 @@ Item {
                                     SettingsData.setClockCompactMode(value)
                                   } else if (widgetId === "music") {
                                     SettingsData.setMediaSize(value)
+                                  } else if (widgetId === "focusedWindow") {
+                                    SettingsData.setFocusedWindowCompactMode(value)
                                   }
                                 }
           onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
@@ -636,6 +638,8 @@ Item {
                                     SettingsData.setClockCompactMode(value)
                                   } else if (widgetId === "music") {
                                     SettingsData.setMediaSize(value)
+                                  } else if (widgetId === "focusedWindow") {
+                                    SettingsData.setFocusedWindowCompactMode(value)
                                   }
                                 }
           onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
@@ -679,6 +683,8 @@ Item {
                                     SettingsData.setClockCompactMode(value)
                                   } else if (widgetId === "music") {
                                     SettingsData.setMediaSize(value)
+                                  } else if (widgetId === "focusedWindow") {
+                                    SettingsData.setFocusedWindowCompactMode(value)
                                   }
                                 }
           onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {

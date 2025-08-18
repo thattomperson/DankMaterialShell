@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray
+import Quickshell.Widgets
 import qs.Common
 
 Rectangle {
@@ -74,14 +75,14 @@ Rectangle {
                     }
                 }
 
-                Image {
+                IconImage {
                     anchors.centerIn: parent
                     width: 18
                     height: 18
                     source: parent.iconSource
                     asynchronous: true
                     smooth: true
-                    fillMode: Image.PreserveAspectFit
+                    mipmap: true
                 }
 
                 MouseArea {
