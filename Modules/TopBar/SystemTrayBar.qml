@@ -12,8 +12,7 @@ Rectangle {
 
     readonly property int calculatedWidth: SystemTray.items.values.length
                                            > 0 ? SystemTray.items.values.length
-                                                 * 24 + (SystemTray.items.values.length - 1)
-                                                 * Theme.spacingXS + Theme.spacingS * 2 : 0
+                                                 * 24 + Theme.spacingS * 2 : 0
 
     width: calculatedWidth
     height: 30
@@ -32,7 +31,7 @@ Rectangle {
         id: systemTrayRow
 
         anchors.centerIn: parent
-        spacing: Theme.spacingXS
+        spacing: 0
 
         Repeater {
             model: SystemTray.items.values
@@ -77,8 +76,8 @@ Rectangle {
 
                 IconImage {
                     anchors.centerIn: parent
-                    width: 18
-                    height: 18
+                    width: 16
+                    height: 16
                     source: parent.iconSource
                     asynchronous: true
                     smooth: true
