@@ -358,7 +358,6 @@ Singleton {
                         }
                         if (root.wifiInterface) {
                             resolveWifiSSIDFromDevice.running = true
-                            resolveWifiSSIDFromActiveList.running = true
                         }
                     }
                 } else {
