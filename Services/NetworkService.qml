@@ -351,6 +351,16 @@ Singleton {
                 if (root.wifiConnected) {
                     getWifiIP.running = true
                     getCurrentWifiInfo.running = true
+                    // Ensure SSID is resolved even if scan output lacks ACTIVE marker
+                    if (root.currentWifiSSID === "") {
+                        if (root.wifiConnectionUuid) {
+                            resolveWifiSSID.running = true
+                        }
+                        if (root.wifiInterface) {
+                            resolveWifiSSIDFromDevice.running = true
+                            resolveWifiSSIDFromActiveList.running = true
+                        }
+                    }
                 } else {
                     root.wifiIP = ""
                     root.currentWifiSSID = ""
@@ -426,6 +436,42 @@ Singleton {
                             root.wifiConnectionUuid = uuid
                         }
                     }
+                }             
+            }
+        }
+    }
+    
+    // Resolve SSID from active WiFi connection UUID when scans don't mark any row as ACTIVE.
+    Process {
+        id: resolveWifiSSID
+        command: root.wifiConnectionUuid ? [
+            "nmcli", "-g", "802-11-wireless.ssid", "connection", "show", "uuid", root.wifiConnectionUuid
+        ] : []
+        running: false
+        
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const ssid = text.trim()
+                if (ssid) {
+                    root.currentWifiSSID = ssid
+                }
+            }
+        }
+    }
+
+    // Fallback 2: Resolve SSID from device info (GENERAL.CONNECTION usually matches SSID for WiFi)
+    Process {
+        id: resolveWifiSSIDFromDevice
+        command: root.wifiInterface ? [
+            "nmcli", "-t", "-f", "GENERAL.CONNECTION", "device", "show", root.wifiInterface
+        ] : []
+        running: false
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (!root.currentWifiSSID) {
+                    const name = text.trim()
+                    if (name) root.currentWifiSSID = name
                 }
             }
         }
