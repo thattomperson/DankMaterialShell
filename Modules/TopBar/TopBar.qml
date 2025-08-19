@@ -892,7 +892,7 @@ PanelWindow {
 
                         NotificationCenterButton {
                             hasUnread: root.notificationCount > 0
-                            isActive: notificationCenterLoader.item ? notificationCenterLoader.item.notificationHistoryVisible : false
+                            isActive: notificationCenterLoader.item ? notificationCenterLoader.item.shouldBeVisible : false
                             section: {
                                 if (parent && parent.parent === leftSection)
                                     return "left"
@@ -910,8 +910,7 @@ PanelWindow {
                             onClicked: {
                                 notificationCenterLoader.active = true
                                 if (notificationCenterLoader.item) {
-                                    notificationCenterLoader.item.notificationHistoryVisible
-                                        = !notificationCenterLoader.item.notificationHistoryVisible
+                                    notificationCenterLoader.item.toggle()
                                 }
                             }
                         }
