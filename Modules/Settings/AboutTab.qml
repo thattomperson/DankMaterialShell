@@ -45,7 +45,7 @@ Item {
                             text: "██████╗  █████╗ ███╗   ██╗██╗  ██╗\n██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝\n██║  ██║███████║██╔██╗ ██║█████╔╝ \n██║  ██║██╔══██║██║╚██╗██║██╔═██╗ \n██████╔╝██║  ██║██║ ╚████║██║  ██╗\n╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝"
                             isMonospace: true
                             font.pixelSize: Theme.fontSizeMedium
-                            color: "#D0BCFF"
+                            color: Theme.primary
                             anchors.centerIn: parent
                         }
                     }
