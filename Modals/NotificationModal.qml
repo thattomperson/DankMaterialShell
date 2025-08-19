@@ -15,7 +15,6 @@ DankModal {
     width: 500
     height: 700
     visible: false
-    keyboardFocus: "ondemand"
     onBackgroundClicked: hide()
     onDialogClosed: {
         notificationModalOpen = false
@@ -40,7 +39,7 @@ DankModal {
 
     function show() {
         notificationModalOpen = true
-        visible = true
+        open()
         modalKeyboardController.reset()
         
         if (modalKeyboardController && notificationListRef) {
@@ -51,12 +50,12 @@ DankModal {
 
     function hide() {
         notificationModalOpen = false
-        visible = false
+        close()
         modalKeyboardController.reset()
     }
 
     function toggle() {
-        if (notificationModalOpen)
+        if (shouldBeVisible)
             hide()
         else
             show()

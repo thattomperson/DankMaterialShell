@@ -131,9 +131,7 @@ Rectangle {
                       wifiContextMenuWindow.networkData.ssid)
               } else if (wifiContextMenuWindow.networkData.secured) {
                 if (wifiPasswordModalRef) {
-                  wifiPasswordModalRef.wifiPasswordSSID = wifiContextMenuWindow.networkData.ssid
-                  wifiPasswordModalRef.wifiPasswordInput = ""
-                  wifiPasswordModalRef.wifiPasswordModalVisible = true
+                  wifiPasswordModalRef.show(wifiContextMenuWindow.networkData.ssid)
                 }
               } else {
                 NetworkService.connectToWifi(

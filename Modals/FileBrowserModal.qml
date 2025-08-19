@@ -10,6 +10,8 @@ import qs.Widgets
 
 DankModal {
   id: fileBrowserModal
+  objectName: "fileBrowserModal"
+  allowStacking: true
 
   signal fileSelected(string path)
 
@@ -67,11 +69,10 @@ DankModal {
 
   width: 800
   height: 600
-  keyboardFocus: "ondemand"
   enableShadow: true
   visible: false
 
-  onBackgroundClicked: visible = false
+  onBackgroundClicked: close()
 
   onVisibleChanged: {
     if (visible) {
@@ -145,7 +146,7 @@ DankModal {
           iconSize: Theme.iconSize - 4
           iconColor: Theme.surfaceText
           hoverColor: Theme.errorHover
-          onClicked: fileBrowserModal.visible = false
+          onClicked: fileBrowserModal.close()
           anchors.right: parent.right
           anchors.verticalCenter: parent.verticalCenter
         }

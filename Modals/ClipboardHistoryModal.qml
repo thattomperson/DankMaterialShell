@@ -38,7 +38,6 @@ DankModal {
             }
         }
         clipboardHistoryModal.totalCount = filteredClipboardModel.count;
-        
         // Clamp selectedIndex to valid range
         if (filteredClipboardModel.count === 0) {
             keyboardNavigationActive = false;
@@ -46,34 +45,35 @@ DankModal {
         } else if (selectedIndex >= filteredClipboardModel.count) {
             selectedIndex = filteredClipboardModel.count - 1;
         }
-        
-        
     }
 
     function toggle() {
-        if (visible)
+        if (shouldBeVisible)
             hide();
         else
             show();
     }
 
     function show() {
-        clipboardHistoryModal.visible = true;
+        open();
         clipboardHistoryModal.searchText = "";
-        if (typeof searchField !== 'undefined' && searchField) {
-            searchField.text = "";
-        }
+        
         initializeThumbnailSystem();
         refreshClipboard();
         keyboardController.reset();
+        
+        Qt.callLater(function() {
+            if (contentLoader.item && contentLoader.item.searchField) {
+                contentLoader.item.searchField.text = "";
+                contentLoader.item.searchField.forceActiveFocus();
+            }
+        });
     }
 
     function hide() {
-        clipboardHistoryModal.visible = false;
+        close();
         clipboardHistoryModal.searchText = "";
-        if (typeof searchField !== 'undefined' && searchField) {
-            searchField.text = "";
-        }
+        
         updateFilteredModel();
         keyboardController.reset();
         cleanupTempFiles();
@@ -97,7 +97,7 @@ DankModal {
         const entryId = entry.split('\t')[0];
         Quickshell.execDetached(["sh", "-c", `cliphist decode ${entryId} | wl-copy`]);
         ToastService.showInfo("Copied to clipboard");
-        clipboardHistoryModal.hide();
+        hide();
     }
 
     function deleteEntry(entry) {
@@ -143,7 +143,6 @@ DankModal {
     visible: false
     width: 650
     height: 550
-    keyboardFocus: "ondemand"
     backgroundColor: Theme.popupBackground()
     cornerRadius: Theme.cornerRadius
     borderColor: Theme.outlineMedium
@@ -200,7 +199,6 @@ DankModal {
             var selectedEntry = filteredClipboardModel.get(selectedIndex).entry;
             deleteEntry(selectedEntry);
         }
-
 
         function handleKey(event) {
             if (event.key === Qt.Key_Escape) {
@@ -271,8 +269,7 @@ DankModal {
         visible: showClearConfirmation
         width: 350
         height: 150
-        keyboardFocus: "ondemand"
-        onBackgroundClicked: {
+            onBackgroundClicked: {
             showClearConfirmation = false;
         }
 
@@ -406,6 +403,7 @@ DankModal {
         id: deleteProcess
 
         property string deletedEntry: ""
+
         running: false
         onExited: (exitCode) => {
             if (exitCode === 0) {
@@ -423,7 +421,6 @@ DankModal {
                     }
                 }
                 clipboardHistoryModal.totalCount = filteredClipboardModel.count;
-                
                 // Clamp selectedIndex to valid range
                 if (filteredClipboardModel.count === 0) {
                     keyboardNavigationActive = false;
@@ -459,7 +456,7 @@ DankModal {
         }
 
         function close() {
-            clipboardHistoryModal.hide();
+            hide();
             return "CLIPBOARD_CLOSE_SUCCESS";
         }
 
@@ -473,6 +470,9 @@ DankModal {
 
     clipboardContent: Component {
         Item {
+            id: clipboardContent
+            property alias searchField: searchField
+            
             anchors.fill: parent
 
             Column {
@@ -548,7 +548,7 @@ DankModal {
                     id: searchField
 
                     width: parent.width
-                    placeholderText: "Search clipboard history..."
+                    placeholderText: ""
                     leftIconName: "search"
                     showClearButton: true
                     focus: true
@@ -559,13 +559,22 @@ DankModal {
                         updateFilteredModel();
                     }
                     Keys.onEscapePressed: function(event) {
-                        clipboardHistoryModal.hide();
+                        hide();
                         event.accepted = true;
                     }
                     Component.onCompleted: {
                         Qt.callLater(function() {
                             forceActiveFocus();
                         });
+                    }
+                    
+                    Connections {
+                        target: clipboardHistoryModal
+                        function onOpened() {
+                            Qt.callLater(function() {
+                                searchField.forceActiveFocus();
+                            });
+                        }
                     }
                 }
 
@@ -581,6 +590,19 @@ DankModal {
                     DankListView {
                         id: clipboardListView
 
+                        function ensureVisible(index) {
+                            if (index < 0 || index >= count)
+                                return ;
+
+                            var itemHeight = 72 + spacing;
+                            var itemY = index * itemHeight;
+                            var itemBottom = itemY + itemHeight;
+                            if (itemY < contentY)
+                                contentY = itemY;
+                            else if (itemBottom > contentY + height)
+                                contentY = itemBottom - height;
+                        }
+
                         anchors.fill: parent
                         anchors.margins: Theme.spacingS
                         clip: true
@@ -594,27 +616,11 @@ DankModal {
                         boundsMovement: Flickable.FollowBoundsBehavior
                         pressDelay: 0
                         flickableDirection: Flickable.VerticalFlick
-                        
-                        function ensureVisible(index) {
-                            if (index < 0 || index >= count)
-                                return;
-
-                            var itemHeight = 72 + spacing;
-                            var itemY = index * itemHeight;
-                            var itemBottom = itemY + itemHeight;
-                            if (itemY < contentY)
-                                contentY = itemY;
-                            else if (itemBottom > contentY + height)
-                                contentY = itemBottom - height;
-                        }
-                        
                         onCurrentIndexChanged: {
-                            if (keyboardNavigationActive && currentIndex >= 0) {
+                            if (keyboardNavigationActive && currentIndex >= 0)
                                 ensureVisible(currentIndex);
-                            }
+
                         }
-                        
-                        
 
                         StyledText {
                             text: "No clipboard entries found"

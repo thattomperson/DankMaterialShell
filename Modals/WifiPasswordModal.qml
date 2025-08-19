@@ -7,20 +7,36 @@ import qs.Widgets
 DankModal {
   id: root
 
-  property bool wifiPasswordModalVisible: false
   property string wifiPasswordSSID: ""
   property string wifiPasswordInput: ""
 
-  visible: wifiPasswordModalVisible
+  function show(ssid) {
+    wifiPasswordSSID = ssid
+    wifiPasswordInput = ""
+    open()
+    Qt.callLater(function() {
+      if (contentLoader.item && contentLoader.item.passwordInput) {
+        contentLoader.item.passwordInput.forceActiveFocus()
+      }
+    })
+  }
+
+  shouldBeVisible: false
   width: 420
   height: 230
-  keyboardFocus: "exclusive"
-  onVisibleChanged: {
-    if (!visible)
+  onShouldBeVisibleChanged: {
+    if (!shouldBeVisible)
       wifiPasswordInput = ""
   }
+  onOpened: {
+    Qt.callLater(function() {
+      if (contentLoader.item && contentLoader.item.passwordInput) {
+        contentLoader.item.passwordInput.forceActiveFocus()
+      }
+    })
+  }
   onBackgroundClicked: {
-    wifiPasswordModalVisible = false
+    close()
     wifiPasswordInput = ""
   }
 
@@ -30,7 +46,7 @@ DankModal {
           && NetworkService.connectingSSID !== "") {
         wifiPasswordSSID = NetworkService.connectingSSID
         wifiPasswordInput = ""
-        wifiPasswordModalVisible = true
+        open()
         NetworkService.passwordDialogShouldReopen = false
       }
     }
@@ -40,8 +56,16 @@ DankModal {
 
   content: Component {
     FocusScope {
+      id: wifiContent
+      property alias passwordInput: passwordInput
+      
       anchors.fill: parent
       focus: true
+      Keys.onEscapePressed: function(event) {
+        close()
+        wifiPasswordInput = ""
+        event.accepted = true
+      }
 
       Column {
         anchors.centerIn: parent
@@ -77,7 +101,7 @@ DankModal {
             iconColor: Theme.surfaceText
             hoverColor: Theme.errorHover
             onClicked: {
-              wifiPasswordModalVisible = false
+              close()
               wifiPasswordInput = ""
             }
           }
@@ -91,6 +115,13 @@ DankModal {
           border.color: passwordInput.activeFocus ? Theme.primary : Theme.outlineStrong
           border.width: passwordInput.activeFocus ? 2 : 1
 
+          MouseArea {
+            anchors.fill: parent
+            onClicked: {
+              passwordInput.forceActiveFocus()
+            }
+          }
+
           DankTextField {
             id: passwordInput
 
@@ -99,42 +130,45 @@ DankModal {
             textColor: Theme.surfaceText
             text: wifiPasswordInput
             echoMode: showPasswordCheckbox.checked ? TextInput.Normal : TextInput.Password
-            placeholderText: "Enter password"
+            placeholderText: ""
             backgroundColor: "transparent"
             focus: true
+            enabled: root.shouldBeVisible
             onTextEdited: {
               wifiPasswordInput = text
             }
             onAccepted: {
               NetworkService.connectToWifiWithPassword(wifiPasswordSSID,
                                                        passwordInput.text)
-              wifiPasswordModalVisible = false
+              close()
               wifiPasswordInput = ""
               passwordInput.text = ""
             }
 
-            Timer {
-              id: focusTimer
-              interval: 50
-              onTriggered: passwordInput.forceActiveFocus()
+            Component.onCompleted: {
+              if (root.shouldBeVisible) {
+                focusDelayTimer.start()
+              }
             }
 
-            Component.onCompleted: {
-              focusTimer.start()
+            Timer {
+              id: focusDelayTimer
+              interval: 100
+              repeat: false
+              onTriggered: {
+                if (root.shouldBeVisible) {
+                  passwordInput.forceActiveFocus()
+                }
+              }
             }
 
             Connections {
-              function onOpened() {
-                focusTimer.start()
-              }
-
-              function onVisibleChanged() {
-                if (root.visible) {
-                  focusTimer.start()
+              target: root
+              function onShouldBeVisibleChanged() {
+                if (root.shouldBeVisible) {
+                  focusDelayTimer.start()
                 }
               }
-
-              target: root
             }
           }
         }
@@ -214,7 +248,7 @@ DankModal {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                  wifiPasswordModalVisible = false
+                  close()
                   wifiPasswordInput = ""
                 }
               }
@@ -249,7 +283,7 @@ DankModal {
                 onClicked: {
                   NetworkService.connectToWifiWithPassword(wifiPasswordSSID,
                                                            passwordInput.text)
-                  wifiPasswordModalVisible = false
+                  close()
                   wifiPasswordInput = ""
                   passwordInput.text = ""
                 }

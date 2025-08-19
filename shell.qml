@@ -52,12 +52,13 @@ ShellRoot {
     }
   }
 
-  LazyLoader {
+  Loader {
     id: centcomPopoutLoader
     active: false
-    
-    CentcomPopout {
-      id: centcomPopout
+    sourceComponent: Component {
+      CentcomPopout {
+        id: centcomPopout
+      }
     }
   }
 
@@ -106,10 +107,7 @@ ShellRoot {
       onPowerActionRequested: (action, title, message) => {
                               powerConfirmModalLoader.active = true
                               if (powerConfirmModalLoader.item) {
-                                powerConfirmModalLoader.item.powerConfirmAction = action
-                                powerConfirmModalLoader.item.powerConfirmTitle = title
-                                powerConfirmModalLoader.item.powerConfirmMessage = message
-                                powerConfirmModalLoader.item.powerConfirmVisible = true
+                                powerConfirmModalLoader.item.show(action, title, message)
                               }
                             }
       onLockRequested: {
@@ -151,6 +149,12 @@ ShellRoot {
     
     PowerMenu {
       id: powerMenu
+      onPowerActionRequested: (action, title, message) => {
+        powerConfirmModalLoader.active = true
+        if (powerConfirmModalLoader.item) {
+          powerConfirmModalLoader.item.show(action, title, message)
+        }
+      }
     }
   }
 

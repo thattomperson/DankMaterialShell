@@ -9,10 +9,16 @@ import qs.Widgets
 DankModal {
   id: root
 
-  property bool powerConfirmVisible: false
   property string powerConfirmAction: ""
   property string powerConfirmTitle: ""
   property string powerConfirmMessage: ""
+
+  function show(action, title, message) {
+    powerConfirmAction = action
+    powerConfirmTitle = title
+    powerConfirmMessage = message
+    open()
+  }
 
   function executePowerAction(action) {
     switch (action) {
@@ -31,13 +37,12 @@ DankModal {
     }
   }
 
-  visible: powerConfirmVisible
+  shouldBeVisible: false
   width: 350
   height: 160
-  keyboardFocus: "ondemand"
   enableShadow: false
   onBackgroundClicked: {
-    powerConfirmVisible = false
+    close()
   }
 
   content: Component {
@@ -105,7 +110,7 @@ DankModal {
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
               onClicked: {
-                powerConfirmVisible = false
+                close()
               }
             }
           }
@@ -148,7 +153,7 @@ DankModal {
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
               onClicked: {
-                powerConfirmVisible = false
+                close()
                 executePowerAction(powerConfirmAction)
               }
             }

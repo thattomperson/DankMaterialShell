@@ -303,9 +303,7 @@ Column {
                 NetworkService.connectToWifi(modelData.ssid)
               } else if (modelData.secured) {
                 if (wifiPasswordModalRef) {
-                  wifiPasswordModalRef.wifiPasswordSSID = modelData.ssid
-                  wifiPasswordModalRef.wifiPasswordInput = ""
-                  wifiPasswordModalRef.wifiPasswordModalVisible = true
+                  wifiPasswordModalRef.show(modelData.ssid)
                 }
               } else {
                 NetworkService.connectToWifi(modelData.ssid)

@@ -14,6 +14,7 @@ PanelWindow {
 
   readonly property bool hasActiveMedia: MprisController.activePlayer !== null
   property bool calendarVisible: false
+  property bool shouldBeVisible: false
   property real triggerX: (Screen.width - 480) / 2
   property real triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + 4
   property real triggerWidth: 80
@@ -28,13 +29,29 @@ PanelWindow {
     triggerScreen = screen
   }
 
-  visible: calendarVisible
+  visible: calendarVisible || closeTimer.running
   screen: triggerScreen
   onCalendarVisibleChanged: {
     if (calendarVisible) {
+      closeTimer.stop()
+      shouldBeVisible = true
+      visible = true
       Qt.callLater(() => {
                      calendarGrid.loadEventsForMonth()
                    })
+    } else {
+      shouldBeVisible = false
+      closeTimer.restart()
+    }
+  }
+  
+  Timer {
+    id: closeTimer
+    interval: Theme.mediumDuration + 50
+    onTriggered: {
+      if (!shouldBeVisible) {
+        visible = false
+      }
     }
   }
   onVisibleChanged: {
@@ -45,7 +62,7 @@ PanelWindow {
   implicitHeight: 600
   WlrLayershell.layer: WlrLayershell.Overlay
   WlrLayershell.exclusiveZone: -1
-  WlrLayershell.keyboardFocus: calendarVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+  WlrLayershell.keyboardFocus: shouldBeVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
   color: "transparent"
 
   anchors {
@@ -123,8 +140,8 @@ PanelWindow {
                           Theme.outline.b, 0.08)
     border.width: 1
     layer.enabled: true
-    opacity: calendarVisible ? 1 : 0
-    scale: calendarVisible ? 1 : 0.9
+    opacity: shouldBeVisible ? 1 : 0
+    scale: shouldBeVisible ? 1 : 0.9
     x: calculatedX
     y: root.triggerY
     onOpacityChanged: {
@@ -166,7 +183,7 @@ PanelWindow {
       radius: parent.radius
 
       SequentialAnimation on opacity {
-        running: calendarVisible
+        running: shouldBeVisible
         loops: Animation.Infinite
 
         NumberAnimation {
@@ -296,7 +313,7 @@ PanelWindow {
   MouseArea {
     anchors.fill: parent
     z: -1
-    enabled: calendarVisible
+    enabled: shouldBeVisible
     onClicked: function (mouse) {
       var localPos = mapToItem(mainContainer, mouse.x, mouse.y)
       if (localPos.x < 0 || localPos.x > mainContainer.width || localPos.y < 0

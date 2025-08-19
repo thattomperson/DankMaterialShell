@@ -21,11 +21,9 @@ Item {
     anchors.fill: parent
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
-    z: 1000
-    preventStealing: true
-    propagateComposedEvents: false
+    acceptedButtons: Qt.LeftButton
     
-    onClicked: {
+    onPressed: {
       if (popupTarget && popupTarget.setTriggerPosition) {
         var globalPos = mapToGlobal(0, 0)
         var currentScreen = parentScreen || Screen
@@ -39,15 +37,12 @@ Item {
     }
   }
 
+
   Rectangle {
     anchors.fill: parent
     radius: Theme.cornerRadius
-    color: {
-      const baseColor = launcherArea.containsMouse
-                      || isActive ? Theme.surfaceTextPressed : Theme.surfaceTextHover
-      return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
-                     baseColor.a * Theme.widgetTransparency)
-    }
+    color: Qt.rgba(Theme.surfaceTextHover.r, Theme.surfaceTextHover.g, Theme.surfaceTextHover.b,
+                   Theme.surfaceTextHover.a * Theme.widgetTransparency)
 
     SystemLogo {
       visible: SettingsData.useOSLogo
@@ -67,11 +62,5 @@ Item {
       color: Theme.surfaceText
     }
 
-    Behavior on color {
-      ColorAnimation {
-        duration: Theme.shortDuration
-        easing.type: Theme.standardEasing
-      }
-    }
   }
 }

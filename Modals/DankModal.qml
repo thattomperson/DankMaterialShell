@@ -17,7 +17,6 @@ PanelWindow {
     property real backgroundOpacity: 0.5
     property string positioning: "center"
     property point customPosition: Qt.point(0, 0)
-    property string keyboardFocus: "ondemand"
     property bool closeOnEscapeKey: true
     property bool closeOnBackgroundClick: true
     property string animationType: "scale"
@@ -30,36 +29,50 @@ PanelWindow {
     property bool enableShadow: false
     // Expose the focusScope for external access
     property alias modalFocusScope: focusScope
+    property bool shouldBeVisible: false
+    property bool shouldHaveFocus: shouldBeVisible
+    property bool allowFocusOverride: false
+    property bool allowStacking: false
 
     signal opened()
     signal dialogClosed()
     signal backgroundClicked()
+    
+    Connections {
+        target: ModalManager
+        function onCloseAllModalsExcept(excludedModal) {
+            if (excludedModal !== root && !allowStacking && shouldBeVisible) {
+                close()
+            }
+        }
+    }
 
     function open() {
+        ModalManager.openModal(root)
+        closeTimer.stop();
+        shouldBeVisible = true;
         visible = true;
+        focusScope.forceActiveFocus();
     }
 
     function close() {
-        visible = false;
+        shouldBeVisible = false;
+        closeTimer.restart();
     }
 
     function toggle() {
-        visible = !visible;
+        if (shouldBeVisible)
+            close();
+        else
+            open();
     }
 
+
+    visible: shouldBeVisible
     color: "transparent"
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
-    WlrLayershell.keyboardFocus: {
-        switch (root.keyboardFocus) {
-        case "exclusive":
-            return WlrKeyboardFocus.Exclusive;
-        case "none":
-            return WlrKeyboardFocus.None;
-        default:
-            return WlrKeyboardFocus.OnDemand;
-        }
-    }
+    WlrLayershell.keyboardFocus: shouldHaveFocus ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     onVisibleChanged: {
         if (root.visible) {
             opened();
@@ -71,6 +84,17 @@ PanelWindow {
             dialogClosed();
         }
     }
+
+    Timer {
+        id: closeTimer
+
+        interval: animationDuration + 50
+        onTriggered: {
+            visible = false;
+        }
+    }
+
+
 
     anchors {
         top: true
@@ -84,7 +108,7 @@ PanelWindow {
 
         anchors.fill: parent
         color: "black"
-        opacity: root.showBackground ? (root.visible ? root.backgroundOpacity : 0) : 0
+        opacity: root.showBackground ? (root.shouldBeVisible ? root.backgroundOpacity : 0) : 0
         visible: root.showBackground
 
         MouseArea {
@@ -133,10 +157,10 @@ PanelWindow {
         border.color: root.borderColor
         border.width: root.borderWidth
         layer.enabled: root.enableShadow
-        opacity: root.visible ? 1 : 0
+        opacity: root.shouldBeVisible ? 1 : 0
         scale: {
             if (root.animationType === "scale")
-                return root.visible ? 1 : 0.9;
+                return root.shouldBeVisible ? 1 : 0.9;
 
             return 1;
         }
@@ -145,8 +169,8 @@ PanelWindow {
         Translate {
             id: slideTransform
 
-            x: root.visible ? 0 : 15
-            y: root.visible ? 0 : -30
+            x: root.shouldBeVisible ? 0 : 15
+            y: root.shouldBeVisible ? 0 : -30
         }
 
         Loader {
@@ -194,17 +218,29 @@ PanelWindow {
         visible: root.visible // Only active when the modal is visible
         focus: root.visible
         Keys.onEscapePressed: (event) => {
-            if (root.closeOnEscapeKey) {
-                root.visible = false;
+            console.log("DankModal escape pressed - shouldHaveFocus:", shouldHaveFocus, "closeOnEscapeKey:", root.closeOnEscapeKey, "objectName:", root.objectName || "unnamed");
+            if (root.closeOnEscapeKey && shouldHaveFocus) {
+                console.log("DankModal handling escape");
+                root.close();
                 event.accepted = true;
             }
         }
         onVisibleChanged: {
-            if (visible)
+            if (visible && shouldHaveFocus)
                 Qt.callLater(function() {
                 focusScope.forceActiveFocus();
             });
+        }
 
+        Connections {
+            target: root
+            function onShouldHaveFocusChanged() {
+                if (shouldHaveFocus && visible) {
+                    Qt.callLater(function() {
+                        focusScope.forceActiveFocus();
+                    });
+                }
+            }
         }
     }
 

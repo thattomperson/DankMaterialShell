@@ -49,7 +49,7 @@ Rectangle {
     anchors.fill: parent
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
-    onClicked: {
+    onPressed: {
       if (popupTarget && popupTarget.setTriggerPosition) {
         var globalPos = mapToGlobal(0, 0)
         var currentScreen = parentScreen || Screen

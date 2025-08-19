@@ -187,8 +187,7 @@ PanelWindow {
       }
 
       Rectangle {
-        visible: root.appData && root.appData.windows
-                 && root.appData.windows.count > 0
+        visible: !!(root.appData && root.appData.windows && root.appData.windows.count > 0)
         width: parent.width
         height: 1
         color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
@@ -236,16 +235,14 @@ PanelWindow {
       }
 
       Rectangle {
-        visible: root.appData && root.appData.windows
-                 && root.appData.windows.count > 1
+        visible: !!(root.appData && root.appData.windows && root.appData.windows.count > 1)
         width: parent.width
         height: 1
         color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
       }
 
       Rectangle {
-        visible: root.appData && root.appData.windows
-                 && root.appData.windows.count > 1
+        visible: !!(root.appData && root.appData.windows && root.appData.windows.count > 1)
         width: parent.width
         height: 28
         radius: Theme.cornerRadius

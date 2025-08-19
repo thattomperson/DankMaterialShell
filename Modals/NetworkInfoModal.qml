@@ -19,11 +19,13 @@ DankModal {
     networkSSID = ssid
     networkData = data
     networkInfoModalVisible = true
+    open()
     NetworkService.fetchNetworkInfo(ssid)
   }
 
   function hideDialog() {
     networkInfoModalVisible = false
+    close()
     networkSSID = ""
     networkData = null
     networkDetails = ""

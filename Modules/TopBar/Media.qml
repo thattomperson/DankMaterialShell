@@ -187,7 +187,7 @@ Rectangle {
           enabled: root.playerAvailable && root.opacity > 0 && root.width > 0 && textContainer.visible
           hoverEnabled: enabled
           cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-          onClicked: {
+          onPressed: {
             if (root.popupTarget && root.popupTarget.setTriggerPosition) {
               var globalPos = mapToGlobal(0, 0)
               var currentScreen = root.parentScreen || Screen

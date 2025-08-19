@@ -617,7 +617,7 @@ PanelWindow {
                         id: launcherButtonComponent
 
                         LauncherButton {
-                            isActive: appDrawerLoader.item ? appDrawerLoader.item.isVisible : false
+                            isActive: false
                             section: {
                                 if (parent && parent.parent) {
                                     if (parent.parent === leftSection)
@@ -921,7 +921,7 @@ PanelWindow {
                         id: batteryComponent
 
                         Battery {
-                            batteryPopupVisible: batteryPopoutLoader.item ? batteryPopoutLoader.item.batteryPopupVisible : false
+                            batteryPopupVisible: batteryPopoutLoader.item ? batteryPopoutLoader.item.shouldBeVisible : false
                             section: {
                                 if (parent && parent.parent === leftSection)
                                     return "left"
@@ -939,7 +939,7 @@ PanelWindow {
                             onToggleBatteryPopup: {
                                 batteryPopoutLoader.active = true
                                 if (batteryPopoutLoader.item) {
-                                    batteryPopoutLoader.item.batteryPopupVisible = !batteryPopoutLoader.item.batteryPopupVisible
+                                    batteryPopoutLoader.item.toggle()
                                 }
                             }
                         }
@@ -949,7 +949,7 @@ PanelWindow {
                         id: controlCenterButtonComponent
 
                         ControlCenterButton {
-                            isActive: controlCenterLoader.item ? controlCenterLoader.item.controlCenterVisible : false
+                            isActive: controlCenterLoader.item ? controlCenterLoader.item.shouldBeVisible : false
                             section: {
                                 if (parent && parent.parent === leftSection)
                                     return "left"
@@ -968,8 +968,8 @@ PanelWindow {
                                 controlCenterLoader.active = true
                                 if (controlCenterLoader.item) {
                                     controlCenterLoader.item.triggerScreen = root.screen
-                                    controlCenterLoader.item.controlCenterVisible = !controlCenterLoader.item.controlCenterVisible
-                                    if (controlCenterLoader.item.controlCenterVisible) {
+                                    controlCenterLoader.item.toggle()
+                                    if (controlCenterLoader.item.shouldBeVisible) {
                                         if (NetworkService.wifiEnabled)
                                             NetworkService.scanWifi()
                                     }

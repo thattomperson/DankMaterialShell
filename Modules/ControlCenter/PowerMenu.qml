@@ -11,10 +11,7 @@ PanelWindow {
   id: root
 
   property bool powerMenuVisible: false
-  property bool powerConfirmVisible: false
-  property string powerConfirmAction: ""
-  property string powerConfirmTitle: ""
-  property string powerConfirmMessage: ""
+  signal powerActionRequested(string action, string title, string message)
 
   visible: powerMenuVisible
   implicitWidth: 400
@@ -137,10 +134,7 @@ PanelWindow {
             cursorShape: Qt.PointingHandCursor
             onClicked: {
               powerMenuVisible = false
-              root.powerConfirmAction = "logout"
-              root.powerConfirmTitle = "Log Out"
-              root.powerConfirmMessage = "Are you sure you want to log out?"
-              root.powerConfirmVisible = true
+              root.powerActionRequested("logout", "Log Out", "Are you sure you want to log out?")
             }
           }
         }
@@ -187,10 +181,7 @@ PanelWindow {
             cursorShape: Qt.PointingHandCursor
             onClicked: {
               powerMenuVisible = false
-              root.powerConfirmAction = "suspend"
-              root.powerConfirmTitle = "Suspend"
-              root.powerConfirmMessage = "Are you sure you want to suspend the system?"
-              root.powerConfirmVisible = true
+              root.powerActionRequested("suspend", "Suspend", "Are you sure you want to suspend the system?")
             }
           }
         }
@@ -237,10 +228,7 @@ PanelWindow {
             cursorShape: Qt.PointingHandCursor
             onClicked: {
               powerMenuVisible = false
-              root.powerConfirmAction = "reboot"
-              root.powerConfirmTitle = "Reboot"
-              root.powerConfirmMessage = "Are you sure you want to reboot the system?"
-              root.powerConfirmVisible = true
+              root.powerActionRequested("reboot", "Reboot", "Are you sure you want to reboot the system?")
             }
           }
         }
@@ -287,10 +275,7 @@ PanelWindow {
             cursorShape: Qt.PointingHandCursor
             onClicked: {
               powerMenuVisible = false
-              root.powerConfirmAction = "poweroff"
-              root.powerConfirmTitle = "Power Off"
-              root.powerConfirmMessage = "Are you sure you want to power off the system?"
-              root.powerConfirmVisible = true
+              root.powerActionRequested("poweroff", "Power Off", "Are you sure you want to power off the system?")
             }
           }
         }

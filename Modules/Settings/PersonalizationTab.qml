@@ -12,6 +12,7 @@ Item {
 
     property alias profileBrowser: profileBrowser
     property alias wallpaperBrowser: wallpaperBrowser
+    property var parentModal: null
 
     Component.onCompleted: {
         // Access WallpaperCyclingService to ensure it's initialized
@@ -238,7 +239,11 @@ Item {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            profileBrowser.visible = true;
+                                            if (parentModal) {
+                                                parentModal.allowFocusOverride = true;
+                                                parentModal.shouldHaveFocus = false;
+                                            }
+                                            profileBrowser.open();
                                         }
                                     }
 
@@ -437,7 +442,11 @@ Item {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            wallpaperBrowser.visible = true;
+                                            if (parentModal) {
+                                                parentModal.allowFocusOverride = true;
+                                                parentModal.shouldHaveFocus = false;
+                                            }
+                                            wallpaperBrowser.open();
                                         }
                                     }
 
@@ -915,7 +924,13 @@ Item {
         fileExtensions: ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"]
         onFileSelected: (path) => {
             PortalService.setProfileImage(path);
-            visible = false;
+            close();
+        }
+        onDialogClosed: {
+            if (parentModal) {
+                parentModal.allowFocusOverride = false;
+                parentModal.shouldHaveFocus = Qt.binding(() => parentModal.shouldBeVisible);
+            }
         }
     }
 
@@ -928,7 +943,13 @@ Item {
         fileExtensions: ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"]
         onFileSelected: (path) => {
             SessionData.setWallpaper(path);
-            visible = false;
+            close();
+        }
+        onDialogClosed: {
+            if (parentModal) {
+                parentModal.allowFocusOverride = false;
+                parentModal.shouldHaveFocus = Qt.binding(() => parentModal.shouldBeVisible);
+            }
         }
     }
 

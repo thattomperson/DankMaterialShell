@@ -8,13 +8,9 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 
-PanelWindow {
+DankPopout {
   id: root
 
-  property bool batteryPopupVisible: false
-  property real triggerX: Screen.width - 380 - Theme.spacingL
-  property real triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingS
-  property real triggerWidth: 70
   property string triggerSection: "right"
   property var triggerScreen: null
 
@@ -43,84 +39,22 @@ PanelWindow {
       ToastService.showError("Failed to set power profile")
   }
 
-  visible: batteryPopupVisible
+  popupWidth: 400
+  popupHeight: contentLoader.item ? contentLoader.item.implicitHeight : 400
+  triggerX: Screen.width - 380 - Theme.spacingL
+  triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingS
+  triggerWidth: 70
+  positioning: "center"
+  WlrLayershell.namespace: "quickshell-battery"
   screen: triggerScreen
-  implicitWidth: 400
-  implicitHeight: 300
-  WlrLayershell.layer: WlrLayershell.Overlay
-  WlrLayershell.exclusiveZone: -1
-  WlrLayershell.keyboardFocus: batteryPopupVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-  color: "transparent"
+  shouldBeVisible: false
+  visible: shouldBeVisible
 
-  anchors {
-    top: true
-    left: true
-    right: true
-    bottom: true
-  }
 
-  MouseArea {
-    anchors.fill: parent
-    onClicked: function (mouse) {
-      var localPos = mapToItem(contentLoader, mouse.x, mouse.y)
-      if (localPos.x < 0 || localPos.x > contentLoader.width || localPos.y < 0
-          || localPos.y > contentLoader.height)
-        batteryPopupVisible = false
-    }
-  }
-
-  Loader {
-    id: contentLoader
-
-    readonly property real screenWidth: root.screen ? root.screen.width : Screen.width
-    readonly property real screenHeight: root.screen ? root.screen.height : Screen.height
-    readonly property real targetWidth: Math.min(
-                                          380, screenWidth - Theme.spacingL * 2)
-    readonly property real calculatedX: {
-      var centerX = root.triggerX + (root.triggerWidth / 2) - (targetWidth / 2)
-
-      if (centerX >= Theme.spacingM
-          && centerX + targetWidth <= screenWidth - Theme.spacingM) {
-        return centerX
-      }
-
-      if (centerX < Theme.spacingM) {
-        return Theme.spacingM
-      }
-
-      if (centerX + targetWidth > screenWidth - Theme.spacingM) {
-        return screenWidth - targetWidth - Theme.spacingM
-      }
-
-      return centerX
-    }
-
-    asynchronous: true
-    active: batteryPopupVisible
-    width: targetWidth
-    height: item ? item.implicitHeight : 0
-    x: calculatedX
-    y: root.triggerY
-    opacity: batteryPopupVisible ? 1 : 0
-    scale: batteryPopupVisible ? 1 : 0.9
-
-    Behavior on opacity {
-      NumberAnimation {
-        duration: Anims.durMed
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Anims.emphasized
-      }
-    }
-
-    Behavior on scale {
-      NumberAnimation {
-        duration: Anims.durMed
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Anims.emphasized
-      }
-    }
-
-    sourceComponent: Rectangle {
+  content: Component {
+    Rectangle {
+      id: batteryContent
+      
       implicitHeight: contentColumn.height + Theme.spacingL * 2
       color: Theme.popupBackground()
       radius: Theme.cornerRadius
@@ -129,22 +63,24 @@ PanelWindow {
       antialiasing: true
       smooth: true
       focus: true
+      
       Component.onCompleted: {
-        if (batteryPopupVisible)
+        if (root.shouldBeVisible)
           forceActiveFocus()
       }
+      
       Keys.onPressed: function (event) {
         if (event.key === Qt.Key_Escape) {
-          batteryPopupVisible = false
+          root.close()
           event.accepted = true
         }
       }
 
       Connections {
-        function onBatteryPopupVisibleChanged() {
-          if (batteryPopupVisible)
+        function onShouldBeVisibleChanged() {
+          if (root.shouldBeVisible)
             Qt.callLater(function () {
-              parent.forceActiveFocus()
+              batteryContent.forceActiveFocus()
             })
         }
         target: root
@@ -220,8 +156,8 @@ PanelWindow {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                  batteryPopupVisible = false
+                onPressed: {
+                  root.close()
                 }
               }
             }
@@ -542,7 +478,7 @@ PanelWindow {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: {
+                    onPressed: {
                       root.setProfile(modelData)
                     }
                   }

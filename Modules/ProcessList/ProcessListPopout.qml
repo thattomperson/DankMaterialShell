@@ -11,14 +11,10 @@ import qs.Modules.ProcessList
 import qs.Services
 import qs.Widgets
 
-PanelWindow {
+DankPopout {
   id: processListPopout
 
-  property bool isVisible: false
   property var parentWidget: null
-  property real triggerX: Screen.width - 600 - Theme.spacingL
-  property real triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingXS
-  property real triggerWidth: 55
   property string triggerSection: "right"
   property var triggerScreen: null
 
@@ -31,109 +27,33 @@ PanelWindow {
   }
 
   function hide() {
-    isVisible = false
+    close()
     if (processContextMenu.visible)
       processContextMenu.close()
   }
 
   function show() {
-    isVisible = true
+    open()
   }
 
-  function toggle() {
-    if (isVisible)
-      hide()
-    else
-      show()
-  }
-
-  visible: isVisible
+  popupWidth: 600
+  popupHeight: 600
+  triggerX: Screen.width - 600 - Theme.spacingL
+  triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingXS
+  triggerWidth: 55
+  positioning: "center"
+  WlrLayershell.namespace: "quickshell-processlist"
   screen: triggerScreen
-  implicitWidth: 600
-  implicitHeight: 600
-  WlrLayershell.layer: WlrLayershell.Overlay
-  WlrLayershell.exclusiveZone: -1
-  WlrLayershell.keyboardFocus: isVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-  color: "transparent"
+  visible: shouldBeVisible
+  shouldBeVisible: false
 
   Ref {
     service: DgopService
   }
 
-  anchors {
-    top: true
-    left: true
-    right: true
-    bottom: true
-  }
-
-  MouseArea {
-    anchors.fill: parent
-    onClicked: function (mouse) {
-      var localPos = mapToItem(contentLoader, mouse.x, mouse.y)
-      if (localPos.x < 0 || localPos.x > contentLoader.width || localPos.y < 0
-          || localPos.y > contentLoader.height)
-        processListPopout.hide()
-    }
-  }
-
-  Loader {
-    id: contentLoader
-
-    readonly property real screenWidth: processListPopout.screen ? processListPopout.screen.width : Screen.width
-    readonly property real screenHeight: processListPopout.screen ? processListPopout.screen.height : Screen.height
-    readonly property real targetWidth: Math.min(
-                                          600, screenWidth - Theme.spacingL * 2)
-    readonly property real targetHeight: Math.min(
-                                           600,
-                                           screenHeight - Theme.barHeight - Theme.spacingS * 2)
-    readonly property real calculatedX: {
-      var centerX = processListPopout.triggerX + (processListPopout.triggerWidth
-                                                  / 2) - (targetWidth / 2)
-
-      if (centerX >= Theme.spacingM
-          && centerX + targetWidth <= screenWidth - Theme.spacingM) {
-        return centerX
-      }
-
-      if (centerX < Theme.spacingM) {
-        return Theme.spacingM
-      }
-
-      if (centerX + targetWidth > screenWidth - Theme.spacingM) {
-        return screenWidth - targetWidth - Theme.spacingM
-      }
-
-      return centerX
-    }
-
-    asynchronous: true
-    active: processListPopout.isVisible
-    width: targetWidth
-    height: targetHeight
-    y: processListPopout.triggerY
-    x: calculatedX
-    opacity: processListPopout.isVisible ? 1 : 0
-    scale: processListPopout.isVisible ? 1 : 0.9
-
-    Behavior on opacity {
-      NumberAnimation {
-        duration: Anims.durMed
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Anims.emphasized
-      }
-    }
-
-    Behavior on scale {
-      NumberAnimation {
-        duration: Anims.durMed
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Anims.emphasized
-      }
-    }
-
-    sourceComponent: Rectangle {
-      id: dropdownContent
+  content: Component {
+    Rectangle {
+      id: processListContent
 
       radius: Theme.cornerRadius
       color: Theme.popupBackground()
@@ -144,22 +64,24 @@ PanelWindow {
       antialiasing: true
       smooth: true
       focus: true
+      
       Component.onCompleted: {
-        if (processListPopout.isVisible)
+        if (processListPopout.shouldBeVisible)
           forceActiveFocus()
       }
+      
       Keys.onPressed: function (event) {
         if (event.key === Qt.Key_Escape) {
-          processListPopout.hide()
+          processListPopout.close()
           event.accepted = true
         }
       }
 
       Connections {
-        function onIsVisibleChanged() {
-          if (processListPopout.isVisible)
+        function onShouldBeVisibleChanged() {
+          if (processListPopout.shouldBeVisible)
             Qt.callLater(function () {
-              dropdownContent.forceActiveFocus()
+              processListContent.forceActiveFocus()
             })
         }
         target: processListPopout

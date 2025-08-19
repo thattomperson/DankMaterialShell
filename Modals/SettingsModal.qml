@@ -10,19 +10,20 @@ import qs.Widgets
 
 DankModal {
   id: settingsModal
+  objectName: "settingsModal"
 
   signal closingModal
 
   function show() {
-    settingsModal.visible = true
+    open()
   }
 
   function hide() {
-    settingsModal.visible = false
+    close()
   }
 
   function toggle() {
-    if (settingsModal.visible)
+    if (shouldBeVisible)
       hide()
     else
       show()
@@ -31,19 +32,12 @@ DankModal {
   width: 750
   height: 750
   visible: false
-  keyboardFocus: "ondemand"
   onBackgroundClicked: hide()
 
   property Component settingsContent: Component {
     Item {
       anchors.fill: parent
       focus: true
-      Keys.onPressed: function (event) {
-        if (event.key === Qt.Key_Escape) {
-          settingsModal.hide()
-          event.accepted = true
-        }
-      }
 
       Column {
         anchors.fill: parent
@@ -128,7 +122,9 @@ DankModal {
                 visible: active
                 asynchronous: true
                 sourceComponent: Component {
-                  PersonalizationTab {}
+                  PersonalizationTab {
+                    parentModal: settingsModal
+                  }
                 }
               }
 

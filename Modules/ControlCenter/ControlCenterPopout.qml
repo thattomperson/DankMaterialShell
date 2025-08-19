@@ -11,17 +11,13 @@ import qs.Modules.ControlCenter
 import qs.Services
 import qs.Widgets
 
-PanelWindow {
+DankPopout {
   id: root
 
-  property bool controlCenterVisible: false
   property string currentTab: "network"
   property bool powerOptionsExpanded: false
-  property var triggerScreen: null
-  property real triggerX: Screen.width - 600 - Theme.spacingL
-  property real triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingXS
-  property real triggerWidth: 80
   property string triggerSection: "right"
+  property var triggerScreen: null
 
   function setTriggerPosition(x, y, width, section, screen) {
     triggerX = x
@@ -34,82 +30,42 @@ PanelWindow {
   signal powerActionRequested(string action, string title, string message)
   signal lockRequested
 
-  visible: controlCenterVisible
+  popupWidth: 600
+  popupHeight: contentLoader.item ? contentLoader.item.implicitHeight : (powerOptionsExpanded ? 570 : 500)
+  triggerX: Screen.width - 600 - Theme.spacingL
+  triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingXS
+  triggerWidth: 80
+  positioning: "center"
+  WlrLayershell.namespace: "quickshell-controlcenter"
   screen: triggerScreen
-  onVisibleChanged: {
-    NetworkService.autoRefreshEnabled = visible && NetworkService.wifiEnabled
-    if (!visible && BluetoothService.adapter
-        && BluetoothService.adapter.discovering)
-      BluetoothService.adapter.discovering = false
+  shouldBeVisible: false
+  visible: shouldBeVisible
 
-    if (visible && UserInfoService)
-      UserInfoService.getUptime()
-  }
-  implicitWidth: 600
-  implicitHeight: 500
-  WlrLayershell.layer: WlrLayershell.Overlay
-  WlrLayershell.exclusiveZone: -1
-  WlrLayershell.keyboardFocus: controlCenterVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-  color: "transparent"
-
-  anchors {
-    top: true
-    left: true
-    right: true
-    bottom: true
+  onShouldBeVisibleChanged: {
+    if (shouldBeVisible) {
+      NetworkService.autoRefreshEnabled = NetworkService.wifiEnabled
+      if (UserInfoService)
+        UserInfoService.getUptime()
+    } else {
+      NetworkService.autoRefreshEnabled = false
+      if (BluetoothService.adapter && BluetoothService.adapter.discovering)
+        BluetoothService.adapter.discovering = false
+    }
   }
 
-  Loader {
-    id: contentLoader
-
-    readonly property real screenWidth: root.screen ? root.screen.width : Screen.width
-    readonly property real screenHeight: root.screen ? root.screen.height : Screen.height
-    readonly property real targetWidth: Math.min(
-                                          600, screenWidth - Theme.spacingL * 2)
-
-    asynchronous: true
-    active: controlCenterVisible
-    width: targetWidth
-    height: root.powerOptionsExpanded ? 570 : 500
-    y: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingXS
-    x: {
-      var centerX = root.triggerX + (root.triggerWidth / 2) - (targetWidth / 2)
-
-      if (centerX >= Theme.spacingM
-          && centerX + targetWidth <= screenWidth - Theme.spacingM) {
-        return centerX
+  content: Component {
+    Rectangle {
+      id: controlContent
+      
+      implicitHeight: {
+        let baseHeight = Theme.spacingL * 2
+        baseHeight += 90 // user header
+        baseHeight += (powerOptionsExpanded ? 60 : 0) + Theme.spacingL // power options
+        baseHeight += 52 + Theme.spacingL // tab bar
+        baseHeight += 280 // tab content area
+        return baseHeight
       }
-
-      if (centerX < Theme.spacingM) {
-        return Theme.spacingM
-      }
-
-      if (centerX + targetWidth > screenWidth - Theme.spacingM) {
-        return screenWidth - targetWidth - Theme.spacingM
-      }
-
-      return centerX
-    }
-    opacity: controlCenterVisible ? 1 : 0
-    scale: controlCenterVisible ? 1 : 0.9
-
-    Behavior on opacity {
-      NumberAnimation {
-        duration: Anims.durMed
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Anims.emphasized
-      }
-    }
-
-    Behavior on scale {
-      NumberAnimation {
-        duration: Anims.durMed
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: Anims.emphasized
-      }
-    }
-
-    sourceComponent: Rectangle {
+      
       color: Theme.popupBackground()
       radius: Theme.cornerRadius
       border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
@@ -118,13 +74,15 @@ PanelWindow {
       antialiasing: true
       smooth: true
       focus: true
+      
       Component.onCompleted: {
-        if (controlCenterVisible)
+        if (root.shouldBeVisible)
           forceActiveFocus()
       }
+      
       Keys.onPressed: function (event) {
         if (event.key === Qt.Key_Escape) {
-          controlCenterVisible = false
+          root.close()
           event.accepted = true
         } else {
           event.accepted = false
@@ -132,10 +90,10 @@ PanelWindow {
       }
 
       Connections {
-        function onControlCenterVisibleChanged() {
-          if (controlCenterVisible)
+        function onShouldBeVisibleChanged() {
+          if (root.shouldBeVisible)
             Qt.callLater(function () {
-              parent.forceActiveFocus()
+              controlContent.forceActiveFocus()
             })
         }
         target: root
@@ -294,7 +252,7 @@ PanelWindow {
                 hoverColor: Qt.rgba(Theme.primary.r, Theme.primary.g,
                                     Theme.primary.b, 0.12)
                 onClicked: {
-                  controlCenterVisible = false
+                  root.close()
                   root.lockRequested()
                 }
               }
@@ -363,7 +321,7 @@ PanelWindow {
                   anchors.fill: parent
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
-                  onClicked: {
+                  onPressed: {
                     root.powerOptionsExpanded = !root.powerOptionsExpanded
                   }
                 }
@@ -387,7 +345,7 @@ PanelWindow {
                 hoverColor: Qt.rgba(Theme.primary.r, Theme.primary.g,
                                     Theme.primary.b, 0.12)
                 onClicked: {
-                  controlCenterVisible = false
+                  root.close()
                   settingsModal.show()
                 }
               }
@@ -451,8 +409,9 @@ PanelWindow {
                   anchors.fill: parent
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
-                  onClicked: {
+                  onPressed: {
                     root.powerOptionsExpanded = false
+                    root.close()
                     root.powerActionRequested(
                           "logout", "Logout",
                           "Are you sure you want to logout?")
@@ -506,8 +465,9 @@ PanelWindow {
                   anchors.fill: parent
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
-                  onClicked: {
+                  onPressed: {
                     root.powerOptionsExpanded = false
+                    root.close()
                     root.powerActionRequested(
                           "reboot", "Restart",
                           "Are you sure you want to restart?")
@@ -561,8 +521,9 @@ PanelWindow {
                   anchors.fill: parent
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
-                  onClicked: {
+                  onPressed: {
                     root.powerOptionsExpanded = false
+                    root.close()
                     root.powerActionRequested(
                           "suspend", "Suspend",
                           "Are you sure you want to suspend?")
@@ -616,8 +577,9 @@ PanelWindow {
                   anchors.fill: parent
                   hoverEnabled: true
                   cursorShape: Qt.PointingHandCursor
-                  onClicked: {
+                  onPressed: {
                     root.powerOptionsExpanded = false
+                    root.close()
                     root.powerActionRequested(
                           "poweroff", "Shutdown",
                           "Are you sure you want to shutdown?")
@@ -768,23 +730,12 @@ PanelWindow {
         }
       }
 
-      Behavior on height {
+      Behavior on implicitHeight {
         NumberAnimation {
-          duration: Theme.shortDuration // Faster for height changes
+          duration: Theme.shortDuration
           easing.type: Theme.standardEasing
         }
       }
-    }
-  }
-
-  MouseArea {
-    anchors.fill: parent
-    z: -1
-    onClicked: function (mouse) {
-      var localPos = mapToItem(contentLoader, mouse.x, mouse.y)
-      if (localPos.x < 0 || localPos.x > contentLoader.width || localPos.y < 0
-          || localPos.y > contentLoader.height)
-        controlCenterVisible = false
     }
   }
 }
