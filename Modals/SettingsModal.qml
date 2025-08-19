@@ -167,7 +167,7 @@ DankModal {
                                     width: parent.width - Theme.spacingS * 2
                                     height: 44
                                     radius: Theme.cornerRadius
-                                    color: isActive ? Theme.primaryContainer : tabMouseArea.containsMouse ? Theme.surfaceHover : "transparent"
+                                    color: isActive ? Theme.surfaceContainerHigh : tabMouseArea.containsMouse ? Theme.surfaceHover : "transparent"
 
                                     Row {
                                         anchors.left: parent.left
