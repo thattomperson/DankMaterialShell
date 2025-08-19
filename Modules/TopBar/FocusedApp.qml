@@ -69,7 +69,22 @@ Rectangle {
         StyledText {
             id: titleText
 
-            text: NiriService.focusedWindowTitle || ""
+            text: {
+                var title = NiriService.focusedWindowTitle || "";
+                var appName = appText.text;
+                
+                if (!title || !appName) return title;
+                
+                // Remove app name from end of title if it exists there
+                if (title.endsWith(" - " + appName)) {
+                    return title.substring(0, title.length - (" - " + appName).length);
+                }
+                if (title.endsWith(appName)) {
+                    return title.substring(0, title.length - appName.length).replace(/ - $/, "");
+                }
+                
+                return title;
+            }
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
             color: Theme.surfaceText
