@@ -22,7 +22,6 @@ Item {
     DankFlickable {
         anchors.fill: parent
         anchors.topMargin: Theme.spacingL
-        anchors.bottomMargin: Theme.spacingXL
         clip: true
         contentHeight: mainColumn.height
         contentWidth: width
@@ -492,269 +491,265 @@ Item {
 
                             }
 
-                            // Wallpaper Cycling Section
-                            Rectangle {
-                                width: parent.width
-                                height: 1
-                                color: Theme.outline
-                                opacity: 0.2
-                                visible: SessionData.wallpaperPath !== ""
+                        }
+
+                    }
+
+                    // Wallpaper Cycling Section - Full Width
+                    Rectangle {
+                        width: parent.width
+                        height: 1
+                        color: Theme.outline
+                        opacity: 0.2
+                        visible: SessionData.wallpaperPath !== ""
+                    }
+
+                    Column {
+                        width: parent.width
+                        spacing: Theme.spacingM
+                        visible: SessionData.wallpaperPath !== ""
+
+                        Row {
+                            width: parent.width
+                            spacing: Theme.spacingM
+
+                            DankIcon {
+                                name: "schedule"
+                                size: Theme.iconSize
+                                color: SessionData.wallpaperCyclingEnabled ? Theme.primary : Theme.surfaceVariantText
+                                anchors.verticalCenter: parent.verticalCenter
                             }
 
                             Column {
-                                width: parent.width
-                                spacing: Theme.spacingM
-                                visible: SessionData.wallpaperPath !== ""
+                                width: parent.width - Theme.iconSize - Theme.spacingM - controlsRow.width - Theme.spacingM
+                                spacing: Theme.spacingXS
+                                anchors.verticalCenter: parent.verticalCenter
 
-                                Row {
+                                StyledText {
+                                    text: "Wallpaper Cycling"
+                                    font.pixelSize: Theme.fontSizeLarge
+                                    font.weight: Font.Medium
+                                    color: Theme.surfaceText
+                                }
+
+                                StyledText {
+                                    text: "Automatically cycle through wallpapers in the same folder"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    color: Theme.surfaceVariantText
                                     width: parent.width
-                                    spacing: Theme.spacingM
+                                }
 
-                                    DankIcon {
-                                        name: "schedule"
-                                        size: Theme.iconSize
-                                        color: SessionData.wallpaperCyclingEnabled ? Theme.primary : Theme.surfaceVariantText
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
+                            }
 
-                                    Column {
-                                        width: parent.width - Theme.iconSize - Theme.spacingM - controlsRow.width - Theme.spacingM
-                                        spacing: Theme.spacingXS
-                                        anchors.verticalCenter: parent.verticalCenter
+                            Row {
+                                id: controlsRow
 
-                                        StyledText {
-                                            text: "Wallpaper Cycling"
-                                            font.pixelSize: Theme.fontSizeLarge
-                                            font.weight: Font.Medium
-                                            color: Theme.surfaceText
-                                        }
+                                spacing: Theme.spacingS
+                                anchors.verticalCenter: parent.verticalCenter
 
-                                        StyledText {
-                                            text: "Automatically cycle through wallpapers in the same folder"
-                                            font.pixelSize: Theme.fontSizeSmall
-                                            color: Theme.surfaceVariantText
-                                            elide: Text.ElideRight
-                                            maximumLineCount: 1
-                                            width: parent.width
-                                        }
-
-                                    }
+                                StyledRect {
+                                    width: 60
+                                    height: 32
+                                    radius: Theme.cornerRadius
+                                    color: prevButtonArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.8) : Theme.primary
+                                    opacity: SessionData.wallpaperPath ? 1 : 0.5
 
                                     Row {
-                                        id: controlsRow
+                                        anchors.centerIn: parent
+                                        spacing: Theme.spacingXS
 
-                                        spacing: Theme.spacingS
-                                        anchors.verticalCenter: parent.verticalCenter
-
-                                        StyledRect {
-                                            width: 60
-                                            height: 32
-                                            radius: Theme.cornerRadius
-                                            color: prevButtonArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.8) : Theme.primary
-                                            opacity: SessionData.wallpaperPath ? 1 : 0.5
-
-                                            Row {
-                                                anchors.centerIn: parent
-                                                spacing: Theme.spacingXS
-
-                                                DankIcon {
-                                                    name: "skip_previous"
-                                                    size: Theme.iconSizeSmall
-                                                    color: Theme.primaryText
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                }
-
-                                                StyledText {
-                                                    text: "Prev"
-                                                    color: Theme.primaryText
-                                                    font.pixelSize: Theme.fontSizeSmall
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                }
-
-                                            }
-
-                                            MouseArea {
-                                                id: prevButtonArea
-
-                                                anchors.fill: parent
-                                                enabled: SessionData.wallpaperPath
-                                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                                hoverEnabled: true
-                                                onClicked: {
-                                                    WallpaperCyclingService.cyclePrevManually();
-                                                }
-                                            }
-
-                                        }
-
-                                        StyledRect {
-                                            width: 60
-                                            height: 32
-                                            radius: Theme.cornerRadius
-                                            color: nextButtonArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.8) : Theme.primary
-                                            opacity: SessionData.wallpaperPath ? 1 : 0.5
-
-                                            Row {
-                                                anchors.centerIn: parent
-                                                spacing: Theme.spacingXS
-
-                                                DankIcon {
-                                                    name: "skip_next"
-                                                    size: Theme.iconSizeSmall
-                                                    color: Theme.primaryText
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                }
-
-                                                StyledText {
-                                                    text: "Next"
-                                                    color: Theme.primaryText
-                                                    font.pixelSize: Theme.fontSizeSmall
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                }
-
-                                            }
-
-                                            MouseArea {
-                                                id: nextButtonArea
-
-                                                anchors.fill: parent
-                                                enabled: SessionData.wallpaperPath
-                                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                                hoverEnabled: true
-                                                onClicked: {
-                                                    WallpaperCyclingService.cycleNextManually();
-                                                }
-                                            }
-
-                                        }
-
-                                        DankToggle {
-                                            id: cyclingToggle
-
+                                        DankIcon {
+                                            name: "skip_previous"
+                                            size: Theme.iconSizeSmall
+                                            color: Theme.primaryText
                                             anchors.verticalCenter: parent.verticalCenter
-                                            checked: SessionData.wallpaperCyclingEnabled
-                                            onToggled: (toggled) => {
-                                                return SessionData.setWallpaperCyclingEnabled(toggled);
-                                            }
                                         }
 
+                                        StyledText {
+                                            text: "Prev"
+                                            color: Theme.primaryText
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            anchors.verticalCenter: parent.verticalCenter
+                                        }
+
+                                    }
+
+                                    MouseArea {
+                                        id: prevButtonArea
+
+                                        anchors.fill: parent
+                                        enabled: SessionData.wallpaperPath
+                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                        hoverEnabled: true
+                                        onClicked: {
+                                            WallpaperCyclingService.cyclePrevManually();
+                                        }
                                     }
 
                                 }
 
-                                // Cycling mode and settings
-                                Column {
-                                    width: parent.width
-                                    spacing: Theme.spacingS
-                                    visible: SessionData.wallpaperCyclingEnabled
-                                    leftPadding: Theme.iconSize + Theme.spacingM
+                                StyledRect {
+                                    width: 60
+                                    height: 32
+                                    radius: Theme.cornerRadius
+                                    color: nextButtonArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.8) : Theme.primary
+                                    opacity: SessionData.wallpaperPath ? 1 : 0.5
 
                                     Row {
-                                        spacing: Theme.spacingL
-                                        width: parent.width - parent.leftPadding
+                                        anchors.centerIn: parent
+                                        spacing: Theme.spacingXS
 
-                                        StyledText {
-                                            text: "Mode:"
-                                            font.pixelSize: Theme.fontSizeMedium
-                                            color: Theme.surfaceText
+                                        DankIcon {
+                                            name: "skip_next"
+                                            size: Theme.iconSizeSmall
+                                            color: Theme.primaryText
                                             anchors.verticalCenter: parent.verticalCenter
                                         }
 
-                                        DankTabBar {
-                                            id: modeTabBar
-
-                                            width: 200
-                                            height: 32
-                                            model: [{
-                                                "text": "Interval"
-                                            }, {
-                                                "text": "Time"
-                                            }]
-                                            currentIndex: SessionData.wallpaperCyclingMode === "time" ? 1 : 0
-                                            onTabClicked: (index) => {
-                                                SessionData.setWallpaperCyclingMode(index === 1 ? "time" : "interval");
-                                            }
-                                        }
-
-                                    }
-
-                                    // Interval settings
-                                    DankDropdown {
-                                        property var intervalOptions: ["1 minute", "5 minutes", "15 minutes", "30 minutes", "1 hour", "1.5 hours", "2 hours", "3 hours", "4 hours", "6 hours", "8 hours", "12 hours"]
-                                        property var intervalValues: [60, 300, 900, 1800, 3600, 5400, 7200, 10800, 14400, 21600, 28800, 43200]
-
-                                        width: parent.width - parent.leftPadding
-                                        visible: SessionData.wallpaperCyclingMode === "interval"
-                                        text: "Interval"
-                                        description: "How often to change wallpaper"
-                                        options: intervalOptions
-                                        currentValue: {
-                                            const currentSeconds = SessionData.wallpaperCyclingInterval;
-                                            const index = intervalValues.indexOf(currentSeconds);
-                                            return index >= 0 ? intervalOptions[index] : "5 minutes";
-                                        }
-                                        onValueChanged: (value) => {
-                                            const index = intervalOptions.indexOf(value);
-                                            if (index >= 0)
-                                                SessionData.setWallpaperCyclingInterval(intervalValues[index]);
-
-                                        }
-                                    }
-
-                                    // Time settings
-                                    Row {
-                                        spacing: Theme.spacingM
-                                        visible: SessionData.wallpaperCyclingMode === "time"
-                                        width: parent.width - parent.leftPadding
-
                                         StyledText {
-                                            text: "Daily at:"
-                                            font.pixelSize: Theme.fontSizeMedium
-                                            color: Theme.surfaceText
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
-
-                                        DankTextField {
-                                            width: 100
-                                            height: 40
-                                            text: SessionData.wallpaperCyclingTime
-                                            placeholderText: "00:00"
-                                            maximumLength: 5
-                                            topPadding: Theme.spacingS
-                                            bottomPadding: Theme.spacingS
-                                            onAccepted: {
-                                                var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
-                                                if (isValid)
-                                                    SessionData.setWallpaperCyclingTime(text);
-                                                else
-                                                    // Reset to current value if invalid
-                                                    text = SessionData.wallpaperCyclingTime;
-                                            }
-                                            onEditingFinished: {
-                                                var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
-                                                if (isValid)
-                                                    SessionData.setWallpaperCyclingTime(text);
-                                                else
-                                                    // Reset to current value if invalid
-                                                    text = SessionData.wallpaperCyclingTime;
-                                            }
-                                            anchors.verticalCenter: parent.verticalCenter
-
-                                            validator: RegularExpressionValidator {
-                                                regularExpression: /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
-                                            }
-
-                                        }
-
-                                        StyledText {
-                                            text: "24-hour format"
+                                            text: "Next"
+                                            color: Theme.primaryText
                                             font.pixelSize: Theme.fontSizeSmall
-                                            color: Theme.surfaceVariantText
                                             anchors.verticalCenter: parent.verticalCenter
                                         }
 
                                     }
 
+                                    MouseArea {
+                                        id: nextButtonArea
+
+                                        anchors.fill: parent
+                                        enabled: SessionData.wallpaperPath
+                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                        hoverEnabled: true
+                                        onClicked: {
+                                            WallpaperCyclingService.cycleNextManually();
+                                        }
+                                    }
+
+                                }
+
+                                DankToggle {
+                                    id: cyclingToggle
+
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    checked: SessionData.wallpaperCyclingEnabled
+                                    onToggled: (toggled) => {
+                                        return SessionData.setWallpaperCyclingEnabled(toggled);
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                        // Cycling mode and settings
+                        Column {
+                            width: parent.width
+                            spacing: Theme.spacingS
+                            visible: SessionData.wallpaperCyclingEnabled
+                            leftPadding: Theme.iconSize + Theme.spacingM
+
+                            Row {
+                                spacing: Theme.spacingL
+                                width: parent.width - parent.leftPadding
+
+                                StyledText {
+                                    text: "Mode:"
+                                    font.pixelSize: Theme.fontSizeMedium
+                                    color: Theme.surfaceText
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                DankTabBar {
+                                    id: modeTabBar
+
+                                    width: 200
+                                    height: 32
+                                    model: [{
+                                        "text": "Interval"
+                                    }, {
+                                        "text": "Time"
+                                    }]
+                                    currentIndex: SessionData.wallpaperCyclingMode === "time" ? 1 : 0
+                                    onTabClicked: (index) => {
+                                        SessionData.setWallpaperCyclingMode(index === 1 ? "time" : "interval");
+                                    }
+                                }
+
+                            }
+
+                            // Interval settings
+                            DankDropdown {
+                                property var intervalOptions: ["1 minute", "5 minutes", "15 minutes", "30 minutes", "1 hour", "1.5 hours", "2 hours", "3 hours", "4 hours", "6 hours", "8 hours", "12 hours"]
+                                property var intervalValues: [60, 300, 900, 1800, 3600, 5400, 7200, 10800, 14400, 21600, 28800, 43200]
+
+                                width: parent.width - parent.leftPadding
+                                visible: SessionData.wallpaperCyclingMode === "interval"
+                                text: "Interval"
+                                description: "How often to change wallpaper"
+                                options: intervalOptions
+                                currentValue: {
+                                    const currentSeconds = SessionData.wallpaperCyclingInterval;
+                                    const index = intervalValues.indexOf(currentSeconds);
+                                    return index >= 0 ? intervalOptions[index] : "5 minutes";
+                                }
+                                onValueChanged: (value) => {
+                                    const index = intervalOptions.indexOf(value);
+                                    if (index >= 0)
+                                        SessionData.setWallpaperCyclingInterval(intervalValues[index]);
+
+                                }
+                            }
+
+                            // Time settings
+                            Row {
+                                spacing: Theme.spacingM
+                                visible: SessionData.wallpaperCyclingMode === "time"
+                                width: parent.width - parent.leftPadding
+
+                                StyledText {
+                                    text: "Daily at:"
+                                    font.pixelSize: Theme.fontSizeMedium
+                                    color: Theme.surfaceText
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                DankTextField {
+                                    width: 100
+                                    height: 40
+                                    text: SessionData.wallpaperCyclingTime
+                                    placeholderText: "00:00"
+                                    maximumLength: 5
+                                    topPadding: Theme.spacingS
+                                    bottomPadding: Theme.spacingS
+                                    onAccepted: {
+                                        var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
+                                        if (isValid)
+                                            SessionData.setWallpaperCyclingTime(text);
+                                        else
+                                            text = SessionData.wallpaperCyclingTime;
+                                    }
+                                    onEditingFinished: {
+                                        var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
+                                        if (isValid)
+                                            SessionData.setWallpaperCyclingTime(text);
+                                        else
+                                            text = SessionData.wallpaperCyclingTime;
+                                    }
+                                    anchors.verticalCenter: parent.verticalCenter
+
+                                    validator: RegularExpressionValidator {
+                                        regularExpression: /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
+                                    }
+
+                                }
+
+                                StyledText {
+                                    text: "24-hour format"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    color: Theme.surfaceVariantText
+                                    anchors.verticalCenter: parent.verticalCenter
                                 }
 
                             }
@@ -846,71 +841,6 @@ Item {
             }
 
 
-            // TopBar Auto-hide Section
-            StyledRect {
-                width: parent.width
-                height: topBarAutoHideSection.implicitHeight + Theme.spacingL * 2
-                radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
-                border.width: 1
-
-                Column {
-                    id: topBarAutoHideSection
-
-                    anchors.fill: parent
-                    anchors.margins: Theme.spacingL
-                    spacing: Theme.spacingM
-
-                    Row {
-                        width: parent.width
-                        spacing: Theme.spacingM
-
-                        DankIcon {
-                            name: "visibility_off"
-                            size: Theme.iconSize
-                            color: Theme.primary
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        Column {
-                            width: parent.width - Theme.iconSize - Theme.spacingM - autoHideToggle.width - Theme.spacingM
-                            spacing: Theme.spacingXS
-                            anchors.verticalCenter: parent.verticalCenter
-
-                            StyledText {
-                                text: "TopBar Auto-hide"
-                                font.pixelSize: Theme.fontSizeLarge
-                                font.weight: Font.Medium
-                                color: Theme.surfaceText
-                            }
-
-                            StyledText {
-                                text: "Automatically hide the top bar to expand screen real estate"
-                                font.pixelSize: Theme.fontSizeSmall
-                                color: Theme.surfaceVariantText
-                                wrapMode: Text.WordWrap
-                                width: parent.width
-                            }
-
-                        }
-
-                        DankToggle {
-                            id: autoHideToggle
-
-                            anchors.verticalCenter: parent.verticalCenter
-                            checked: SettingsData.topBarAutoHide
-                            onToggled: (toggled) => {
-                                return SettingsData.setTopBarAutoHide(toggled);
-                            }
-                        }
-
-                    }
-
-                }
-
-            }
-
         }
 
     }
@@ -929,7 +859,9 @@ Item {
         onDialogClosed: {
             if (parentModal) {
                 parentModal.allowFocusOverride = false;
-                parentModal.shouldHaveFocus = Qt.binding(() => parentModal.shouldBeVisible);
+                parentModal.shouldHaveFocus = Qt.binding(() => {
+                    return parentModal.shouldBeVisible;
+                });
             }
         }
     }
@@ -948,7 +880,9 @@ Item {
         onDialogClosed: {
             if (parentModal) {
                 parentModal.allowFocusOverride = false;
-                parentModal.shouldHaveFocus = Qt.binding(() => parentModal.shouldBeVisible);
+                parentModal.shouldHaveFocus = Qt.binding(() => {
+                    return parentModal.shouldBeVisible;
+                });
             }
         }
     }

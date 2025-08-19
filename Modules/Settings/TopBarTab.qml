@@ -5,7 +5,7 @@ import qs.Services
 import qs.Widgets
 
 Item {
-  id: widgetsTab
+  id: topBarTab
 
   property var baseWidgetDefinitions: [{
       "id": "launcherButton",
@@ -437,6 +437,7 @@ Item {
   DankFlickable {
     anchors.fill: parent
     anchors.topMargin: Theme.spacingL
+    anchors.bottomMargin: Theme.spacingS
     clip: true
     contentHeight: mainColumn.height
     contentWidth: width
@@ -445,6 +446,71 @@ Item {
       id: mainColumn
       width: parent.width
       spacing: Theme.spacingXL
+
+      // TopBar Auto-hide Section
+      StyledRect {
+        width: parent.width
+        height: topBarAutoHideSection.implicitHeight + Theme.spacingL * 2
+        radius: Theme.cornerRadius
+        color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+        border.width: 1
+
+        Column {
+          id: topBarAutoHideSection
+
+          anchors.fill: parent
+          anchors.margins: Theme.spacingL
+          spacing: Theme.spacingM
+
+          Row {
+            width: parent.width
+            spacing: Theme.spacingM
+
+            DankIcon {
+              name: "visibility_off"
+              size: Theme.iconSize
+              color: Theme.primary
+              anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Column {
+              width: parent.width - Theme.iconSize - Theme.spacingM - autoHideToggle.width - Theme.spacingM
+              spacing: Theme.spacingXS
+              anchors.verticalCenter: parent.verticalCenter
+
+              StyledText {
+                text: "Auto-hide"
+                font.pixelSize: Theme.fontSizeLarge
+                font.weight: Font.Medium
+                color: Theme.surfaceText
+              }
+
+              StyledText {
+                text: "Automatically hide the top bar to expand screen real estate"
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.surfaceVariantText
+                wrapMode: Text.WordWrap
+                width: parent.width
+              }
+
+            }
+
+            DankToggle {
+              id: autoHideToggle
+
+              anchors.verticalCenter: parent.verticalCenter
+              checked: SettingsData.topBarAutoHide
+              onToggled: (toggled) => {
+                return SettingsData.setTopBarAutoHide(toggled);
+              }
+            }
+
+          }
+
+        }
+
+      }
 
       Row {
         width: parent.width
@@ -458,7 +524,7 @@ Item {
         }
 
         StyledText {
-          text: "Top Bar Widget Management"
+          text: "Widget Management"
           font.pixelSize: Theme.fontSizeLarge
           font.weight: Font.Medium
           color: Theme.surfaceText
@@ -562,28 +628,28 @@ Item {
           title: "Left Section"
           titleIcon: "format_align_left"
           sectionId: "left"
-          allWidgets: widgetsTab.baseWidgetDefinitions
-          items: widgetsTab.getItemsForSection("left")
+          allWidgets: topBarTab.baseWidgetDefinitions
+          items: topBarTab.getItemsForSection("left")
           onItemEnabledChanged: (sectionId, itemId, enabled) => {
-                                  widgetsTab.handleItemEnabledChanged(sectionId,
+                                  topBarTab.handleItemEnabledChanged(sectionId,
                                                                       itemId,
                                                                       enabled)
                                 }
           onItemOrderChanged: newOrder => {
-                                widgetsTab.handleItemOrderChanged("left",
+                                topBarTab.handleItemOrderChanged("left",
                                                                   newOrder)
                               }
           onAddWidget: sectionId => {
-                         widgetSelectionPopup.allWidgets = widgetsTab.baseWidgetDefinitions
+                         widgetSelectionPopup.allWidgets = topBarTab.baseWidgetDefinitions
                          widgetSelectionPopup.targetSection = sectionId
                          widgetSelectionPopup.safeOpen()
                        }
           onRemoveWidget: (sectionId, widgetIndex) => {
-                            widgetsTab.removeWidgetFromSection(sectionId,
+                            topBarTab.removeWidgetFromSection(sectionId,
                                                                widgetIndex)
                           }
           onSpacerSizeChanged: (sectionId, itemId, newSize) => {
-                                 widgetsTab.handleSpacerSizeChanged(sectionId,
+                                 topBarTab.handleSpacerSizeChanged(sectionId,
                                                                     itemId,
                                                                     newSize)
                                }
@@ -599,7 +665,7 @@ Item {
                                   }
                                 }
           onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
-                                   widgetsTab.handleGpuSelectionChanged(
+                                   topBarTab.handleGpuSelectionChanged(
                                      sectionId, widgetIndex, selectedIndex)
                                  }
         }
@@ -609,28 +675,28 @@ Item {
           title: "Center Section"
           titleIcon: "format_align_center"
           sectionId: "center"
-          allWidgets: widgetsTab.baseWidgetDefinitions
-          items: widgetsTab.getItemsForSection("center")
+          allWidgets: topBarTab.baseWidgetDefinitions
+          items: topBarTab.getItemsForSection("center")
           onItemEnabledChanged: (sectionId, itemId, enabled) => {
-                                  widgetsTab.handleItemEnabledChanged(sectionId,
+                                  topBarTab.handleItemEnabledChanged(sectionId,
                                                                       itemId,
                                                                       enabled)
                                 }
           onItemOrderChanged: newOrder => {
-                                widgetsTab.handleItemOrderChanged("center",
+                                topBarTab.handleItemOrderChanged("center",
                                                                   newOrder)
                               }
           onAddWidget: sectionId => {
-                         widgetSelectionPopup.allWidgets = widgetsTab.baseWidgetDefinitions
+                         widgetSelectionPopup.allWidgets = topBarTab.baseWidgetDefinitions
                          widgetSelectionPopup.targetSection = sectionId
                          widgetSelectionPopup.safeOpen()
                        }
           onRemoveWidget: (sectionId, widgetIndex) => {
-                            widgetsTab.removeWidgetFromSection(sectionId,
+                            topBarTab.removeWidgetFromSection(sectionId,
                                                                widgetIndex)
                           }
           onSpacerSizeChanged: (sectionId, itemId, newSize) => {
-                                 widgetsTab.handleSpacerSizeChanged(sectionId,
+                                 topBarTab.handleSpacerSizeChanged(sectionId,
                                                                     itemId,
                                                                     newSize)
                                }
@@ -646,7 +712,7 @@ Item {
                                   }
                                 }
           onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
-                                   widgetsTab.handleGpuSelectionChanged(
+                                   topBarTab.handleGpuSelectionChanged(
                                      sectionId, widgetIndex, selectedIndex)
                                  }
         }
@@ -656,28 +722,28 @@ Item {
           title: "Right Section"
           titleIcon: "format_align_right"
           sectionId: "right"
-          allWidgets: widgetsTab.baseWidgetDefinitions
-          items: widgetsTab.getItemsForSection("right")
+          allWidgets: topBarTab.baseWidgetDefinitions
+          items: topBarTab.getItemsForSection("right")
           onItemEnabledChanged: (sectionId, itemId, enabled) => {
-                                  widgetsTab.handleItemEnabledChanged(sectionId,
+                                  topBarTab.handleItemEnabledChanged(sectionId,
                                                                       itemId,
                                                                       enabled)
                                 }
           onItemOrderChanged: newOrder => {
-                                widgetsTab.handleItemOrderChanged("right",
+                                topBarTab.handleItemOrderChanged("right",
                                                                   newOrder)
                               }
           onAddWidget: sectionId => {
-                         widgetSelectionPopup.allWidgets = widgetsTab.baseWidgetDefinitions
+                         widgetSelectionPopup.allWidgets = topBarTab.baseWidgetDefinitions
                          widgetSelectionPopup.targetSection = sectionId
                          widgetSelectionPopup.safeOpen()
                        }
           onRemoveWidget: (sectionId, widgetIndex) => {
-                            widgetsTab.removeWidgetFromSection(sectionId,
+                            topBarTab.removeWidgetFromSection(sectionId,
                                                                widgetIndex)
                           }
           onSpacerSizeChanged: (sectionId, itemId, newSize) => {
-                                 widgetsTab.handleSpacerSizeChanged(sectionId,
+                                 topBarTab.handleSpacerSizeChanged(sectionId,
                                                                     itemId,
                                                                     newSize)
                                }
@@ -693,24 +759,23 @@ Item {
                                   }
                                 }
           onGpuSelectionChanged: (sectionId, widgetIndex, selectedIndex) => {
-                                   widgetsTab.handleGpuSelectionChanged(
+                                   topBarTab.handleGpuSelectionChanged(
                                      sectionId, widgetIndex, selectedIndex)
                                  }
         }
       }
 
+      // Corner Radius
       StyledRect {
         width: parent.width
-        height: workspaceSection.implicitHeight + Theme.spacingL * 2
+        height: cornerRadiusSection.implicitHeight + Theme.spacingL * 2
         radius: Theme.cornerRadius
-        color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
-                       Theme.surfaceVariant.b, 0.3)
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                              Theme.outline.b, 0.2)
+        color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
         border.width: 1
 
         Column {
-          id: workspaceSection
+          id: cornerRadiusSection
 
           anchors.fill: parent
           anchors.margins: Theme.spacingL
@@ -721,201 +786,137 @@ Item {
             spacing: Theme.spacingM
 
             DankIcon {
-              name: "view_module"
+              name: "rounded_corner"
               size: Theme.iconSize
               color: Theme.primary
               anchors.verticalCenter: parent.verticalCenter
             }
 
             StyledText {
-              text: "Workspace Settings"
+              text: "Corner Radius"
               font.pixelSize: Theme.fontSizeLarge
               font.weight: Font.Medium
               color: Theme.surfaceText
               anchors.verticalCenter: parent.verticalCenter
             }
+
           }
 
-          DankToggle {
+          Column {
             width: parent.width
-            text: "Workspace Index Numbers"
-            description: "Show workspace index numbers in the top bar workspace switcher"
-            checked: SettingsData.showWorkspaceIndex
-            onToggled: checked => {
-                         return SettingsData.setShowWorkspaceIndex(checked)
-                       }
-          }
-
-          DankToggle {
-            width: parent.width
-            text: "Workspace Padding"
-            description: "Always show a minimum of 3 workspaces, even if fewer are available"
-            checked: SettingsData.showWorkspacePadding
-            onToggled: checked => {
-                         return SettingsData.setShowWorkspacePadding(checked)
-                       }
-          }
-        }
-      }
-
-      StyledRect {
-        width: parent.width
-        height: workspaceIconsSection.implicitHeight + Theme.spacingL * 2
-        radius: Theme.cornerRadius
-        color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
-                       Theme.surfaceVariant.b, 0.3)
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                              Theme.outline.b, 0.2)
-        border.width: 1
-        visible: SettingsData.hasNamedWorkspaces()
-
-        Column {
-          id: workspaceIconsSection
-
-          anchors.fill: parent
-          anchors.margins: Theme.spacingL
-          spacing: Theme.spacingM
-
-          Row {
-            width: parent.width
-            spacing: Theme.spacingM
-
-            DankIcon {
-              name: "label"
-              size: Theme.iconSize
-              color: Theme.primary
-              anchors.verticalCenter: parent.verticalCenter
-            }
+            spacing: Theme.spacingS
 
             StyledText {
-              text: "Named Workspace Icons"
-              font.pixelSize: Theme.fontSizeLarge
-              font.weight: Font.Medium
+              text: "Bar & Widget Corner Roundness"
+              font.pixelSize: Theme.fontSizeSmall
               color: Theme.surfaceText
-              anchors.verticalCenter: parent.verticalCenter
+              font.weight: Font.Medium
             }
-          }
 
-          StyledText {
-            width: parent.width
-            text: "Configure icons for named workspaces. Icons take priority over numbers when both are enabled."
-            font.pixelSize: Theme.fontSizeSmall
-            color: Theme.outline
-            wrapMode: Text.WordWrap
-          }
-
-          Repeater {
-            model: SettingsData.getNamedWorkspaces()
-
-            Rectangle {
+            DankSlider {
               width: parent.width
-              height: workspaceIconRow.implicitHeight + Theme.spacingM
-              radius: Theme.cornerRadius
-              color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g,
-                             Theme.surfaceContainer.b, 0.5)
-              border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                    Theme.outline.b, 0.3)
-              border.width: 1
-
-              Row {
-                id: workspaceIconRow
-
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.leftMargin: Theme.spacingM
-                anchors.rightMargin: Theme.spacingM
-                spacing: Theme.spacingM
-
-                StyledText {
-                  text: "\"" + modelData + "\""
-                  font.pixelSize: Theme.fontSizeMedium
-                  font.weight: Font.Medium
-                  color: Theme.surfaceText
-                  anchors.verticalCenter: parent.verticalCenter
-                  width: 150
-                  elide: Text.ElideRight
-                }
-
-                DankIconPicker {
-                  id: iconPicker
-                  anchors.verticalCenter: parent.verticalCenter
-
-                  Component.onCompleted: {
-                    var iconData = SettingsData.getWorkspaceNameIcon(modelData)
-                    if (iconData) {
-                      setIcon(iconData.value, iconData.type)
-                    }
-                  }
-
-                  onIconSelected: (iconName, iconType) => {
-                    SettingsData.setWorkspaceNameIcon(modelData, {
-                      type: iconType,
-                      value: iconName
-                    })
-                    setIcon(iconName, iconType)
-                  }
-
-                  Connections {
-                    target: SettingsData
-                    function onWorkspaceIconsUpdated() {
-                      var iconData = SettingsData.getWorkspaceNameIcon(modelData)
-                      if (iconData) {
-                        iconPicker.setIcon(iconData.value, iconData.type)
-                      } else {
-                        iconPicker.setIcon("", "icon")
-                      }
-                    }
-                  }
-                }
-
-                Rectangle {
-                  width: 28
-                  height: 28
-                  radius: Theme.cornerRadius
-                  color: clearMouseArea.containsMouse ? Theme.errorHover : Theme.surfaceContainer
-                  border.color: clearMouseArea.containsMouse ? Theme.error : Theme.outline
-                  border.width: 1
-                  anchors.verticalCenter: parent.verticalCenter
-
-                  DankIcon {
-                    name: "close"
-                    size: 16
-                    color: clearMouseArea.containsMouse ? Theme.error : Theme.outline
-                    anchors.centerIn: parent
-                  }
-
-                  MouseArea {
-                    id: clearMouseArea
-
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                      SettingsData.removeWorkspaceNameIcon(modelData)
-                    }
-                  }
-                }
-
-                Item {
-                  width: parent.width - 150 - 240 - 28 - Theme.spacingM * 4
-                  height: 1
-                }
+              height: 24
+              value: SettingsData.cornerRadius
+              minimum: 0
+              maximum: 32
+              unit: ""
+              showValue: true
+              onSliderValueChanged: (newValue) => {
+                SettingsData.setCornerRadius(newValue);
               }
             }
+
           }
+
         }
+
+      }
+
+      // Spacing
+      StyledRect {
+        width: parent.width
+        height: topBarSpacingSection.implicitHeight + Theme.spacingL * 2
+        radius: Theme.cornerRadius
+        color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+        border.width: 1
+
+        Column {
+          id: topBarSpacingSection
+
+          anchors.fill: parent
+          anchors.margins: Theme.spacingL
+          spacing: Theme.spacingM
+
+          Row {
+            width: parent.width
+            spacing: Theme.spacingM
+
+            DankIcon {
+              name: "space_bar"
+              size: Theme.iconSize
+              color: Theme.primary
+              anchors.verticalCenter: parent.verticalCenter
+            }
+
+            StyledText {
+              text: "Spacing"
+              font.pixelSize: Theme.fontSizeLarge
+              font.weight: Font.Medium
+              color: Theme.surfaceText
+              anchors.verticalCenter: parent.verticalCenter
+            }
+
+          }
+
+          Column {
+            width: parent.width
+            spacing: Theme.spacingS
+
+            StyledText {
+              text: "Gap Around Top Bar (0 = edge-to-edge)"
+              font.pixelSize: Theme.fontSizeSmall
+              color: Theme.surfaceText
+              font.weight: Font.Medium
+            }
+
+            DankSlider {
+              width: parent.width
+              height: 24
+              value: SettingsData.topBarSpacing
+              minimum: 0
+              maximum: 32
+              unit: ""
+              showValue: true
+              onSliderValueChanged: (newValue) => {
+                SettingsData.setTopBarSpacing(newValue);
+              }
+            }
+
+          }
+
+          DankToggle {
+            width: parent.width
+            text: "Square Corners"
+            description: "Disable corner radius for the top bar (always square corners)"
+            checked: SettingsData.topBarSquareCorners
+            onToggled: (checked) => {
+              SettingsData.setTopBarSquareCorners(checked);
+            }
+          }
+
+        }
+
       }
     }
   }
-
 
   DankWidgetSelectionPopup {
     id: widgetSelectionPopup
 
     anchors.centerIn: parent
     onWidgetSelected: (widgetId, targetSection) => {
-                        widgetsTab.addWidgetToSection(widgetId, targetSection)
+                        topBarTab.addWidgetToSection(widgetId, targetSection)
                       }
   }
 }

@@ -33,15 +33,7 @@ DankPopout {
   }
 
   popupWidth: 400
-  popupHeight: {
-    let baseHeight = Theme.spacingL * 2
-    baseHeight += 40 // notificationHeader height estimate
-    baseHeight += 0 // notificationSettings when collapsed
-    baseHeight += Theme.spacingM * 2
-    let listHeight = 200 // default list height
-    baseHeight += Math.min(listHeight, 600)
-    return Math.max(300, Math.min(baseHeight, Screen.height * 0.8))
-  }
+  popupHeight: contentLoader.item ? contentLoader.item.implicitHeight : 400
   triggerX: Screen.width - 400 - Theme.spacingL
   triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingXS
   triggerWidth: 40
