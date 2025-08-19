@@ -68,6 +68,13 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width
                         wrapMode: Text.WordWrap
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            acceptedButtons: Qt.NoButton
+                            propagateComposedEvents: true
+                        }
                     }
 
                 }
@@ -121,6 +128,13 @@ Item {
                         color: Theme.surfaceVariantText
                         width: parent.width
                         wrapMode: Text.WordWrap
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            acceptedButtons: Qt.NoButton
+                            propagateComposedEvents: true
+                        }
                     }
                 }
 
@@ -221,6 +235,13 @@ Item {
                             color: Theme.surfaceVariantText
                             linkColor: Theme.primary
                             onLinkActivated: (url) => Qt.openUrlExternally(url)
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                acceptedButtons: Qt.NoButton
+                                propagateComposedEvents: true
+                            }
                         }
 
                         StyledText {
@@ -236,6 +257,13 @@ Item {
                             color: Theme.surfaceVariantText
                             linkColor: Theme.primary
                             onLinkActivated: (url) => Qt.openUrlExternally(url)
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                acceptedButtons: Qt.NoButton
+                                propagateComposedEvents: true
+                            }
                         }
 
                     }
