@@ -108,27 +108,43 @@ https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
 
 **Dependencies:**
 
-```bash
+
 # Arch Linux
+```bash
 paru -S quickshell-git ttf-material-symbols-variable-git inter-font ttf-fira-code
+```
 
 # Fedora
+```bash
 sudo dnf copr enable errornointernet/quickshell && sudo dnf install quickshell-git rsms-inter-fonts fira-code-fonts
+```
 # Install icon fonts manually
+```bash
 mkdir -p ~/.local/share/fonts
+```
+```bash
 curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf
+```
+```bash
 fc-cache -f
 ```
 
 **Get the shell:**
 
-```bash
+
 # Arch linux available via AUR
+```bash
 paru -S dankmaterialshell-git
+```
 
 # Manual install
+```bash
 mkdir -p ~/.config/quickshell
+```
+```bash
 git clone https://github.com/AvengeMedia/DankMaterialShell.git ~/.config/quickshell/DankMaterialShell
+```
+```bash
 qs -c DankMaterialShell
 ```
 
@@ -138,25 +154,31 @@ qs -c DankMaterialShell
 
 **Material Symbols (Required):**
 
-```bash
+
 # Manual installation
+```bash
 mkdir -p ~/.local/share/fonts
 curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf
 fc-cache -f
+```
 
 # Arch Linux
+```bash
 paru -S ttf-material-symbols-variable-git
 ```
 
 **Typography (Recommended):**
 
-```bash
+
 # Inter Variable Font
+```bash
 curl -L "https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip" -o /tmp/Inter.zip
 unzip -j /tmp/Inter.zip "InterVariable.ttf" "InterVariable-Italic.ttf" -d ~/.local/share/fonts/
 rm /tmp/Inter.zip && fc-cache -f
+```
 
 # Fira Code
+```bash
 curl -L "https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip" -o /tmp/FiraCode.zip
 unzip -j /tmp/FiraCode.zip "ttf/*.ttf" -d ~/.local/share/fonts/
 rm /tmp/FiraCode.zip && fc-cache -f
@@ -168,18 +190,19 @@ rm /tmp/FiraCode.zip && fc-cache -f
 
 **Enhanced Functionality:**
 
-```bash
 # Install dgop on any distro (requires go 1.23+):
+```bash
 git clone https://github.com/AvengeMedia/dgop.git && cd dgop
 make && sudo make install
 ```
 
-```bash
 # Arch Linux
-pacman -S cava wl-clipboard cliphist brightnessctl
+```bash
+sudo pacman -S cava wl-clipboard cliphist brightnessctl
 paru -S matugen dgop
-
+```
 # Fedora
+```bash
 sudo dnf install cava wl-clipboard brightnessctl
 sudo dnf copr enable wef/cliphist && sudo dnf install cliphist
 sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
@@ -270,21 +293,25 @@ binds {
 
 Control everything from the command line, or via keybinds. For comprehensive documentation of all available IPC commands, see [docs/IPC.md](docs/IPC.md).
 
-```bash
+
 # Audio control
+```bash
 qs -c DankMaterialShell ipc call audio setvolume 50
 qs -c DankMaterialShell ipc call audio mute
-
+```
 # Launch applications
+```bash
 qs -c DankMaterialShell ipc call spotlight toggle
 qs -c DankMaterialShell ipc call processlist toggle
-
+```
 # System control
+```
 qs -c DankMaterialShell ipc call wallpaper set /path/to/image.jpg
 qs -c DankMaterialShell ipc call theme toggle
 qs -c DankMaterialShell ipc call lock lock
-
+```
 # Media control
+```
 qs -c DankMaterialShell ipc call mpris playPause
 qs -c DankMaterialShell ipc call mpris next
 ```
@@ -342,11 +369,14 @@ environment {
 
 1. Install qt6ct and qt5ct
 
-```bash
+
 # Arch
-pacman -S qt5ct qt6ct
+```bash
+sudo pacman -S qt5ct qt6ct
+```
 # Fedora
-dnf install qt5ct qt6ct
+```bash
+sudo dnf install qt5ct qt6ct
 ```
 
 2. Configure Environment in niri
@@ -375,11 +405,14 @@ Sync your caldev compatible calendar (Google, Office365, etc.) for dashboard int
 
 **Install dependencies:**
 
-```bash
+
 # Arch
-pacman -S vdirsyncer khal python-aiohttp-oauthlib
+```bash
+sudo pacman -S vdirsyncer khal python-aiohttp-oauthlib
+```
 
 # Fedora
+```bash
 sudo dnf install python3-vdirsyncer khal python3-aiohttp-oauthlib
 ```
 
@@ -413,8 +446,10 @@ fileext = ".ics"
 ```bash
 vdirsyncer sync
 khal configure
+```
 
 # Auto-sync every 5 minutes
+```bash
 crontab -e
 # Add: */5 * * * * /usr/bin/vdirsyncer sync
 ```
@@ -423,7 +458,10 @@ crontab -e
 
 ## Configuration
 
-All settings are configurable in `~/.config/DankMaterialShell/settings.json`, or more intuitively the built-in settings modal.
+All settings are configurable in
+```
+~/.config/DankMaterialShell/settings.json`, or more intuitively the built-in settings modal.
+```
 
 **Key configuration areas:**
 
