@@ -16,21 +16,28 @@ Rectangle {
     z: 100
 
     Column {
-        anchors.centerIn: parent
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: Theme.spacingS
         spacing: 2
 
         StyledText {
             text: "↑/↓: Nav • Space: Expand • Enter: Action/Expand • E: Text"
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceText
-            anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.width
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignHCenter
         }
 
         StyledText {
             text: "Del: Clear • Shift+Del: Clear All • 1-9: Actions • F10: Help • Esc: Close"
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceText
-            anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.width
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignHCenter
         }
 
     }

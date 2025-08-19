@@ -46,16 +46,61 @@ DankPopout {
   onNotificationHistoryVisibleChanged: {
     if (notificationHistoryVisible) {
       open()
-      NotificationService.disablePopups(true)
     } else {
       close()
-      NotificationService.disablePopups(false)
     }
+  }
+
+  onShouldBeVisibleChanged: {
+    if (shouldBeVisible) {
+      NotificationService.disablePopups(true)
+      // Set up keyboard controller when content is loaded
+      Qt.callLater(function() {
+        if (contentLoader.item) {
+          contentLoader.item.externalKeyboardController = keyboardController
+          
+          // Find the notification list and set up the connection
+          var notificationList = findChild(contentLoader.item, "notificationList")
+          var notificationHeader = findChild(contentLoader.item, "notificationHeader")
+          
+          if (notificationList) {
+            keyboardController.listView = notificationList
+            notificationList.keyboardController = keyboardController
+          }
+          if (notificationHeader) {
+            notificationHeader.keyboardController = keyboardController
+          }
+          
+          keyboardController.reset()
+          keyboardController.rebuildFlatNavigation()
+        }
+      })
+    } else {
+      NotificationService.disablePopups(false)
+      // Reset keyboard state when closing  
+      keyboardController.keyboardNavigationActive = false
+    }
+  }
+  
+  function findChild(parent, objectName) {
+    if (parent.objectName === objectName) {
+      return parent
+    }
+    for (var i = 0; i < parent.children.length; i++) {
+      var child = parent.children[i]
+      var result = findChild(child, objectName)
+      if (result) {
+        return result
+      }
+    }
+    return null
   }
 
   content: Component {
     Rectangle {
       id: notificationContent
+      
+      property var externalKeyboardController: null
       
       implicitHeight: {
         let baseHeight = Theme.spacingL * 2
@@ -82,7 +127,12 @@ DankPopout {
       }
 
       Keys.onPressed: function(event) {
-        keyboardController.handleKey(event)
+        if (event.key === Qt.Key_Escape) {
+          root.close()
+          event.accepted = true
+        } else if (externalKeyboardController) {
+          externalKeyboardController.handleKey(event)
+        }
       }
 
       Connections {
@@ -111,7 +161,7 @@ DankPopout {
 
           NotificationHeader {
             id: notificationHeader
-            keyboardController: keyboardController
+            objectName: "notificationHeader"
           }
           
           NotificationSettings {
@@ -121,16 +171,10 @@ DankPopout {
 
           KeyboardNavigatedNotificationList {
             id: notificationList
+            objectName: "notificationList"
 
             width: parent.width
             height: parent.height - notificationHeader.height - notificationSettings.height - contentColumnInner.spacing * 2
-            
-            Component.onCompleted: {
-              if (keyboardController && notificationList) {
-                keyboardController.listView = notificationList
-                notificationList.keyboardController = keyboardController
-              }
-            }
           }
         }
       }
@@ -141,7 +185,7 @@ DankPopout {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.margins: Theme.spacingL
-        showHints: keyboardController.showKeyboardHints
+        showHints: externalKeyboardController ? externalKeyboardController.showKeyboardHints : false
         z: 200
       }
 

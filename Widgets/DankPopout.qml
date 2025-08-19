@@ -140,15 +140,24 @@ PanelWindow {
         visible: shouldBeVisible
         focus: shouldBeVisible
         
-        Keys.onEscapePressed: (event) => {
-            close();
-            event.accepted = true;
+        Keys.onPressed: (event) => {
+            if (event.key === Qt.Key_Escape) {
+                close();
+                event.accepted = true;
+            } else {
+                // Forward all non-escape keys to content
+                event.accepted = false;
+            }
         }
         
         onVisibleChanged: {
             if (visible) {
                 Qt.callLater(function() {
-                    forceActiveFocus();
+                    if (contentLoader.item) {
+                        contentLoader.item.forceActiveFocus();
+                    } else {
+                        forceActiveFocus();
+                    }
                 });
             }
         }
