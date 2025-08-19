@@ -985,9 +985,6 @@ Item {
                         checked: Colors.gtkThemingEnabled && SettingsData.gtkThemingEnabled
                         onToggled: function(checked) {
                             SettingsData.setGtkThemingEnabled(checked);
-                            if (checked && Theme.isDynamicTheme)
-                                Colors.generateGtkThemes();
-
                         }
                     }
 
@@ -999,9 +996,6 @@ Item {
                         checked: Colors.qtThemingEnabled && SettingsData.qtThemingEnabled
                         onToggled: function(checked) {
                             SettingsData.setQtThemingEnabled(checked);
-                            if (checked && Theme.isDynamicTheme)
-                                Colors.generateQtThemes();
-
                         }
                     }
 
