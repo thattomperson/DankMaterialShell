@@ -10,12 +10,28 @@ Singleton {
 
     property bool brightnessAvailable: devices.length > 0
     property var devices: []
+    property var ddcDevices: []
     property var deviceBrightness: ({})
+    property var ddcPendingInit: ({})
     property string currentDevice: ""
     property string lastIpcDevice: ""
+    property bool ddcAvailable: false
+    property var ddcInitQueue: []
+    property bool skipDdcRead: false
     property int brightnessLevel: {
         const deviceToUse = lastIpcDevice === "" ? getDefaultDevice() : (lastIpcDevice || currentDevice);
-        return deviceToUse ? (deviceBrightness[deviceToUse] || 50) : 50;
+        if (!deviceToUse) return 50;
+        
+        const deviceInfo = getCurrentDeviceInfoByName(deviceToUse);
+        if (deviceInfo && deviceInfo.class === "ddc") {
+            if (ddcPendingInit[deviceToUse]) {
+                return deviceBrightness[deviceToUse] || 50;
+            }
+            return deviceBrightness[deviceToUse] || 50;
+        }
+        
+        // For non-DDC devices, don't use cache - they're fast to read
+        return deviceBrightness[deviceToUse] || 50;
     }
     property int maxBrightness: 100
     property bool brightnessInitialized: false
@@ -30,17 +46,26 @@ Singleton {
         const actualDevice = device === "" ? getDefaultDevice() : (device || currentDevice || getDefaultDevice());
         
         // Update the device brightness cache
-        if (actualDevice) {
-            var newBrightness = deviceBrightness;
+        const deviceInfo = getCurrentDeviceInfoByName(actualDevice);
+        if (actualDevice && deviceInfo && deviceInfo.class === "ddc") {
+            // Always cache DDC values since we never read them again
+            var newBrightness = Object.assign({}, deviceBrightness);
             newBrightness[actualDevice] = clampedValue;
             deviceBrightness = newBrightness;
         }
         
-        if (device)
-            brightnessSetProcess.command = ["brightnessctl", "-d", device, "set", clampedValue + "%"];
-        else
-            brightnessSetProcess.command = ["brightnessctl", "set", clampedValue + "%"];
-        brightnessSetProcess.running = true;
+        if (deviceInfo && deviceInfo.class === "ddc") {
+            // Use ddcutil for DDC devices
+            ddcBrightnessSetProcess.command = ["ddcutil", "setvcp", "-d", String(deviceInfo.ddcDisplay), "10", String(clampedValue)];
+            ddcBrightnessSetProcess.running = true;
+        } else {
+            // Use brightnessctl for regular devices
+            if (device)
+                brightnessSetProcess.command = ["brightnessctl", "-d", device, "set", clampedValue + "%"];
+            else
+                brightnessSetProcess.command = ["brightnessctl", "set", clampedValue + "%"];
+            brightnessSetProcess.running = true;
+        }
     }
 
     function setBrightness(percentage, device) {
@@ -48,19 +73,65 @@ Singleton {
         brightnessChanged();
     }
 
-    function setCurrentDevice(deviceName) {
+    function setCurrentDevice(deviceName, saveToSession = false) {
         if (currentDevice === deviceName)
             return ;
 
         currentDevice = deviceName;
         lastIpcDevice = deviceName;
+        
+        // Only save to session if explicitly requested (user choice)
+        if (saveToSession) {
+            SessionData.setLastBrightnessDevice(deviceName);
+        }
+        
         deviceSwitched();
-        brightnessGetProcess.command = ["brightnessctl", "-m", "-d", deviceName, "get"];
-        brightnessGetProcess.running = true;
+        
+        // Check if this is a DDC device
+        const deviceInfo = getCurrentDeviceInfoByName(deviceName);
+        if (deviceInfo && deviceInfo.class === "ddc") {
+            // For DDC devices, never read after initial - just use cached values
+            return;
+        } else {
+            // For regular devices, use brightnessctl
+            brightnessGetProcess.command = ["brightnessctl", "-m", "-d", deviceName, "get"];
+            brightnessGetProcess.running = true;
+        }
     }
 
     function refreshDevices() {
         deviceListProcess.running = true;
+    }
+    
+    function refreshDevicesInternal() {
+        const allDevices = [...devices, ...ddcDevices];
+        
+        allDevices.sort((a, b) => {
+            if (a.class === "backlight" && b.class !== "backlight")
+                return -1;
+            if (a.class !== "backlight" && b.class === "backlight")
+                return 1;
+            
+            if (a.class === "ddc" && b.class !== "ddc" && b.class !== "backlight")
+                return -1;
+            if (a.class !== "ddc" && b.class === "ddc" && a.class !== "backlight")
+                return 1;
+            
+            return a.name.localeCompare(b.name);
+        });
+        
+        devices = allDevices;
+        
+        if (devices.length > 0 && !currentDevice) {
+            const lastDevice = SessionData.lastBrightnessDevice || "";
+            const deviceExists = devices.some(d => d.name === lastDevice);
+            if (deviceExists) {
+                setCurrentDevice(lastDevice, false);
+            } else {
+                const nonKbdDevice = devices.find(d => !d.name.includes("kbd")) || devices[0];
+                setCurrentDevice(nonKbdDevice.name, false);
+            }
+        }
     }
 
     function getDeviceBrightness(deviceName) {
@@ -68,13 +139,11 @@ Singleton {
     }
 
     function getDefaultDevice() {
-        // Find first backlight device
         for (const device of devices) {
             if (device.class === "backlight") {
                 return device.name;
             }
         }
-        // Fallback to first device if no backlight found
         return devices.length > 0 ? devices[0].name : "";
     }
 
@@ -89,6 +158,39 @@ Singleton {
         }
         return null;
     }
+    
+    function isCurrentDeviceReady() {
+        const deviceToUse = lastIpcDevice === "" ? getDefaultDevice() : (lastIpcDevice || currentDevice);
+        if (!deviceToUse) return false;
+        
+        if (ddcPendingInit[deviceToUse]) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function getCurrentDeviceInfoByName(deviceName) {
+        if (!deviceName) return null;
+        
+        for (const device of devices) {
+            if (device.name === deviceName) {
+                return device;
+            }
+        }
+        return null;
+    }
+    
+    function processNextDdcInit() {
+        if (ddcInitQueue.length === 0 || ddcInitialBrightnessProcess.running) {
+            return;
+        }
+        
+        const displayId = ddcInitQueue.shift();
+        ddcInitialBrightnessProcess.command = ["ddcutil", "getvcp", "-d", String(displayId), "10", "--brief"];
+        ddcInitialBrightnessProcess.running = true;
+    }
+    
     
     function enableNightMode() {
         if (nightModeActive) return;
@@ -128,12 +230,102 @@ Singleton {
         }
     }
 
+
     Component.onCompleted: {
+        ddcDetectionProcess.running = true;
         refreshDevices();
         
         // Check if night mode was enabled on startup
         if (SessionData.nightModeEnabled) {
             enableNightMode();
+        }
+    }
+
+    Process {
+        id: ddcDetectionProcess
+        
+        command: ["which", "ddcutil"]
+        running: false
+        
+        onExited: function(exitCode) {
+            ddcAvailable = (exitCode === 0);
+            if (ddcAvailable) {
+                console.log("BrightnessService: ddcutil detected");
+                ddcDisplayDetectionProcess.running = true;
+            } else {
+                console.log("BrightnessService: ddcutil not available");
+            }
+        }
+    }
+    
+    Process {
+        id: ddcDisplayDetectionProcess
+        
+        command: ["bash", "-c", "ddcutil detect --brief 2>/dev/null | grep '^Display [0-9]' | awk '{print \"{\\\"display\\\":\" $2 \",\\\"name\\\":\\\"ddc-\" $2 \"\\\",\\\"class\\\":\\\"ddc\\\"}\"}' | tr '\\n' ',' | sed 's/,$//' | sed 's/^/[/' | sed 's/$/]/' || echo '[]'"]
+        running: false
+        
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (!text.trim()) {
+                    console.log("BrightnessService: No DDC displays found");
+                    ddcDevices = [];
+                    return;
+                }
+                
+                try {
+                    const parsedDevices = JSON.parse(text.trim());
+                    const newDdcDevices = [];
+                    
+                    for (const device of parsedDevices) {
+                        if (device.display && device.class === "ddc") {
+                            newDdcDevices.push({
+                                "name": device.name,
+                                "class": "ddc",
+                                "current": 50,
+                                "percentage": 50,
+                                "max": 100,
+                                "ddcDisplay": device.display
+                            });
+                        }
+                    }
+                    
+                    ddcDevices = newDdcDevices;
+                    console.log("BrightnessService: Found", ddcDevices.length, "DDC displays");
+                    
+                    // Queue initial brightness readings for DDC devices
+                    ddcInitQueue = [];
+                    for (const device of ddcDevices) {
+                        ddcInitQueue.push(device.ddcDisplay);
+                        // Mark DDC device as pending initialization
+                        ddcPendingInit[device.name] = true;
+                    }
+                    
+                    // Start processing the queue
+                    processNextDdcInit();
+                    
+                    // Refresh device list to include DDC devices
+                    refreshDevicesInternal();
+                    
+                    // Retry setting last device now that DDC devices are available
+                    const lastDevice = SessionData.lastBrightnessDevice || "";
+                    if (lastDevice) {
+                        const deviceExists = devices.some(d => d.name === lastDevice);
+                        if (deviceExists && (!currentDevice || currentDevice !== lastDevice)) {
+                            setCurrentDevice(lastDevice, false);
+                        }
+                    }
+                } catch (error) {
+                    console.warn("BrightnessService: Failed to parse DDC devices:", error);
+                    ddcDevices = [];
+                }
+            }
+        }
+        
+        onExited: function(exitCode) {
+            if (exitCode !== 0) {
+                console.warn("BrightnessService: Failed to detect DDC displays:", exitCode);
+                ddcDevices = [];
+            }
         }
     }
 
@@ -168,18 +360,24 @@ Singleton {
                     });
 
                 }
-                newDevices.sort((a, b) => {
-                    if (a.class === "backlight" && b.class !== "backlight")
-                        return -1;
-
-                    if (a.class !== "backlight" && b.class === "backlight")
-                        return 1;
-
-                    return a.name.localeCompare(b.name);
-                });
-                devices = newDevices;
-                if (devices.length > 0 && !currentDevice)
-                    setCurrentDevice(devices[0].name);
+                // Store brightnessctl devices separately, will be combined with DDC
+                const brightnessCtlDevices = newDevices;
+                devices = brightnessCtlDevices;
+                
+                // If we have DDC devices, combine them
+                if (ddcDevices.length > 0) {
+                    refreshDevicesInternal();
+                } else if (devices.length > 0 && !currentDevice) {
+                    // Try to restore last selected device, fallback to first device
+                    const lastDevice = SessionData.lastBrightnessDevice || "";
+                    const deviceExists = devices.some(d => d.name === lastDevice);
+                    if (deviceExists) {
+                setCurrentDevice(lastDevice, false);
+            } else {
+                const nonKbdDevice = devices.find(d => !d.name.includes("kbd")) || devices[0];
+                setCurrentDevice(nonKbdDevice.name, false);
+            }
+                }
 
             }
         }
@@ -194,6 +392,58 @@ Singleton {
             if (exitCode !== 0)
                 console.warn("BrightnessService: Failed to set brightness:", exitCode);
 
+        }
+    }
+    
+    Process {
+        id: ddcBrightnessSetProcess
+        
+        running: false
+        onExited: function(exitCode) {
+            if (exitCode !== 0)
+                console.warn("BrightnessService: Failed to set DDC brightness:", exitCode);
+        }
+    }
+    
+    Process {
+        id: ddcInitialBrightnessProcess
+        
+        running: false
+        onExited: function(exitCode) {
+            if (exitCode !== 0)
+                console.warn("BrightnessService: Failed to get initial DDC brightness:", exitCode);
+            
+            processNextDdcInit();
+        }
+        
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (!text.trim())
+                    return;
+                
+                const parts = text.trim().split(" ");
+                if (parts.length >= 5) {
+                    const current = parseInt(parts[3]) || 50;
+                    const max = parseInt(parts[4]) || 100;
+                    const brightness = Math.round((current / max) * 100);
+                    
+                    const commandParts = ddcInitialBrightnessProcess.command;
+                    if (commandParts && commandParts.length >= 4) {
+                        const displayId = commandParts[3];
+                        const deviceName = "ddc-" + displayId;
+                        
+                        var newBrightness = Object.assign({}, deviceBrightness);
+                        newBrightness[deviceName] = brightness;
+                        deviceBrightness = newBrightness;
+                        
+                        var newPending = Object.assign({}, ddcPendingInit);
+                        delete newPending[deviceName];
+                        ddcPendingInit = newPending;
+                        
+                        console.log("BrightnessService: Initial DDC Device", deviceName, "brightness:", brightness + "%");
+                    }
+                }
+            }
         }
     }
 
@@ -233,6 +483,43 @@ Singleton {
             }
         }
 
+    }
+    
+    Process {
+        id: ddcBrightnessGetProcess
+        
+        running: false
+        onExited: function(exitCode) {
+            if (exitCode !== 0)
+                console.warn("BrightnessService: Failed to get DDC brightness:", exitCode);
+        }
+        
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (!text.trim())
+                    return;
+                
+                // Parse ddcutil getvcp output format: "VCP 10 C 50 100"
+                const parts = text.trim().split(" ");
+                if (parts.length >= 5) {
+                    const current = parseInt(parts[3]) || 50;
+                    const max = parseInt(parts[4]) || 100;
+                    maxBrightness = max;
+                    const brightness = Math.round((current / max) * 100);
+                    
+                    // Update the device brightness cache
+                    if (currentDevice) {
+                        var newBrightness = deviceBrightness;
+                        newBrightness[currentDevice] = brightness;
+                        deviceBrightness = newBrightness;
+                    }
+                    
+                    brightnessInitialized = true;
+                    console.log("BrightnessService: DDC Device", currentDevice, "brightness:", brightness + "%");
+                    brightnessChanged();
+                }
+            }
+        }
     }
 
     Process {
@@ -285,7 +572,7 @@ Singleton {
             const targetDevice = device || "";
             root.lastIpcDevice = targetDevice;
             if (targetDevice && targetDevice !== root.currentDevice) {
-                root.setCurrentDevice(targetDevice);
+                root.setCurrentDevice(targetDevice, false);
             }
             root.setBrightness(clampedValue, targetDevice);
             if (targetDevice)
@@ -305,7 +592,7 @@ Singleton {
             const newLevel = Math.max(1, Math.min(100, currentLevel + stepValue));
             root.lastIpcDevice = targetDevice;
             if (targetDevice && targetDevice !== root.currentDevice) {
-                root.setCurrentDevice(targetDevice);
+                root.setCurrentDevice(targetDevice, false);
             }
             root.setBrightness(newLevel, targetDevice);
             if (targetDevice)
@@ -325,7 +612,7 @@ Singleton {
             const newLevel = Math.max(1, Math.min(100, currentLevel - stepValue));
             root.lastIpcDevice = targetDevice;
             if (targetDevice && targetDevice !== root.currentDevice) {
-                root.setCurrentDevice(targetDevice);
+                root.setCurrentDevice(targetDevice, false);
             }
             root.setBrightness(newLevel, targetDevice);
             if (targetDevice)

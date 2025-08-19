@@ -118,14 +118,11 @@ PanelWindow {
             name: {
               const deviceInfo = BrightnessService.getCurrentDeviceInfo();
               
-              if (!deviceInfo || deviceInfo.class === "backlight") {
-                // Display backlight
+              if (!deviceInfo || deviceInfo.class === "backlight" || deviceInfo.class === "ddc") {
                 return "brightness_medium";
               } else if (deviceInfo.name.includes("kbd")) {
-                // Keyboard brightness
                 return "keyboard";
               } else {
-                // Other devices (LEDs, etc.)
                 return "lightbulb";
               }
             }

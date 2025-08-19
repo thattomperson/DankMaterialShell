@@ -28,6 +28,7 @@ Singleton {
   property string wallpaperCyclingMode: "interval" // "interval" or "time"
   property int wallpaperCyclingInterval: 300 // seconds (5 minutes)
   property string wallpaperCyclingTime: "06:00" // HH:mm format
+  property string lastBrightnessDevice: ""
 
   Component.onCompleted: {
     loadSettings()
@@ -58,6 +59,7 @@ Singleton {
         wallpaperCyclingMode = settings.wallpaperCyclingMode !== undefined ? settings.wallpaperCyclingMode : "interval"
         wallpaperCyclingInterval = settings.wallpaperCyclingInterval !== undefined ? settings.wallpaperCyclingInterval : 300
         wallpaperCyclingTime = settings.wallpaperCyclingTime !== undefined ? settings.wallpaperCyclingTime : "06:00"
+        lastBrightnessDevice = settings.lastBrightnessDevice !== undefined ? settings.lastBrightnessDevice : ""
       }
     } catch (e) {
 
@@ -81,7 +83,8 @@ Singleton {
                                           "wallpaperCyclingEnabled": wallpaperCyclingEnabled,
                                           "wallpaperCyclingMode": wallpaperCyclingMode,
                                           "wallpaperCyclingInterval": wallpaperCyclingInterval,
-                                          "wallpaperCyclingTime": wallpaperCyclingTime
+                                          "wallpaperCyclingTime": wallpaperCyclingTime,
+                                          "lastBrightnessDevice": lastBrightnessDevice
                                         }, null, 2))
   }
 
@@ -193,6 +196,11 @@ Singleton {
 
   function setWallpaperCyclingTime(time) {
     wallpaperCyclingTime = time
+    saveSettings()
+  }
+
+  function setLastBrightnessDevice(device) {
+    lastBrightnessDevice = device
     saveSettings()
   }
 
