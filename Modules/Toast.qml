@@ -12,9 +12,36 @@ PanelWindow {
     id: root
 
     property var modelData
+    property bool shouldBeVisible: false
+    property real frozenWidth: 0
+
+    Connections {
+        target: ToastService
+        function onToastVisibleChanged() {
+            if (ToastService.toastVisible) {
+                shouldBeVisible = true
+                visible = true
+            } else {
+                // Freeze the width before starting exit animation
+                frozenWidth = toast.width
+                shouldBeVisible = false
+                closeTimer.restart()
+            }
+        }
+    }
+
+    Timer {
+        id: closeTimer
+        interval: Theme.mediumDuration + 50
+        onTriggered: {
+            if (!shouldBeVisible) {
+                visible = false
+            }
+        }
+    }
 
     screen: modelData
-    visible: ToastService.toastVisible
+    visible: shouldBeVisible
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -39,8 +66,9 @@ PanelWindow {
             }
         }
 
-        width: ToastService.hasDetails ? 380 : messageText.implicitWidth + Theme.iconSize
-                                         + Theme.spacingM * 3 + Theme.spacingL * 2
+        width: shouldBeVisible ? 
+               (ToastService.hasDetails ? 380 : messageText.implicitWidth + Theme.iconSize + Theme.spacingM * 3 + Theme.spacingL * 2) : 
+               frozenWidth
         height: toastContent.height + Theme.spacingL * 2
         anchors.horizontalCenter: parent.horizontalCenter
         y: Theme.barHeight - 4 + SettingsData.topBarSpacing + 2
@@ -58,7 +86,7 @@ PanelWindow {
         }
         radius: Theme.cornerRadius
         layer.enabled: true
-        opacity: ToastService.toastVisible ? 0.9 : 0
+        opacity: shouldBeVisible ? 0.9 : 0
 
         Column {
             id: toastContent
@@ -228,9 +256,6 @@ PanelWindow {
             shadowOpacity: 0.3
         }
 
-        transform: Translate {
-            y: ToastService.toastVisible ? 0 : -20
-        }
 
         Behavior on opacity {
             NumberAnimation {
@@ -247,11 +272,7 @@ PanelWindow {
         }
 
         Behavior on height {
-            enabled: ToastService.toastVisible
-            NumberAnimation {
-                duration: Anims.durShort
-                easing.type: Easing.Linear
-            }
+            enabled: false
         }
 
         Behavior on width {

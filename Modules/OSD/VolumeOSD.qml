@@ -11,10 +11,6 @@ DankOSD {
     autoHideInterval: 3000
     enableMouseInteraction: true
 
-    function resetHideTimer() {
-        if (root.shouldBeVisible)
-            root.hideTimer.restart()
-    }
 
     Connections {
         target: AudioService
@@ -62,7 +58,10 @@ DankOSD {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         AudioService.toggleMute()
-                        root.resetHideTimer()
+                        resetHideTimer()
+                    }
+                    onContainsMouseChanged: {
+                        setChildHovered(containsMouse || volumeSlider.containsMouse)
                     }
                 }
             }
@@ -88,8 +87,12 @@ DankOSD {
                 onSliderValueChanged: function(newValue) {
                     if (AudioService.sink && AudioService.sink.audio) {
                         AudioService.sink.audio.volume = newValue / 100
-                        root.resetHideTimer()
+                        resetHideTimer()
                     }
+                }
+
+                onContainsMouseChanged: {
+                    setChildHovered(containsMouse || muteButton.containsMouse)
                 }
 
                 Connections {
