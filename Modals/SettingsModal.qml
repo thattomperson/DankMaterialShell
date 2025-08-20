@@ -32,7 +32,7 @@ DankModal {
     }
 
     objectName: "settingsModal"
-    width: 750
+    width: 800
     height: 750
     visible: false
     onBackgroundClicked: hide()

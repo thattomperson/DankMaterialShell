@@ -253,7 +253,7 @@ Item {
                         }
 
                         StyledText {
-                            text: "<a href=\"https://github.com/AvengeMedia/dgop\">dgop</a> - Dank Stateless System Monitoring"
+                            text: "<a href=\"https://github.com/AvengeMedia/dgop\">dgop</a> - Stateless System Monitoring"
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceVariantText
                             linkColor: Theme.primary
