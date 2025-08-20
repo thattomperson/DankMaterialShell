@@ -101,10 +101,11 @@ DankPopout {
       id: notificationContent
       
       property var externalKeyboardController: null
+      property real cachedHeaderHeight: 32
       
       implicitHeight: {
         let baseHeight = Theme.spacingL * 2
-        baseHeight += notificationHeader.height
+        baseHeight += cachedHeaderHeight
         baseHeight += (notificationSettings.expanded ? notificationSettings.contentHeight : 0)
         baseHeight += Theme.spacingM * 2
         let listHeight = notificationList.listContentHeight
@@ -162,6 +163,7 @@ DankPopout {
           NotificationHeader {
             id: notificationHeader
             objectName: "notificationHeader"
+            onHeightChanged: notificationContent.cachedHeaderHeight = height
           }
           
           NotificationSettings {
@@ -174,7 +176,7 @@ DankPopout {
             objectName: "notificationList"
 
             width: parent.width
-            height: parent.height - notificationHeader.height - notificationSettings.height - contentColumnInner.spacing * 2
+            height: parent.height - notificationContent.cachedHeaderHeight - notificationSettings.height - contentColumnInner.spacing * 2
           }
         }
       }
@@ -191,9 +193,8 @@ DankPopout {
 
       Behavior on implicitHeight {
         NumberAnimation {
-          duration: Anims.durShort
-          easing.type: Easing.BezierSpline
-          easing.bezierCurve: Anims.emphasized
+          duration: 180
+          easing.type: Easing.OutQuart
         }
       }
     }
