@@ -39,6 +39,9 @@ Singleton {
     property bool showNotificationButton: true
     property bool showBattery: true
     property bool showControlCenterButton: true
+    property bool controlCenterShowNetworkIcon: true
+    property bool controlCenterShowBluetoothIcon: true
+    property bool controlCenterShowAudioIcon: true
     property bool showWorkspaceIndex: false
     property bool showWorkspacePadding: false
     property var workspaceNameIcons: ({})
@@ -169,6 +172,12 @@ Singleton {
                 showBattery = settings.showBattery !== undefined ? settings.showBattery : true
                 showControlCenterButton = settings.showControlCenterButton
                         !== undefined ? settings.showControlCenterButton : true
+                controlCenterShowNetworkIcon = settings.controlCenterShowNetworkIcon 
+                        !== undefined ? settings.controlCenterShowNetworkIcon : true
+                controlCenterShowBluetoothIcon = settings.controlCenterShowBluetoothIcon 
+                        !== undefined ? settings.controlCenterShowBluetoothIcon : true
+                controlCenterShowAudioIcon = settings.controlCenterShowAudioIcon 
+                        !== undefined ? settings.controlCenterShowAudioIcon : true
                 showWorkspaceIndex = settings.showWorkspaceIndex
                         !== undefined ? settings.showWorkspaceIndex : false
                 showWorkspacePadding = settings.showWorkspacePadding
@@ -299,6 +308,9 @@ Singleton {
                                                 "showNotificationButton": showNotificationButton,
                                                 "showBattery": showBattery,
                                                 "showControlCenterButton": showControlCenterButton,
+                                                "controlCenterShowNetworkIcon": controlCenterShowNetworkIcon,
+                                                "controlCenterShowBluetoothIcon": controlCenterShowBluetoothIcon,
+                                                "controlCenterShowAudioIcon": controlCenterShowAudioIcon,
                                                 "showWorkspaceIndex": showWorkspaceIndex,
                                                 "showWorkspacePadding": showWorkspacePadding,
                                                 "workspaceNameIcons": workspaceNameIcons,
@@ -560,6 +572,21 @@ Singleton {
 
     function setShowControlCenterButton(enabled) {
         showControlCenterButton = enabled
+        saveSettings()
+    }
+
+    function setControlCenterShowNetworkIcon(enabled) {
+        controlCenterShowNetworkIcon = enabled
+        saveSettings()
+    }
+
+    function setControlCenterShowBluetoothIcon(enabled) {
+        controlCenterShowBluetoothIcon = enabled
+        saveSettings()
+    }
+
+    function setControlCenterShowAudioIcon(enabled) {
+        controlCenterShowAudioIcon = enabled
         saveSettings()
     }
 

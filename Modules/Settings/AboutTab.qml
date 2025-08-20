@@ -62,16 +62,20 @@ Item {
                         width: parent.width
                     }
 
-                    Row {
+                    Item {
                         id: communityIcons
                         anchors.horizontalCenter: parent.horizontalCenter
-                        spacing: Theme.spacingL
+                        height: 24
+                        width: niriButton.width + matrixButton.width + 4 + discordButton.width + Theme.spacingM + redditButton.width + Theme.spacingM
 
                         // Niri logo
                         Item {
                             id: niriButton
                             width: 24
                             height: 24
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.verticalCenterOffset: -2
+                            x: 0
 
                             property bool hovered: false
                             property string tooltipText: "niri GitHub"
@@ -103,6 +107,7 @@ Item {
                             id: matrixButton
                             width: 30
                             height: 24
+                            x: niriButton.x + niriButton.width + 4
 
                             property bool hovered: false
                             property string tooltipText: "niri Matrix Chat"
@@ -140,6 +145,8 @@ Item {
                             id: discordButton
                             width: 20
                             height: 20
+                            x: matrixButton.x + matrixButton.width + Theme.spacingM
+                            anchors.verticalCenter: parent.verticalCenter
 
                             property bool hovered: false
                             property string tooltipText: "niri Discord Server"
@@ -171,6 +178,8 @@ Item {
                             id: redditButton
                             width: 20
                             height: 20
+                            x: discordButton.x + discordButton.width + Theme.spacingM
+                            anchors.verticalCenter: parent.verticalCenter
 
                             property bool hovered: false
                             property string tooltipText: "r/niri Subreddit"
@@ -478,7 +487,7 @@ Item {
         border.color: Theme.outlineMedium
 
         x: hoveredButton ? hoveredButton.mapToItem(aboutTab, hoveredButton.width / 2, 0).x - width / 2 : 0
-        y: hoveredButton ? hoveredButton.mapToItem(aboutTab, 0, -height - 4).y : 0
+        y: hoveredButton ? communityIcons.mapToItem(aboutTab, 0, 0).y - height - 8 : 0
 
         layer.enabled: true
         layer.effect: MultiEffect {
