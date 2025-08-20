@@ -561,9 +561,13 @@ DankModal {
 
                     // Dank logo
                     Item {
-                        width: 68
-                        height: 16
+                        id: dankButton
+                        width: 66
+                        height: 14
                         anchors.verticalCenter: parent.verticalCenter
+
+                        property bool hovered: false
+                        property string tooltipText: "DankMaterialShell GitHub"
 
                         Image {
                             anchors.fill: parent
@@ -585,6 +589,9 @@ DankModal {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: true
+                            onEntered: parent.hovered = true
+                            onExited: parent.hovered = false
                             onClicked: Qt.openUrlExternally(
                                            "https://github.com/AvengeMedia/DankMaterialShell")
                         }
@@ -605,9 +612,13 @@ DankModal {
 
                     // Niri logo
                     Item {
+                        id: niriButton
                         width: 24
                         height: 24
                         anchors.verticalCenter: parent.verticalCenter
+
+                        property bool hovered: false
+                        property string tooltipText: "niri GitHub"
 
                         Image {
                             anchors.fill: parent
@@ -623,6 +634,9 @@ DankModal {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: true
+                            onEntered: parent.hovered = true
+                            onExited: parent.hovered = false
                             onClicked: Qt.openUrlExternally(
                                            "https://github.com/YaLTeR/niri")
                         }
@@ -649,9 +663,13 @@ DankModal {
 
                     // Matrix button
                     Item {
+                        id: matrixButton
                         width: 38
                         height: 26
                         anchors.verticalCenter: parent.verticalCenter
+
+                        property bool hovered: false
+                        property string tooltipText: "niri Matrix Chat"
 
                         Image {
                             anchors.fill: parent
@@ -673,6 +691,9 @@ DankModal {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: true
+                            onEntered: parent.hovered = true
+                            onExited: parent.hovered = false
                             onClicked: Qt.openUrlExternally(
                                            "https://matrix.to/#/#niri:matrix.org")
                         }
@@ -699,9 +720,13 @@ DankModal {
 
                     // Discord button
                     Item {
+                        id: discordButton
                         width: 16
                         height: 16
                         anchors.verticalCenter: parent.verticalCenter
+
+                        property bool hovered: false
+                        property string tooltipText: "niri Discord Server"
 
                         Image {
                             anchors.fill: parent
@@ -717,6 +742,9 @@ DankModal {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: true
+                            onEntered: parent.hovered = true
+                            onExited: parent.hovered = false
                             onClicked: Qt.openUrlExternally(
                                            "https://discord.gg/vT8Sfjy7sx")
                         }
@@ -743,9 +771,13 @@ DankModal {
 
                     // Reddit button
                     Item {
+                        id: redditButton
                         width: 18
                         height: 18
                         anchors.verticalCenter: parent.verticalCenter
+
+                        property bool hovered: false
+                        property string tooltipText: "r/niri Subreddit"
 
                         Image {
                             anchors.fill: parent
@@ -761,10 +793,60 @@ DankModal {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: true
+                            onEntered: parent.hovered = true
+                            onExited: parent.hovered = false
                             onClicked: Qt.openUrlExternally(
                                            "https://reddit.com/r/niri")
                         }
                     }
+                }
+            }
+
+            // Footer tooltip
+            Rectangle {
+                id: footerTooltip
+
+                property var hoveredButton: {
+                    if (dankButton.hovered) return dankButton
+                    if (niriButton.hovered) return niriButton
+                    if (matrixButton.hovered) return matrixButton
+                    if (discordButton.hovered) return discordButton
+                    if (redditButton.hovered) return redditButton
+                    return null
+                }
+
+                property string tooltipText: hoveredButton ? hoveredButton.tooltipText : ""
+
+                visible: hoveredButton !== null && tooltipText !== ""
+                width: tooltipLabel.implicitWidth + 24
+                height: tooltipLabel.implicitHeight + 12
+
+                color: Theme.surfaceContainer
+                radius: Theme.cornerRadius
+                border.width: 1
+                border.color: Theme.outlineMedium
+
+                x: hoveredButton ? hoveredButton.mapToItem(
+                                       parent, hoveredButton.width / 2,
+                                       0).x - width / 2 : 0
+                y: hoveredButton ? hoveredButton.mapToItem(
+                                       parent, 0, -height - 8).y : 0
+
+                layer.enabled: true
+                layer.effect: MultiEffect {
+                    shadowEnabled: true
+                    shadowOpacity: 0.15
+                    shadowVerticalOffset: 2
+                    shadowBlur: 0.5
+                }
+
+                StyledText {
+                    id: tooltipLabel
+                    anchors.centerIn: parent
+                    text: footerTooltip.tooltipText
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceText
                 }
             }
         }
