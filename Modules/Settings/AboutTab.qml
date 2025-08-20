@@ -24,8 +24,10 @@ Item {
                 width: parent.width
                 height: asciiSection.implicitHeight + Theme.spacingL * 2
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                               Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                      Theme.outline.b, 0.2)
                 border.width: 1
 
                 Column {
@@ -41,7 +43,7 @@ Item {
 
                         StyledText {
                             id: asciiText
-                            
+
                             text: "██████╗  █████╗ ███╗   ██╗██╗  ██╗\n██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝\n██║  ██║███████║██╔██╗ ██║█████╔╝ \n██║  ██║██╔══██║██║╚██╗██║██╔═██╗ \n██████╔╝██║  ██║██║ ╚████║██║  ██╗\n╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝"
                             isMonospace: true
                             font.pixelSize: Theme.fontSizeMedium
@@ -63,7 +65,7 @@ Item {
                         text: "A desktop shell built with <a href=\"https://quickshell.org\">Quickshell</a>"
                         font.pixelSize: Theme.fontSizeMedium
                         linkColor: Theme.primary
-                        onLinkActivated: (url) => Qt.openUrlExternally(url)
+                        onLinkActivated: url => Qt.openUrlExternally(url)
                         color: Theme.surfaceVariantText
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width
@@ -76,9 +78,7 @@ Item {
                             propagateComposedEvents: true
                         }
                     }
-
                 }
-
             }
 
             // Project Information
@@ -86,8 +86,10 @@ Item {
                 width: parent.width
                 height: projectSection.implicitHeight + Theme.spacingL * 2
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                               Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                      Theme.outline.b, 0.2)
                 border.width: 1
 
                 Column {
@@ -115,16 +117,15 @@ Item {
                             color: Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
-
                     }
 
                     StyledText {
                         text: `DankMaterialShell is a modern desktop inspired by <a href="https://m3.material.io/">MUI 3</a>.
-<br /><br/>The goal is to provide a high level of functionality and customization so that it can be a suitable replacement for complete desktop environments like Gnome, KDE, or Cosmic.
+                        <br /><br/>The goal is to provide a high level of functionality and customization so that it can be a suitable replacement for complete desktop environments like Gnome, KDE, or Cosmic.
                         `
                         font.pixelSize: Theme.fontSizeMedium
                         linkColor: Theme.primary
-                        onLinkActivated: (url) => Qt.openUrlExternally(url)
+                        onLinkActivated: url => Qt.openUrlExternally(url)
                         color: Theme.surfaceVariantText
                         width: parent.width
                         wrapMode: Text.WordWrap
@@ -137,7 +138,6 @@ Item {
                         }
                     }
                 }
-
             }
 
             // Technical Details
@@ -145,8 +145,10 @@ Item {
                 width: parent.width
                 height: techSection.implicitHeight + Theme.spacingL * 2
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                               Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                      Theme.outline.b, 0.2)
                 border.width: 1
 
                 Column {
@@ -174,7 +176,6 @@ Item {
                             color: Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
-
                     }
 
                     Grid {
@@ -234,7 +235,7 @@ Item {
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceVariantText
                             linkColor: Theme.primary
-                            onLinkActivated: (url) => Qt.openUrlExternally(url)
+                            onLinkActivated: url => Qt.openUrlExternally(url)
 
                             MouseArea {
                                 anchors.fill: parent
@@ -256,7 +257,7 @@ Item {
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceVariantText
                             linkColor: Theme.primary
-                            onLinkActivated: (url) => Qt.openUrlExternally(url)
+                            onLinkActivated: url => Qt.openUrlExternally(url)
 
                             MouseArea {
                                 anchors.fill: parent
@@ -265,15 +266,9 @@ Item {
                                 propagateComposedEvents: true
                             }
                         }
-
                     }
-
                 }
-
             }
-
         }
-
     }
-
 }

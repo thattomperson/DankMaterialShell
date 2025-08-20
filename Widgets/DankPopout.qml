@@ -19,27 +19,27 @@ PanelWindow {
     property var animationEasing: Theme.emphasizedEasing
     property bool shouldBeVisible: false
 
-    signal opened()
-    signal popoutClosed()
-    signal backgroundClicked()
+    signal opened
+    signal popoutClosed
+    signal backgroundClicked
 
     function open() {
-        closeTimer.stop();
-        shouldBeVisible = true;
-        visible = true;
-        opened();
+        closeTimer.stop()
+        shouldBeVisible = true
+        visible = true
+        opened()
     }
 
     function close() {
-        shouldBeVisible = false;
-        closeTimer.restart();
+        shouldBeVisible = false
+        closeTimer.restart()
     }
 
     function toggle() {
         if (shouldBeVisible)
-            close();
+            close()
         else
-            open();
+            open()
     }
 
     Timer {
@@ -47,8 +47,8 @@ PanelWindow {
         interval: animationDuration + 50
         onTriggered: {
             if (!shouldBeVisible) {
-                visible = false;
-                popoutClosed();
+                visible = false
+                popoutClosed()
             }
         }
     }
@@ -57,7 +57,7 @@ PanelWindow {
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: shouldBeVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-    
+
     anchors {
         top: true
         left: true
@@ -68,41 +68,45 @@ PanelWindow {
     MouseArea {
         anchors.fill: parent
         enabled: shouldBeVisible
-        onClicked: (mouse) => {
-            var localPos = mapToItem(contentContainer, mouse.x, mouse.y);
-            if (localPos.x < 0 || localPos.x > contentContainer.width || 
-                localPos.y < 0 || localPos.y > contentContainer.height) {
-                backgroundClicked();
-                close();
-            }
-        }
+        onClicked: mouse => {
+                       var localPos = mapToItem(contentContainer,
+                                                mouse.x, mouse.y)
+                       if (localPos.x < 0 || localPos.x > contentContainer.width
+                           || localPos.y < 0
+                           || localPos.y > contentContainer.height) {
+                           backgroundClicked()
+                           close()
+                       }
+                   }
     }
 
     Item {
         id: contentContainer
-        
+
         readonly property real screenWidth: root.screen ? root.screen.width : 1920
         readonly property real screenHeight: root.screen ? root.screen.height : 1080
         readonly property real calculatedX: {
             if (positioning === "center") {
-                var centerX = triggerX + (triggerWidth / 2) - (popupWidth / 2);
-                
-                if (centerX >= Theme.spacingM && centerX + popupWidth <= screenWidth - Theme.spacingM)
-                    return centerX;
-                    
+                var centerX = triggerX + (triggerWidth / 2) - (popupWidth / 2)
+
+                if (centerX >= Theme.spacingM
+                        && centerX + popupWidth <= screenWidth - Theme.spacingM)
+                    return centerX
+
                 if (centerX < Theme.spacingM)
-                    return Theme.spacingM;
-                    
+                    return Theme.spacingM
+
                 if (centerX + popupWidth > screenWidth - Theme.spacingM)
-                    return screenWidth - popupWidth - Theme.spacingM;
-                    
-                return centerX;
+                    return screenWidth - popupWidth - Theme.spacingM
+
+                return centerX
             } else if (positioning === "left") {
-                return Math.max(Theme.spacingM, triggerX);
+                return Math.max(Theme.spacingM, triggerX)
             } else if (positioning === "right") {
-                return Math.min(screenWidth - popupWidth - Theme.spacingM, triggerX + triggerWidth - popupWidth);
+                return Math.min(screenWidth - popupWidth - Theme.spacingM,
+                                triggerX + triggerWidth - popupWidth)
             }
-            return triggerX;
+            return triggerX
         }
         readonly property real calculatedY: triggerY
 
@@ -139,26 +143,26 @@ PanelWindow {
         anchors.fill: parent
         visible: shouldBeVisible
         focus: shouldBeVisible
-        
-        Keys.onPressed: (event) => {
-            if (event.key === Qt.Key_Escape) {
-                close();
-                event.accepted = true;
-            } else {
-                // Forward all non-escape keys to content
-                event.accepted = false;
-            }
-        }
-        
+
+        Keys.onPressed: event => {
+                            if (event.key === Qt.Key_Escape) {
+                                close()
+                                event.accepted = true
+                            } else {
+                                // Forward all non-escape keys to content
+                                event.accepted = false
+                            }
+                        }
+
         onVisibleChanged: {
             if (visible) {
-                Qt.callLater(function() {
+                Qt.callLater(function () {
                     if (contentLoader.item) {
-                        contentLoader.item.forceActiveFocus();
+                        contentLoader.item.forceActiveFocus()
                     } else {
-                        forceActiveFocus();
+                        forceActiveFocus()
                     }
-                });
+                })
             }
         }
     }

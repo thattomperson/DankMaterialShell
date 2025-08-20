@@ -31,90 +31,103 @@ PanelWindow {
         let fonts = Qt.fontFamilies()
         if (fonts.indexOf("Material Symbols Rounded") === -1)
             ToastService.showError(
-                "Please install Material Symbols Rounded and Restart your Shell. See README.md for instructions")
+                        "Please install Material Symbols Rounded and Restart your Shell. See README.md for instructions")
 
         SettingsData.forceTopBarLayoutRefresh.connect(function () {
             Qt.callLater(() => {
-                leftSection.visible = false
-                centerSection.visible = false
-                rightSection.visible = false
-                Qt.callLater(() => {
-                    leftSection.visible = true
-                    centerSection.visible = true
-                    rightSection.visible = true
-                })
-            })
+                             leftSection.visible = false
+                             centerSection.visible = false
+                             rightSection.visible = false
+                             Qt.callLater(() => {
+                                              leftSection.visible = true
+                                              centerSection.visible = true
+                                              rightSection.visible = true
+                                          })
+                         })
         })
-        
+
         // Configure GPU temperature monitoring based on widget configuration
         updateGpuTempConfig()
-        
+
         // Force widget initialization after brief delay to ensure services are loaded
         Qt.callLater(() => {
-            Qt.callLater(() => {
-                forceWidgetRefresh()
-            })
-        })
+                         Qt.callLater(() => {
+                                          forceWidgetRefresh()
+                                      })
+                     })
     }
-    
+
     function forceWidgetRefresh() {
         // Force reload of all widget sections to handle race condition on desktop hardware
-        if (leftSection) leftSection.visible = false
-        if (centerSection) centerSection.visible = false  
-        if (rightSection) rightSection.visible = false
-        
+        if (leftSection)
+            leftSection.visible = false
+        if (centerSection)
+            centerSection.visible = false
+        if (rightSection)
+            rightSection.visible = false
+
         Qt.callLater(() => {
-            if (leftSection) leftSection.visible = true
-            if (centerSection) centerSection.visible = true
-            if (rightSection) rightSection.visible = true
-        })
+                         if (leftSection)
+                         leftSection.visible = true
+                         if (centerSection)
+                         centerSection.visible = true
+                         if (rightSection)
+                         rightSection.visible = true
+                     })
     }
-    
+
     function updateGpuTempConfig() {
-        const allWidgets = [...(SettingsData.topBarLeftWidgets || []), 
-                           ...(SettingsData.topBarCenterWidgets || []), 
-                           ...(SettingsData.topBarRightWidgets || [])]
-        
+        const allWidgets = [...(SettingsData.topBarLeftWidgets
+                                || []), ...(SettingsData.topBarCenterWidgets
+                                            || []), ...(SettingsData.topBarRightWidgets
+                                                        || [])]
+
         const hasGpuTempWidget = allWidgets.some(widget => {
-            const widgetId = typeof widget === "string" ? widget : widget.id
-            const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
-            return widgetId === "gpuTemp" && widgetEnabled
-        })
-        
-        DgopService.gpuTempEnabled = hasGpuTempWidget || SessionData.nvidiaGpuTempEnabled || SessionData.nonNvidiaGpuTempEnabled
-        DgopService.nvidiaGpuTempEnabled = hasGpuTempWidget || SessionData.nvidiaGpuTempEnabled
-        DgopService.nonNvidiaGpuTempEnabled = hasGpuTempWidget || SessionData.nonNvidiaGpuTempEnabled
+                                                     const widgetId = typeof widget
+                                                     === "string" ? widget : widget.id
+                                                     const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
+                                                     return widgetId === "gpuTemp"
+                                                     && widgetEnabled
+                                                 })
+
+        DgopService.gpuTempEnabled = hasGpuTempWidget
+                || SessionData.nvidiaGpuTempEnabled
+                || SessionData.nonNvidiaGpuTempEnabled
+        DgopService.nvidiaGpuTempEnabled = hasGpuTempWidget
+                || SessionData.nvidiaGpuTempEnabled
+        DgopService.nonNvidiaGpuTempEnabled = hasGpuTempWidget
+                || SessionData.nonNvidiaGpuTempEnabled
     }
 
     Connections {
         function onTopBarTransparencyChanged() {
             root.backgroundTransparency = SettingsData.topBarTransparency
         }
-        
+
         function onTopBarLeftWidgetsChanged() {
             root.updateGpuTempConfig()
         }
-        
+
         function onTopBarCenterWidgetsChanged() {
             root.updateGpuTempConfig()
         }
-        
+
         function onTopBarRightWidgetsChanged() {
             root.updateGpuTempConfig()
         }
 
         target: SettingsData
     }
-    
+
     Connections {
         function onNvidiaGpuTempEnabledChanged() {
             root.updateGpuTempConfig()
         }
-        
+
         function onNonNvidiaGpuTempEnabledChanged() {
             root.updateGpuTempConfig()
         }
-        
+
         target: SessionData
     }
 
@@ -189,8 +202,10 @@ PanelWindow {
                 Rectangle {
                     anchors.fill: parent
                     radius: SettingsData.topBarSquareCorners ? 0 : Theme.cornerRadius
-                    color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g,
-                                   Theme.surfaceContainer.b, root.backgroundTransparency)
+                    color: Qt.rgba(Theme.surfaceContainer.r,
+                                   Theme.surfaceContainer.g,
+                                   Theme.surfaceContainer.b,
+                                   root.backgroundTransparency)
                     layer.enabled: true
 
                     Rectangle {
@@ -203,7 +218,8 @@ PanelWindow {
 
                     Rectangle {
                         anchors.fill: parent
-                        color: Qt.rgba(Theme.surfaceTint.r, Theme.surfaceTint.g,
+                        color: Qt.rgba(Theme.surfaceTint.r,
+                                       Theme.surfaceTint.g,
                                        Theme.surfaceTint.b, 0.04)
                         radius: parent.radius
 
@@ -242,8 +258,7 @@ PanelWindow {
                     readonly property int launcherButtonWidth: 40
                     readonly property int workspaceSwitcherWidth: 120 // Approximate
                     readonly property int focusedAppMaxWidth: 456 // Fixed width since we don't have focusedApp reference
-                    readonly property int estimatedLeftSectionWidth: launcherButtonWidth + workspaceSwitcherWidth
-                                                                   + focusedAppMaxWidth + (Theme.spacingXS * 2)
+                    readonly property int estimatedLeftSectionWidth: launcherButtonWidth + workspaceSwitcherWidth + focusedAppMaxWidth + (Theme.spacingXS * 2)
                     readonly property int rightSectionWidth: rightSection.width
                     readonly property int clockWidth: 120 // Approximate clock width
                     readonly property int mediaMaxWidth: 280 // Normal max width
@@ -254,19 +269,17 @@ PanelWindow {
                     readonly property int clockLeftEdge: (availableWidth - clockWidth) / 2
                     readonly property int clockRightEdge: clockLeftEdge + clockWidth
                     readonly property int leftSectionRightEdge: estimatedLeftSectionWidth
-                    readonly property int mediaLeftEdge: clockLeftEdge - mediaMaxWidth - Theme.spacingS
+                    readonly property int mediaLeftEdge: clockLeftEdge - mediaMaxWidth
+                                                         - Theme.spacingS
                     readonly property int rightSectionLeftEdge: availableWidth - rightSectionWidth
                     readonly property int leftToClockGap: Math.max(
-                                                            0,
-                                                            clockLeftEdge - leftSectionRightEdge)
-                    readonly property int leftToMediaGap: mediaMaxWidth > 0 ? Math.max(
-                                                                                0,
-                                                                                mediaLeftEdge - leftSectionRightEdge) : leftToClockGap
+                                                              0,
+                                                              clockLeftEdge - leftSectionRightEdge)
+                    readonly property int leftToMediaGap: mediaMaxWidth > 0 ? Math.max(0, mediaLeftEdge - leftSectionRightEdge) : leftToClockGap
                     readonly property int mediaToClockGap: mediaMaxWidth > 0 ? Theme.spacingS : 0
                     readonly property int clockToRightGap: validLayout ? Math.max(
-                                                                           0,
-                                                                           rightSectionLeftEdge
-                                                                           - clockRightEdge) : 1000
+                                                                             0,
+                                                                             rightSectionLeftEdge - clockRightEdge) : 1000
                     readonly property bool spacingTight: validLayout
                                                          && (leftToMediaGap < 150
                                                              || clockToRightGap < 100)
@@ -396,9 +409,12 @@ PanelWindow {
                                 property int spacerSize: model.size || 20
 
                                 anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                                active: topBarContent.getWidgetVisible(model.widgetId)
-                                sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
-                                opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
+                                active: topBarContent.getWidgetVisible(
+                                            model.widgetId)
+                                sourceComponent: topBarContent.getWidgetComponent(
+                                                     model.widgetId)
+                                opacity: topBarContent.getWidgetEnabled(
+                                             model.enabled) ? 1 : 0
                                 asynchronous: false
                             }
                         }
@@ -443,7 +459,8 @@ PanelWindow {
                             let parentCenterX = width / 2
                             if (totalWidgets % 2 === 1) {
                                 let middleIndex = Math.floor(totalWidgets / 2)
-                                let currentX = parentCenterX - (centerWidgets[middleIndex].width / 2)
+                                let currentX = parentCenterX
+                                    - (centerWidgets[middleIndex].width / 2)
                                 centerWidgets[middleIndex].x = currentX
                                 centerWidgets[middleIndex].anchors.horizontalCenter = undefined
                                 currentX = centerWidgets[middleIndex].x
@@ -452,7 +469,8 @@ PanelWindow {
                                     centerWidgets[i].x = currentX
                                     centerWidgets[i].anchors.horizontalCenter = undefined
                                 }
-                                currentX = centerWidgets[middleIndex].x + centerWidgets[middleIndex].width
+                                currentX = centerWidgets[middleIndex].x
+                                        + centerWidgets[middleIndex].width
                                 for (var i = middleIndex + 1; i < totalWidgets; i++) {
                                     currentX += spacing
                                     centerWidgets[i].x = currentX
@@ -465,7 +483,7 @@ PanelWindow {
                                 let gapCenter = parentCenterX
                                 let halfSpacing = spacing / 2
                                 centerWidgets[leftMiddleIndex].x = gapCenter - halfSpacing
-                                    - centerWidgets[leftMiddleIndex].width
+                                        - centerWidgets[leftMiddleIndex].width
                                 centerWidgets[leftMiddleIndex].anchors.horizontalCenter = undefined
                                 centerWidgets[rightMiddleIndex].x = gapCenter + halfSpacing
                                 centerWidgets[rightMiddleIndex].anchors.horizontalCenter = undefined
@@ -475,7 +493,8 @@ PanelWindow {
                                     centerWidgets[i].x = currentX
                                     centerWidgets[i].anchors.horizontalCenter = undefined
                                 }
-                                currentX = centerWidgets[rightMiddleIndex].x + centerWidgets[rightMiddleIndex].width
+                                currentX = centerWidgets[rightMiddleIndex].x
+                                        + centerWidgets[rightMiddleIndex].width
                                 for (var i = rightMiddleIndex + 1; i < totalWidgets; i++) {
                                     currentX += spacing
                                     centerWidgets[i].x = currentX
@@ -490,8 +509,8 @@ PanelWindow {
                         anchors.centerIn: parent
                         Component.onCompleted: {
                             Qt.callLater(() => {
-                                Qt.callLater(updateLayout)
-                            })
+                                             Qt.callLater(updateLayout)
+                                         })
                         }
 
                         onWidthChanged: {
@@ -517,18 +536,23 @@ PanelWindow {
                                 property int spacerSize: model.size || 20
 
                                 anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                                active: topBarContent.getWidgetVisible(model.widgetId)
-                                sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
-                                opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
+                                active: topBarContent.getWidgetVisible(
+                                            model.widgetId)
+                                sourceComponent: topBarContent.getWidgetComponent(
+                                                     model.widgetId)
+                                opacity: topBarContent.getWidgetEnabled(
+                                             model.enabled) ? 1 : 0
                                 asynchronous: false
-                                
+
                                 onLoaded: {
                                     if (item) {
-                                        item.onWidthChanged.connect(centerSection.updateLayout)
+                                        item.onWidthChanged.connect(
+                                                    centerSection.updateLayout)
                                         if (model.widgetId === "spacer")
                                             item.spacerSize = Qt.binding(() => {
-                                                return model.size || 20
-                                            })
+                                                                             return model.size
+                                                                             || 20
+                                                                         })
                                         Qt.callLater(centerSection.updateLayout)
                                     }
                                 }
@@ -564,14 +588,16 @@ PanelWindow {
                                 property int spacerSize: model.size || 20
 
                                 anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                                active: topBarContent.getWidgetVisible(model.widgetId)
-                                sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
-                                opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
+                                active: topBarContent.getWidgetVisible(
+                                            model.widgetId)
+                                sourceComponent: topBarContent.getWidgetComponent(
+                                                     model.widgetId)
+                                opacity: topBarContent.getWidgetEnabled(
+                                             model.enabled) ? 1 : 0
                                 asynchronous: false
                             }
                         }
                     }
-
 
                     Component {
                         id: clipboardComponent
@@ -582,8 +608,10 @@ PanelWindow {
                             radius: Theme.cornerRadius
                             color: {
                                 const baseColor = clipboardArea.containsMouse ? Theme.primaryHover : Theme.secondaryHover
-                                return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
-                                               baseColor.a * Theme.widgetTransparency)
+                                return Qt.rgba(
+                                            baseColor.r, baseColor.g,
+                                            baseColor.b,
+                                            baseColor.a * Theme.widgetTransparency)
                             }
 
                             DankIcon {
@@ -695,7 +723,8 @@ PanelWindow {
                             onClockClicked: {
                                 centcomPopoutLoader.active = true
                                 if (centcomPopoutLoader.item) {
-                                    centcomPopoutLoader.item.calendarVisible = !centcomPopoutLoader.item.calendarVisible
+                                    centcomPopoutLoader.item.calendarVisible
+                                            = !centcomPopoutLoader.item.calendarVisible
                                 }
                             }
                         }
@@ -705,7 +734,8 @@ PanelWindow {
                         id: mediaComponent
 
                         Media {
-                            compactMode: topBarContent.spacingTight || topBarContent.overlapping
+                            compactMode: topBarContent.spacingTight
+                                         || topBarContent.overlapping
                             section: {
                                 if (parent && parent.parent === leftSection)
                                     return "left"
@@ -723,7 +753,8 @@ PanelWindow {
                             onClicked: {
                                 centcomPopoutLoader.active = true
                                 if (centcomPopoutLoader.item) {
-                                    centcomPopoutLoader.item.calendarVisible = !centcomPopoutLoader.item.calendarVisible
+                                    centcomPopoutLoader.item.calendarVisible
+                                            = !centcomPopoutLoader.item.calendarVisible
                                 }
                             }
                         }
@@ -750,7 +781,8 @@ PanelWindow {
                             onClicked: {
                                 centcomPopoutLoader.active = true
                                 if (centcomPopoutLoader.item) {
-                                    centcomPopoutLoader.item.calendarVisible = !centcomPopoutLoader.item.calendarVisible
+                                    centcomPopoutLoader.item.calendarVisible
+                                            = !centcomPopoutLoader.item.calendarVisible
                                 }
                             }
                         }
@@ -801,10 +833,10 @@ PanelWindow {
                             }
                             parentScreen: root.screen
                             toggleProcessList: () => {
-                                processListPopoutLoader.active = true
-                                if (processListPopoutLoader.item)
-                                    return processListPopoutLoader.item.toggle()
-                            }
+                                                   processListPopoutLoader.active = true
+                                                   if (processListPopoutLoader.item)
+                                                   return processListPopoutLoader.item.toggle()
+                                               }
                         }
                     }
 
@@ -827,10 +859,10 @@ PanelWindow {
                             }
                             parentScreen: root.screen
                             toggleProcessList: () => {
-                                processListPopoutLoader.active = true
-                                if (processListPopoutLoader.item)
-                                    return processListPopoutLoader.item.toggle()
-                            }
+                                                   processListPopoutLoader.active = true
+                                                   if (processListPopoutLoader.item)
+                                                   return processListPopoutLoader.item.toggle()
+                                               }
                         }
                     }
 
@@ -853,10 +885,10 @@ PanelWindow {
                             }
                             parentScreen: root.screen
                             toggleProcessList: () => {
-                                processListPopoutLoader.active = true
-                                if (processListPopoutLoader.item)
-                                    return processListPopoutLoader.item.toggle()
-                            }
+                                                   processListPopoutLoader.active = true
+                                                   if (processListPopoutLoader.item)
+                                                   return processListPopoutLoader.item.toggle()
+                                               }
                         }
                     }
 
@@ -880,10 +912,10 @@ PanelWindow {
                             parentScreen: root.screen
                             widgetData: parent.widgetData
                             toggleProcessList: () => {
-                                processListPopoutLoader.active = true
-                                if (processListPopoutLoader.item)
-                                    return processListPopoutLoader.item.toggle()
-                            }
+                                                   processListPopoutLoader.active = true
+                                                   if (processListPopoutLoader.item)
+                                                   return processListPopoutLoader.item.toggle()
+                                               }
                         }
                     }
 
@@ -1004,7 +1036,8 @@ PanelWindow {
                             Rectangle {
                                 anchors.fill: parent
                                 color: "transparent"
-                                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                border.color: Qt.rgba(Theme.outline.r,
+                                                      Theme.outline.g,
                                                       Theme.outline.b, 0.1)
                                 border.width: 1
                                 radius: 2

@@ -11,7 +11,7 @@ import qs.Widgets
 
 DankModal {
     id: notificationModal
-    
+
     width: 500
     height: 700
     visible: false
@@ -20,28 +20,28 @@ DankModal {
         notificationModalOpen = false
         modalKeyboardController.reset()
     }
-    
-    modalFocusScope.Keys.onPressed: function(event) {
+
+    modalFocusScope.Keys.onPressed: function (event) {
         modalKeyboardController.handleKey(event)
     }
-    
+
     NotificationKeyboardController {
         id: modalKeyboardController
         listView: null
         isOpen: notificationModal.notificationModalOpen
-        onClose: function() { notificationModal.hide() }
+        onClose: function () {
+            notificationModal.hide()
+        }
     }
 
     property bool notificationModalOpen: false
     property var notificationListRef: null
 
-
-
     function show() {
         notificationModalOpen = true
         open()
         modalKeyboardController.reset()
-        
+
         if (modalKeyboardController && notificationListRef) {
             modalKeyboardController.listView = notificationListRef
             modalKeyboardController.rebuildFlatNavigation()
@@ -60,7 +60,6 @@ DankModal {
         else
             show()
     }
-
 
     IpcHandler {
         function open() {
@@ -96,7 +95,7 @@ DankModal {
                     id: notificationHeader
                     keyboardController: modalKeyboardController
                 }
-                
+
                 NotificationSettings {
                     id: notificationSettings
                     expanded: notificationHeader.showSettings
@@ -104,11 +103,11 @@ DankModal {
 
                 KeyboardNavigatedNotificationList {
                     id: notificationList
-                    
+
                     width: parent.width
                     height: parent.height - y
                     keyboardController: modalKeyboardController
-                    
+
                     Component.onCompleted: {
                         notificationModal.notificationListRef = notificationList
                         if (modalKeyboardController) {
@@ -117,7 +116,6 @@ DankModal {
                         }
                     }
                 }
-
             }
 
             NotificationKeyboardHints {
@@ -128,7 +126,6 @@ DankModal {
                 anchors.margins: Theme.spacingL
                 showHints: modalKeyboardController.showKeyboardHints
             }
-
         }
     }
 

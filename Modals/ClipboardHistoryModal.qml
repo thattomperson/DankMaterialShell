@@ -21,123 +21,124 @@ DankModal {
     property Component clipboardContent
 
     function updateFilteredModel() {
-        filteredClipboardModel.clear();
+        filteredClipboardModel.clear()
         for (var i = 0; i < clipboardModel.count; i++) {
-            const entry = clipboardModel.get(i).entry;
+            const entry = clipboardModel.get(i).entry
             if (searchText.trim().length === 0) {
                 filteredClipboardModel.append({
-                    "entry": entry
-                });
+                                                  "entry": entry
+                                              })
             } else {
-                const content = getEntryPreview(entry).toLowerCase();
+                const content = getEntryPreview(entry).toLowerCase()
                 if (content.includes(searchText.toLowerCase()))
                     filteredClipboardModel.append({
-                    "entry": entry
-                });
-
+                                                      "entry": entry
+                                                  })
             }
         }
-        clipboardHistoryModal.totalCount = filteredClipboardModel.count;
+        clipboardHistoryModal.totalCount = filteredClipboardModel.count
         // Clamp selectedIndex to valid range
         if (filteredClipboardModel.count === 0) {
-            keyboardNavigationActive = false;
-            selectedIndex = 0;
+            keyboardNavigationActive = false
+            selectedIndex = 0
         } else if (selectedIndex >= filteredClipboardModel.count) {
-            selectedIndex = filteredClipboardModel.count - 1;
+            selectedIndex = filteredClipboardModel.count - 1
         }
     }
 
     function toggle() {
         if (shouldBeVisible)
-            hide();
+            hide()
         else
-            show();
+            show()
     }
 
     function show() {
-        open();
-        clipboardHistoryModal.searchText = "";
-        
-        initializeThumbnailSystem();
-        refreshClipboard();
-        keyboardController.reset();
-        
-        Qt.callLater(function() {
+        open()
+        clipboardHistoryModal.searchText = ""
+
+        initializeThumbnailSystem()
+        refreshClipboard()
+        keyboardController.reset()
+
+        Qt.callLater(function () {
             if (contentLoader.item && contentLoader.item.searchField) {
-                contentLoader.item.searchField.text = "";
-                contentLoader.item.searchField.forceActiveFocus();
+                contentLoader.item.searchField.text = ""
+                contentLoader.item.searchField.forceActiveFocus()
             }
-        });
+        })
     }
 
     function hide() {
-        close();
-        clipboardHistoryModal.searchText = "";
-        
-        updateFilteredModel();
-        keyboardController.reset();
-        cleanupTempFiles();
+        close()
+        clipboardHistoryModal.searchText = ""
+
+        updateFilteredModel()
+        keyboardController.reset()
+        cleanupTempFiles()
     }
 
-    function initializeThumbnailSystem() {
-    }
+    function initializeThumbnailSystem() {}
 
     function cleanupTempFiles() {
-        Quickshell.execDetached(["sh", "-c", "rm -f /tmp/clipboard_*.png"]);
+        Quickshell.execDetached(["sh", "-c", "rm -f /tmp/clipboard_*.png"])
     }
 
-    function generateThumbnails() {
-    }
+    function generateThumbnails() {}
 
     function refreshClipboard() {
-        clipboardProcess.running = true;
+        clipboardProcess.running = true
     }
 
     function copyEntry(entry) {
-        const entryId = entry.split('\t')[0];
-        Quickshell.execDetached(["sh", "-c", `cliphist decode ${entryId} | wl-copy`]);
-        ToastService.showInfo("Copied to clipboard");
-        hide();
+        const entryId = entry.split('\t')[0]
+        Quickshell.execDetached(
+                    ["sh", "-c", `cliphist decode ${entryId} | wl-copy`])
+        ToastService.showInfo("Copied to clipboard")
+        hide()
     }
 
     function deleteEntry(entry) {
-        deleteProcess.deletedEntry = entry;
+        deleteProcess.deletedEntry = entry
         deleteProcess.command = ["sh", "-c", `echo '${entry.replace(
-                               /'/g, "'\\''")}' | cliphist delete`];
-        deleteProcess.running = true;
+                                     /'/g, "'\\''")}' | cliphist delete`]
+        deleteProcess.running = true
     }
 
     function clearAll() {
-        clearProcess.running = true;
+        clearProcess.running = true
     }
 
     function getEntryPreview(entry) {
-        let content = entry.replace(/^\s*\d+\s+/, "");
-        if (content.includes("image/") || content.includes("binary data") || /\.(png|jpg|jpeg|gif|bmp|webp)/i.test(content)) {
-            const dimensionMatch = content.match(/(\d+)x(\d+)/);
+        let content = entry.replace(/^\s*\d+\s+/, "")
+        if (content.includes("image/") || content.includes("binary data")
+                || /\.(png|jpg|jpeg|gif|bmp|webp)/i.test(content)) {
+            const dimensionMatch = content.match(/(\d+)x(\d+)/)
             if (dimensionMatch)
-                return `Image ${dimensionMatch[1]}×${dimensionMatch[2]}`;
+                return `Image ${dimensionMatch[1]}×${dimensionMatch[2]}`
 
-            const typeMatch = content.match(/\b(png|jpg|jpeg|gif|bmp|webp)\b/i);
+            const typeMatch = content.match(/\b(png|jpg|jpeg|gif|bmp|webp)\b/i)
             if (typeMatch)
-                return `Image (${typeMatch[1].toUpperCase()})`;
+                return `Image (${typeMatch[1].toUpperCase()})`
 
-            return "Image";
+            return "Image"
         }
         if (content.length > 100)
-            return content.substring(0, 100) + "...";
+            return content.substring(0, 100) + "..."
 
-        return content;
+        return content
     }
 
     function getEntryType(entry) {
-        if (entry.includes("image/") || entry.includes("binary data") || /\.(png|jpg|jpeg|gif|bmp|webp)/i.test(entry) || /\b(png|jpg|jpeg|gif|bmp|webp)\b/i.test(entry))
-            return "image";
+        if (entry.includes("image/") || entry.includes("binary data")
+                || /\.(png|jpg|jpeg|gif|bmp|webp)/i.test(entry)
+                || /\b(png|jpg|jpeg|gif|bmp|webp)\b/i.test(entry))
+            return "image"
 
         if (entry.length > 200)
-            return "long_text";
+            return "long_text"
 
-        return "text";
+        return "text"
     }
 
     visible: false
@@ -149,10 +150,10 @@ DankModal {
     borderWidth: 1
     enableShadow: true
     onBackgroundClicked: {
-        hide();
+        hide()
     }
-    modalFocusScope.Keys.onPressed: function(event) {
-        keyboardController.handleKey(event);
+    modalFocusScope.Keys.onPressed: function (event) {
+        keyboardController.handleKey(event)
     }
     content: clipboardContent
 
@@ -160,107 +161,116 @@ DankModal {
         id: keyboardController
 
         function reset() {
-            selectedIndex = 0;
-            keyboardNavigationActive = false;
-            showKeyboardHints = false;
+            selectedIndex = 0
+            keyboardNavigationActive = false
+            showKeyboardHints = false
             if (typeof clipboardListView !== 'undefined' && clipboardListView)
-                clipboardListView.keyboardActive = false;
-
+                clipboardListView.keyboardActive = false
         }
 
         function selectNext() {
             if (filteredClipboardModel.count === 0)
-                return ;
+                return
 
-            keyboardNavigationActive = true;
-            selectedIndex = Math.min(selectedIndex + 1, filteredClipboardModel.count - 1);
+            keyboardNavigationActive = true
+            selectedIndex = Math.min(selectedIndex + 1,
+                                     filteredClipboardModel.count - 1)
         }
 
         function selectPrevious() {
             if (filteredClipboardModel.count === 0)
-                return ;
+                return
 
-            keyboardNavigationActive = true;
-            selectedIndex = Math.max(selectedIndex - 1, 0);
+            keyboardNavigationActive = true
+            selectedIndex = Math.max(selectedIndex - 1, 0)
         }
 
         function copySelected() {
-            if (filteredClipboardModel.count === 0 || selectedIndex < 0 || selectedIndex >= filteredClipboardModel.count)
-                return ;
+            if (filteredClipboardModel.count === 0 || selectedIndex < 0
+                    || selectedIndex >= filteredClipboardModel.count)
+                return
 
-            var selectedEntry = filteredClipboardModel.get(selectedIndex).entry;
-            copyEntry(selectedEntry);
+            var selectedEntry = filteredClipboardModel.get(selectedIndex).entry
+            copyEntry(selectedEntry)
         }
 
         function deleteSelected() {
-            if (filteredClipboardModel.count === 0 || selectedIndex < 0 || selectedIndex >= filteredClipboardModel.count)
-                return ;
+            if (filteredClipboardModel.count === 0 || selectedIndex < 0
+                    || selectedIndex >= filteredClipboardModel.count)
+                return
 
-            var selectedEntry = filteredClipboardModel.get(selectedIndex).entry;
-            deleteEntry(selectedEntry);
+            var selectedEntry = filteredClipboardModel.get(selectedIndex).entry
+            deleteEntry(selectedEntry)
         }
 
         function handleKey(event) {
             if (event.key === Qt.Key_Escape) {
                 if (keyboardNavigationActive) {
-                    keyboardNavigationActive = false;
-                    if (typeof clipboardListView !== 'undefined' && clipboardListView)
-                        clipboardListView.keyboardActive = false;
+                    keyboardNavigationActive = false
+                    if (typeof clipboardListView !== 'undefined'
+                            && clipboardListView)
+                        clipboardListView.keyboardActive = false
 
-                    event.accepted = true;
+                    event.accepted = true
                 } else {
-                    hide();
-                    event.accepted = true;
+                    hide()
+                    event.accepted = true
                 }
             } else if (event.key === Qt.Key_Down) {
                 if (!keyboardNavigationActive) {
-                    keyboardNavigationActive = true;
-                    selectedIndex = 0;
-                    if (typeof clipboardListView !== 'undefined' && clipboardListView)
-                        clipboardListView.keyboardActive = true;
+                    keyboardNavigationActive = true
+                    selectedIndex = 0
+                    if (typeof clipboardListView !== 'undefined'
+                            && clipboardListView)
+                        clipboardListView.keyboardActive = true
 
-                    event.accepted = true;
+                    event.accepted = true
                 } else {
-                    selectNext();
-                    event.accepted = true;
+                    selectNext()
+                    event.accepted = true
                 }
             } else if (event.key === Qt.Key_Up) {
                 if (!keyboardNavigationActive) {
-                    keyboardNavigationActive = true;
-                    selectedIndex = 0;
-                    if (typeof clipboardListView !== 'undefined' && clipboardListView)
-                        clipboardListView.keyboardActive = true;
+                    keyboardNavigationActive = true
+                    selectedIndex = 0
+                    if (typeof clipboardListView !== 'undefined'
+                            && clipboardListView)
+                        clipboardListView.keyboardActive = true
 
-                    event.accepted = true;
+                    event.accepted = true
                 } else if (selectedIndex === 0) {
-                    keyboardNavigationActive = false;
-                    if (typeof clipboardListView !== 'undefined' && clipboardListView)
-                        clipboardListView.keyboardActive = false;
+                    keyboardNavigationActive = false
+                    if (typeof clipboardListView !== 'undefined'
+                            && clipboardListView)
+                        clipboardListView.keyboardActive = false
 
-                    event.accepted = true;
+                    event.accepted = true
                 } else {
-                    selectPrevious();
-                    event.accepted = true;
+                    selectPrevious()
+                    event.accepted = true
                 }
-            } else if (event.key === Qt.Key_Delete && (event.modifiers & Qt.ShiftModifier)) {
-                clearAll();
-                hide();
-                event.accepted = true;
+            } else if (event.key === Qt.Key_Delete
+                       && (event.modifiers & Qt.ShiftModifier)) {
+                clearAll()
+                hide()
+                event.accepted = true
             } else if (keyboardNavigationActive) {
-                if ((event.key === Qt.Key_C && (event.modifiers & Qt.ControlModifier)) || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                    copySelected();
-                    event.accepted = true;
+                if ((event.key === Qt.Key_C
+                     && (event.modifiers & Qt.ControlModifier))
+                        || event.key === Qt.Key_Return
+                        || event.key === Qt.Key_Enter) {
+                    copySelected()
+                    event.accepted = true
                 } else if (event.key === Qt.Key_Delete) {
-                    deleteSelected();
-                    event.accepted = true;
+                    deleteSelected()
+                    event.accepted = true
                 }
             }
             if (event.key === Qt.Key_F10) {
-                showKeyboardHints = !showKeyboardHints;
-                event.accepted = true;
+                showKeyboardHints = !showKeyboardHints
+                event.accepted = true
             }
         }
-
     }
 
     DankModal {
@@ -269,8 +279,8 @@ DankModal {
         visible: showClearConfirmation
         width: 350
         height: 150
-            onBackgroundClicked: {
-            showClearConfirmation = false;
+        onBackgroundClicked: {
+            showClearConfirmation = false
         }
 
         content: Component {
@@ -326,7 +336,6 @@ DankModal {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: showClearConfirmation = false
                             }
-
                         }
 
                         Rectangle {
@@ -350,22 +359,16 @@ DankModal {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                    clearAll();
-                                    showClearConfirmation = false;
-                                    hide();
+                                    clearAll()
+                                    showClearConfirmation = false
+                                    hide()
                                 }
                             }
-
                         }
-
                     }
-
                 }
-
             }
-
         }
-
     }
 
     ListModel {
@@ -384,19 +387,17 @@ DankModal {
 
         stdout: StdioCollector {
             onStreamFinished: {
-                clipboardModel.clear();
-                const lines = text.trim().split('\n');
+                clipboardModel.clear()
+                const lines = text.trim().split('\n')
                 for (const line of lines) {
                     if (line.trim().length > 0)
                         clipboardModel.append({
-                        "entry": line
-                    });
-
+                                                  "entry": line
+                                              })
                 }
-                updateFilteredModel();
+                updateFilteredModel()
             }
         }
-
     }
 
     Process {
@@ -405,33 +406,35 @@ DankModal {
         property string deletedEntry: ""
 
         running: false
-        onExited: (exitCode) => {
-            if (exitCode === 0) {
-                // Just remove the item from models instead of re-fetching everything
-                for (var i = 0; i < clipboardModel.count; i++) {
-                    if (clipboardModel.get(i).entry === deleteProcess.deletedEntry) {
-                        clipboardModel.remove(i);
-                        break;
-                    }
-                }
-                for (var j = 0; j < filteredClipboardModel.count; j++) {
-                    if (filteredClipboardModel.get(j).entry === deleteProcess.deletedEntry) {
-                        filteredClipboardModel.remove(j);
-                        break;
-                    }
-                }
-                clipboardHistoryModal.totalCount = filteredClipboardModel.count;
-                // Clamp selectedIndex to valid range
-                if (filteredClipboardModel.count === 0) {
-                    keyboardNavigationActive = false;
-                    selectedIndex = 0;
-                } else if (selectedIndex >= filteredClipboardModel.count) {
-                    selectedIndex = filteredClipboardModel.count - 1;
-                }
-            } else {
-                console.warn("Failed to delete clipboard entry");
-            }
-        }
+        onExited: exitCode => {
+                      if (exitCode === 0) {
+                          // Just remove the item from models instead of re-fetching everything
+                          for (var i = 0; i < clipboardModel.count; i++) {
+                              if (clipboardModel.get(
+                                      i).entry === deleteProcess.deletedEntry) {
+                                  clipboardModel.remove(i)
+                                  break
+                              }
+                          }
+                          for (var j = 0; j < filteredClipboardModel.count; j++) {
+                              if (filteredClipboardModel.get(
+                                      j).entry === deleteProcess.deletedEntry) {
+                                  filteredClipboardModel.remove(j)
+                                  break
+                              }
+                          }
+                          clipboardHistoryModal.totalCount = filteredClipboardModel.count
+                          // Clamp selectedIndex to valid range
+                          if (filteredClipboardModel.count === 0) {
+                              keyboardNavigationActive = false
+                              selectedIndex = 0
+                          } else if (selectedIndex >= filteredClipboardModel.count) {
+                              selectedIndex = filteredClipboardModel.count - 1
+                          }
+                      } else {
+                          console.warn("Failed to delete clipboard entry")
+                      }
+                  }
     }
 
     Process {
@@ -439,30 +442,31 @@ DankModal {
 
         command: ["cliphist", "wipe"]
         running: false
-        onExited: (exitCode) => {
-            if (exitCode === 0) {
-                clipboardModel.clear();
-                filteredClipboardModel.clear();
-                totalCount = 0;
-            } else {
-            }
-        }
+        onExited: exitCode => {
+                      if (exitCode === 0) {
+                          clipboardModel.clear()
+                          filteredClipboardModel.clear()
+                          totalCount = 0
+                      } else {
+
+                      }
+                  }
     }
 
     IpcHandler {
         function open() {
-            clipboardHistoryModal.show();
-            return "CLIPBOARD_OPEN_SUCCESS";
+            clipboardHistoryModal.show()
+            return "CLIPBOARD_OPEN_SUCCESS"
         }
 
         function close() {
-            hide();
-            return "CLIPBOARD_CLOSE_SUCCESS";
+            hide()
+            return "CLIPBOARD_CLOSE_SUCCESS"
         }
 
         function toggle() {
-            clipboardHistoryModal.toggle();
-            return "CLIPBOARD_TOGGLE_SUCCESS";
+            clipboardHistoryModal.toggle()
+            return "CLIPBOARD_TOGGLE_SUCCESS"
         }
 
         target: "clipboard"
@@ -472,7 +476,7 @@ DankModal {
         Item {
             id: clipboardContent
             property alias searchField: searchField
-            
+
             anchors.fill: parent
 
             Column {
@@ -504,7 +508,6 @@ DankModal {
                             font.weight: Font.Medium
                             anchors.verticalCenter: parent.verticalCenter
                         }
-
                     }
 
                     Row {
@@ -518,7 +521,7 @@ DankModal {
                             iconColor: showKeyboardHints ? Theme.primary : Theme.surfaceText
                             hoverColor: Theme.primaryHover
                             onClicked: {
-                                showKeyboardHints = !showKeyboardHints;
+                                showKeyboardHints = !showKeyboardHints
                             }
                         }
 
@@ -528,7 +531,7 @@ DankModal {
                             iconColor: Theme.error
                             hoverColor: Theme.errorHover
                             onClicked: {
-                                showClearConfirmation = true;
+                                showClearConfirmation = true
                             }
                         }
 
@@ -539,9 +542,7 @@ DankModal {
                             hoverColor: Theme.errorHover
                             onClicked: hide()
                         }
-
                     }
-
                 }
 
                 DankTextField {
@@ -555,25 +556,25 @@ DankModal {
                     ignoreLeftRightKeys: true
                     keyForwardTargets: [modalFocusScope]
                     onTextChanged: {
-                        clipboardHistoryModal.searchText = text;
-                        updateFilteredModel();
+                        clipboardHistoryModal.searchText = text
+                        updateFilteredModel()
                     }
-                    Keys.onEscapePressed: function(event) {
-                        hide();
-                        event.accepted = true;
+                    Keys.onEscapePressed: function (event) {
+                        hide()
+                        event.accepted = true
                     }
                     Component.onCompleted: {
-                        Qt.callLater(function() {
-                            forceActiveFocus();
-                        });
+                        Qt.callLater(function () {
+                            forceActiveFocus()
+                        })
                     }
-                    
+
                     Connections {
                         target: clipboardHistoryModal
                         function onOpened() {
-                            Qt.callLater(function() {
-                                searchField.forceActiveFocus();
-                            });
+                            Qt.callLater(function () {
+                                searchField.forceActiveFocus()
+                            })
                         }
                     }
                 }
@@ -592,15 +593,15 @@ DankModal {
 
                         function ensureVisible(index) {
                             if (index < 0 || index >= count)
-                                return ;
+                                return
 
-                            var itemHeight = 72 + spacing;
-                            var itemY = index * itemHeight;
-                            var itemBottom = itemY + itemHeight;
+                            var itemHeight = 72 + spacing
+                            var itemY = index * itemHeight
+                            var itemBottom = itemY + itemHeight
                             if (itemY < contentY)
-                                contentY = itemY;
+                                contentY = itemY
                             else if (itemBottom > contentY + height)
-                                contentY = itemBottom - height;
+                                contentY = itemBottom - height
                         }
 
                         anchors.fill: parent
@@ -618,8 +619,7 @@ DankModal {
                         flickableDirection: Flickable.VerticalFlick
                         onCurrentIndexChanged: {
                             if (keyboardNavigationActive && currentIndex >= 0)
-                                ensureVisible(currentIndex);
-
+                                ensureVisible(currentIndex)
                         }
 
                         StyledText {
@@ -640,7 +640,8 @@ DankModal {
 
                         delegate: Rectangle {
                             property string entryType: getEntryType(model.entry)
-                            property string entryPreview: getEntryPreview(model.entry)
+                            property string entryPreview: getEntryPreview(
+                                                              model.entry)
                             property int entryIndex: index + 1
                             property string entryData: model.entry
                             property alias thumbnailImageSource: thumbnailImageSource
@@ -649,18 +650,25 @@ DankModal {
                             height: 72
                             radius: Theme.cornerRadius
                             color: {
-                                if (keyboardNavigationActive && index === selectedIndex)
-                                    return Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.2);
+                                if (keyboardNavigationActive
+                                        && index === selectedIndex)
+                                    return Qt.rgba(Theme.surfaceVariant.r,
+                                                   Theme.surfaceVariant.g,
+                                                   Theme.surfaceVariant.b, 0.2)
 
-                                return mouseArea.containsMouse ? Theme.primaryHover : Theme.primaryBackground;
+                                return mouseArea.containsMouse ? Theme.primaryHover : Theme.primaryBackground
                             }
                             border.color: {
-                                if (keyboardNavigationActive && index === selectedIndex)
-                                    return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.5);
+                                if (keyboardNavigationActive
+                                        && index === selectedIndex)
+                                    return Qt.rgba(Theme.primary.r,
+                                                   Theme.primary.g,
+                                                   Theme.primary.b, 0.5)
 
-                                return Theme.outlineStrong;
+                                return Theme.outlineStrong
                             }
-                            border.width: keyboardNavigationActive && index === selectedIndex ? 1.5 : 1
+                            border.width: keyboardNavigationActive
+                                          && index === selectedIndex ? 1.5 : 1
 
                             Row {
                                 anchors.fill: parent
@@ -682,7 +690,6 @@ DankModal {
                                         font.weight: Font.Bold
                                         color: Theme.primary
                                     }
-
                                 }
 
                                 Row {
@@ -698,10 +705,12 @@ DankModal {
                                         CachingImage {
                                             id: thumbnailImageSource
 
-                                            property string entryId: model.entry.split('\t')[0]
+                                            property string entryId: model.entry.split(
+                                                                         '\t')[0]
 
                                             anchors.fill: parent
-                                            source: entryType === "image" && imageLoader.imageData ? `data:image/png;base64,${imageLoader.imageData}` : ""
+                                            source: entryType === "image"
+                                                    && imageLoader.imageData ? `data:image/png;base64,${imageLoader.imageData}` : ""
                                             fillMode: Image.PreserveAspectCrop
                                             smooth: true
                                             cache: true
@@ -718,12 +727,10 @@ DankModal {
 
                                                 stdout: StdioCollector {
                                                     onStreamFinished: {
-                                                        imageLoader.imageData = text.trim();
+                                                        imageLoader.imageData = text.trim()
                                                     }
                                                 }
-
                                             }
-
                                         }
 
                                         MultiEffect {
@@ -732,7 +739,8 @@ DankModal {
                                             source: thumbnailImageSource
                                             maskEnabled: true
                                             maskSource: clipboardCircularMask
-                                            visible: entryType === "image" && thumbnailImageSource.status === Image.Ready
+                                            visible: entryType === "image"
+                                                     && thumbnailImageSource.status === Image.Ready
                                             maskThresholdMin: 0.5
                                             maskSpreadAtMin: 1
                                         }
@@ -752,25 +760,25 @@ DankModal {
                                                 color: "black"
                                                 antialiasing: true
                                             }
-
                                         }
 
                                         DankIcon {
-                                            visible: !(entryType === "image" && thumbnailImageSource.status === Image.Ready)
+                                            visible: !(entryType === "image"
+                                                       && thumbnailImageSource.status
+                                                       === Image.Ready)
                                             name: {
                                                 if (entryType === "image")
-                                                    return "image";
+                                                    return "image"
 
                                                 if (entryType === "long_text")
-                                                    return "subject";
+                                                    return "subject"
 
-                                                return "content_copy";
+                                                return "content_copy"
                                             }
                                             size: Theme.iconSize
                                             color: Theme.primary
                                             anchors.centerIn: parent
                                         }
-
                                     }
 
                                     Column {
@@ -782,11 +790,11 @@ DankModal {
                                             text: {
                                                 switch (entryType) {
                                                 case "image":
-                                                    return "Image • " + entryPreview;
+                                                    return "Image • " + entryPreview
                                                 case "long_text":
-                                                    return "Long Text";
+                                                    return "Long Text"
                                                 default:
-                                                    return "Text";
+                                                    return "Text"
                                                 }
                                             }
                                             font.pixelSize: Theme.fontSizeSmall
@@ -807,11 +815,8 @@ DankModal {
                                             maximumLineCount: entryType === "long_text" ? 3 : 1
                                             elide: Text.ElideRight
                                         }
-
                                     }
-
                                 }
-
                             }
 
                             DankActionButton {
@@ -823,7 +828,7 @@ DankModal {
                                 iconColor: Theme.error
                                 hoverColor: Theme.errorHover
                                 onClicked: {
-                                    deleteEntry(model.entry);
+                                    deleteEntry(model.entry)
                                 }
                             }
 
@@ -836,11 +841,8 @@ DankModal {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: copyEntry(model.entry)
                             }
-
                         }
-
                     }
-
                 }
 
                 Item {
@@ -852,11 +854,8 @@ DankModal {
                             duration: Theme.shortDuration
                             easing.type: Theme.standardEasing
                         }
-
                     }
-
                 }
-
             }
 
             Rectangle {
@@ -866,7 +865,9 @@ DankModal {
                 anchors.margins: Theme.spacingL
                 height: 80
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.95)
+                color: Qt.rgba(Theme.surfaceContainer.r,
+                               Theme.surfaceContainer.g,
+                               Theme.surfaceContainer.b, 0.95)
                 border.color: Theme.primary
                 border.width: 2
                 opacity: showKeyboardHints ? 1 : 0
@@ -889,7 +890,6 @@ DankModal {
                         color: Theme.surfaceText
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
-
                 }
 
                 Behavior on opacity {
@@ -897,13 +897,8 @@ DankModal {
                         duration: Theme.shortDuration
                         easing.type: Theme.standardEasing
                     }
-
                 }
-
             }
-
         }
-
     }
-
 }

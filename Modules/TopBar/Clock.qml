@@ -12,17 +12,18 @@ Rectangle {
     property var popupTarget: null
     property var parentScreen: null
 
-    signal clockClicked()
+    signal clockClicked
 
     width: clockRow.implicitWidth + Theme.spacingS * 2
     height: 30
     radius: Theme.cornerRadius
     color: {
-        const baseColor = clockMouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover;
-        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+        const baseColor = clockMouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
+                       baseColor.a * Theme.widgetTransparency)
     }
     Component.onCompleted: {
-        root.currentDate = systemClock.date;
+        root.currentDate = systemClock.date
     }
 
     Row {
@@ -32,7 +33,10 @@ Rectangle {
         spacing: Theme.spacingS
 
         StyledText {
-            text: SettingsData.use24HourClock ? Qt.formatTime(root.currentDate, "H:mm") : Qt.formatTime(root.currentDate, "h:mm AP")
+            text: SettingsData.use24HourClock ? Qt.formatTime(
+                                                    root.currentDate,
+                                                    "H:mm") : Qt.formatTime(
+                                                    root.currentDate, "h:mm AP")
             font.pixelSize: Theme.fontSizeMedium - 1
             color: Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter
@@ -53,7 +57,6 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             visible: !SettingsData.clockCompactMode
         }
-
     }
 
     SystemClock {
@@ -71,13 +74,15 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
         onPressed: {
             if (popupTarget && popupTarget.setTriggerPosition) {
-                var globalPos = mapToGlobal(0, 0);
-                var currentScreen = parentScreen || Screen;
-                var screenX = currentScreen.x || 0;
-                var relativeX = globalPos.x - screenX;
-                popupTarget.setTriggerPosition(relativeX, Theme.barHeight + Theme.spacingXS, width, section, currentScreen);
+                var globalPos = mapToGlobal(0, 0)
+                var currentScreen = parentScreen || Screen
+                var screenX = currentScreen.x || 0
+                var relativeX = globalPos.x - screenX
+                popupTarget.setTriggerPosition(
+                            relativeX, Theme.barHeight + Theme.spacingXS,
+                            width, section, currentScreen)
             }
-            root.clockClicked();
+            root.clockClicked()
         }
     }
 
@@ -86,7 +91,5 @@ Rectangle {
             duration: Theme.shortDuration
             easing.type: Theme.standardEasing
         }
-
     }
-
 }

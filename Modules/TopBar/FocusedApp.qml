@@ -13,15 +13,18 @@ Rectangle {
     readonly property int maxNormalWidth: 456
     readonly property int maxCompactWidth: 288
 
-    width: compactMode ? Math.min(baseWidth, maxCompactWidth) : Math.min(baseWidth, maxNormalWidth)
+    width: compactMode ? Math.min(baseWidth,
+                                  maxCompactWidth) : Math.min(baseWidth,
+                                                              maxNormalWidth)
     height: 30
     radius: Theme.cornerRadius
     color: {
         if (!NiriService.focusedWindowTitle)
-            return "transparent";
+            return "transparent"
 
-        const baseColor = mouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover;
-        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency);
+        const baseColor = mouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
+                       baseColor.a * Theme.widgetTransparency)
     }
     clip: true
     visible: NiriService.niriAvailable && NiriService.focusedWindowTitle
@@ -37,16 +40,17 @@ Rectangle {
 
             text: {
                 if (!NiriService.focusedWindowId)
-                    return "";
+                    return ""
 
-                var window = NiriService.windows.find((w) => {
-                    return w.id == NiriService.focusedWindowId;
-                });
+                var window = NiriService.windows.find(w => {
+                                                          return w.id == NiriService.focusedWindowId
+                                                      })
                 if (!window || !window.app_id)
-                    return "";
+                    return ""
 
-                var desktopEntry = DesktopEntries.byId(window.app_id);
-                return desktopEntry && desktopEntry.name ? desktopEntry.name : window.app_id;
+                var desktopEntry = DesktopEntries.byId(window.app_id)
+                return desktopEntry
+                        && desktopEntry.name ? desktopEntry.name : window.app_id
             }
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
@@ -70,20 +74,24 @@ Rectangle {
             id: titleText
 
             text: {
-                var title = NiriService.focusedWindowTitle || "";
-                var appName = appText.text;
-                
-                if (!title || !appName) return title;
-                
+                var title = NiriService.focusedWindowTitle || ""
+                var appName = appText.text
+
+                if (!title || !appName)
+                    return title
+
                 // Remove app name from end of title if it exists there
                 if (title.endsWith(" - " + appName)) {
-                    return title.substring(0, title.length - (" - " + appName).length);
+                    return title.substring(
+                                0, title.length - (" - " + appName).length)
                 }
                 if (title.endsWith(appName)) {
-                    return title.substring(0, title.length - appName.length).replace(/ - $/, "");
+                    return title.substring(
+                                0, title.length - appName.length).replace(
+                                / - $/, "")
                 }
-                
-                return title;
+
+                return title
             }
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
@@ -94,7 +102,6 @@ Rectangle {
             width: Math.min(implicitWidth, compactMode ? 280 : 250)
             visible: text.length > 0
         }
-
     }
 
     MouseArea {
@@ -109,7 +116,6 @@ Rectangle {
             duration: Theme.shortDuration
             easing.type: Theme.standardEasing
         }
-
     }
 
     Behavior on width {
@@ -117,7 +123,5 @@ Rectangle {
             duration: Theme.shortDuration
             easing.type: Theme.standardEasing
         }
-
     }
-
 }

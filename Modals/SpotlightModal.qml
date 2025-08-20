@@ -16,41 +16,41 @@ DankModal {
     property Component spotlightContent
 
     function show() {
-        spotlightOpen = true;
-        open();
+        spotlightOpen = true
+        open()
         if (contentLoader.item && contentLoader.item.appLauncher)
-            contentLoader.item.appLauncher.searchQuery = "";
+            contentLoader.item.appLauncher.searchQuery = ""
 
-        Qt.callLater(function() {
+        Qt.callLater(function () {
             if (contentLoader.item && contentLoader.item.searchField)
-                contentLoader.item.searchField.forceActiveFocus();
-
-        });
+                contentLoader.item.searchField.forceActiveFocus()
+        })
     }
 
     function hide() {
-        spotlightOpen = false;
-        close();
+        spotlightOpen = false
+        close()
         if (contentLoader.item && contentLoader.item.appLauncher) {
-            contentLoader.item.appLauncher.searchQuery = "";
-            contentLoader.item.appLauncher.selectedIndex = 0;
-            contentLoader.item.appLauncher.setCategory("All");
+            contentLoader.item.appLauncher.searchQuery = ""
+            contentLoader.item.appLauncher.selectedIndex = 0
+            contentLoader.item.appLauncher.setCategory("All")
         }
     }
 
     function toggle() {
         if (spotlightOpen)
-            hide();
+            hide()
         else
-            show();
+            show()
     }
 
     shouldBeVisible: spotlightOpen
-    
+
     Connections {
         target: ModalManager
         function onCloseAllModalsExcept(excludedModal) {
-            if (excludedModal !== spotlightModal && !allowStacking && spotlightOpen) {
+            if (excludedModal !== spotlightModal && !allowStacking
+                    && spotlightOpen) {
                 spotlightOpen = false
             }
         }
@@ -64,42 +64,40 @@ DankModal {
     enableShadow: true
     onVisibleChanged: {
         if (visible && !spotlightOpen)
-            show();
+            show()
 
         if (visible && contentLoader.item)
-            Qt.callLater(function() {
+            Qt.callLater(function () {
                 if (contentLoader.item.searchField)
-                    contentLoader.item.searchField.forceActiveFocus();
-
-            });
-
+                    contentLoader.item.searchField.forceActiveFocus()
+            })
     }
     onBackgroundClicked: {
-        hide();
+        hide()
     }
     Component.onCompleted: {
+
     }
     content: spotlightContent
 
     IpcHandler {
         function open() {
-            spotlightModal.show();
-            return "SPOTLIGHT_OPEN_SUCCESS";
+            spotlightModal.show()
+            return "SPOTLIGHT_OPEN_SUCCESS"
         }
 
         function close() {
-            spotlightModal.hide();
-            return "SPOTLIGHT_CLOSE_SUCCESS";
+            spotlightModal.hide()
+            return "SPOTLIGHT_CLOSE_SUCCESS"
         }
 
         function toggle() {
-            spotlightModal.toggle();
-            return "SPOTLIGHT_TOGGLE_SUCCESS";
+            spotlightModal.toggle()
+            return "SPOTLIGHT_TOGGLE_SUCCESS"
         }
 
         target: "spotlight"
     }
-
 
     spotlightContent: Component {
         Item {
@@ -110,29 +108,34 @@ DankModal {
 
             anchors.fill: parent
             focus: true
-            Keys.onPressed: function(event) {
+            Keys.onPressed: function (event) {
                 if (event.key === Qt.Key_Escape) {
-                    hide();
-                    event.accepted = true;
+                    hide()
+                    event.accepted = true
                 } else if (event.key === Qt.Key_Down) {
-                    appLauncher.selectNext();
-                    event.accepted = true;
+                    appLauncher.selectNext()
+                    event.accepted = true
                 } else if (event.key === Qt.Key_Up) {
-                    appLauncher.selectPrevious();
-                    event.accepted = true;
-                } else if (event.key === Qt.Key_Right && appLauncher.viewMode === "grid") {
-                    appLauncher.selectNextInRow();
-                    event.accepted = true;
-                } else if (event.key === Qt.Key_Left && appLauncher.viewMode === "grid") {
-                    appLauncher.selectPreviousInRow();
-                    event.accepted = true;
-                } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                    appLauncher.launchSelected();
-                    event.accepted = true;
-                } else if (!searchField.activeFocus && event.text && event.text.length > 0 && event.text.match(/[a-zA-Z0-9\\s]/)) {
-                    searchField.forceActiveFocus();
-                    searchField.insertText(event.text);
-                    event.accepted = true;
+                    appLauncher.selectPrevious()
+                    event.accepted = true
+                } else if (event.key === Qt.Key_Right
+                           && appLauncher.viewMode === "grid") {
+                    appLauncher.selectNextInRow()
+                    event.accepted = true
+                } else if (event.key === Qt.Key_Left
+                           && appLauncher.viewMode === "grid") {
+                    appLauncher.selectPreviousInRow()
+                    event.accepted = true
+                } else if (event.key === Qt.Key_Return
+                           || event.key === Qt.Key_Enter) {
+                    appLauncher.launchSelected()
+                    event.accepted = true
+                } else if (!searchField.activeFocus && event.text
+                           && event.text.length > 0 && event.text.match(
+                               /[a-zA-Z0-9\\s]/)) {
+                    searchField.forceActiveFocus()
+                    searchField.insertText(event.text)
+                    event.accepted = true
                 }
             }
 
@@ -142,8 +145,8 @@ DankModal {
                 viewMode: SettingsData.spotlightModalViewMode
                 gridColumns: 4
                 onAppLaunched: hide()
-                onViewModeSelected: function(mode) {
-                    SettingsData.setSpotlightModalViewMode(mode);
+                onViewModeSelected: function (mode) {
+                    SettingsData.setSpotlightModalViewMode(mode)
                 }
             }
 
@@ -159,7 +162,8 @@ DankModal {
                     color: Theme.surfaceVariantAlpha
                     border.color: Theme.outlineMedium
                     border.width: 1
-                    visible: appLauncher.categories.length > 1 || appLauncher.model.count > 0
+                    visible: appLauncher.categories.length > 1
+                             || appLauncher.model.count > 0
 
                     CategorySelector {
                         id: categorySelector
@@ -169,11 +173,11 @@ DankModal {
                         categories: appLauncher.categories
                         selectedCategory: appLauncher.selectedCategory
                         compact: false
-                        onCategorySelected: (category) => {
-                            return appLauncher.setCategory(category);
-                        }
+                        onCategorySelected: category => {
+                                                return appLauncher.setCategory(
+                                                    category)
+                                            }
                     }
-
                 }
 
                 Row {
@@ -183,10 +187,16 @@ DankModal {
                     DankTextField {
                         id: searchField
 
-                        width: parent.width - 80 - Theme.spacingM // Leave space for view toggle buttons
+                        width: parent.width - 80
+                               - Theme.spacingM // Leave space for view toggle buttons
                         height: 56
                         cornerRadius: Theme.cornerRadius
-                        backgroundColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.7)
+                        backgroundColor: Qt.rgba(
+                                             Theme.surfaceVariant.r,
+                                             Theme.surfaceVariant.g,
+                                             Theme.surfaceVariant.b,
+                                             Theme.getContentBackgroundAlpha(
+                                                 ) * 0.7)
                         normalBorderColor: Theme.outlineMedium
                         focusedBorderColor: Theme.primary
                         leftIconName: "search"
@@ -202,22 +212,26 @@ DankModal {
                         keyForwardTargets: [spotlightKeyHandler]
                         text: appLauncher.searchQuery
                         onTextEdited: {
-                            appLauncher.searchQuery = text;
+                            appLauncher.searchQuery = text
                         }
-                        Keys.onPressed: (event) => {
-                            if (event.key === Qt.Key_Escape) {
-                                hide();
-                                event.accepted = true;
-                            } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length > 0) {
-                                if (appLauncher.keyboardNavigationActive && appLauncher.model.count > 0)
-                                    appLauncher.launchSelected();
-                                else if (appLauncher.model.count > 0)
-                                    appLauncher.launchApp(appLauncher.model.get(0));
-                                event.accepted = true;
-                            } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || event.key === Qt.Key_Left || event.key === Qt.Key_Right || ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
-                                event.accepted = false;
-                            }
-                        }
+                        Keys.onPressed: event => {
+                                            if (event.key === Qt.Key_Escape) {
+                                                hide()
+                                                event.accepted = true
+                                            } else if ((event.key === Qt.Key_Return
+                                                        || event.key === Qt.Key_Enter)
+                                                       && text.length > 0) {
+                                                if (appLauncher.keyboardNavigationActive
+                                                    && appLauncher.model.count > 0)
+                                                appLauncher.launchSelected()
+                                                else if (appLauncher.model.count > 0)
+                                                appLauncher.launchApp(
+                                                    appLauncher.model.get(0))
+                                                event.accepted = true
+                                            } else if (event.key === Qt.Key_Down || event.key === Qt.Key_Up || event.key === Qt.Key_Left || event.key === Qt.Key_Right || ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && text.length === 0)) {
+                                                event.accepted = false
+                                            }
+                                        }
                     }
 
                     Row {
@@ -230,14 +244,16 @@ DankModal {
                             height: 36
                             radius: Theme.cornerRadius
                             color: appLauncher.viewMode === "list" ? Theme.primaryHover : listViewArea.containsMouse ? Theme.surfaceHover : "transparent"
-                            border.color: appLauncher.viewMode === "list" ? Theme.primarySelected : "transparent"
+                            border.color: appLauncher.viewMode
+                                          === "list" ? Theme.primarySelected : "transparent"
                             border.width: 1
 
                             DankIcon {
                                 anchors.centerIn: parent
                                 name: "view_list"
                                 size: 18
-                                color: appLauncher.viewMode === "list" ? Theme.primary : Theme.surfaceText
+                                color: appLauncher.viewMode
+                                       === "list" ? Theme.primary : Theme.surfaceText
                             }
 
                             MouseArea {
@@ -247,10 +263,9 @@ DankModal {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                    appLauncher.setViewMode("list");
+                                    appLauncher.setViewMode("list")
                                 }
                             }
-
                         }
 
                         Rectangle {
@@ -258,14 +273,16 @@ DankModal {
                             height: 36
                             radius: Theme.cornerRadius
                             color: appLauncher.viewMode === "grid" ? Theme.primaryHover : gridViewArea.containsMouse ? Theme.surfaceHover : "transparent"
-                            border.color: appLauncher.viewMode === "grid" ? Theme.primarySelected : "transparent"
+                            border.color: appLauncher.viewMode
+                                          === "grid" ? Theme.primarySelected : "transparent"
                             border.width: 1
 
                             DankIcon {
                                 anchors.centerIn: parent
                                 name: "grid_view"
                                 size: 18
-                                color: appLauncher.viewMode === "grid" ? Theme.primary : Theme.surfaceText
+                                color: appLauncher.viewMode
+                                       === "grid" ? Theme.primary : Theme.surfaceText
                             }
 
                             MouseArea {
@@ -275,14 +292,11 @@ DankModal {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                    appLauncher.setViewMode("grid");
+                                    appLauncher.setViewMode("grid")
                                 }
                             }
-
                         }
-
                     }
-
                 }
 
                 Rectangle {
@@ -305,20 +319,20 @@ DankModal {
                         property bool hoverUpdatesSelection: false
                         property bool keyboardNavigationActive: appLauncher.keyboardNavigationActive
 
-                        signal keyboardNavigationReset()
+                        signal keyboardNavigationReset
                         signal itemClicked(int index, var modelData)
                         signal itemRightClicked(int index, var modelData, real mouseX, real mouseY)
 
                         function ensureVisible(index) {
                             if (index < 0 || index >= count)
-                                return ;
+                                return
 
-                            var itemY = index * (itemHeight + itemSpacing);
-                            var itemBottom = itemY + itemHeight;
+                            var itemY = index * (itemHeight + itemSpacing)
+                            var itemBottom = itemY + itemHeight
                             if (itemY < contentY)
-                                contentY = itemY;
+                                contentY = itemY
                             else if (itemBottom > contentY + height)
-                                contentY = itemBottom - height;
+                                contentY = itemBottom - height
                         }
 
                         anchors.fill: parent
@@ -334,17 +348,16 @@ DankModal {
                         reuseItems: true
                         onCurrentIndexChanged: {
                             if (keyboardNavigationActive)
-                                ensureVisible(currentIndex);
-
+                                ensureVisible(currentIndex)
                         }
-                        onItemClicked: function(index, modelData) {
-                            appLauncher.launchApp(modelData);
+                        onItemClicked: function (index, modelData) {
+                            appLauncher.launchApp(modelData)
                         }
-                        onItemRightClicked: function(index, modelData, mouseX, mouseY) {
-                            contextMenu.show(mouseX, mouseY, modelData);
+                        onItemRightClicked: function (index, modelData, mouseX, mouseY) {
+                            contextMenu.show(mouseX, mouseY, modelData)
                         }
                         onKeyboardNavigationReset: {
-                            appLauncher.keyboardNavigationActive = false;
+                            appLauncher.keyboardNavigationActive = false
                         }
 
                         ScrollBar.vertical: ScrollBar {
@@ -377,7 +390,9 @@ DankModal {
                                         id: listIconImg
 
                                         anchors.fill: parent
-                                        source: (model.icon) ? Quickshell.iconPath(model.icon, SettingsData.iconTheme === "System Default" ? "" : SettingsData.iconTheme) : ""
+                                        source: (model.icon) ? Quickshell.iconPath(
+                                                                   model.icon,
+                                                                   SettingsData.iconTheme === "System Default" ? "" : SettingsData.iconTheme) : ""
                                         smooth: true
                                         asynchronous: true
                                         visible: status === Image.Ready
@@ -393,14 +408,16 @@ DankModal {
 
                                         StyledText {
                                             anchors.centerIn: parent
-                                            text: (model.name && model.name.length > 0) ? model.name.charAt(0).toUpperCase() : "A"
+                                            text: (model.name
+                                                   && model.name.length
+                                                   > 0) ? model.name.charAt(
+                                                              0).toUpperCase(
+                                                              ) : "A"
                                             font.pixelSize: resultsList.iconSize * 0.4
                                             color: Theme.primary
                                             font.weight: Font.Bold
                                         }
-
                                     }
-
                                 }
 
                                 Column {
@@ -423,11 +440,11 @@ DankModal {
                                         font.pixelSize: Theme.fontSizeMedium
                                         color: Theme.surfaceVariantText
                                         elide: Text.ElideRight
-                                        visible: resultsList.showDescription && model.comment && model.comment.length > 0
+                                        visible: resultsList.showDescription
+                                                 && model.comment
+                                                 && model.comment.length > 0
                                     }
-
                                 }
-
                             }
 
                             MouseArea {
@@ -439,25 +456,28 @@ DankModal {
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 z: 10
                                 onEntered: {
-                                    if (resultsList.hoverUpdatesSelection && !resultsList.keyboardNavigationActive)
-                                        resultsList.currentIndex = index;
-
+                                    if (resultsList.hoverUpdatesSelection
+                                            && !resultsList.keyboardNavigationActive)
+                                        resultsList.currentIndex = index
                                 }
                                 onPositionChanged: {
-                                    resultsList.keyboardNavigationReset();
+                                    resultsList.keyboardNavigationReset()
                                 }
-                                onClicked: (mouse) => {
-                                    if (mouse.button === Qt.LeftButton) {
-                                        resultsList.itemClicked(index, model);
-                                    } else if (mouse.button === Qt.RightButton) {
-                                        var modalPos = mapToItem(spotlightKeyHandler, mouse.x, mouse.y);
-                                        resultsList.itemRightClicked(index, model, modalPos.x, modalPos.y);
-                                    }
-                                }
+                                onClicked: mouse => {
+                                               if (mouse.button === Qt.LeftButton) {
+                                                   resultsList.itemClicked(
+                                                       index, model)
+                                               } else if (mouse.button === Qt.RightButton) {
+                                                   var modalPos = mapToItem(
+                                                       spotlightKeyHandler,
+                                                       mouse.x, mouse.y)
+                                                   resultsList.itemRightClicked(
+                                                       index, model,
+                                                       modalPos.x, modalPos.y)
+                                               }
+                                           }
                             }
-
                         }
-
                     }
 
                     DankGridView {
@@ -474,25 +494,30 @@ DankModal {
                         property int minIconSize: 32
                         property bool hoverUpdatesSelection: false
                         property bool keyboardNavigationActive: appLauncher.keyboardNavigationActive
-                        property int baseCellWidth: adaptiveColumns ? Math.max(minCellWidth, Math.min(maxCellWidth, width / columns)) : (width - Theme.spacingS * 2) / columns
+                        property int baseCellWidth: adaptiveColumns ? Math.max(
+                                                                          minCellWidth,
+                                                                          Math.min(maxCellWidth, width / columns)) : (width - Theme.spacingS * 2) / columns
                         property int baseCellHeight: baseCellWidth + 20
-                        property int actualColumns: adaptiveColumns ? Math.floor(width / cellWidth) : columns
+                        property int actualColumns: adaptiveColumns ? Math.floor(
+                                                                          width
+                                                                          / cellWidth) : columns
                         property int remainingSpace: width - (actualColumns * cellWidth)
 
-                        signal keyboardNavigationReset()
+                        signal keyboardNavigationReset
                         signal itemClicked(int index, var modelData)
                         signal itemRightClicked(int index, var modelData, real mouseX, real mouseY)
 
                         function ensureVisible(index) {
                             if (index < 0 || index >= count)
-                                return ;
+                                return
 
-                            var itemY = Math.floor(index / actualColumns) * cellHeight;
-                            var itemBottom = itemY + cellHeight;
+                            var itemY = Math.floor(
+                                        index / actualColumns) * cellHeight
+                            var itemBottom = itemY + cellHeight
                             if (itemY < contentY)
-                                contentY = itemY;
+                                contentY = itemY
                             else if (itemBottom > contentY + height)
-                                contentY = itemBottom - height;
+                                contentY = itemBottom - height
                         }
 
                         anchors.fill: parent
@@ -510,17 +535,16 @@ DankModal {
                         reuseItems: true
                         onCurrentIndexChanged: {
                             if (keyboardNavigationActive)
-                                ensureVisible(currentIndex);
-
+                                ensureVisible(currentIndex)
                         }
-                        onItemClicked: function(index, modelData) {
-                            appLauncher.launchApp(modelData);
+                        onItemClicked: function (index, modelData) {
+                            appLauncher.launchApp(modelData)
                         }
-                        onItemRightClicked: function(index, modelData, mouseX, mouseY) {
-                            contextMenu.show(mouseX, mouseY, modelData);
+                        onItemRightClicked: function (index, modelData, mouseX, mouseY) {
+                            contextMenu.show(mouseX, mouseY, modelData)
                         }
                         onKeyboardNavigationReset: {
-                            appLauncher.keyboardNavigationActive = false;
+                            appLauncher.keyboardNavigationActive = false
                         }
 
                         ScrollBar.vertical: ScrollBar {
@@ -536,7 +560,8 @@ DankModal {
                             height: resultsGrid.cellHeight - resultsGrid.cellPadding
                             radius: Theme.cornerRadius
                             color: resultsGrid.currentIndex === index ? Theme.primaryPressed : gridMouseArea.containsMouse ? Theme.primaryHoverLight : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.03)
-                            border.color: resultsGrid.currentIndex === index ? Theme.primarySelected : Theme.outlineMedium
+                            border.color: resultsGrid.currentIndex
+                                          === index ? Theme.primarySelected : Theme.outlineMedium
                             border.width: resultsGrid.currentIndex === index ? 2 : 1
 
                             Column {
@@ -544,7 +569,12 @@ DankModal {
                                 spacing: Theme.spacingS
 
                                 Item {
-                                    property int iconSize: Math.min(resultsGrid.maxIconSize, Math.max(resultsGrid.minIconSize, resultsGrid.cellWidth * resultsGrid.iconSizeRatio))
+                                    property int iconSize: Math.min(
+                                                               resultsGrid.maxIconSize,
+                                                               Math.max(
+                                                                   resultsGrid.minIconSize,
+                                                                   resultsGrid.cellWidth
+                                                                   * resultsGrid.iconSizeRatio))
 
                                     width: iconSize
                                     height: iconSize
@@ -554,7 +584,9 @@ DankModal {
                                         id: gridIconImg
 
                                         anchors.fill: parent
-                                        source: (model.icon) ? Quickshell.iconPath(model.icon, SettingsData.iconTheme === "System Default" ? "" : SettingsData.iconTheme) : ""
+                                        source: (model.icon) ? Quickshell.iconPath(
+                                                                   model.icon,
+                                                                   SettingsData.iconTheme === "System Default" ? "" : SettingsData.iconTheme) : ""
                                         smooth: true
                                         asynchronous: true
                                         visible: status === Image.Ready
@@ -570,14 +602,18 @@ DankModal {
 
                                         StyledText {
                                             anchors.centerIn: parent
-                                            text: (model.name && model.name.length > 0) ? model.name.charAt(0).toUpperCase() : "A"
-                                            font.pixelSize: Math.min(28, parent.width * 0.5)
+                                            text: (model.name
+                                                   && model.name.length
+                                                   > 0) ? model.name.charAt(
+                                                              0).toUpperCase(
+                                                              ) : "A"
+                                            font.pixelSize: Math.min(
+                                                                28,
+                                                                parent.width * 0.5)
                                             color: Theme.primary
                                             font.weight: Font.Bold
                                         }
-
                                     }
-
                                 }
 
                                 StyledText {
@@ -592,7 +628,6 @@ DankModal {
                                     maximumLineCount: 2
                                     wrapMode: Text.WordWrap
                                 }
-
                             }
 
                             MouseArea {
@@ -604,29 +639,30 @@ DankModal {
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 z: 10
                                 onEntered: {
-                                    if (resultsGrid.hoverUpdatesSelection && !resultsGrid.keyboardNavigationActive)
-                                        resultsGrid.currentIndex = index;
-
+                                    if (resultsGrid.hoverUpdatesSelection
+                                            && !resultsGrid.keyboardNavigationActive)
+                                        resultsGrid.currentIndex = index
                                 }
                                 onPositionChanged: {
-                                    resultsGrid.keyboardNavigationReset();
+                                    resultsGrid.keyboardNavigationReset()
                                 }
-                                onClicked: (mouse) => {
-                                    if (mouse.button === Qt.LeftButton) {
-                                        resultsGrid.itemClicked(index, model);
-                                    } else if (mouse.button === Qt.RightButton) {
-                                        var modalPos = mapToItem(spotlightKeyHandler, mouse.x, mouse.y);
-                                        resultsGrid.itemRightClicked(index, model, modalPos.x, modalPos.y);
-                                    }
-                                }
+                                onClicked: mouse => {
+                                               if (mouse.button === Qt.LeftButton) {
+                                                   resultsGrid.itemClicked(
+                                                       index, model)
+                                               } else if (mouse.button === Qt.RightButton) {
+                                                   var modalPos = mapToItem(
+                                                       spotlightKeyHandler,
+                                                       mouse.x, mouse.y)
+                                                   resultsGrid.itemRightClicked(
+                                                       index, model,
+                                                       modalPos.x, modalPos.y)
+                                               }
+                                           }
                             }
-
                         }
-
                     }
-
                 }
-
             }
 
             Rectangle {
@@ -637,23 +673,29 @@ DankModal {
 
                 function show(x, y, app) {
                     currentApp = app
-                    
+
                     const menuWidth = 180
                     const menuHeight = menuColumn.implicitHeight + Theme.spacingS * 2
                     let finalX = x + 8
                     let finalY = y + 8
-                    
+
                     if (finalX + menuWidth > spotlightKeyHandler.width) {
                         finalX = x - menuWidth - 8
                     }
-                    
+
                     if (finalY + menuHeight > spotlightKeyHandler.height) {
                         finalY = y - menuHeight - 8
                     }
-                    
-                    finalX = Math.max(8, Math.min(finalX, spotlightKeyHandler.width - menuWidth - 8))
-                    finalY = Math.max(8, Math.min(finalY, spotlightKeyHandler.height - menuHeight - 8))
-                    
+
+                    finalX = Math.max(
+                                8, Math.min(
+                                    finalX,
+                                    spotlightKeyHandler.width - menuWidth - 8))
+                    finalY = Math.max(
+                                8, Math.min(
+                                    finalY,
+                                    spotlightKeyHandler.height - menuHeight - 8))
+
                     contextMenu.x = finalX
                     contextMenu.y = finalY
                     contextMenu.visible = true
@@ -663,8 +705,8 @@ DankModal {
                 function close() {
                     contextMenu.menuVisible = false
                     Qt.callLater(() => {
-                        contextMenu.visible = false
-                    })
+                                     contextMenu.visible = false
+                                 })
                 }
 
                 visible: false
@@ -672,7 +714,8 @@ DankModal {
                 height: menuColumn.implicitHeight + Theme.spacingS * 2
                 radius: Theme.cornerRadius
                 color: Theme.popupBackground()
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                      Theme.outline.b, 0.08)
                 border.width: 1
                 z: 1000
                 opacity: menuVisible ? 1 : 0
@@ -700,7 +743,11 @@ DankModal {
                         width: parent.width
                         height: 32
                         radius: Theme.cornerRadius
-                        color: pinMouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+                        color: pinMouseArea.containsMouse ? Qt.rgba(
+                                                                Theme.primary.r,
+                                                                Theme.primary.g,
+                                                                Theme.primary.b,
+                                                                0.12) : "transparent"
 
                         Row {
                             anchors.left: parent.left
@@ -710,11 +757,15 @@ DankModal {
 
                             DankIcon {
                                 name: {
-                                    if (!contextMenu.currentApp || !contextMenu.currentApp.desktopEntry)
+                                    if (!contextMenu.currentApp
+                                            || !contextMenu.currentApp.desktopEntry)
                                         return "push_pin"
 
-                                    var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || ""
-                                    return SessionData.isPinnedApp(appId) ? "keep_off" : "push_pin"
+                                    var appId = contextMenu.currentApp.desktopEntry.id
+                                            || contextMenu.currentApp.desktopEntry.execString
+                                            || ""
+                                    return SessionData.isPinnedApp(
+                                                appId) ? "keep_off" : "push_pin"
                                 }
                                 size: Theme.iconSize - 2
                                 color: Theme.surfaceText
@@ -724,11 +775,15 @@ DankModal {
 
                             StyledText {
                                 text: {
-                                    if (!contextMenu.currentApp || !contextMenu.currentApp.desktopEntry)
+                                    if (!contextMenu.currentApp
+                                            || !contextMenu.currentApp.desktopEntry)
                                         return "Pin to Dock"
 
-                                    var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || ""
-                                    return SessionData.isPinnedApp(appId) ? "Unpin from Dock" : "Pin to Dock"
+                                    var appId = contextMenu.currentApp.desktopEntry.id
+                                            || contextMenu.currentApp.desktopEntry.execString
+                                            || ""
+                                    return SessionData.isPinnedApp(
+                                                appId) ? "Unpin from Dock" : "Pin to Dock"
                                 }
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.surfaceText
@@ -744,10 +799,13 @@ DankModal {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                if (!contextMenu.currentApp || !contextMenu.currentApp.desktopEntry)
+                                if (!contextMenu.currentApp
+                                        || !contextMenu.currentApp.desktopEntry)
                                     return
 
-                                var appId = contextMenu.currentApp.desktopEntry.id || contextMenu.currentApp.desktopEntry.execString || ""
+                                var appId = contextMenu.currentApp.desktopEntry.id
+                                        || contextMenu.currentApp.desktopEntry.execString
+                                        || ""
                                 if (SessionData.isPinnedApp(appId))
                                     SessionData.removePinnedApp(appId)
                                 else
@@ -767,7 +825,8 @@ DankModal {
                             anchors.centerIn: parent
                             width: parent.width
                             height: 1
-                            color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                            color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                           Theme.outline.b, 0.2)
                         }
                     }
 
@@ -775,7 +834,11 @@ DankModal {
                         width: parent.width
                         height: 32
                         radius: Theme.cornerRadius
-                        color: launchMouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+                        color: launchMouseArea.containsMouse ? Qt.rgba(
+                                                                   Theme.primary.r,
+                                                                   Theme.primary.g,
+                                                                   Theme.primary.b,
+                                                                   0.12) : "transparent"
 
                         Row {
                             anchors.left: parent.left
@@ -808,7 +871,8 @@ DankModal {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 if (contextMenu.currentApp)
-                                    appLauncher.launchApp(contextMenu.currentApp)
+                                    appLauncher.launchApp(
+                                                contextMenu.currentApp)
 
                                 contextMenu.close()
                             }
@@ -845,13 +909,11 @@ DankModal {
                     width: contextMenu.width
                     height: contextMenu.height
                     onClicked: {
+
                         // Prevent closing when clicking on the menu itself
                     }
                 }
             }
-
         }
-
     }
-
 }

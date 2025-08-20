@@ -8,220 +8,224 @@ import qs.Services
 import qs.Widgets
 
 PanelWindow {
-  id: root
+    id: root
 
-  property var modelData
-  property bool brightnessPopupVisible: false
-  property var brightnessDebounceTimer
+    property var modelData
+    property bool brightnessPopupVisible: false
+    property var brightnessDebounceTimer
 
-  brightnessDebounceTimer: Timer {
-    property int pendingValue: 0
+    brightnessDebounceTimer: Timer {
+        property int pendingValue: 0
 
-    interval: BrightnessService.ddcAvailable ? 500 : 50
-    repeat: false
-    onTriggered: {
-      BrightnessService.setBrightnessInternal(pendingValue, BrightnessService.lastIpcDevice)
+        interval: BrightnessService.ddcAvailable ? 500 : 50
+        repeat: false
+        onTriggered: {
+            BrightnessService.setBrightnessInternal(
+                        pendingValue, BrightnessService.lastIpcDevice)
+        }
     }
-  }
 
-  function show() {
-    root.brightnessPopupVisible = true
-    // Update slider to current device brightness when showing
-    if (BrightnessService.brightnessAvailable) {
-      brightnessSlider.value = BrightnessService.brightnessLevel
-    }
-    hideTimer.restart()
-  }
-
-  function resetHideTimer() {
-    if (root.brightnessPopupVisible)
-      hideTimer.restart()
-  }
-
-  screen: modelData
-  visible: brightnessPopupVisible
-  WlrLayershell.layer: WlrLayershell.Overlay
-  WlrLayershell.exclusiveZone: -1
-  WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-  color: "transparent"
-
-  anchors {
-    top: true
-    left: true
-    right: true
-    bottom: true
-  }
-
-  Timer {
-    id: hideTimer
-
-    interval: 3000
-    repeat: false
-    onTriggered: {
-      if (!brightnessPopup.containsMouse)
-        root.brightnessPopupVisible = false
-      else
+    function show() {
+        root.brightnessPopupVisible = true
+        // Update slider to current device brightness when showing
+        if (BrightnessService.brightnessAvailable) {
+            brightnessSlider.value = BrightnessService.brightnessLevel
+        }
         hideTimer.restart()
     }
-  }
 
-  Connections {
-    function onBrightnessChanged() {
-      root.show()
+    function resetHideTimer() {
+        if (root.brightnessPopupVisible)
+            hideTimer.restart()
     }
 
-    target: BrightnessService
-  }
+    screen: modelData
+    visible: brightnessPopupVisible
+    WlrLayershell.layer: WlrLayershell.Overlay
+    WlrLayershell.exclusiveZone: -1
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    color: "transparent"
 
-  Rectangle {
-    id: brightnessPopup
+    anchors {
+        top: true
+        left: true
+        right: true
+        bottom: true
+    }
 
-    property bool containsMouse: popupMouseArea.containsMouse
+    Timer {
+        id: hideTimer
 
-    width: Math.min(260, Screen.width - Theme.spacingM * 2)
-    height: brightnessContent.height + Theme.spacingS * 2
-    anchors.horizontalCenter: parent.horizontalCenter
-    anchors.bottom: parent.bottom
-    anchors.bottomMargin: Theme.spacingM
-    color: Theme.popupBackground()
-    radius: Theme.cornerRadius
-    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                          Theme.outline.b, 0.08)
-    border.width: 1
-    opacity: root.brightnessPopupVisible ? 1 : 0
-    scale: root.brightnessPopupVisible ? 1 : 0.9
-    layer.enabled: true
+        interval: 3000
+        repeat: false
+        onTriggered: {
+            if (!brightnessPopup.containsMouse)
+                root.brightnessPopupVisible = false
+            else
+                hideTimer.restart()
+        }
+    }
 
-    Column {
-      id: brightnessContent
+    Connections {
+        function onBrightnessChanged() {
+            root.show()
+        }
 
-      anchors.centerIn: parent
-      width: parent.width - Theme.spacingS * 2
-      spacing: Theme.spacingXS
+        target: BrightnessService
+    }
 
-      Item {
-        property int gap: Theme.spacingS
+    Rectangle {
+        id: brightnessPopup
 
-        width: parent.width
-        height: 40
+        property bool containsMouse: popupMouseArea.containsMouse
 
-        Rectangle {
-          width: Theme.iconSize
-          height: Theme.iconSize
-          radius: Theme.iconSize / 2
-          color: "transparent"
-          x: parent.gap
-          anchors.verticalCenter: parent.verticalCenter
+        width: Math.min(260, Screen.width - Theme.spacingM * 2)
+        height: brightnessContent.height + Theme.spacingS * 2
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: Theme.spacingM
+        color: Theme.popupBackground()
+        radius: Theme.cornerRadius
+        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                              Theme.outline.b, 0.08)
+        border.width: 1
+        opacity: root.brightnessPopupVisible ? 1 : 0
+        scale: root.brightnessPopupVisible ? 1 : 0.9
+        layer.enabled: true
 
-          DankIcon {
+        Column {
+            id: brightnessContent
+
             anchors.centerIn: parent
-            name: {
-              const deviceInfo = BrightnessService.getCurrentDeviceInfo();
-              
-              if (!deviceInfo || deviceInfo.class === "backlight" || deviceInfo.class === "ddc") {
-                return "brightness_medium";
-              } else if (deviceInfo.name.includes("kbd")) {
-                return "keyboard";
-              } else {
-                return "lightbulb";
-              }
+            width: parent.width - Theme.spacingS * 2
+            spacing: Theme.spacingXS
+
+            Item {
+                property int gap: Theme.spacingS
+
+                width: parent.width
+                height: 40
+
+                Rectangle {
+                    width: Theme.iconSize
+                    height: Theme.iconSize
+                    radius: Theme.iconSize / 2
+                    color: "transparent"
+                    x: parent.gap
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    DankIcon {
+                        anchors.centerIn: parent
+                        name: {
+                            const deviceInfo = BrightnessService.getCurrentDeviceInfo()
+
+                            if (!deviceInfo || deviceInfo.class === "backlight"
+                                    || deviceInfo.class === "ddc") {
+                                return "brightness_medium"
+                            } else if (deviceInfo.name.includes("kbd")) {
+                                return "keyboard"
+                            } else {
+                                return "lightbulb"
+                            }
+                        }
+                        size: Theme.iconSize
+                        color: Theme.primary
+                    }
+                }
+
+                DankSlider {
+                    id: brightnessSlider
+
+                    width: parent.width - Theme.iconSize - parent.gap * 3
+                    height: 40
+                    x: parent.gap * 2 + Theme.iconSize
+                    anchors.verticalCenter: parent.verticalCenter
+                    minimum: 1
+                    maximum: 100
+                    enabled: BrightnessService.brightnessAvailable
+                    showValue: true
+                    unit: "%"
+                    Component.onCompleted: {
+                        if (BrightnessService.brightnessAvailable)
+                            value = BrightnessService.brightnessLevel
+                    }
+                    onSliderValueChanged: function (newValue) {
+                        if (BrightnessService.brightnessAvailable) {
+                            brightnessDebounceTimer.pendingValue = newValue
+                            brightnessDebounceTimer.restart()
+                            root.resetHideTimer()
+                        }
+                    }
+                    onSliderDragFinished: function (finalValue) {
+                        if (BrightnessService.brightnessAvailable) {
+                            brightnessDebounceTimer.stop()
+                            BrightnessService.setBrightnessInternal(
+                                        finalValue,
+                                        BrightnessService.lastIpcDevice)
+                        }
+                    }
+
+                    Connections {
+                        function onBrightnessChanged() {
+                            brightnessSlider.value = BrightnessService.brightnessLevel
+                        }
+
+                        function onDeviceSwitched() {
+                            brightnessSlider.value = BrightnessService.brightnessLevel
+                        }
+
+                        target: BrightnessService
+                    }
+                }
             }
-            size: Theme.iconSize
-            color: Theme.primary
-          }
         }
 
-        DankSlider {
-          id: brightnessSlider
+        MouseArea {
+            id: popupMouseArea
 
-          width: parent.width - Theme.iconSize - parent.gap * 3
-          height: 40
-          x: parent.gap * 2 + Theme.iconSize
-          anchors.verticalCenter: parent.verticalCenter
-          minimum: 1
-          maximum: 100
-          enabled: BrightnessService.brightnessAvailable
-          showValue: true
-          unit: "%"
-          Component.onCompleted: {
-            if (BrightnessService.brightnessAvailable)
-              value = BrightnessService.brightnessLevel
-          }
-          onSliderValueChanged: function (newValue) {
-            if (BrightnessService.brightnessAvailable) {
-              brightnessDebounceTimer.pendingValue = newValue
-              brightnessDebounceTimer.restart()
-              root.resetHideTimer()
-            }
-          }
-          onSliderDragFinished: function (finalValue) {
-            if (BrightnessService.brightnessAvailable) {
-              brightnessDebounceTimer.stop()
-              BrightnessService.setBrightnessInternal(finalValue, BrightnessService.lastIpcDevice)
-            }
-          }
-
-          Connections {
-            function onBrightnessChanged() {
-              brightnessSlider.value = BrightnessService.brightnessLevel
-            }
-            
-            function onDeviceSwitched() {
-              brightnessSlider.value = BrightnessService.brightnessLevel
-            }
-
-            target: BrightnessService
-          }
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.NoButton
+            propagateComposedEvents: true
+            z: -1
         }
-      }
+
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowHorizontalOffset: 0
+            shadowVerticalOffset: 4
+            shadowBlur: 0.8
+            shadowColor: Qt.rgba(0, 0, 0, 0.3)
+            shadowOpacity: 0.3
+        }
+
+        transform: Translate {
+            y: root.brightnessPopupVisible ? 0 : 20
+        }
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.mediumDuration
+                easing.type: Theme.emphasizedEasing
+            }
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Theme.mediumDuration
+                easing.type: Theme.emphasizedEasing
+            }
+        }
+
+        Behavior on transform {
+            PropertyAnimation {
+                duration: Theme.mediumDuration
+                easing.type: Theme.emphasizedEasing
+            }
+        }
     }
 
-    MouseArea {
-      id: popupMouseArea
-
-      anchors.fill: parent
-      hoverEnabled: true
-      acceptedButtons: Qt.NoButton
-      propagateComposedEvents: true
-      z: -1
+    mask: Region {
+        item: brightnessPopup
     }
-
-    layer.effect: MultiEffect {
-      shadowEnabled: true
-      shadowHorizontalOffset: 0
-      shadowVerticalOffset: 4
-      shadowBlur: 0.8
-      shadowColor: Qt.rgba(0, 0, 0, 0.3)
-      shadowOpacity: 0.3
-    }
-
-    transform: Translate {
-      y: root.brightnessPopupVisible ? 0 : 20
-    }
-
-    Behavior on opacity {
-      NumberAnimation {
-        duration: Theme.mediumDuration
-        easing.type: Theme.emphasizedEasing
-      }
-    }
-
-    Behavior on scale {
-      NumberAnimation {
-        duration: Theme.mediumDuration
-        easing.type: Theme.emphasizedEasing
-      }
-    }
-
-    Behavior on transform {
-      PropertyAnimation {
-        duration: Theme.mediumDuration
-        easing.type: Theme.emphasizedEasing
-      }
-    }
-  }
-
-  mask: Region {
-    item: brightnessPopup
-  }
 }

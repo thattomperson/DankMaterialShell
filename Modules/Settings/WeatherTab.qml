@@ -24,8 +24,10 @@ Item {
                 width: parent.width
                 height: enableWeatherSection.implicitHeight + Theme.spacingL * 2
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                               Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                      Theme.outline.b, 0.2)
                 border.width: 1
 
                 Column {
@@ -47,7 +49,8 @@ Item {
                         }
 
                         Column {
-                            width: parent.width - Theme.iconSize - Theme.spacingM - enableToggle.width - Theme.spacingM
+                            width: parent.width - Theme.iconSize - Theme.spacingM
+                                   - enableToggle.width - Theme.spacingM
                             spacing: Theme.spacingXS
                             anchors.verticalCenter: parent.verticalCenter
 
@@ -65,7 +68,6 @@ Item {
                                 wrapMode: Text.WordWrap
                                 width: parent.width
                             }
-
                         }
 
                         DankToggle {
@@ -73,15 +75,13 @@ Item {
 
                             anchors.verticalCenter: parent.verticalCenter
                             checked: SettingsData.weatherEnabled
-                            onToggled: (checked) => {
-                                return SettingsData.setWeatherEnabled(checked);
-                            }
+                            onToggled: checked => {
+                                           return SettingsData.setWeatherEnabled(
+                                               checked)
+                                       }
                         }
-
                     }
-
                 }
-
             }
 
             // Temperature Unit
@@ -89,8 +89,10 @@ Item {
                 width: parent.width
                 height: temperatureSection.implicitHeight + Theme.spacingL * 2
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                               Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                      Theme.outline.b, 0.2)
                 border.width: 1
                 visible: SettingsData.weatherEnabled
                 opacity: visible ? 1 : 0
@@ -114,7 +116,8 @@ Item {
                         }
 
                         Column {
-                            width: parent.width - Theme.iconSize - Theme.spacingM - temperatureToggle.width - Theme.spacingM
+                            width: parent.width - Theme.iconSize - Theme.spacingM
+                                   - temperatureToggle.width - Theme.spacingM
                             spacing: Theme.spacingXS
                             anchors.verticalCenter: parent.verticalCenter
 
@@ -132,7 +135,6 @@ Item {
                                 wrapMode: Text.WordWrap
                                 width: parent.width
                             }
-
                         }
 
                         DankToggle {
@@ -140,13 +142,12 @@ Item {
 
                             anchors.verticalCenter: parent.verticalCenter
                             checked: SettingsData.useFahrenheit
-                            onToggled: (checked) => {
-                                return SettingsData.setTemperatureUnit(checked);
-                            }
+                            onToggled: checked => {
+                                           return SettingsData.setTemperatureUnit(
+                                               checked)
+                                       }
                         }
-
                     }
-
                 }
 
                 Behavior on opacity {
@@ -155,7 +156,6 @@ Item {
                         easing.type: Theme.emphasizedEasing
                     }
                 }
-
             }
 
             // Location Settings
@@ -163,8 +163,10 @@ Item {
                 width: parent.width
                 height: locationSection.implicitHeight + Theme.spacingL * 2
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
+                               Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                      Theme.outline.b, 0.2)
                 border.width: 1
                 visible: SettingsData.weatherEnabled
                 opacity: visible ? 1 : 0
@@ -188,7 +190,8 @@ Item {
                         }
 
                         Column {
-                            width: parent.width - Theme.iconSize - Theme.spacingM - autoLocationToggle.width - Theme.spacingM
+                            width: parent.width - Theme.iconSize - Theme.spacingM
+                                   - autoLocationToggle.width - Theme.spacingM
                             spacing: Theme.spacingXS
                             anchors.verticalCenter: parent.verticalCenter
 
@@ -206,7 +209,6 @@ Item {
                                 wrapMode: Text.WordWrap
                                 width: parent.width
                             }
-
                         }
 
                         DankToggle {
@@ -214,11 +216,11 @@ Item {
 
                             anchors.verticalCenter: parent.verticalCenter
                             checked: SettingsData.useAutoLocation
-                            onToggled: (checked) => {
-                                return SettingsData.setAutoLocation(checked);
-                            }
+                            onToggled: checked => {
+                                           return SettingsData.setAutoLocation(
+                                               checked)
+                                       }
                         }
-
                     }
 
                     Column {
@@ -245,12 +247,12 @@ Item {
                             currentLocation: SettingsData.weatherLocation
                             placeholderText: "New York, NY"
                             onLocationSelected: (displayName, coordinates) => {
-                                SettingsData.setWeatherLocation(displayName, coordinates);
-                            }
+                                                    SettingsData.setWeatherLocation(
+                                                        displayName,
+                                                        coordinates)
+                                                }
                         }
-
                     }
-
                 }
 
                 Behavior on opacity {
@@ -259,11 +261,7 @@ Item {
                         easing.type: Theme.emphasizedEasing
                     }
                 }
-
             }
-
         }
-
     }
-
 }

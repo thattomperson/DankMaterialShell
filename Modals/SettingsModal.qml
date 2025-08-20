@@ -14,21 +14,21 @@ DankModal {
 
     property Component settingsContent
 
-    signal closingModal()
+    signal closingModal
 
     function show() {
-        open();
+        open()
     }
 
     function hide() {
-        close();
+        close()
     }
 
     function toggle() {
         if (shouldBeVisible)
-            hide();
+            hide()
         else
-            show();
+            show()
     }
 
     objectName: "settingsModal"
@@ -40,18 +40,18 @@ DankModal {
 
     IpcHandler {
         function open() {
-            settingsModal.show();
-            return "SETTINGS_OPEN_SUCCESS";
+            settingsModal.show()
+            return "SETTINGS_OPEN_SUCCESS"
         }
 
         function close() {
-            settingsModal.hide();
-            return "SETTINGS_CLOSE_SUCCESS";
+            settingsModal.hide()
+            return "SETTINGS_CLOSE_SUCCESS"
         }
 
         function toggle() {
-            settingsModal.toggle();
-            return "SETTINGS_TOGGLE_SUCCESS";
+            settingsModal.toggle()
+            return "SETTINGS_TOGGLE_SUCCESS"
         }
 
         target: "settings"
@@ -103,7 +103,6 @@ DankModal {
                         hoverColor: Theme.errorHover
                         onClicked: settingsModal.hide()
                     }
-
                 }
 
                 // Main content with side navigation
@@ -153,7 +152,8 @@ DankModal {
                                         height: 80
                                         anchors.verticalCenter: parent.verticalCenter
 
-                                        property bool hasImage: profileImageSource.status === Image.Ready
+                                        property bool hasImage: profileImageSource.status
+                                                                === Image.Ready
 
                                         Rectangle {
                                             anchors.fill: parent
@@ -168,10 +168,11 @@ DankModal {
                                             id: profileImageSource
                                             source: {
                                                 if (PortalService.profileImage === "")
-                                                    return "";
-                                                if (PortalService.profileImage.startsWith("/"))
-                                                    return "file://" + PortalService.profileImage;
-                                                return PortalService.profileImage;
+                                                    return ""
+                                                if (PortalService.profileImage.startsWith(
+                                                            "/"))
+                                                    return "file://" + PortalService.profileImage
+                                                return PortalService.profileImage
                                             }
                                             smooth: true
                                             asynchronous: true
@@ -226,7 +227,8 @@ DankModal {
                                             name: "warning"
                                             size: Theme.iconSizeLarge
                                             color: Theme.error
-                                            visible: PortalService.profileImage !== "" && profileImageSource.status === Image.Error
+                                            visible: PortalService.profileImage !== ""
+                                                     && profileImageSource.status === Image.Error
                                         }
 
                                         // Hover overlay with edit and clear buttons
@@ -235,54 +237,58 @@ DankModal {
                                             radius: width / 2
                                             color: Qt.rgba(0, 0, 0, 0.7)
                                             visible: profileMouseArea.containsMouse
-                                            
+
                                             Row {
                                                 anchors.centerIn: parent
                                                 spacing: 4
-                                                
+
                                                 Rectangle {
                                                     width: 28
                                                     height: 28
                                                     radius: 14
-                                                    color: Qt.rgba(255, 255, 255, 0.9)
-                                                    
+                                                    color: Qt.rgba(255, 255,
+                                                                   255, 0.9)
+
                                                     DankIcon {
                                                         anchors.centerIn: parent
                                                         name: "edit"
                                                         size: 16
                                                         color: "black"
                                                     }
-                                                    
+
                                                     MouseArea {
                                                         anchors.fill: parent
                                                         cursorShape: Qt.PointingHandCursor
                                                         onClicked: {
-                                                            settingsModal.allowFocusOverride = true;
-                                                            settingsModal.shouldHaveFocus = false;
-                                                            profileBrowser.open();
+                                                            settingsModal.allowFocusOverride = true
+                                                            settingsModal.shouldHaveFocus = false
+                                                            profileBrowser.open(
+                                                                        )
                                                         }
                                                     }
                                                 }
-                                                
+
                                                 Rectangle {
                                                     width: 28
                                                     height: 28
                                                     radius: 14
-                                                    color: Qt.rgba(255, 255, 255, 0.9)
+                                                    color: Qt.rgba(255, 255,
+                                                                   255, 0.9)
                                                     visible: profileImageContainer.hasImage
-                                                    
+
                                                     DankIcon {
                                                         anchors.centerIn: parent
                                                         name: "close"
                                                         size: 16
                                                         color: "black"
                                                     }
-                                                    
+
                                                     MouseArea {
                                                         anchors.fill: parent
                                                         cursorShape: Qt.PointingHandCursor
                                                         onClicked: {
-                                                            PortalService.setProfileImage("");
+                                                            PortalService.setProfileImage(
+                                                                        "")
                                                         }
                                                     }
                                                 }
@@ -306,7 +312,8 @@ DankModal {
                                         spacing: Theme.spacingXS
 
                                         StyledText {
-                                            text: UserInfoService.fullName || "User"
+                                            text: UserInfoService.fullName
+                                                  || "User"
                                             font.pixelSize: Theme.fontSizeLarge
                                             font.weight: Font.Medium
                                             color: Theme.surfaceText
@@ -315,7 +322,8 @@ DankModal {
                                         }
 
                                         StyledText {
-                                            text: DgopService.distribution || "Linux"
+                                            text: DgopService.distribution
+                                                  || "Linux"
                                             font.pixelSize: Theme.fontSizeMedium
                                             color: Theme.surfaceVariantText
                                             elide: Text.ElideRight
@@ -341,33 +349,33 @@ DankModal {
                                 id: sidebarRepeater
 
                                 model: [{
-                                    "text": "Personalization",
-                                    "icon": "person"
-                                }, {
-                                    "text": "Time & Date",
-                                    "icon": "schedule"
-                                }, {
-                                    "text": "Weather",
-                                    "icon": "cloud"
-                                }, {
-                                    "text": "Top Bar",
-                                    "icon": "toolbar"
-                                }, {
-                                    "text": "Widgets",
-                                    "icon": "widgets"
-                                }, {
-                                    "text": "Dock",
-                                    "icon": "dock_to_bottom"
-                                }, {
-                                    "text": "Recent Apps",
-                                    "icon": "history"
-                                }, {
-                                    "text": "Theme & Colors",
-                                    "icon": "palette"
-                                }, {
-                                    "text": "About",
-                                    "icon": "info"
-                                }]
+                                        "text": "Personalization",
+                                        "icon": "person"
+                                    }, {
+                                        "text": "Time & Date",
+                                        "icon": "schedule"
+                                    }, {
+                                        "text": "Weather",
+                                        "icon": "cloud"
+                                    }, {
+                                        "text": "Top Bar",
+                                        "icon": "toolbar"
+                                    }, {
+                                        "text": "Widgets",
+                                        "icon": "widgets"
+                                    }, {
+                                        "text": "Dock",
+                                        "icon": "dock_to_bottom"
+                                    }, {
+                                        "text": "Recent Apps",
+                                        "icon": "history"
+                                    }, {
+                                        "text": "Theme & Colors",
+                                        "icon": "palette"
+                                    }, {
+                                        "text": "About",
+                                        "icon": "info"
+                                    }]
 
                                 Rectangle {
                                     property bool isActive: sidebarContainer.currentIndex === index
@@ -397,7 +405,6 @@ DankModal {
                                             font.weight: parent.parent.isActive ? Font.Medium : Font.Normal
                                             anchors.verticalCenter: parent.verticalCenter
                                         }
-
                                     }
 
                                     MouseArea {
@@ -407,7 +414,7 @@ DankModal {
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            sidebarContainer.currentIndex = index;
+                                            sidebarContainer.currentIndex = index
                                         }
                                     }
 
@@ -416,15 +423,10 @@ DankModal {
                                             duration: Theme.shortDuration
                                             easing.type: Theme.standardEasing
                                         }
-
                                     }
-
                                 }
-
                             }
-
                         }
-
                     }
 
                     // Main content area
@@ -452,9 +454,7 @@ DankModal {
                                     PersonalizationTab {
                                         parentModal: settingsModal
                                     }
-
                                 }
-
                             }
 
                             Loader {
@@ -509,11 +509,8 @@ DankModal {
                                 asynchronous: true
 
                                 sourceComponent: Component {
-                                    DockTab {
-                                    }
-
+                                    DockTab {}
                                 }
-
                             }
 
                             Loader {
@@ -545,210 +542,224 @@ DankModal {
                                 asynchronous: true
                                 sourceComponent: AboutTab {}
                             }
-
                         }
-
                     }
-
                 }
 
                 // Footer
                 Row {
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: Theme.spacingXS
-                    
+
                     // Dank logo
                     Item {
                         width: 68
                         height: 16
                         anchors.verticalCenter: parent.verticalCenter
-                        
+
                         Image {
                             anchors.fill: parent
-                            source: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Modals/", "") + "/assets/dank.svg"
+                            source: Qt.resolvedUrl(".").toString().replace(
+                                        "file://",
+                                        "").replace("/Modals/",
+                                                    "") + "/assets/dank.svg"
                             sourceSize: Qt.size(68, 16)
                             smooth: true
                             fillMode: Image.PreserveAspectFit
                             layer.enabled: true
-                            
+
                             layer.effect: MultiEffect {
                                 colorization: 1
                                 colorizationColor: Theme.primary
                             }
                         }
-                        
+
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Qt.openUrlExternally("https://github.com/AvengeMedia/DankMaterialShell")
+                            onClicked: Qt.openUrlExternally(
+                                           "https://github.com/AvengeMedia/DankMaterialShell")
                         }
                     }
-                    
+
                     StyledText {
                         text: "•"
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                    
+
                     Rectangle {
                         width: Theme.spacingXS
                         height: 1
                         color: "transparent"
                     }
-                    
+
                     // Niri logo
                     Item {
                         width: 24
                         height: 24
                         anchors.verticalCenter: parent.verticalCenter
-                        
+
                         Image {
                             anchors.fill: parent
-                            source: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Modals/", "") + "/assets/niri.svg"
+                            source: Qt.resolvedUrl(".").toString().replace(
+                                        "file://",
+                                        "").replace("/Modals/",
+                                                    "") + "/assets/niri.svg"
                             sourceSize: Qt.size(24, 24)
                             smooth: true
                             fillMode: Image.PreserveAspectFit
                         }
-                        
+
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Qt.openUrlExternally("https://github.com/YaLTeR/niri")
+                            onClicked: Qt.openUrlExternally(
+                                           "https://github.com/YaLTeR/niri")
                         }
                     }
-                    
+
                     Rectangle {
                         width: Theme.spacingXS
                         height: 1
                         color: "transparent"
                     }
-                    
+
                     StyledText {
                         text: "•"
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                    
+
                     Rectangle {
                         width: Theme.spacingM
                         height: 1
                         color: "transparent"
                     }
-                    
+
                     // Matrix button
                     Item {
                         width: 32
                         height: 20
                         anchors.verticalCenter: parent.verticalCenter
-                        
+
                         Image {
                             anchors.fill: parent
-                            source: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Modals/", "") + "/assets/matrix-logo-white.svg"
+                            source: Qt.resolvedUrl(".").toString().replace(
+                                        "file://", "").replace(
+                                        "/Modals/",
+                                        "") + "/assets/matrix-logo-white.svg"
                             sourceSize: Qt.size(32, 20)
                             smooth: true
                             fillMode: Image.PreserveAspectFit
                             layer.enabled: true
-                            
+
                             layer.effect: MultiEffect {
                                 colorization: 1
                                 colorizationColor: Theme.surfaceText
                             }
                         }
-                        
+
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Qt.openUrlExternally("https://matrix.to/#/#niri:matrix.org")
+                            onClicked: Qt.openUrlExternally(
+                                           "https://matrix.to/#/#niri:matrix.org")
                         }
                     }
-                    
+
                     Rectangle {
                         width: Theme.spacingM
                         height: 1
                         color: "transparent"
                     }
-                    
+
                     StyledText {
                         text: "•"
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                    
+
                     Rectangle {
                         width: Theme.spacingM
                         height: 1
                         color: "transparent"
                     }
-                    
+
                     // Discord button
                     Item {
                         width: 16
                         height: 16
                         anchors.verticalCenter: parent.verticalCenter
-                        
+
                         Image {
                             anchors.fill: parent
-                            source: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Modals/", "") + "/assets/discord.svg"
+                            source: Qt.resolvedUrl(".").toString().replace(
+                                        "file://",
+                                        "").replace("/Modals/",
+                                                    "") + "/assets/discord.svg"
                             sourceSize: Qt.size(16, 16)
                             smooth: true
                             fillMode: Image.PreserveAspectFit
                         }
-                        
+
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Qt.openUrlExternally("https://discord.gg/vT8Sfjy7sx")
+                            onClicked: Qt.openUrlExternally(
+                                           "https://discord.gg/vT8Sfjy7sx")
                         }
                     }
-                    
+
                     Rectangle {
                         width: Theme.spacingM
                         height: 1
                         color: "transparent"
                     }
-                    
+
                     StyledText {
                         text: "•"
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                    
+
                     Rectangle {
                         width: Theme.spacingM
                         height: 1
                         color: "transparent"
                     }
-                    
+
                     // Reddit button
                     Item {
                         width: 18
                         height: 18
                         anchors.verticalCenter: parent.verticalCenter
-                        
+
                         Image {
                             anchors.fill: parent
-                            source: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Modals/", "") + "/assets/reddit.svg"
+                            source: Qt.resolvedUrl(".").toString().replace(
+                                        "file://",
+                                        "").replace("/Modals/",
+                                                    "") + "/assets/reddit.svg"
                             sourceSize: Qt.size(18, 18)
                             smooth: true
                             fillMode: Image.PreserveAspectFit
                         }
-                        
+
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: Qt.openUrlExternally("https://reddit.com/r/niri")
+                            onClicked: Qt.openUrlExternally(
+                                           "https://reddit.com/r/niri")
                         }
                     }
                 }
-
             }
-
         }
-
     }
 
     FileBrowserModal {
@@ -758,18 +769,17 @@ DankModal {
         browserIcon: "person"
         browserType: "profile"
         fileExtensions: ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"]
-        onFileSelected: (path) => {
-            PortalService.setProfileImage(path);
-            close();
-        }
+        onFileSelected: path => {
+                            PortalService.setProfileImage(path)
+                            close()
+                        }
         onDialogClosed: {
             if (settingsModal) {
-                settingsModal.allowFocusOverride = false;
+                settingsModal.allowFocusOverride = false
                 settingsModal.shouldHaveFocus = Qt.binding(() => {
-                    return settingsModal.shouldBeVisible;
-                });
+                                                               return settingsModal.shouldBeVisible
+                                                           })
             }
         }
     }
-
 }

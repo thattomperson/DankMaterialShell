@@ -3,7 +3,8 @@ import Quickshell
 import Quickshell.Io
 import qs.Common
 pragma Singleton
-pragma ComponentBehavior: Bound
+
+pragma ComponentBehavior
 
 Singleton {
     id: root
@@ -74,21 +75,28 @@ Singleton {
     property int historySize: 60
     property var cpuHistory: []
     property var memoryHistory: []
-    property var networkHistory: ({ "rx": [], "tx": [] })
-    property var diskHistory: ({ "read": [], "write": [] })
+    property var networkHistory: ({
+                                      "rx": [],
+                                      "tx": []
+                                  })
+    property var diskHistory: ({
+                                   "read": [],
+                                   "write": []
+                               })
 
     function addRef(modules = null) {
         refCount++
         let modulesChanged = false
-        
+
         if (modules) {
             const modulesToAdd = Array.isArray(modules) ? modules : [modules]
             for (const module of modulesToAdd) {
                 // Increment reference count for this module
                 const currentCount = moduleRefCounts[module] || 0
                 moduleRefCounts[module] = currentCount + 1
-                console.log("Adding ref for module:", module, "count:", moduleRefCounts[module])
-                
+                console.log("Adding ref for module:", module, "count:",
+                            moduleRefCounts[module])
+
                 // Add to enabled modules if not already there
                 if (enabledModules.indexOf(module) === -1) {
                     enabledModules.push(module)
@@ -99,7 +107,8 @@ Singleton {
 
         if (modulesChanged || refCount === 1) {
             enabledModules = enabledModules.slice() // Force property change
-            moduleRefCounts = Object.assign({}, moduleRefCounts) // Force property change
+            moduleRefCounts = Object.assign(
+                        {}, moduleRefCounts) // Force property change
             updateAllStats()
         } else if (gpuPciIds.length > 0 && refCount > 0) {
             // If we have GPU PCI IDs and active modules, make sure to update
@@ -111,7 +120,7 @@ Singleton {
     function removeRef(modules = null) {
         refCount = Math.max(0, refCount - 1)
         let modulesChanged = false
-        
+
         if (modules) {
             const modulesToRemove = Array.isArray(modules) ? modules : [modules]
             for (const module of modulesToRemove) {
@@ -119,7 +128,8 @@ Singleton {
                 if (currentCount > 1) {
                     // Decrement reference count
                     moduleRefCounts[module] = currentCount - 1
-                    console.log("Removing ref for module:", module, "count:", moduleRefCounts[module])
+                    console.log("Removing ref for module:", module, "count:",
+                                moduleRefCounts[module])
                 } else if (currentCount === 1) {
                     // Remove completely when count reaches 0
                     delete moduleRefCounts[module]
@@ -127,7 +137,8 @@ Singleton {
                     if (index > -1) {
                         enabledModules.splice(index, 1)
                         modulesChanged = true
-                        console.log("Disabling module:", module, "(no more refs)")
+                        console.log("Disabling module:", module,
+                                    "(no more refs)")
                     }
                 }
             }
@@ -135,8 +146,9 @@ Singleton {
 
         if (modulesChanged) {
             enabledModules = enabledModules.slice() // Force property change
-            moduleRefCounts = Object.assign({}, moduleRefCounts) // Force property change
-            
+            moduleRefCounts = Object.assign(
+                        {}, moduleRefCounts) // Force property change
+
             // Clear cursor data when CPU or process modules are no longer active
             if (!enabledModules.includes("cpu")) {
                 cpuCursor = ""
@@ -156,13 +168,14 @@ Singleton {
     function addGpuPciId(pciId) {
         const currentCount = gpuPciIdRefCounts[pciId] || 0
         gpuPciIdRefCounts[pciId] = currentCount + 1
-        
+
         // Add to gpuPciIds array if not already there
         if (!gpuPciIds.includes(pciId)) {
             gpuPciIds = gpuPciIds.concat([pciId])
         }
-        
-        console.log("Adding GPU PCI ID ref:", pciId, "count:", gpuPciIdRefCounts[pciId])
+
+        console.log("Adding GPU PCI ID ref:", pciId, "count:",
+                    gpuPciIdRefCounts[pciId])
         // Force property change notification
         gpuPciIdRefCounts = Object.assign({}, gpuPciIdRefCounts)
     }
@@ -172,7 +185,8 @@ Singleton {
         if (currentCount > 1) {
             // Decrement reference count
             gpuPciIdRefCounts[pciId] = currentCount - 1
-            console.log("Removing GPU PCI ID ref:", pciId, "count:", gpuPciIdRefCounts[pciId])
+            console.log("Removing GPU PCI ID ref:", pciId, "count:",
+                        gpuPciIdRefCounts[pciId])
         } else if (currentCount === 1) {
             // Remove completely when count reaches 0
             delete gpuPciIdRefCounts[pciId]
@@ -181,21 +195,23 @@ Singleton {
                 gpuPciIds = gpuPciIds.slice()
                 gpuPciIds.splice(index, 1)
             }
-            
+
             // Clear temperature data for this GPU when no longer monitored
             if (availableGpus && availableGpus.length > 0) {
                 const updatedGpus = availableGpus.slice()
-                for (let i = 0; i < updatedGpus.length; i++) {
+                for (var i = 0; i < updatedGpus.length; i++) {
                     if (updatedGpus[i].pciId === pciId) {
-                        updatedGpus[i] = Object.assign({}, updatedGpus[i], { temperature: 0 })
+                        updatedGpus[i] = Object.assign({}, updatedGpus[i], {
+                                                           "temperature": 0
+                                                       })
                     }
                 }
                 availableGpus = updatedGpus
             }
-            
+
             console.log("Removing GPU PCI ID completely:", pciId)
         }
-        
+
         // Force property change notification
         gpuPciIdRefCounts = Object.assign({}, gpuPciIdRefCounts)
     }
@@ -216,19 +232,20 @@ Singleton {
     }
 
     function initializeGpuMetadata() {
-        if (!dgopAvailable) return
+        if (!dgopAvailable)
+            return
         // Load GPU metadata once at startup for basic info
         gpuInitProcess.running = true
     }
 
     function buildDgopCommand() {
         const cmd = ["dgop", "meta", "--json"]
-        
+
         if (enabledModules.length === 0) {
             // Don't run if no modules are needed
             return []
         }
-        
+
         // Replace 'gpu' with 'gpu-temp' when we have PCI IDs to monitor
         const finalModules = []
         for (const module of enabledModules) {
@@ -238,12 +255,12 @@ Singleton {
                 finalModules.push(module)
             }
         }
-        
+
         // Add gpu-temp module automatically when we have PCI IDs to monitor
         if (gpuPciIds.length > 0 && finalModules.indexOf("gpu-temp") === -1) {
             finalModules.push("gpu-temp")
         }
-        
+
         if (enabledModules.indexOf("all") !== -1) {
             cmd.push("--modules", "all")
         } else if (finalModules.length > 0) {
@@ -254,10 +271,12 @@ Singleton {
         }
 
         // Add cursor data if available for accurate CPU percentages
-        if ((enabledModules.includes("cpu") || enabledModules.includes("all")) && cpuCursor) {
+        if ((enabledModules.includes("cpu") || enabledModules.includes("all"))
+                && cpuCursor) {
             cmd.push("--cpu-cursor", cpuCursor)
         }
-        if ((enabledModules.includes("processes") || enabledModules.includes("all")) && procCursor) {
+        if ((enabledModules.includes("processes") || enabledModules.includes(
+                 "all")) && procCursor) {
             cmd.push("--proc-cursor", procCursor)
         }
 
@@ -265,7 +284,8 @@ Singleton {
             cmd.push("--gpu-pci-ids", gpuPciIds.join(","))
         }
 
-        if (enabledModules.indexOf("processes") !== -1 || enabledModules.indexOf("all") !== -1) {
+        if (enabledModules.indexOf("processes") !== -1
+                || enabledModules.indexOf("all") !== -1) {
             cmd.push("--limit", "100") // Get more data for client sorting
             cmd.push("--sort", "cpu") // Always get CPU sorted data
             if (noCpu) {
@@ -280,7 +300,7 @@ Singleton {
         if (data.cpu) {
             const cpu = data.cpu
             cpuSampleCount++
-            
+
             // Use dgop CPU numbers directly without modification
             cpuUsage = cpu.usage || 0
             cpuFrequency = cpu.frequency || 0
@@ -301,34 +321,34 @@ Singleton {
             const totalKB = mem.total || 0
             const availableKB = mem.available || 0
             const freeKB = mem.free || 0
-            
+
             // Update MB properties
             totalMemoryMB = totalKB / 1024
             availableMemoryMB = availableKB / 1024
             freeMemoryMB = freeKB / 1024
             usedMemoryMB = totalMemoryMB - availableMemoryMB
             memoryUsage = totalKB > 0 ? ((totalKB - availableKB) / totalKB) * 100 : 0
-            
+
             // Update KB properties for compatibility
             totalMemoryKB = totalKB
             usedMemoryKB = totalKB - availableKB
             totalSwapKB = mem.swaptotal || 0
             usedSwapKB = (mem.swaptotal || 0) - (mem.swapfree || 0)
-            
+
             addToHistory(memoryHistory, memoryUsage)
         }
 
         if (data.network && Array.isArray(data.network)) {
             // Store raw network interface data
             networkInterfaces = data.network
-            
+
             let totalRx = 0
             let totalTx = 0
             for (const iface of data.network) {
                 totalRx += iface.rx || 0
                 totalTx += iface.tx || 0
             }
-            
+
             if (lastNetworkStats) {
                 const timeDiff = updateInterval / 1000
                 const rxDiff = totalRx - lastNetworkStats.rx
@@ -338,20 +358,23 @@ Singleton {
                 addToHistory(networkHistory.rx, networkRxRate / 1024)
                 addToHistory(networkHistory.tx, networkTxRate / 1024)
             }
-            lastNetworkStats = { "rx": totalRx, "tx": totalTx }
+            lastNetworkStats = {
+                "rx": totalRx,
+                "tx": totalTx
+            }
         }
 
         if (data.disk && Array.isArray(data.disk)) {
             // Store raw disk device data
             diskDevices = data.disk
-            
+
             let totalRead = 0
             let totalWrite = 0
             for (const disk of data.disk) {
                 totalRead += (disk.read || 0) * 512
                 totalWrite += (disk.write || 0) * 512
             }
-            
+
             if (lastDiskStats) {
                 const timeDiff = updateInterval / 1000
                 const readDiff = totalRead - lastDiskStats.read
@@ -361,7 +384,10 @@ Singleton {
                 addToHistory(diskHistory.read, diskReadRate / (1024 * 1024))
                 addToHistory(diskHistory.write, diskWriteRate / (1024 * 1024))
             }
-            lastDiskStats = { "read": totalRead, "write": totalWrite }
+            lastDiskStats = {
+                "read": totalRead,
+                "write": totalWrite
+            }
         }
 
         if (data.diskmounts) {
@@ -371,26 +397,31 @@ Singleton {
         if (data.processes && Array.isArray(data.processes)) {
             const newProcesses = []
             processSampleCount++
-            
+
             for (const proc of data.processes) {
                 // Only show CPU usage if we have had at least 2 samples (first sample is inaccurate)
                 const cpuUsage = processSampleCount >= 2 ? (proc.cpu || 0) : 0
-                
+
                 newProcesses.push({
-                    "pid": proc.pid || 0,
-                    "ppid": proc.ppid || 0,
-                    "cpu": cpuUsage,
-                    "memoryPercent": proc.memoryPercent || proc.pssPercent || 0,
-                    "memoryKB": proc.memoryKB || proc.pssKB || 0,
-                    "command": proc.command || "",
-                    "fullCommand": proc.fullCommand || "",
-                    "displayName": (proc.command && proc.command.length > 15) ? 
-                                   proc.command.substring(0, 15) + "..." : (proc.command || "")
-                })
+                                      "pid": proc.pid || 0,
+                                      "ppid": proc.ppid || 0,
+                                      "cpu": cpuUsage,
+                                      "memoryPercent": proc.memoryPercent
+                                                       || proc.pssPercent || 0,
+                                      "memoryKB": proc.memoryKB
+                                                  || proc.pssKB || 0,
+                                      "command": proc.command || "",
+                                      "fullCommand": proc.fullCommand || "",
+                                      "displayName": (proc.command
+                                                      && proc.command.length
+                                                      > 15) ? proc.command.substring(
+                                                                  0,
+                                                                  15) + "..." : (proc.command || "")
+                                  })
             }
             allProcesses = newProcesses
             applySorting()
-            
+
             // Store the single opaque cursor string for the entire process list
             if (data.cursor) {
                 procCursor = data.cursor
@@ -398,18 +429,24 @@ Singleton {
         }
 
         // Handle both gpu and gpu-temp module data
-        const gpuData = (data.gpu && data.gpu.gpus) || data.gpus // Handle both meta format and direct gpu command format
+        const gpuData = (data.gpu && data.gpu.gpus)
+                      || data.gpus // Handle both meta format and direct gpu command format
         if (gpuData && Array.isArray(gpuData)) {
             // Check if this is temperature update data (has PCI IDs being monitored)
-            if (gpuPciIds.length > 0 && availableGpus && availableGpus.length > 0) {
+            if (gpuPciIds.length > 0 && availableGpus
+                    && availableGpus.length > 0) {
                 // This is temperature data - merge with existing GPU metadata
                 const updatedGpus = availableGpus.slice()
-                for (let i = 0; i < updatedGpus.length; i++) {
+                for (var i = 0; i < updatedGpus.length; i++) {
                     const existingGpu = updatedGpus[i]
-                    const tempGpu = gpuData.find(g => g.pciId === existingGpu.pciId)
+                    const tempGpu = gpuData.find(
+                                      g => g.pciId === existingGpu.pciId)
                     // Only update temperature if this GPU's PCI ID is being monitored
                     if (tempGpu && gpuPciIds.includes(existingGpu.pciId)) {
-                        updatedGpus[i] = Object.assign({}, existingGpu, { temperature: tempGpu.temperature || 0 })
+                        updatedGpus[i] = Object.assign({}, existingGpu, {
+                                                           "temperature": tempGpu.temperature
+                                                                          || 0
+                                                       })
                     }
                 }
                 availableGpus = updatedGpus
@@ -417,17 +454,18 @@ Singleton {
                 // This is initial GPU metadata - set the full list
                 const gpuList = []
                 for (const gpu of gpuData) {
-                    let displayName = gpu.displayName || gpu.name || "Unknown GPU"
+                    let displayName = gpu.displayName || gpu.name
+                        || "Unknown GPU"
                     let fullName = gpu.fullName || gpu.name || "Unknown GPU"
 
                     gpuList.push({
-                        "driver": gpu.driver || "",
-                        "vendor": gpu.vendor || "",
-                        "displayName": displayName,
-                        "fullName": fullName,
-                        "pciId": gpu.pciId || "",
-                        "temperature": gpu.temperature || 0
-                    })
+                                     "driver": gpu.driver || "",
+                                     "vendor": gpu.vendor || "",
+                                     "displayName": displayName,
+                                     "fullName": fullName,
+                                     "pciId": gpu.pciId || "",
+                                     "temperature": gpu.temperature || 0
+                                 })
                 }
                 availableGpus = gpuList
             }
@@ -463,17 +501,22 @@ Singleton {
 
     function getProcessIcon(command) {
         const cmd = command.toLowerCase()
-        if (cmd.includes("firefox") || cmd.includes("chrome") || cmd.includes("browser"))
+        if (cmd.includes("firefox") || cmd.includes("chrome") || cmd.includes(
+                    "browser"))
             return "web"
-        if (cmd.includes("code") || cmd.includes("editor") || cmd.includes("vim"))
+        if (cmd.includes("code") || cmd.includes("editor")
+                || cmd.includes("vim"))
             return "code"
-        if (cmd.includes("terminal") || cmd.includes("bash") || cmd.includes("zsh"))
+        if (cmd.includes("terminal") || cmd.includes("bash")
+                || cmd.includes("zsh"))
             return "terminal"
-        if (cmd.includes("music") || cmd.includes("audio") || cmd.includes("spotify"))
+        if (cmd.includes("music") || cmd.includes("audio") || cmd.includes(
+                    "spotify"))
             return "music_note"
         if (cmd.includes("video") || cmd.includes("vlc") || cmd.includes("mpv"))
             return "play_circle"
-        if (cmd.includes("systemd") || cmd.includes("kernel") || cmd.includes("kthread"))
+        if (cmd.includes("systemd") || cmd.includes("kernel") || cmd.includes(
+                    "kthread"))
             return "settings"
         return "memory"
     }
@@ -514,43 +557,45 @@ Singleton {
             applySorting()
         }
     }
-    
+
     function applySorting() {
-        if (!allProcesses || allProcesses.length === 0) return
-        
+        if (!allProcesses || allProcesses.length === 0)
+            return
+
         const sorted = allProcesses.slice()
         sorted.sort((a, b) => {
-            let valueA, valueB
-            
-            switch (currentSort) {
-                case "cpu":
-                    valueA = a.cpu || 0
-                    valueB = b.cpu || 0
-                    return valueB - valueA
-                case "memory":
-                    valueA = a.memoryKB || 0
-                    valueB = b.memoryKB || 0
-                    return valueB - valueA
-                case "name":
-                    valueA = (a.command || "").toLowerCase()
-                    valueB = (b.command || "").toLowerCase()
-                    return valueA.localeCompare(valueB)
-                case "pid":
-                    valueA = a.pid || 0
-                    valueB = b.pid || 0
-                    return valueA - valueB
-                default:
-                    return 0
-            }
-        })
-        
+                        let valueA, valueB
+
+                        switch (currentSort) {
+                            case "cpu":
+                            valueA = a.cpu || 0
+                            valueB = b.cpu || 0
+                            return valueB - valueA
+                            case "memory":
+                            valueA = a.memoryKB || 0
+                            valueB = b.memoryKB || 0
+                            return valueB - valueA
+                            case "name":
+                            valueA = (a.command || "").toLowerCase()
+                            valueB = (b.command || "").toLowerCase()
+                            return valueA.localeCompare(valueB)
+                            case "pid":
+                            valueA = a.pid || 0
+                            valueB = b.pid || 0
+                            return valueA - valueB
+                            default:
+                            return 0
+                        }
+                    })
+
         processes = sorted.slice(0, processLimit)
     }
 
     Timer {
         id: updateTimer
         interval: root.updateInterval
-        running: root.dgopAvailable && root.refCount > 0 && root.enabledModules.length > 0
+        running: root.dgopAvailable && root.refCount > 0
+                 && root.enabledModules.length > 0
         repeat: true
         triggeredOnStart: true
         onTriggered: root.updateAllStats()
@@ -561,14 +606,16 @@ Singleton {
         command: root.buildDgopCommand()
         running: false
         onCommandChanged: {
+
             //console.log("DgopService command:", JSON.stringify(command))
         }
         onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.warn("Dgop process failed with exit code:", exitCode)
-                isUpdating = false
-            }
-        }
+                      if (exitCode !== 0) {
+                          console.warn("Dgop process failed with exit code:",
+                                       exitCode)
+                          isUpdating = false
+                      }
+                  }
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.trim()) {
@@ -590,10 +637,12 @@ Singleton {
         command: ["dgop", "gpu", "--json"]
         running: false
         onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.warn("GPU init process failed with exit code:", exitCode)
-            }
-        }
+                      if (exitCode !== 0) {
+                          console.warn(
+                              "GPU init process failed with exit code:",
+                              exitCode)
+                      }
+                  }
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.trim()) {
@@ -613,23 +662,24 @@ Singleton {
         command: ["which", "dgop"]
         running: false
         onExited: exitCode => {
-            dgopAvailable = (exitCode === 0)
-            if (dgopAvailable) {
-                initializeGpuMetadata()
-                // Load persisted GPU PCI IDs from session state
-                if (SessionData.enabledGpuPciIds && SessionData.enabledGpuPciIds.length > 0) {
-                    for (const pciId of SessionData.enabledGpuPciIds) {
-                        addGpuPciId(pciId)
-                    }
-                    // Trigger update if we already have active modules
-                    if (refCount > 0 && enabledModules.length > 0) {
-                        updateAllStats()
-                    }
-                }
-            } else {
-                console.warn("dgop is not installed or not in PATH")
-            }
-        }
+                      dgopAvailable = (exitCode === 0)
+                      if (dgopAvailable) {
+                          initializeGpuMetadata()
+                          // Load persisted GPU PCI IDs from session state
+                          if (SessionData.enabledGpuPciIds
+                              && SessionData.enabledGpuPciIds.length > 0) {
+                              for (const pciId of SessionData.enabledGpuPciIds) {
+                                  addGpuPciId(pciId)
+                              }
+                              // Trigger update if we already have active modules
+                              if (refCount > 0 && enabledModules.length > 0) {
+                                  updateAllStats()
+                              }
+                          }
+                      } else {
+                          console.warn("dgop is not installed or not in PATH")
+                      }
+                  }
     }
 
     Process {
@@ -637,10 +687,10 @@ Singleton {
         command: ["cat", "/etc/os-release"]
         running: false
         onExited: exitCode => {
-            if (exitCode !== 0) {
-                console.warn("Failed to read /etc/os-release")
-            }
-        }
+                      if (exitCode !== 0) {
+                          console.warn("Failed to read /etc/os-release")
+                      }
+                  }
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.trim()) {
@@ -648,16 +698,18 @@ Singleton {
                         const lines = text.trim().split('\n')
                         let prettyName = ""
                         let name = ""
-                        
+
                         for (const line of lines) {
                             const trimmedLine = line.trim()
                             if (trimmedLine.startsWith('PRETTY_NAME=')) {
-                                prettyName = trimmedLine.substring(12).replace(/^["']|["']$/g, '')
+                                prettyName = trimmedLine.substring(12).replace(
+                                            /^["']|["']$/g, '')
                             } else if (trimmedLine.startsWith('NAME=')) {
-                                name = trimmedLine.substring(5).replace(/^["']|["']$/g, '')
+                                name = trimmedLine.substring(5).replace(
+                                            /^["']|["']$/g, '')
                             }
                         }
-                        
+
                         // Prefer PRETTY_NAME, fallback to NAME
                         const distroName = prettyName || name || "Linux"
                         distribution = distroName
