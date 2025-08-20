@@ -6,6 +6,7 @@ import Quickshell.Widgets
 import qs.Modals
 import qs.Modules
 import qs.Modules.AppDrawer
+import qs.Modules.OSD
 import qs.Modules.CentcomCenter
 import qs.Modules.ControlCenter
 import qs.Modules.ControlCenter.Network
@@ -252,7 +253,7 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
-        delegate: VolumePopup {
+        delegate: VolumeOSD {
             modelData: item
         }
     }
@@ -260,7 +261,7 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
-        delegate: MicMutePopup {
+        delegate: MicMuteOSD {
             modelData: item
         }
     }
@@ -268,7 +269,7 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
-        delegate: BrightnessPopup {
+        delegate: BrightnessOSD {
             modelData: item
         }
     }
@@ -276,7 +277,7 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
 
-        delegate: IdleInhibitorPopup {
+        delegate: IdleInhibitorOSD {
             modelData: item
         }
     }
