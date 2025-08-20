@@ -10,8 +10,8 @@ pragma ComponentBehavior
 Singleton {
     id: root
 
-    property int themeIndex: 0
-    property bool themeIsDynamic: false
+    // Theme settings
+    property string currentThemeName: "blue"
     property real topBarTransparency: 0.75
     property real topBarWidgetTransparency: 0.85
     property real popupTransparency: 0.92
@@ -114,9 +114,18 @@ Singleton {
         try {
             if (content && content.trim()) {
                 var settings = JSON.parse(content)
-                themeIndex = settings.themeIndex !== undefined ? settings.themeIndex : 0
-                themeIsDynamic = settings.themeIsDynamic
-                        !== undefined ? settings.themeIsDynamic : false
+                // Auto-migrate from old theme system
+                if (settings.themeIndex !== undefined || settings.themeIsDynamic !== undefined) {
+                    const themeNames = ["blue", "deepBlue", "purple", "green", "orange", "red", "cyan", "pink", "amber", "coral"]
+                    if (settings.themeIsDynamic) {
+                        currentThemeName = "dynamic"
+                    } else if (settings.themeIndex >= 0 && settings.themeIndex < themeNames.length) {
+                        currentThemeName = themeNames[settings.themeIndex]
+                    }
+                    console.log("Auto-migrated theme from index", settings.themeIndex, "to", currentThemeName)
+                } else {
+                    currentThemeName = settings.currentThemeName !== undefined ? settings.currentThemeName : "blue"
+                }
                 topBarTransparency = settings.topBarTransparency
                         !== undefined ? (settings.topBarTransparency
                                          > 1 ? settings.topBarTransparency
@@ -278,8 +287,7 @@ Singleton {
 
     function saveSettings() {
         settingsFile.setText(JSON.stringify({
-                                                "themeIndex": themeIndex,
-                                                "themeIsDynamic": themeIsDynamic,
+                                                "currentThemeName": currentThemeName,
                                                 "topBarTransparency": topBarTransparency,
                                                 "topBarWidgetTransparency": topBarWidgetTransparency,
                                                 "popupTransparency": popupTransparency,
@@ -438,18 +446,16 @@ Singleton {
 
     function applyStoredTheme() {
         if (typeof Theme !== "undefined")
-            Theme.switchTheme(themeIndex, themeIsDynamic, false)
+            Theme.switchTheme(currentThemeName, false)
         else
             Qt.callLater(() => {
                              if (typeof Theme !== "undefined")
-                             Theme.switchTheme(themeIndex,
-                                               themeIsDynamic, false)
+                                 Theme.switchTheme(currentThemeName, false)
                          })
     }
 
-    function setTheme(index, isDynamic) {
-        themeIndex = index
-        themeIsDynamic = isDynamic
+    function setTheme(themeName) {
+        currentThemeName = themeName
         saveSettings()
     }
 
@@ -717,9 +723,8 @@ Singleton {
         updateGtkIconTheme(themeName)
         updateQtIconTheme(themeName)
         saveSettings()
-        if (typeof Theme !== "undefined" && Theme.isDynamicTheme
-                && typeof Colors !== "undefined")
-            Colors.generateSystemThemes()
+        if (typeof Theme !== "undefined" && Theme.isDynamicTheme)
+            Theme.generateSystemThemes()
     }
 
     function updateGtkIconTheme(themeName) {

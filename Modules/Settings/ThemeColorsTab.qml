@@ -138,7 +138,7 @@ Item {
                         spacing: Theme.spacingS
 
                         StyledText {
-                            text: "Current Theme: " + (Theme.isDynamicTheme ? "Auto" : (Theme.currentThemeIndex < Theme.themes.length ? Theme.themes[Theme.currentThemeIndex].name : "Blue"))
+                            text: "Current Theme: " + (Theme.isDynamicTheme ? "Dynamic" : Theme.getThemeColors(Theme.currentThemeName).name)
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceText
                             font.weight: Font.Medium
@@ -150,9 +150,19 @@ Item {
                                 if (Theme.isDynamicTheme)
                                     return "Wallpaper-based dynamic colors"
 
-                                var descriptions = ["Material blue inspired by modern interfaces", "Deep blue inspired by material 3", "Rich purple tones for BB elegance", "Natural green for productivity", "Energetic orange for creativity", "Bold red for impact", "Cool cyan for tranquility", "Vibrant pink for expression", "Warm amber for comfort", "Soft coral for gentle warmth"]
-                                return descriptions[Theme.currentThemeIndex]
-                                        || "Select a theme"
+                                var descriptions = {
+                                    "blue": "Material blue inspired by modern interfaces",
+                                    "deepBlue": "Deep blue inspired by material 3",
+                                    "purple": "Rich purple tones for elegance",
+                                    "green": "Natural green for productivity",
+                                    "orange": "Energetic orange for creativity",
+                                    "red": "Bold red for impact",
+                                    "cyan": "Cool cyan for tranquility",
+                                    "pink": "Vibrant pink for expression",
+                                    "amber": "Warm amber for comfort",
+                                    "coral": "Soft coral for gentle warmth"
+                                }
+                                return descriptions[Theme.currentThemeName] || "Select a theme"
                             }
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceVariantText
@@ -172,17 +182,18 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
 
                             Repeater {
-                                model: 5
+                                model: Theme.availableThemeNames.slice(0, 5)
 
                                 Rectangle {
+                                    property string themeName: modelData
                                     width: 32
                                     height: 32
                                     radius: 16
-                                    color: Theme.themes[index].primary
+                                    color: Theme.getThemeColors(themeName).primary
                                     border.color: Theme.outline
-                                    border.width: (Theme.currentThemeIndex === index
+                                    border.width: (Theme.currentThemeName === themeName
                                                    && !Theme.isDynamicTheme) ? 2 : 1
-                                    scale: (Theme.currentThemeIndex === index
+                                    scale: (Theme.currentThemeName === themeName
                                             && !Theme.isDynamicTheme) ? 1.1 : 1
 
                                     Rectangle {
@@ -200,7 +211,7 @@ Item {
                                         StyledText {
                                             id: nameText
 
-                                            text: Theme.themes[index].name
+                                            text: Theme.getThemeColors(themeName).name
                                             font.pixelSize: Theme.fontSizeSmall
                                             color: Theme.surfaceText
                                             anchors.centerIn: parent
@@ -214,7 +225,7 @@ Item {
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            Theme.switchTheme(index, false)
+                                            Theme.switchTheme(themeName, false)
                                         }
                                     }
 
@@ -240,19 +251,19 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
 
                             Repeater {
-                                model: 5
+                                model: Theme.availableThemeNames.slice(5, 10)
 
                                 Rectangle {
-                                    property int themeIndex: index + 5
+                                    property string themeName: modelData
 
                                     width: 32
                                     height: 32
                                     radius: 16
-                                    color: themeIndex < Theme.themes.length ? Theme.themes[themeIndex].primary : "transparent"
+                                    color: Theme.getThemeColors(themeName).primary
                                     border.color: Theme.outline
-                                    border.width: Theme.currentThemeIndex === themeIndex ? 2 : 1
-                                    visible: themeIndex < Theme.themes.length
-                                    scale: Theme.currentThemeIndex === themeIndex ? 1.1 : 1
+                                    border.width: Theme.currentThemeName === themeName ? 2 : 1
+                                    visible: true
+                                    scale: Theme.currentThemeName === themeName ? 1.1 : 1
 
                                     Rectangle {
                                         width: nameText2.contentWidth + Theme.spacingS * 2
@@ -265,12 +276,11 @@ Item {
                                         anchors.bottomMargin: Theme.spacingXS
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         visible: mouseArea2.containsMouse
-                                                 && themeIndex < Theme.themes.length
 
                                         StyledText {
                                             id: nameText2
 
-                                            text: themeIndex < Theme.themes.length ? Theme.themes[themeIndex].name : ""
+                                            text: Theme.getThemeColors(themeName).name
                                             font.pixelSize: Theme.fontSizeSmall
                                             color: Theme.surfaceText
                                             anchors.centerIn: parent
@@ -284,8 +294,7 @@ Item {
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            if (themeIndex < Theme.themes.length)
-                                                Theme.switchTheme(themeIndex)
+                                            Theme.switchTheme(themeName)
                                         }
                                     }
 
@@ -404,7 +413,7 @@ Item {
                                         ToastService.showError(
                                                     "Wallpaper processing failed - check wallpaper path")
                                     else
-                                        Theme.switchTheme(10, true)
+                                        Theme.switchTheme(Theme.dynamic)
                                 }
                             }
 
@@ -691,7 +700,7 @@ Item {
                 border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                                       Theme.outline.b, 0.2)
                 border.width: 1
-                visible: Theme.isDynamicTheme && Colors.matugenAvailable
+                visible: Theme.isDynamicTheme && Theme.matugenAvailable
 
                 Column {
                     id: systemThemingSection
@@ -723,9 +732,9 @@ Item {
                     DankToggle {
                         width: parent.width
                         text: "Theme GTK Applications"
-                        description: Colors.gtkThemingEnabled ? "File managers, text editors, and system dialogs will match your theme" : "GTK theming not available (install gsettings)"
-                        enabled: Colors.gtkThemingEnabled
-                        checked: Colors.gtkThemingEnabled
+                        description: Theme.gtkThemingEnabled ? "File managers, text editors, and system dialogs will match your theme" : "GTK theming not available (install gsettings)"
+                        enabled: Theme.gtkThemingEnabled
+                        checked: Theme.gtkThemingEnabled
                                  && SettingsData.gtkThemingEnabled
                         onToggled: function (checked) {
                             SettingsData.setGtkThemingEnabled(checked)
@@ -735,9 +744,9 @@ Item {
                     DankToggle {
                         width: parent.width
                         text: "Theme Qt Applications"
-                        description: Colors.qtThemingEnabled ? "Qt applications will match your theme colors" : "Qt theming not available (install qt5ct or qt6ct)"
-                        enabled: Colors.qtThemingEnabled
-                        checked: Colors.qtThemingEnabled
+                        description: Theme.qtThemingEnabled ? "Qt applications will match your theme colors" : "Qt theming not available (install qt5ct or qt6ct)"
+                        enabled: Theme.qtThemingEnabled
+                        checked: Theme.qtThemingEnabled
                                  && SettingsData.qtThemingEnabled
                         onToggled: function (checked) {
                             SettingsData.setQtThemingEnabled(checked)

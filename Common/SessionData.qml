@@ -129,9 +129,9 @@ Singleton {
         wallpaperPath = imagePath
         saveSettings()
 
-        if (typeof Colors !== "undefined" && typeof SettingsData !== "undefined"
+        if (typeof Theme !== "undefined" && typeof SettingsData !== "undefined"
                 && SettingsData.wallpaperDynamicTheming) {
-            Colors.extractColors()
+            Theme.extractColors()
         }
     }
 

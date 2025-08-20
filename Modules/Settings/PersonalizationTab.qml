@@ -625,9 +625,9 @@ Item {
                             enabled: ToastService.wallpaperErrorStatus !== "matugen_missing"
                             onToggled: toggled => {
                                            if (toggled)
-                                           Theme.switchTheme(10, true)
+                                           Theme.switchTheme(Theme.dynamic)
                                            else
-                                           Theme.switchTheme(0)
+                                           Theme.switchTheme("blue")
                                        }
                         }
                     }
