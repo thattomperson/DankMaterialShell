@@ -155,7 +155,7 @@ Item {
                             CachingImage {
                                 anchors.fill: parent
                                 anchors.margins: 1
-                                imagePath: SessionData.wallpaperPath || ""
+                                source: SessionData.wallpaperPath !== "" ? "file://" + SessionData.wallpaperPath : ""
                                 fillMode: Image.PreserveAspectCrop
                                 visible: SessionData.wallpaperPath !== ""
                                 maxCacheSize: 160
