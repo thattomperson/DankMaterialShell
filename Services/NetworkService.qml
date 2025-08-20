@@ -32,7 +32,22 @@ Singleton {
     property int wifiSignalStrength: 0
     property var wifiNetworks: []
     property var savedConnections: []
-    
+    property var wifiSignalIcon: {
+        if (currentWifiSSID == "" || !wifiEnabled) {
+            return "wifi_off"
+        }
+        if (wifiSignalStrength >= 75) {
+            return "wifi"
+        }
+        if (wifiSignalStrength >= 50) {
+            return "wifi_2_bar"
+        }
+        if (wifiSignalStrength >= 25) {
+            return "wifi_1_bar"
+        }
+        return "signal_wifi_0_bar"
+    }
+
     // Connection management
     property string userPreference: "auto" // "auto", "wifi", "ethernet"
     property bool isConnecting: false
@@ -48,7 +63,6 @@ Singleton {
     property bool wifiToggling: false
     property bool changingPreference: false
     property string targetPreference: ""
-    property string wifiSignalStrengthStr: "excellent"
     property var savedWifiNetworks: []
     property string connectionStatus: ""
     property string lastConnectionError: ""
@@ -397,16 +411,6 @@ Singleton {
                     if (parts.length >= 2) {
                         root.currentWifiSSID = parts[0]
                         root.wifiSignalStrength = parseInt(parts[1]) || 0
-                        
-                        if (root.wifiSignalStrength >= 75) {
-                            root.wifiSignalStrengthStr = "excellent"
-                        } else if (root.wifiSignalStrength >= 50) {
-                            root.wifiSignalStrengthStr = "good"
-                        } else if (root.wifiSignalStrength >= 25) {
-                            root.wifiSignalStrengthStr = "fair"
-                        } else {
-                            root.wifiSignalStrengthStr = "poor"
-                        }
                     }
                 }
             }
@@ -548,15 +552,10 @@ Singleton {
                         if (!seen.has(ssid)) {
                             seen.add(ssid)
                             const signal = parseInt(parts[1]) || 0
-                            let signalQuality = "poor"
-                            if (signal >= 75) signalQuality = "excellent"
-                            else if (signal >= 50) signalQuality = "good"
-                            else if (signal >= 25) signalQuality = "fair"
                             
                             networks.push({
                                 ssid: ssid,
                                 signal: signal,
-                                signalStrength: signalQuality,
                                 secured: parts[2] !== "",
                                 bssid: parts[3],
                                 connected: ssid === root.currentWifiSSID,
@@ -991,14 +990,6 @@ Singleton {
         }
     }
     
-    
-    function getSignalQuality(strength) {
-        if (strength >= 75) return "excellent"
-        if (strength >= 50) return "good"
-        if (strength >= 25) return "fair"
-        return "poor"
-    }
-    
     function getNetworkInfo(ssid) {
         const network = root.wifiNetworks.find(n => n.ssid === ssid)
         if (!network) return null
@@ -1006,7 +997,6 @@ Singleton {
         return {
             ssid: network.ssid,
             signal: network.signal,
-            signalQuality: getSignalQuality(network.signal),
             secured: network.secured,
             saved: network.saved,
             connected: network.connected,

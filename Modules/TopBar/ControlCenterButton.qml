@@ -13,21 +13,6 @@ Rectangle {
 
   signal clicked
 
-  function getWiFiSignalIcon(signalStrength) {
-    switch (signalStrength) {
-    case "excellent":
-      return "wifi"
-    case "good":
-      return "wifi_2_bar"
-    case "fair":
-      return "wifi_1_bar"
-    case "poor":
-      return "signal_wifi_0_bar"
-    default:
-      return "wifi"
-    }
-  }
-
   width: Math.max(80, controlIndicators.implicitWidth + Theme.spacingS * 2)
   height: 30
   radius: Theme.cornerRadius
@@ -48,10 +33,7 @@ Rectangle {
       name: {
         if (NetworkService.networkStatus === "ethernet")
           return "lan"
-        else if (NetworkService.networkStatus === "wifi")
-          return getWiFiSignalIcon(NetworkService.wifiSignalStrengthStr)
-        else
-          return "wifi_off"
+        return NetworkService.wifiSignalIcon
       }
       size: Theme.iconSize - 8
       color: NetworkService.networkStatus !== "disconnected" ? Theme.primary : Theme.outlineButton

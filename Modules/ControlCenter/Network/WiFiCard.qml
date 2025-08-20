@@ -12,21 +12,6 @@ Rectangle {
 
   property var refreshTimer
 
-  function getWiFiSignalIcon(signalStrength) {
-    switch (signalStrength) {
-    case "excellent":
-      return "wifi"
-    case "good":
-      return "wifi_2_bar"
-    case "fair":
-      return "wifi_1_bar"
-    case "poor":
-      return "signal_wifi_0_bar"
-    default:
-      return "wifi"
-    }
-  }
-
   width: parent.width
   height: 80
   radius: Theme.cornerRadius
@@ -57,14 +42,7 @@ Rectangle {
     spacing: Theme.spacingM
 
     DankIcon {
-      name: {
-        if (!NetworkService.wifiEnabled)
-          return "wifi_off"
-        else if (NetworkService.currentWifiSSID !== "")
-          return getWiFiSignalIcon(NetworkService.wifiSignalStrength)
-        else
-          return "wifi"
-      }
+      name: NetworkService.wifiSignalIcon
       size: Theme.iconSize
       color: NetworkService.networkStatus === "wifi" ? Theme.primary : Theme.surfaceText
       anchors.verticalCenter: parent.verticalCenter

@@ -14,21 +14,6 @@ Column {
   property var sortedWifiNetworks
   property var wifiPasswordModalRef
 
-  function getWiFiSignalIcon(signalStrength) {
-    switch (signalStrength) {
-    case "excellent":
-      return "wifi"
-    case "good":
-      return "wifi_2_bar"
-    case "fair":
-      return "wifi_1_bar"
-    case "poor":
-      return "signal_wifi_0_bar"
-    default:
-      return "wifi"
-    }
-  }
-
   anchors.top: parent.top
   anchors.topMargin: 100
   anchors.left: parent.left
@@ -165,7 +150,7 @@ Column {
 
               anchors.left: parent.left
               anchors.verticalCenter: parent.verticalCenter
-              name: getWiFiSignalIcon(modelData.signalStrength)
+              name: NetworkService.wifiSignalIcon
               size: Theme.iconSize - 2
               color: modelData.connected ? Theme.primary : Theme.surfaceText
             }
