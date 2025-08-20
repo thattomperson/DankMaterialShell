@@ -154,9 +154,6 @@ DankModal {
                                     "text": "Theme & Colors",
                                     "icon": "palette"
                                 }, {
-                                    "text": "System Themes",
-                                    "icon": "extension"
-                                }, {
                                     "text": "About",
                                     "icon": "info"
                                 }]
@@ -329,20 +326,10 @@ DankModal {
                             }
 
                             Loader {
-                                id: systemThemesLoader
-
-                                anchors.fill: parent
-                                active: sidebarContainer.currentIndex === 8
-                                visible: active
-                                asynchronous: true
-                                sourceComponent: SystemThemesTab {}
-                            }
-
-                            Loader {
                                 id: aboutLoader
 
                                 anchors.fill: parent
-                                active: sidebarContainer.currentIndex === 9
+                                active: sidebarContainer.currentIndex === 8
                                 visible: active
                                 asynchronous: true
                                 sourceComponent: AboutTab {}
