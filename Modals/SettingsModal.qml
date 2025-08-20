@@ -67,10 +67,9 @@ DankModal {
                 anchors.leftMargin: Theme.spacingL
                 anchors.rightMargin: Theme.spacingL
                 anchors.topMargin: Theme.spacingM
-                anchors.bottomMargin: Theme.spacingXL
+                anchors.bottomMargin: Theme.spacingL
                 spacing: 0
 
-                // Header row with title and close button
                 Item {
                     width: parent.width
                     height: 35
@@ -108,13 +107,11 @@ DankModal {
                     }
                 }
 
-                // Main content with side navigation
                 Row {
                     width: parent.width
-                    height: parent.height - 60
+                    height: parent.height - 35
                     spacing: 0
 
-                    // Left sidebar navigation
                     Rectangle {
                         id: sidebarContainer
 
@@ -133,7 +130,6 @@ DankModal {
                             anchors.topMargin: Theme.spacingM + 2
                             spacing: Theme.spacingXS
 
-                            // Profile header box
                             Rectangle {
                                 width: parent.width - Theme.spacingS * 2
                                 height: 110
@@ -148,7 +144,6 @@ DankModal {
                                     anchors.rightMargin: Theme.spacingM
                                     spacing: Theme.spacingM
 
-                                    // Profile image container with hover overlay
                                     Item {
                                         id: profileImageContainer
                                         width: 80
@@ -234,7 +229,6 @@ DankModal {
                                                      && profileImageSource.status === Image.Error
                                         }
 
-                                        // Hover overlay with edit and clear buttons
                                         Rectangle {
                                             anchors.fill: parent
                                             radius: width / 2
@@ -308,7 +302,6 @@ DankModal {
                                         }
                                     }
 
-                                    // User info column
                                     Column {
                                         width: 120
                                         anchors.verticalCenter: parent.verticalCenter
@@ -432,7 +425,6 @@ DankModal {
                         }
                     }
 
-                    // Main content area
                     Item {
                         width: parent.width - sidebarContainer.width
                         height: parent.height
@@ -549,306 +541,8 @@ DankModal {
                     }
                 }
 
-                Item {
-                    width: parent.width
-                    height: 5
-                }
-
-                // Footer
-                Row {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: Theme.spacingXS
-
-                    // Dank logo
-                    Item {
-                        id: dankButton
-                        width: 66
-                        height: 14
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        property bool hovered: false
-                        property string tooltipText: "DankMaterialShell GitHub"
-
-                        Image {
-                            anchors.fill: parent
-                            source: Qt.resolvedUrl(".").toString().replace(
-                                        "file://",
-                                        "").replace("/Modals/",
-                                                    "") + "/assets/dank.svg"
-                            sourceSize: Qt.size(68, 16)
-                            smooth: true
-                            fillMode: Image.PreserveAspectFit
-                            layer.enabled: true
-
-                            layer.effect: MultiEffect {
-                                colorization: 1
-                                colorizationColor: Theme.primary
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.hovered = true
-                            onExited: parent.hovered = false
-                            onClicked: Qt.openUrlExternally(
-                                           "https://github.com/AvengeMedia/DankMaterialShell")
-                        }
-                    }
-
-                    StyledText {
-                        text: "•"
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceVariantText
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Rectangle {
-                        width: Theme.spacingXS
-                        height: 1
-                        color: "transparent"
-                    }
-
-                    // Niri logo
-                    Item {
-                        id: niriButton
-                        width: 24
-                        height: 24
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        property bool hovered: false
-                        property string tooltipText: "niri GitHub"
-
-                        Image {
-                            anchors.fill: parent
-                            source: Qt.resolvedUrl(".").toString().replace(
-                                        "file://",
-                                        "").replace("/Modals/",
-                                                    "") + "/assets/niri.svg"
-                            sourceSize: Qt.size(24, 24)
-                            smooth: true
-                            fillMode: Image.PreserveAspectFit
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.hovered = true
-                            onExited: parent.hovered = false
-                            onClicked: Qt.openUrlExternally(
-                                           "https://github.com/YaLTeR/niri")
-                        }
-                    }
-
-                    Rectangle {
-                        width: Theme.spacingXS
-                        height: 1
-                        color: "transparent"
-                    }
-
-                    StyledText {
-                        text: "•"
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceVariantText
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Rectangle {
-                        width: Theme.spacingM
-                        height: 1
-                        color: "transparent"
-                    }
-
-                    // Matrix button
-                    Item {
-                        id: matrixButton
-                        width: 38
-                        height: 26
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        property bool hovered: false
-                        property string tooltipText: "niri Matrix Chat"
-
-                        Image {
-                            anchors.fill: parent
-                            source: Qt.resolvedUrl(".").toString().replace(
-                                        "file://", "").replace(
-                                        "/Modals/",
-                                        "") + "/assets/matrix-logo-white.svg"
-                            sourceSize: Qt.size(32, 20)
-                            smooth: true
-                            fillMode: Image.PreserveAspectFit
-                            layer.enabled: true
-
-                            layer.effect: MultiEffect {
-                                colorization: 1
-                                colorizationColor: Theme.surfaceText
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.hovered = true
-                            onExited: parent.hovered = false
-                            onClicked: Qt.openUrlExternally(
-                                           "https://matrix.to/#/#niri:matrix.org")
-                        }
-                    }
-
-                    Rectangle {
-                        width: Theme.spacingM
-                        height: 1
-                        color: "transparent"
-                    }
-
-                    StyledText {
-                        text: "•"
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceVariantText
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Rectangle {
-                        width: Theme.spacingM
-                        height: 1
-                        color: "transparent"
-                    }
-
-                    // Discord button
-                    Item {
-                        id: discordButton
-                        width: 16
-                        height: 16
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        property bool hovered: false
-                        property string tooltipText: "niri Discord Server"
-
-                        Image {
-                            anchors.fill: parent
-                            source: Qt.resolvedUrl(".").toString().replace(
-                                        "file://",
-                                        "").replace("/Modals/",
-                                                    "") + "/assets/discord.svg"
-                            sourceSize: Qt.size(16, 16)
-                            smooth: true
-                            fillMode: Image.PreserveAspectFit
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.hovered = true
-                            onExited: parent.hovered = false
-                            onClicked: Qt.openUrlExternally(
-                                           "https://discord.gg/vT8Sfjy7sx")
-                        }
-                    }
-
-                    Rectangle {
-                        width: Theme.spacingM
-                        height: 1
-                        color: "transparent"
-                    }
-
-                    StyledText {
-                        text: "•"
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceVariantText
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Rectangle {
-                        width: Theme.spacingM
-                        height: 1
-                        color: "transparent"
-                    }
-
-                    // Reddit button
-                    Item {
-                        id: redditButton
-                        width: 18
-                        height: 18
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        property bool hovered: false
-                        property string tooltipText: "r/niri Subreddit"
-
-                        Image {
-                            anchors.fill: parent
-                            source: Qt.resolvedUrl(".").toString().replace(
-                                        "file://",
-                                        "").replace("/Modals/",
-                                                    "") + "/assets/reddit.svg"
-                            sourceSize: Qt.size(18, 18)
-                            smooth: true
-                            fillMode: Image.PreserveAspectFit
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            hoverEnabled: true
-                            onEntered: parent.hovered = true
-                            onExited: parent.hovered = false
-                            onClicked: Qt.openUrlExternally(
-                                           "https://reddit.com/r/niri")
-                        }
-                    }
-                }
             }
 
-            // Footer tooltip
-            Rectangle {
-                id: footerTooltip
-
-                property var hoveredButton: {
-                    if (dankButton.hovered) return dankButton
-                    if (niriButton.hovered) return niriButton
-                    if (matrixButton.hovered) return matrixButton
-                    if (discordButton.hovered) return discordButton
-                    if (redditButton.hovered) return redditButton
-                    return null
-                }
-
-                property string tooltipText: hoveredButton ? hoveredButton.tooltipText : ""
-
-                visible: hoveredButton !== null && tooltipText !== ""
-                width: tooltipLabel.implicitWidth + 24
-                height: tooltipLabel.implicitHeight + 12
-
-                color: Theme.surfaceContainer
-                radius: Theme.cornerRadius
-                border.width: 1
-                border.color: Theme.outlineMedium
-
-                x: hoveredButton ? hoveredButton.mapToItem(
-                                       parent, hoveredButton.width / 2,
-                                       0).x - width / 2 : 0
-                y: hoveredButton ? hoveredButton.mapToItem(
-                                       parent, 0, -height - 8).y : 0
-
-                layer.enabled: true
-                layer.effect: MultiEffect {
-                    shadowEnabled: true
-                    shadowOpacity: 0.15
-                    shadowVerticalOffset: 2
-                    shadowBlur: 0.5
-                }
-
-                StyledText {
-                    id: tooltipLabel
-                    anchors.centerIn: parent
-                    text: footerTooltip.tooltipText
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.surfaceText
-                }
-            }
         }
     }
 

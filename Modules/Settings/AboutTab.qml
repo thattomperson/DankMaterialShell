@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import qs.Common
 import qs.Widgets
 
@@ -61,25 +62,144 @@ Item {
                         width: parent.width
                     }
 
-                    StyledText {
-                        text: "A desktop shell built with <a href=\"https://quickshell.org\">Quickshell</a>"
-                        font.pixelSize: Theme.fontSizeMedium
-                        linkColor: Theme.primary
-                        onLinkActivated: url => Qt.openUrlExternally(url)
-                        color: Theme.surfaceVariantText
-                        horizontalAlignment: Text.AlignHCenter
-                        width: parent.width
-                        wrapMode: Text.WordWrap
+                    Row {
+                        id: communityIcons
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: Theme.spacingL
 
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-                            acceptedButtons: Qt.NoButton
-                            propagateComposedEvents: true
+                        // Niri logo
+                        Item {
+                            id: niriButton
+                            width: 24
+                            height: 24
+
+                            property bool hovered: false
+                            property string tooltipText: "niri GitHub"
+
+                            Image {
+                                anchors.fill: parent
+                                source: Qt.resolvedUrl(".").toString().replace(
+                                            "file://", "").replace(
+                                            "/Modules/Settings/",
+                                            "") + "/assets/niri.svg"
+                                sourceSize: Qt.size(24, 24)
+                                smooth: true
+                                fillMode: Image.PreserveAspectFit
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: parent.hovered = true
+                                onExited: parent.hovered = false
+                                onClicked: Qt.openUrlExternally(
+                                               "https://github.com/YaLTeR/niri")
+                            }
+                        }
+
+                        // Matrix button
+                        Item {
+                            id: matrixButton
+                            width: 30
+                            height: 24
+
+                            property bool hovered: false
+                            property string tooltipText: "niri Matrix Chat"
+
+                            Image {
+                                anchors.fill: parent
+                                source: Qt.resolvedUrl(".").toString().replace(
+                                            "file://", "").replace(
+                                            "/Modules/Settings/",
+                                            "") + "/assets/matrix-logo-white.svg"
+                                sourceSize: Qt.size(28, 18)
+                                smooth: true
+                                fillMode: Image.PreserveAspectFit
+                                layer.enabled: true
+
+                                layer.effect: MultiEffect {
+                                    colorization: 1
+                                    colorizationColor: Theme.surfaceText
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: parent.hovered = true
+                                onExited: parent.hovered = false
+                                onClicked: Qt.openUrlExternally(
+                                               "https://matrix.to/#/#niri:matrix.org")
+                            }
+                        }
+
+                        // Discord button
+                        Item {
+                            id: discordButton
+                            width: 20
+                            height: 20
+
+                            property bool hovered: false
+                            property string tooltipText: "niri Discord Server"
+
+                            Image {
+                                anchors.fill: parent
+                                source: Qt.resolvedUrl(".").toString().replace(
+                                            "file://", "").replace(
+                                            "/Modules/Settings/",
+                                            "") + "/assets/discord.svg"
+                                sourceSize: Qt.size(20, 20)
+                                smooth: true
+                                fillMode: Image.PreserveAspectFit
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: parent.hovered = true
+                                onExited: parent.hovered = false
+                                onClicked: Qt.openUrlExternally(
+                                               "https://discord.gg/vT8Sfjy7sx")
+                            }
+                        }
+
+                        // Reddit button
+                        Item {
+                            id: redditButton
+                            width: 20
+                            height: 20
+
+                            property bool hovered: false
+                            property string tooltipText: "r/niri Subreddit"
+
+                            Image {
+                                anchors.fill: parent
+                                source: Qt.resolvedUrl(".").toString().replace(
+                                            "file://", "").replace(
+                                            "/Modules/Settings/",
+                                            "") + "/assets/reddit.svg"
+                                sourceSize: Qt.size(20, 20)
+                                smooth: true
+                                fillMode: Image.PreserveAspectFit
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: parent.hovered = true
+                                onExited: parent.hovered = false
+                                onClicked: Qt.openUrlExternally(
+                                               "https://reddit.com/r/niri")
+                            }
                         }
                     }
                 }
             }
+
 
             // Project Information
             StyledRect {
@@ -120,9 +240,10 @@ Item {
                     }
 
                     StyledText {
-                        text: `DankMaterialShell is a modern desktop inspired by <a href="https://m3.material.io/">MUI 3</a>.
+                        text: `DankMaterialShell is a modern desktop inspired by <a href="https://m3.material.io/" style="text-decoration:none; color:${Theme.primary};">MUI 3</a>.
                         <br /><br/>The goal is to provide a high level of functionality and customization so that it can be a suitable replacement for complete desktop environments like Gnome, KDE, or Cosmic.
                         `
+                        textFormat: Text.RichText
                         font.pixelSize: Theme.fontSizeMedium
                         linkColor: Theme.primary
                         onLinkActivated: url => Qt.openUrlExternally(url)
@@ -192,9 +313,19 @@ Item {
                         }
 
                         StyledText {
-                            text: "Quickshell"
+                            text: `<a href="https://quickshell.org" style="text-decoration:none; color:${Theme.primary};">Quickshell</a>`
+                            linkColor: Theme.primary
+                            textFormat: Text.RichText
+                            onLinkActivated: url => Qt.openUrlExternally(url)
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceVariantText
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                acceptedButtons: Qt.NoButton
+                                propagateComposedEvents: true
+                            }
                         }
 
                         StyledText {
@@ -217,10 +348,32 @@ Item {
                             color: Theme.surfaceText
                         }
 
-                        StyledText {
-                            text: "Niri (Hyprland Coming Soon™)"
-                            font.pixelSize: Theme.fontSizeMedium
-                            color: Theme.surfaceVariantText
+                        Row {
+                            spacing: 4
+                            
+                            StyledText {
+                                text: `<a href="https://github.com/YaLTeR/niri" style="text-decoration:none; color:${Theme.primary};">niri</a>`
+                                font.pixelSize: Theme.fontSizeMedium
+                                linkColor: Theme.primary
+                                textFormat: Text.RichText
+                                color: Theme.surfaceVariantText
+                                onLinkActivated: url => Qt.openUrlExternally(url)
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                    acceptedButtons: Qt.NoButton
+                                    propagateComposedEvents: true
+                                }
+                            }
+                            
+                            StyledText {
+                                text: "(Hyprland Soon™)"
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceVariantText
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
                         }
 
                         StyledText {
@@ -230,18 +383,31 @@ Item {
                             color: Theme.surfaceText
                         }
 
-                        StyledText {
-                            text: "<a href=\"https://github.com/AvengeMedia/DankMaterialShell\">DankMaterialShell</a> - Support Us With a Star ⭐"
-                            font.pixelSize: Theme.fontSizeMedium
-                            color: Theme.surfaceVariantText
-                            linkColor: Theme.primary
-                            onLinkActivated: url => Qt.openUrlExternally(url)
+                        Row {
+                            spacing: 4
+                            
+                            StyledText {
+                                text: `<a href="https://github.com/AvengeMedia/DankMaterialShell" style="text-decoration:none; color:${Theme.primary};">DankMaterialShell</a>`
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceVariantText
+                                linkColor: Theme.primary
+                                textFormat: Text.RichText
+                                onLinkActivated: url => Qt.openUrlExternally(url)
+                                anchors.verticalCenter: parent.verticalCenter
 
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                acceptedButtons: Qt.NoButton
-                                propagateComposedEvents: true
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                    acceptedButtons: Qt.NoButton
+                                    propagateComposedEvents: true
+                                }
+                            }
+                            
+                            StyledText {
+                                text: "- Support Us With a Star ⭐"
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceVariantText
+                                anchors.verticalCenter: parent.verticalCenter
                             }
                         }
 
@@ -252,23 +418,82 @@ Item {
                             color: Theme.surfaceText
                         }
 
-                        StyledText {
-                            text: "<a href=\"https://github.com/AvengeMedia/dgop\">dgop</a> - Stateless System Monitoring"
-                            font.pixelSize: Theme.fontSizeMedium
-                            color: Theme.surfaceVariantText
-                            linkColor: Theme.primary
-                            onLinkActivated: url => Qt.openUrlExternally(url)
+                        Row {
+                            spacing: 4
+                            
+                            StyledText {
+                                text: `<a href="https://github.com/AvengeMedia/dgop" style="text-decoration:none; color:${Theme.primary};">dgop</a>`
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceVariantText
+                                linkColor: Theme.primary
+                                textFormat: Text.RichText
+                                onLinkActivated: url => Qt.openUrlExternally(url)
+                                anchors.verticalCenter: parent.verticalCenter
 
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                acceptedButtons: Qt.NoButton
-                                propagateComposedEvents: true
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                    acceptedButtons: Qt.NoButton
+                                    propagateComposedEvents: true
+                                }
+                            }
+                            
+                            StyledText {
+                                text: "- Stateless System Monitoring"
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceVariantText
+                                anchors.verticalCenter: parent.verticalCenter
                             }
                         }
                     }
                 }
             }
+
+        }
+    }
+
+    // Community tooltip - positioned absolutely above everything
+    Rectangle {
+        id: communityTooltip
+        parent: aboutTab
+        z: 1000
+
+        property var hoveredButton: {
+            if (niriButton.hovered) return niriButton
+            if (matrixButton.hovered) return matrixButton
+            if (discordButton.hovered) return discordButton
+            if (redditButton.hovered) return redditButton
+            return null
+        }
+
+        property string tooltipText: hoveredButton ? hoveredButton.tooltipText : ""
+
+        visible: hoveredButton !== null && tooltipText !== ""
+        width: tooltipLabel.implicitWidth + 24
+        height: tooltipLabel.implicitHeight + 12
+
+        color: Theme.surfaceContainer
+        radius: Theme.cornerRadius
+        border.width: 1
+        border.color: Theme.outlineMedium
+
+        x: hoveredButton ? hoveredButton.mapToItem(aboutTab, hoveredButton.width / 2, 0).x - width / 2 : 0
+        y: hoveredButton ? hoveredButton.mapToItem(aboutTab, 0, -height - 4).y : 0
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowOpacity: 0.15
+            shadowVerticalOffset: 2
+            shadowBlur: 0.5
+        }
+
+        StyledText {
+            id: tooltipLabel
+            anchors.centerIn: parent
+            text: communityTooltip.tooltipText
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.surfaceText
         }
     }
 }
