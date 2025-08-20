@@ -513,7 +513,7 @@ DankModal {
                         spacing: Theme.spacingS
 
                         DankActionButton {
-                            iconName: "help"
+                            iconName: "info"
                             iconSize: Theme.iconSize - 4
                             iconColor: showKeyboardHints ? Theme.primary : Theme.surfaceText
                             hoverColor: Theme.primaryHover

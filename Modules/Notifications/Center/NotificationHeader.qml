@@ -76,20 +76,10 @@ Item {
     anchors.verticalCenter: parent.verticalCenter
     spacing: Theme.spacingXS
     
-    // Settings button
-    DankActionButton {
-      id: settingsButton
-      iconName: "settings"
-      iconColor: root.showSettings ? Theme.primary : Theme.surfaceText
-      buttonSize: 28
-      anchors.verticalCenter: parent.verticalCenter
-      onClicked: root.showSettings = !root.showSettings
-    }
-    
     // Keyboard help button
     DankActionButton {
       id: helpButton
-      iconName: "help"
+      iconName: "info"
       iconColor: keyboardController && keyboardController.showKeyboardHints ? Theme.primary : Theme.surfaceText
       buttonSize: 28
       visible: keyboardController !== null
@@ -99,6 +89,16 @@ Item {
           keyboardController.showKeyboardHints = !keyboardController.showKeyboardHints
         }
       }
+    }
+    
+    // Settings button
+    DankActionButton {
+      id: settingsButton
+      iconName: "settings"
+      iconColor: root.showSettings ? Theme.primary : Theme.surfaceText
+      buttonSize: 28
+      anchors.verticalCenter: parent.verticalCenter
+      onClicked: root.showSettings = !root.showSettings
     }
     
     Rectangle {

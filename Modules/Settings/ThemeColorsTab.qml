@@ -564,116 +564,108 @@ Item {
 
             }
 
-            // Display Settings
-            StyledRect {
+            // System Configuration Warning
+            Rectangle {
                 width: parent.width
-                height: displaySection.implicitHeight + Theme.spacingL * 2
+                height: warningText.implicitHeight + Theme.spacingM * 2
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.warning.r, Theme.warning.g, Theme.warning.b, 0.12)
+                border.color: Qt.rgba(Theme.warning.r, Theme.warning.g, Theme.warning.b, 0.3)
                 border.width: 1
 
-                Column {
-                    id: displaySection
-
+                Row {
                     anchors.fill: parent
-                    anchors.margins: Theme.spacingL
+                    anchors.margins: Theme.spacingM
                     spacing: Theme.spacingM
 
-                    Row {
-                        width: parent.width
-                        spacing: Theme.spacingM
-
-                        DankIcon {
-                            name: "monitor"
-                            size: Theme.iconSize
-                            color: Theme.primary
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        StyledText {
-                            text: "Display Settings"
-                            font.pixelSize: Theme.fontSizeLarge
-                            font.weight: Font.Medium
-                            color: Theme.surfaceText
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
+                    DankIcon {
+                        name: "info"
+                        size: Theme.iconSizeSmall
+                        color: Theme.warning
+                        anchors.verticalCenter: parent.verticalCenter
                     }
 
-                    DankToggle {
-                        id: nightModeToggle
+                    StyledText {
+                        id: warningText
 
-                        width: parent.width
-                        text: "Night Mode"
-                        description: "Apply warm color temperature to reduce eye strain"
-                        checked: BrightnessService.nightModeActive
-                        onToggled: (checked) => {
-                            if (checked !== BrightnessService.nightModeActive) {
-                                if (checked)
-                                    BrightnessService.enableNightMode();
-                                else
-                                    BrightnessService.disableNightMode();
-                            }
-                        }
-
-                        Connections {
-                            function onNightModeActiveChanged() {
-                                nightModeToggle.checked = BrightnessService.nightModeActive;
-                            }
-
-                            target: BrightnessService
-                        }
-
-                    }
-
-                    DankDropdown {
-                        width: parent.width
-                        text: "Night Mode Temperature"
-                        description: BrightnessService.nightModeActive ? "Disable night mode to adjust" : "Set temperature for night mode"
-                        enabled: !BrightnessService.nightModeActive
-                        opacity: !BrightnessService.nightModeActive ? 1 : 0.6
-                        currentValue: SessionData.nightModeTemperature + "K"
-                        options: {
-                            var temps = [];
-                            for (var i = 2500; i <= 6000; i += 500) {
-                                temps.push(i + "K");
-                            }
-                            return temps;
-                        }
-                        onValueChanged: (value) => {
-                            var temp = parseInt(value.replace("K", ""));
-                            SessionData.setNightModeTemperature(temp);
-                        }
-                    }
-
-                    DankToggle {
-                        width: parent.width
-                        text: "Light Mode"
-                        description: "Use light theme instead of dark theme"
-                        checked: SessionData.isLightMode
-                        onToggled: (checked) => {
-                            SessionData.setLightMode(checked);
-                            Theme.isLightMode = checked;
-                            PortalService.setLightMode(checked);
-                        }
+                        text: "Changing these settings will manipulate GTK and Qt configurations on the system"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.warning
+                        wrapMode: Text.WordWrap
+                        width: parent.width - Theme.iconSizeSmall - Theme.spacingM
+                        anchors.verticalCenter: parent.verticalCenter
                     }
 
                 }
 
             }
 
-            // Font Settings
+            // Icon Theme
             StyledRect {
                 width: parent.width
-                height: fontSection.implicitHeight + Theme.spacingL * 2
+                height: iconThemeSection.implicitHeight + Theme.spacingL * 2
                 radius: Theme.cornerRadius
                 color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
                 border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                 border.width: 1
 
                 Column {
-                    id: fontSection
+                    id: iconThemeSection
+
+                    anchors.fill: parent
+                    anchors.margins: Theme.spacingL
+                    spacing: Theme.spacingM
+
+                    Row {
+                        width: parent.width
+                        spacing: Theme.spacingXS
+
+                        DankIcon {
+                            name: "image"
+                            size: Theme.iconSize
+                            color: Theme.primary
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        DankDropdown {
+                            width: parent.width - Theme.iconSize - Theme.spacingXS
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Icon Theme"
+                            description: "DankShell & System Icons"
+                            currentValue: SettingsData.iconTheme
+                            enableFuzzySearch: true
+                            popupWidthOffset: 100
+                            maxPopupHeight: 236
+                            options: {
+                                SettingsData.detectAvailableIconThemes();
+                                return SettingsData.availableIconThemes;
+                            }
+                            onValueChanged: (value) => {
+                                SettingsData.setIconTheme(value);
+                                if (value !== "System Default" && !SettingsData.qt5ctAvailable && !SettingsData.qt6ctAvailable)
+                                    ToastService.showWarning("qt5ct or qt6ct not found - Qt app themes may not update without these tools");
+
+                            }
+                        }
+
+                    }
+
+                }
+
+            }
+
+            // System App Theming
+            StyledRect {
+                width: parent.width
+                height: systemThemingSection.implicitHeight + Theme.spacingL * 2
+                radius: Theme.cornerRadius
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                border.width: 1
+                visible: Theme.isDynamicTheme && Colors.matugenAvailable
+
+                Column {
+                    id: systemThemingSection
 
                     anchors.fill: parent
                     anchors.margins: Theme.spacingL
@@ -684,14 +676,14 @@ Item {
                         spacing: Theme.spacingM
 
                         DankIcon {
-                            name: "font_download"
+                            name: "extension"
                             size: Theme.iconSize
                             color: Theme.primary
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
                         StyledText {
-                            text: "Font Settings"
+                            text: "System App Theming"
                             font.pixelSize: Theme.fontSizeLarge
                             font.weight: Font.Medium
                             color: Theme.surfaceText
@@ -700,114 +692,25 @@ Item {
 
                     }
 
-                    DankDropdown {
+                    DankToggle {
                         width: parent.width
-                        text: "Font Family"
-                        description: "Select system font family"
-                        currentValue: {
-                            if (SettingsData.fontFamily === SettingsData.defaultFontFamily)
-                                return "Default";
-                            else
-                                return SettingsData.fontFamily || "Default";
-                        }
-                        enableFuzzySearch: true
-                        popupWidthOffset: 100
-                        maxPopupHeight: 400
-                        options: cachedFontFamilies
-                        onValueChanged: (value) => {
-                            if (value.startsWith("Default"))
-                                SettingsData.setFontFamily(SettingsData.defaultFontFamily);
-                            else
-                                SettingsData.setFontFamily(value);
+                        text: "Theme GTK Applications"
+                        description: Colors.gtkThemingEnabled ? "File managers, text editors, and system dialogs will match your theme" : "GTK theming not available (install gsettings)"
+                        enabled: Colors.gtkThemingEnabled
+                        checked: Colors.gtkThemingEnabled && SettingsData.gtkThemingEnabled
+                        onToggled: function(checked) {
+                            SettingsData.setGtkThemingEnabled(checked);
                         }
                     }
 
-                    DankDropdown {
+                    DankToggle {
                         width: parent.width
-                        text: "Font Weight"
-                        description: "Select font weight"
-                        currentValue: {
-                            switch (SettingsData.fontWeight) {
-                            case Font.Thin:
-                                return "Thin";
-                            case Font.ExtraLight:
-                                return "Extra Light";
-                            case Font.Light:
-                                return "Light";
-                            case Font.Normal:
-                                return "Regular";
-                            case Font.Medium:
-                                return "Medium";
-                            case Font.DemiBold:
-                                return "Demi Bold";
-                            case Font.Bold:
-                                return "Bold";
-                            case Font.ExtraBold:
-                                return "Extra Bold";
-                            case Font.Black:
-                                return "Black";
-                            default:
-                                return "Regular";
-                            }
-                        }
-                        options: ["Thin", "Extra Light", "Light", "Regular", "Medium", "Demi Bold", "Bold", "Extra Bold", "Black"]
-                        onValueChanged: (value) => {
-                            var weight;
-                            switch (value) {
-                            case "Thin":
-                                weight = Font.Thin;
-                                break;
-                            case "Extra Light":
-                                weight = Font.ExtraLight;
-                                break;
-                            case "Light":
-                                weight = Font.Light;
-                                break;
-                            case "Regular":
-                                weight = Font.Normal;
-                                break;
-                            case "Medium":
-                                weight = Font.Medium;
-                                break;
-                            case "Demi Bold":
-                                weight = Font.DemiBold;
-                                break;
-                            case "Bold":
-                                weight = Font.Bold;
-                                break;
-                            case "Extra Bold":
-                                weight = Font.ExtraBold;
-                                break;
-                            case "Black":
-                                weight = Font.Black;
-                                break;
-                            default:
-                                weight = Font.Normal;
-                                break;
-                            }
-                            SettingsData.setFontWeight(weight);
-                        }
-                    }
-
-                    DankDropdown {
-                        width: parent.width
-                        text: "Monospace Font"
-                        description: "Select monospace font for process list and technical displays"
-                        currentValue: {
-                            if (SettingsData.monoFontFamily === SettingsData.defaultMonoFontFamily)
-                                return "Default";
-
-                            return SettingsData.monoFontFamily || "Default";
-                        }
-                        enableFuzzySearch: true
-                        popupWidthOffset: 100
-                        maxPopupHeight: 400
-                        options: cachedMonoFamilies
-                        onValueChanged: (value) => {
-                            if (value === "Default")
-                                SettingsData.setMonoFontFamily(SettingsData.defaultMonoFontFamily);
-                            else
-                                SettingsData.setMonoFontFamily(value);
+                        text: "Theme Qt Applications"
+                        description: Colors.qtThemingEnabled ? "Qt applications will match your theme colors" : "Qt theming not available (install qt5ct or qt6ct)"
+                        enabled: Colors.qtThemingEnabled
+                        checked: Colors.qtThemingEnabled && SettingsData.qtThemingEnabled
+                        onToggled: function(checked) {
+                            SettingsData.setQtThemingEnabled(checked);
                         }
                     }
 
