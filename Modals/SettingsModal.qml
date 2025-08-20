@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import qs.Common
@@ -342,25 +343,80 @@ DankModal {
                 }
 
                 // Footer
-                StyledText {
-                    id: footerText
+                Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: Theme.spacingS
+                    
+                    StyledText {
+                        text: `<a href="https://github.com/AvengeMedia/DankMaterialShell">DankMaterialShell</a> • <a href="https://github.com/YaLTeR/niri">niri</a> edition •`
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
+                        linkColor: Theme.primary
+                        anchors.verticalCenter: parent.verticalCenter
+                        onLinkActivated: link => Qt.openUrlExternally(link)
 
-                    width: parent.width
-                    text: `DankMaterialShell - <a href="https://github.com/AvengeMedia/DankMaterialShell">github</a> - optimized for <a href="https://github.com/YaLTeR/niri">niri</a> - <a href="https://matrix.to/#/#niri:matrix.org">niri matrix</a> - <a href="https://discord.gg/vT8Sfjy7sx">niri discord</a>`
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.surfaceVariantText
-                    linkColor: Theme.primary
-                    wrapMode: Text.WordWrap
-                    horizontalAlignment: Text.AlignHCenter
-                    onLinkActivated: link => Qt.openUrlExternally(link)
-
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        acceptedButtons: Qt.NoButton
-                        propagateComposedEvents: true
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            acceptedButtons: Qt.NoButton
+                            propagateComposedEvents: true
+                        }
                     }
-
+                    
+                    // Matrix button
+                    Item {
+                        width: 32
+                        height: 20
+                        anchors.verticalCenter: parent.verticalCenter
+                        
+                        Image {
+                            anchors.fill: parent
+                            source: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Modals/", "") + "/assets/matrix-logo-white.svg"
+                            sourceSize: Qt.size(32, 20)
+                            smooth: true
+                            fillMode: Image.PreserveAspectFit
+                            layer.enabled: true
+                            
+                            layer.effect: MultiEffect {
+                                colorization: 1
+                                colorizationColor: Theme.surfaceText
+                            }
+                        }
+                        
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Qt.openUrlExternally("https://matrix.to/#/#niri:matrix.org")
+                        }
+                    }
+                    
+                    StyledText {
+                        text: "•"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    
+                    // Discord button
+                    Item {
+                        width: 16
+                        height: 16
+                        anchors.verticalCenter: parent.verticalCenter
+                        
+                        Image {
+                            anchors.fill: parent
+                            source: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Modals/", "") + "/assets/discord.svg"
+                            sourceSize: Qt.size(16, 16)
+                            smooth: true
+                            fillMode: Image.PreserveAspectFit
+                        }
+                        
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Qt.openUrlExternally("https://discord.gg/vT8Sfjy7sx")
+                        }
+                    }
                 }
 
             }
