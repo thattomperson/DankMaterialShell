@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Services
@@ -15,7 +16,8 @@ Rectangle {
     property var topBar: null
     // The visual root for this window
     property Item windowRoot: (Window.window ? Window.window.contentItem : null)
-    readonly property int windowCount: NiriService.windows.length
+    readonly property var sortedToplevels: CompositorService.sortedToplevels
+    readonly property int windowCount: sortedToplevels.length
     readonly property int calculatedWidth: {
         if (windowCount === 0)
             return 0
@@ -50,16 +52,15 @@ Rectangle {
         Repeater {
             id: windowRepeater
 
-            model: NiriService.windows
+            model: sortedToplevels
 
             delegate: Item {
                 id: delegateItem
 
-                property bool isFocused: String(modelData.id) === String(
-                                             NiriService.focusedWindowId)
-                property string appId: modelData.app_id || ""
+                property bool isFocused: modelData.activated
+                property string appId: modelData.appId || ""
                 property string windowTitle: modelData.title || "(Unnamed)"
-                property int windowId: modelData.id
+                property var toplevelObject: modelData
                 property string tooltipText: {
                     var appName = "Unknown"
                     if (appId) {
@@ -176,7 +177,9 @@ Rectangle {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        NiriService.focusWindow(windowId)
+                        if (toplevelObject) {
+                            toplevelObject.activate()
+                        }
                     }
                     onEntered: {
                         root.hoveredItem = delegateItem

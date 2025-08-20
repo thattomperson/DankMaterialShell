@@ -625,6 +625,7 @@ Singleton {
         }
     }
 
+
     Component.onCompleted: {
         if (typeof Colors !== "undefined")
         Colors.colorsUpdated.connect(root.onColorsUpdated)

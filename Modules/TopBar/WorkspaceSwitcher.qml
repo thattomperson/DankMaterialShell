@@ -24,7 +24,7 @@ Rectangle {
     }
 
     function getDisplayWorkspaces() {
-        if (!NiriService.niriAvailable
+        if (!CompositorService.isNiri
                 || NiriService.allWorkspaces.length === 0)
             return [1, 2]
 
@@ -41,7 +41,7 @@ Rectangle {
     }
 
     function getDisplayActiveWorkspace() {
-        if (!NiriService.niriAvailable
+        if (!CompositorService.isNiri
                 || NiriService.allWorkspaces.length === 0)
             return 1
 
@@ -68,7 +68,7 @@ Rectangle {
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
                        baseColor.a * Theme.widgetTransparency)
     }
-    visible: NiriService.niriAvailable
+    visible: CompositorService.isNiri
 
     Connections {
         function onAllWorkspacesChanged() {
@@ -83,15 +83,9 @@ Rectangle {
             root.currentWorkspace = root.getDisplayActiveWorkspace()
         }
 
-        function onNiriAvailableChanged() {
-            if (NiriService.niriAvailable) {
-                root.workspaceList = SettingsData.showWorkspacePadding ? root.padWorkspaces(root.getDisplayWorkspaces()) : root.getDisplayWorkspaces()
-                root.currentWorkspace = root.getDisplayActiveWorkspace()
-            }
-        }
-
         target: NiriService
     }
+
 
     Connections {
         function onShowWorkspacePaddingChanged() {
@@ -118,7 +112,7 @@ Rectangle {
                 property bool isHovered: mouseArea.containsMouse
                 property int sequentialNumber: index + 1
                 property var workspaceData: {
-                    if (isPlaceholder || !NiriService.niriAvailable)
+                    if (isPlaceholder || !CompositorService.isNiri)
                         return null
                     for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
                         var ws = NiriService.allWorkspaces[i]

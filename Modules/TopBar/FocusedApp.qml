@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
 import qs.Common
 import qs.Services
@@ -12,6 +13,7 @@ Rectangle {
     readonly property int baseWidth: contentRow.implicitWidth + Theme.spacingS * 2
     readonly property int maxNormalWidth: 456
     readonly property int maxCompactWidth: 288
+    readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
 
     width: compactMode ? Math.min(baseWidth,
                                   maxCompactWidth) : Math.min(baseWidth,
@@ -19,7 +21,7 @@ Rectangle {
     height: 30
     radius: Theme.cornerRadius
     color: {
-        if (!NiriService.focusedWindowTitle)
+        if (!activeWindow || !activeWindow.title)
             return "transparent"
 
         const baseColor = mouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
@@ -27,7 +29,7 @@ Rectangle {
                        baseColor.a * Theme.widgetTransparency)
     }
     clip: true
-    visible: NiriService.niriAvailable && NiriService.focusedWindowTitle
+    visible: activeWindow && activeWindow.title
 
     Row {
         id: contentRow
@@ -39,18 +41,12 @@ Rectangle {
             id: appText
 
             text: {
-                if (!NiriService.focusedWindowId)
+                if (!activeWindow || !activeWindow.appId)
                     return ""
 
-                var window = NiriService.windows.find(w => {
-                                                          return w.id == NiriService.focusedWindowId
-                                                      })
-                if (!window || !window.app_id)
-                    return ""
-
-                var desktopEntry = DesktopEntries.byId(window.app_id)
+                var desktopEntry = DesktopEntries.byId(activeWindow.appId)
                 return desktopEntry
-                        && desktopEntry.name ? desktopEntry.name : window.app_id
+                        && desktopEntry.name ? desktopEntry.name : activeWindow.appId
             }
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
@@ -74,7 +70,7 @@ Rectangle {
             id: titleText
 
             text: {
-                var title = NiriService.focusedWindowTitle || ""
+                var title = activeWindow && activeWindow.title ? activeWindow.title : ""
                 var appName = appText.text
 
                 if (!title || !appName)

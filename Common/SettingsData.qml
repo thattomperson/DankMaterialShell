@@ -381,7 +381,7 @@ Singleton {
     }
 
     function hasNamedWorkspaces() {
-        if (typeof NiriService === "undefined" || !NiriService.niriAvailable)
+        if (typeof NiriService === "undefined" || !CompositorService.isNiri)
             return false
 
         for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
@@ -394,7 +394,7 @@ Singleton {
 
     function getNamedWorkspaces() {
         var namedWorkspaces = []
-        if (typeof NiriService === "undefined" || !NiriService.niriAvailable)
+        if (typeof NiriService === "undefined" || !CompositorService.isNiri)
             return namedWorkspaces
 
         for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
