@@ -14,29 +14,19 @@ PanelWindow {
     property bool brightnessPopupVisible: false
     property var brightnessDebounceTimer
 
-    brightnessDebounceTimer: Timer {
-        property int pendingValue: 0
-
-        interval: BrightnessService.ddcAvailable ? 500 : 50
-        repeat: false
-        onTriggered: {
-            BrightnessService.setBrightnessInternal(
-                        pendingValue, BrightnessService.lastIpcDevice)
-        }
-    }
-
     function show() {
-        root.brightnessPopupVisible = true
+        root.brightnessPopupVisible = true;
         // Update slider to current device brightness when showing
-        if (BrightnessService.brightnessAvailable) {
-            brightnessSlider.value = BrightnessService.brightnessLevel
-        }
-        hideTimer.restart()
+        if (BrightnessService.brightnessAvailable)
+            brightnessSlider.value = BrightnessService.brightnessLevel;
+
+        hideTimer.restart();
     }
 
     function resetHideTimer() {
         if (root.brightnessPopupVisible)
-            hideTimer.restart()
+            hideTimer.restart();
+
     }
 
     screen: modelData
@@ -60,15 +50,15 @@ PanelWindow {
         repeat: false
         onTriggered: {
             if (!brightnessPopup.containsMouse)
-                root.brightnessPopupVisible = false
+                root.brightnessPopupVisible = false;
             else
-                hideTimer.restart()
+                hideTimer.restart();
         }
     }
 
     Connections {
         function onBrightnessChanged() {
-            root.show()
+            root.show();
         }
 
         target: BrightnessService
@@ -86,8 +76,7 @@ PanelWindow {
         anchors.bottomMargin: Theme.spacingM
         color: Theme.popupBackground()
         radius: Theme.cornerRadius
-        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                              Theme.outline.b, 0.08)
+        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
         border.width: 1
         opacity: root.brightnessPopupVisible ? 1 : 0
         scale: root.brightnessPopupVisible ? 1 : 0.9
@@ -117,20 +106,18 @@ PanelWindow {
                     DankIcon {
                         anchors.centerIn: parent
                         name: {
-                            const deviceInfo = BrightnessService.getCurrentDeviceInfo()
-
-                            if (!deviceInfo || deviceInfo.class === "backlight"
-                                    || deviceInfo.class === "ddc") {
-                                return "brightness_medium"
-                            } else if (deviceInfo.name.includes("kbd")) {
-                                return "keyboard"
-                            } else {
-                                return "lightbulb"
-                            }
+                            const deviceInfo = BrightnessService.getCurrentDeviceInfo();
+                            if (!deviceInfo || deviceInfo.class === "backlight" || deviceInfo.class === "ddc")
+                                return "brightness_medium";
+                            else if (deviceInfo.name.includes("kbd"))
+                                return "keyboard";
+                            else
+                                return "lightbulb";
                         }
                         size: Theme.iconSize
                         color: Theme.primary
                     }
+
                 }
 
                 DankSlider {
@@ -147,37 +134,43 @@ PanelWindow {
                     unit: "%"
                     Component.onCompleted: {
                         if (BrightnessService.brightnessAvailable)
-                            value = BrightnessService.brightnessLevel
+                            value = BrightnessService.brightnessLevel;
+
                     }
-                    onSliderValueChanged: function (newValue) {
+                    onSliderValueChanged: function(newValue) {
                         if (BrightnessService.brightnessAvailable) {
-                            brightnessDebounceTimer.pendingValue = newValue
-                            brightnessDebounceTimer.restart()
-                            root.resetHideTimer()
+                            brightnessDebounceTimer.pendingValue = newValue;
+                            brightnessDebounceTimer.restart();
+                            root.resetHideTimer();
                         }
                     }
-                    onSliderDragFinished: function (finalValue) {
+                    onSliderDragFinished: function(finalValue) {
                         if (BrightnessService.brightnessAvailable) {
-                            brightnessDebounceTimer.stop()
-                            BrightnessService.setBrightnessInternal(
-                                        finalValue,
-                                        BrightnessService.lastIpcDevice)
+                            brightnessDebounceTimer.stop();
+                            BrightnessService.setBrightnessInternal(finalValue, BrightnessService.lastIpcDevice);
                         }
                     }
 
                     Connections {
                         function onBrightnessChanged() {
-                            brightnessSlider.value = BrightnessService.brightnessLevel
+                            if (!brightnessSlider.pressed)
+                                brightnessSlider.value = BrightnessService.brightnessLevel;
+
                         }
 
                         function onDeviceSwitched() {
-                            brightnessSlider.value = BrightnessService.brightnessLevel
+                            if (!brightnessSlider.pressed)
+                                brightnessSlider.value = BrightnessService.brightnessLevel;
+
                         }
 
                         target: BrightnessService
                     }
+
                 }
+
             }
+
         }
 
         MouseArea {
@@ -208,6 +201,7 @@ PanelWindow {
                 duration: Theme.mediumDuration
                 easing.type: Theme.emphasizedEasing
             }
+
         }
 
         Behavior on scale {
@@ -215,6 +209,7 @@ PanelWindow {
                 duration: Theme.mediumDuration
                 easing.type: Theme.emphasizedEasing
             }
+
         }
 
         Behavior on transform {
@@ -222,10 +217,26 @@ PanelWindow {
                 duration: Theme.mediumDuration
                 easing.type: Theme.emphasizedEasing
             }
+
+        }
+
+    }
+
+    brightnessDebounceTimer: Timer {
+        property int pendingValue: 0
+
+        interval: {
+            const deviceInfo = BrightnessService.getCurrentDeviceInfo()
+            return (deviceInfo && deviceInfo.class === "ddc") ? 200 : 50
+        }
+        repeat: false
+        onTriggered: {
+            BrightnessService.setBrightnessInternal(pendingValue, BrightnessService.lastIpcDevice);
         }
     }
 
     mask: Region {
         item: brightnessPopup
     }
+
 }

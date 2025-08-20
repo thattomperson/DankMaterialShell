@@ -20,22 +20,11 @@ Singleton {
     property var ddcInitQueue: []
     property bool skipDdcRead: false
     property int brightnessLevel: {
-        const deviceToUse = lastIpcDevice === "" ? getDefaultDevice(
-                                                       ) : (lastIpcDevice
-                                                            || currentDevice)
-        if (!deviceToUse)
-            return 50
+        const deviceToUse = lastIpcDevice === "" ? getDefaultDevice() : (lastIpcDevice || currentDevice)
+        if (!deviceToUse) return 50
 
-        const deviceInfo = getCurrentDeviceInfoByName(deviceToUse)
-        if (deviceInfo && deviceInfo.class === "ddc") {
-            if (ddcPendingInit[deviceToUse]) {
-                return deviceBrightness[deviceToUse] || 50
-            }
-            return deviceBrightness[deviceToUse] || 50
-        }
-
-        // For non-DDC devices, don't use cache - they're fast to read
-        return deviceBrightness[deviceToUse] || 50
+        // Always use cached values for consistency
+        return getDeviceBrightness(deviceToUse)
     }
     property int maxBrightness: 100
     property bool brightnessInitialized: false
@@ -51,14 +40,14 @@ Singleton {
                                                  ) : (device || currentDevice
                                                       || getDefaultDevice())
 
-        // Update the device brightness cache
-        const deviceInfo = getCurrentDeviceInfoByName(actualDevice)
-        if (actualDevice && deviceInfo && deviceInfo.class === "ddc") {
-            // Always cache DDC values since we never read them again
+        // Update the device brightness cache immediately for all devices
+        if (actualDevice) {
             var newBrightness = Object.assign({}, deviceBrightness)
             newBrightness[actualDevice] = clampedValue
             deviceBrightness = newBrightness
         }
+        
+        const deviceInfo = getCurrentDeviceInfoByName(actualDevice)
 
         if (deviceInfo && deviceInfo.class === "ddc") {
             // Use ddcutil for DDC devices
@@ -149,7 +138,18 @@ Singleton {
     }
 
     function getDeviceBrightness(deviceName) {
-        return deviceBrightness[deviceName] || 50
+        if (!deviceName) return 50
+        
+        const deviceInfo = getCurrentDeviceInfoByName(deviceName)
+        if (!deviceInfo) return 50
+        
+        // For DDC devices, always use cached values
+        if (deviceInfo.class === "ddc") {
+            return deviceBrightness[deviceName] || 50
+        }
+        
+        // For regular devices, try cache first, then device info
+        return deviceBrightness[deviceName] || deviceInfo.percentage || 50
     }
 
     function getDefaultDevice() {
@@ -502,7 +502,7 @@ Singleton {
 
                     // Update the device brightness cache
                     if (currentDevice) {
-                        var newBrightness = deviceBrightness
+                        var newBrightness = Object.assign({}, deviceBrightness)
                         newBrightness[currentDevice] = brightness
                         deviceBrightness = newBrightness
                     }
@@ -542,7 +542,7 @@ Singleton {
 
                     // Update the device brightness cache
                     if (currentDevice) {
-                        var newBrightness = deviceBrightness
+                        var newBrightness = Object.assign({}, deviceBrightness)
                         newBrightness[currentDevice] = brightness
                         deviceBrightness = newBrightness
                     }
@@ -604,13 +604,24 @@ Singleton {
                 return "Brightness control not available"
 
             const value = parseInt(percentage)
+            if (isNaN(value)) {
+                return "Invalid brightness value: " + percentage
+            }
+            
             const clampedValue = Math.max(1, Math.min(100, value))
             const targetDevice = device || ""
+            
+            // Ensure device exists if specified
+            if (targetDevice && !root.devices.some(d => d.name === targetDevice)) {
+                return "Device not found: " + targetDevice
+            }
+            
             root.lastIpcDevice = targetDevice
             if (targetDevice && targetDevice !== root.currentDevice) {
                 root.setCurrentDevice(targetDevice, false)
             }
             root.setBrightness(clampedValue, targetDevice)
+            
             if (targetDevice)
                 return "Brightness set to " + clampedValue + "% on " + targetDevice
             else
@@ -622,18 +633,23 @@ Singleton {
                 return "Brightness control not available"
 
             const targetDevice = device || ""
-            const actualDevice = targetDevice === "" ? root.getDefaultDevice(
-                                                           ) : targetDevice
-            const currentLevel = actualDevice ? root.getDeviceBrightness(
-                                                    actualDevice) : root.brightnessLevel
+            const actualDevice = targetDevice === "" ? root.getDefaultDevice() : targetDevice
+            
+            // Ensure device exists
+            if (actualDevice && !root.devices.some(d => d.name === actualDevice)) {
+                return "Device not found: " + actualDevice
+            }
+            
+            const currentLevel = actualDevice ? root.getDeviceBrightness(actualDevice) : root.brightnessLevel
             const stepValue = parseInt(step || "10")
-            const newLevel = Math.max(1, Math.min(100,
-                                                  currentLevel + stepValue))
+            const newLevel = Math.max(1, Math.min(100, currentLevel + stepValue))
+            
             root.lastIpcDevice = targetDevice
             if (targetDevice && targetDevice !== root.currentDevice) {
                 root.setCurrentDevice(targetDevice, false)
             }
             root.setBrightness(newLevel, targetDevice)
+            
             if (targetDevice)
                 return "Brightness increased to " + newLevel + "% on " + targetDevice
             else
@@ -645,18 +661,23 @@ Singleton {
                 return "Brightness control not available"
 
             const targetDevice = device || ""
-            const actualDevice = targetDevice === "" ? root.getDefaultDevice(
-                                                           ) : targetDevice
-            const currentLevel = actualDevice ? root.getDeviceBrightness(
-                                                    actualDevice) : root.brightnessLevel
+            const actualDevice = targetDevice === "" ? root.getDefaultDevice() : targetDevice
+            
+            // Ensure device exists
+            if (actualDevice && !root.devices.some(d => d.name === actualDevice)) {
+                return "Device not found: " + actualDevice
+            }
+            
+            const currentLevel = actualDevice ? root.getDeviceBrightness(actualDevice) : root.brightnessLevel
             const stepValue = parseInt(step || "10")
-            const newLevel = Math.max(1, Math.min(100,
-                                                  currentLevel - stepValue))
+            const newLevel = Math.max(1, Math.min(100, currentLevel - stepValue))
+            
             root.lastIpcDevice = targetDevice
             if (targetDevice && targetDevice !== root.currentDevice) {
                 root.setCurrentDevice(targetDevice, false)
             }
             root.setBrightness(newLevel, targetDevice)
+            
             if (targetDevice)
                 return "Brightness decreased to " + newLevel + "% on " + targetDevice
             else
