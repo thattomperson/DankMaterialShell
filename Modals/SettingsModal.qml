@@ -64,38 +64,41 @@ DankModal {
 
             Column {
                 anchors.fill: parent
-                anchors.leftMargin: Theme.spacingM
-                anchors.rightMargin: Theme.spacingM
+                anchors.leftMargin: Theme.spacingL
+                anchors.rightMargin: Theme.spacingL
                 anchors.topMargin: Theme.spacingM
                 anchors.bottomMargin: Theme.spacingXL
-                spacing: Theme.spacingS
+                spacing: 0
 
                 // Header row with title and close button
-                Row {
+                Item {
                     width: parent.width
-                    spacing: Theme.spacingM
+                    height: 35
 
-                    DankIcon {
-                        name: "settings"
-                        size: Theme.iconSize
-                        color: Theme.primary
+                    Row {
+                        anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                    }
+                        spacing: Theme.spacingM
 
-                    StyledText {
-                        text: "Settings"
-                        font.pixelSize: Theme.fontSizeXLarge
-                        color: Theme.surfaceText
-                        font.weight: Font.Medium
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
+                        DankIcon {
+                            name: "settings"
+                            size: Theme.iconSize
+                            color: Theme.primary
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
 
-                    Item {
-                        width: parent.width - 175
-                        height: 1
+                        StyledText {
+                            text: "Settings"
+                            font.pixelSize: Theme.fontSizeXLarge
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
 
                     DankActionButton {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
                         circular: false
                         iconName: "close"
                         iconSize: Theme.iconSize - 4
@@ -108,7 +111,7 @@ DankModal {
                 // Main content with side navigation
                 Row {
                     width: parent.width
-                    height: parent.height - 65
+                    height: parent.height - 60
                     spacing: 0
 
                     // Left sidebar navigation
@@ -117,7 +120,7 @@ DankModal {
 
                         property int currentIndex: 0
 
-                        width: 220
+                        width: 270
                         height: parent.height
                         color: Theme.surfaceContainer
                         radius: Theme.cornerRadius
@@ -436,8 +439,8 @@ DankModal {
 
                         Rectangle {
                             anchors.fill: parent
-                            anchors.leftMargin: Theme.spacingM
-                            anchors.rightMargin: Theme.spacingM
+                            anchors.leftMargin: 0
+                            anchors.rightMargin: Theme.spacingS
                             anchors.bottomMargin: Theme.spacingM
                             anchors.topMargin: 0
                             color: "transparent"
@@ -544,6 +547,11 @@ DankModal {
                             }
                         }
                     }
+                }
+
+                Item {
+                    width: parent.width
+                    height: 5
                 }
 
                 // Footer

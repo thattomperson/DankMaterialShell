@@ -120,7 +120,6 @@ Singleton {
     function fetchWeather() {
         // Only fetch if someone is consuming the data and weather is enabled
         if (root.refCount === 0 || !SettingsData.weatherEnabled) {
-
             return
         }
 
