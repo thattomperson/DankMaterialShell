@@ -649,8 +649,8 @@ DankModal {
 
                     // Matrix button
                     Item {
-                        width: 32
-                        height: 20
+                        width: 38
+                        height: 26
                         anchors.verticalCenter: parent.verticalCenter
 
                         Image {
