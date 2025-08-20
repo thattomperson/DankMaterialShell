@@ -240,10 +240,9 @@ DankModal {
 
                             CachingImage {
                                 anchors.fill: parent
-                                imagePath: !delegateRoot.fileIsDir ? delegateRoot.filePath : ""
+                                source: (!delegateRoot.fileIsDir && isImageFile(delegateRoot.fileName)) ? ("file://" + delegateRoot.filePath) : ""
                                 fillMode: Image.PreserveAspectCrop
-                                visible: !delegateRoot.fileIsDir && isImageFile(
-                                             delegateRoot.fileName)
+                                visible: !delegateRoot.fileIsDir && isImageFile(delegateRoot.fileName)
                                 maxCacheSize: 80
                             }
 
