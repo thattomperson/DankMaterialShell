@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import qs.Common
 import qs.Modules.Settings
+import qs.Services
 import qs.Widgets
 pragma ComponentBehavior
 
@@ -63,7 +64,10 @@ DankModal {
 
             Column {
                 anchors.fill: parent
-                anchors.margins: Theme.spacingM
+                anchors.leftMargin: Theme.spacingM
+                anchors.rightMargin: Theme.spacingM
+                anchors.topMargin: Theme.spacingM
+                anchors.bottomMargin: Theme.spacingXL
                 spacing: Theme.spacingS
 
                 // Header row with title and close button
@@ -126,6 +130,212 @@ DankModal {
                             anchors.bottomMargin: Theme.spacingS
                             anchors.topMargin: Theme.spacingM + 2
                             spacing: Theme.spacingXS
+
+                            // Profile header box
+                            Rectangle {
+                                width: parent.width - Theme.spacingS * 2
+                                height: 110
+                                radius: Theme.cornerRadius
+                                color: "transparent"
+                                border.width: 0
+
+                                Row {
+                                    anchors.left: parent.left
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    anchors.leftMargin: Theme.spacingM
+                                    anchors.rightMargin: Theme.spacingM
+                                    spacing: Theme.spacingM
+
+                                    // Profile image container with hover overlay
+                                    Item {
+                                        id: profileImageContainer
+                                        width: 80
+                                        height: 80
+                                        anchors.verticalCenter: parent.verticalCenter
+
+                                        property bool hasImage: profileImageSource.status === Image.Ready
+
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            radius: width / 2
+                                            color: "transparent"
+                                            border.color: Theme.primary
+                                            border.width: 1
+                                            visible: parent.hasImage
+                                        }
+
+                                        Image {
+                                            id: profileImageSource
+                                            source: {
+                                                if (PortalService.profileImage === "")
+                                                    return "";
+                                                if (PortalService.profileImage.startsWith("/"))
+                                                    return "file://" + PortalService.profileImage;
+                                                return PortalService.profileImage;
+                                            }
+                                            smooth: true
+                                            asynchronous: true
+                                            mipmap: true
+                                            cache: true
+                                            visible: false
+                                        }
+
+                                        MultiEffect {
+                                            anchors.fill: parent
+                                            anchors.margins: 5
+                                            source: profileImageSource
+                                            maskEnabled: true
+                                            maskSource: profileCircularMask
+                                            visible: profileImageContainer.hasImage
+                                            maskThresholdMin: 0.5
+                                            maskSpreadAtMin: 1
+                                        }
+
+                                        Item {
+                                            id: profileCircularMask
+                                            width: 70
+                                            height: 70
+                                            layer.enabled: true
+                                            layer.smooth: true
+                                            visible: false
+
+                                            Rectangle {
+                                                anchors.fill: parent
+                                                radius: width / 2
+                                                color: "black"
+                                                antialiasing: true
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            radius: width / 2
+                                            color: Theme.primary
+                                            visible: !parent.hasImage
+
+                                            DankIcon {
+                                                anchors.centerIn: parent
+                                                name: "person"
+                                                size: Theme.iconSizeLarge
+                                                color: Theme.primaryText
+                                            }
+                                        }
+
+                                        DankIcon {
+                                            anchors.centerIn: parent
+                                            name: "warning"
+                                            size: Theme.iconSizeLarge
+                                            color: Theme.error
+                                            visible: PortalService.profileImage !== "" && profileImageSource.status === Image.Error
+                                        }
+
+                                        // Hover overlay with edit and clear buttons
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            radius: width / 2
+                                            color: Qt.rgba(0, 0, 0, 0.7)
+                                            visible: profileMouseArea.containsMouse
+                                            
+                                            Row {
+                                                anchors.centerIn: parent
+                                                spacing: 4
+                                                
+                                                Rectangle {
+                                                    width: 28
+                                                    height: 28
+                                                    radius: 14
+                                                    color: Qt.rgba(255, 255, 255, 0.9)
+                                                    
+                                                    DankIcon {
+                                                        anchors.centerIn: parent
+                                                        name: "edit"
+                                                        size: 16
+                                                        color: "black"
+                                                    }
+                                                    
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: {
+                                                            settingsModal.allowFocusOverride = true;
+                                                            settingsModal.shouldHaveFocus = false;
+                                                            profileBrowser.open();
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                Rectangle {
+                                                    width: 28
+                                                    height: 28
+                                                    radius: 14
+                                                    color: Qt.rgba(255, 255, 255, 0.9)
+                                                    visible: profileImageContainer.hasImage
+                                                    
+                                                    DankIcon {
+                                                        anchors.centerIn: parent
+                                                        name: "close"
+                                                        size: 16
+                                                        color: "black"
+                                                    }
+                                                    
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        cursorShape: Qt.PointingHandCursor
+                                                        onClicked: {
+                                                            PortalService.setProfileImage("");
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            id: profileMouseArea
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            propagateComposedEvents: true
+                                            acceptedButtons: Qt.NoButton
+                                        }
+                                    }
+
+                                    // User info column
+                                    Column {
+                                        width: 120
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        spacing: Theme.spacingXS
+
+                                        StyledText {
+                                            text: UserInfoService.fullName || "User"
+                                            font.pixelSize: Theme.fontSizeLarge
+                                            font.weight: Font.Medium
+                                            color: Theme.surfaceText
+                                            elide: Text.ElideRight
+                                            width: parent.width
+                                        }
+
+                                        StyledText {
+                                            text: DgopService.distribution || "Linux"
+                                            font.pixelSize: Theme.fontSizeMedium
+                                            color: Theme.surfaceVariantText
+                                            elide: Text.ElideRight
+                                            width: parent.width
+                                        }
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                width: parent.width - Theme.spacingS * 2
+                                height: 1
+                                color: Theme.outline
+                                opacity: 0.2
+                            }
+
+                            Item {
+                                width: parent.width
+                                height: Theme.spacingL
+                            }
 
                             Repeater {
                                 id: sidebarRepeater
@@ -345,22 +555,86 @@ DankModal {
                 // Footer
                 Row {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: Theme.spacingS
+                    spacing: Theme.spacingXS
                     
-                    StyledText {
-                        text: `<a href="https://github.com/AvengeMedia/DankMaterialShell">DankMaterialShell</a> • <a href="https://github.com/YaLTeR/niri">niri</a> edition •`
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceVariantText
-                        linkColor: Theme.primary
+                    // Dank logo
+                    Item {
+                        width: 68
+                        height: 16
                         anchors.verticalCenter: parent.verticalCenter
-                        onLinkActivated: link => Qt.openUrlExternally(link)
-
+                        
+                        Image {
+                            anchors.fill: parent
+                            source: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Modals/", "") + "/assets/dank.svg"
+                            sourceSize: Qt.size(68, 16)
+                            smooth: true
+                            fillMode: Image.PreserveAspectFit
+                            layer.enabled: true
+                            
+                            layer.effect: MultiEffect {
+                                colorization: 1
+                                colorizationColor: Theme.primary
+                            }
+                        }
+                        
                         MouseArea {
                             anchors.fill: parent
-                            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-                            acceptedButtons: Qt.NoButton
-                            propagateComposedEvents: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Qt.openUrlExternally("https://github.com/AvengeMedia/DankMaterialShell")
                         }
+                    }
+                    
+                    StyledText {
+                        text: "•"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    
+                    Rectangle {
+                        width: Theme.spacingXS
+                        height: 1
+                        color: "transparent"
+                    }
+                    
+                    // Niri logo
+                    Item {
+                        width: 24
+                        height: 24
+                        anchors.verticalCenter: parent.verticalCenter
+                        
+                        Image {
+                            anchors.fill: parent
+                            source: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Modals/", "") + "/assets/niri.svg"
+                            sourceSize: Qt.size(24, 24)
+                            smooth: true
+                            fillMode: Image.PreserveAspectFit
+                        }
+                        
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Qt.openUrlExternally("https://github.com/YaLTeR/niri")
+                        }
+                    }
+                    
+                    Rectangle {
+                        width: Theme.spacingXS
+                        height: 1
+                        color: "transparent"
+                    }
+                    
+                    StyledText {
+                        text: "•"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    
+                    Rectangle {
+                        width: Theme.spacingM
+                        height: 1
+                        color: "transparent"
                     }
                     
                     // Matrix button
@@ -390,11 +664,23 @@ DankModal {
                         }
                     }
                     
+                    Rectangle {
+                        width: Theme.spacingM
+                        height: 1
+                        color: "transparent"
+                    }
+                    
                     StyledText {
                         text: "•"
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         anchors.verticalCenter: parent.verticalCenter
+                    }
+                    
+                    Rectangle {
+                        width: Theme.spacingM
+                        height: 1
+                        color: "transparent"
                     }
                     
                     // Discord button
@@ -417,12 +703,73 @@ DankModal {
                             onClicked: Qt.openUrlExternally("https://discord.gg/vT8Sfjy7sx")
                         }
                     }
+                    
+                    Rectangle {
+                        width: Theme.spacingM
+                        height: 1
+                        color: "transparent"
+                    }
+                    
+                    StyledText {
+                        text: "•"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    
+                    Rectangle {
+                        width: Theme.spacingM
+                        height: 1
+                        color: "transparent"
+                    }
+                    
+                    // Reddit button
+                    Item {
+                        width: 18
+                        height: 18
+                        anchors.verticalCenter: parent.verticalCenter
+                        
+                        Image {
+                            anchors.fill: parent
+                            source: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Modals/", "") + "/assets/reddit.svg"
+                            sourceSize: Qt.size(18, 18)
+                            smooth: true
+                            fillMode: Image.PreserveAspectFit
+                        }
+                        
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Qt.openUrlExternally("https://reddit.com/r/niri")
+                        }
+                    }
                 }
 
             }
 
         }
 
+    }
+
+    FileBrowserModal {
+        id: profileBrowser
+
+        browserTitle: "Select Profile Image"
+        browserIcon: "person"
+        browserType: "profile"
+        fileExtensions: ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"]
+        onFileSelected: (path) => {
+            PortalService.setProfileImage(path);
+            close();
+        }
+        onDialogClosed: {
+            if (settingsModal) {
+                settingsModal.allowFocusOverride = false;
+                settingsModal.shouldHaveFocus = Qt.binding(() => {
+                    return settingsModal.shouldBeVisible;
+                });
+            }
+        }
     }
 
 }

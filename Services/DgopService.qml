@@ -632,7 +632,47 @@ Singleton {
         }
     }
 
+    Process {
+        id: osReleaseProcess
+        command: ["cat", "/etc/os-release"]
+        running: false
+        onExited: exitCode => {
+            if (exitCode !== 0) {
+                console.warn("Failed to read /etc/os-release")
+            }
+        }
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (text.trim()) {
+                    try {
+                        const lines = text.trim().split('\n')
+                        let prettyName = ""
+                        let name = ""
+                        
+                        for (const line of lines) {
+                            const trimmedLine = line.trim()
+                            if (trimmedLine.startsWith('PRETTY_NAME=')) {
+                                prettyName = trimmedLine.substring(12).replace(/^["']|["']$/g, '')
+                            } else if (trimmedLine.startsWith('NAME=')) {
+                                name = trimmedLine.substring(5).replace(/^["']|["']$/g, '')
+                            }
+                        }
+                        
+                        // Prefer PRETTY_NAME, fallback to NAME
+                        const distroName = prettyName || name || "Linux"
+                        distribution = distroName
+                        console.log("Detected distribution:", distroName)
+                    } catch (e) {
+                        console.warn("Failed to parse /etc/os-release:", e)
+                        distribution = "Linux"
+                    }
+                }
+            }
+        }
+    }
+
     Component.onCompleted: {
         dgopCheckProcess.running = true
+        osReleaseProcess.running = true
     }
 }
