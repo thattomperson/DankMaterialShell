@@ -19,15 +19,17 @@ DankModal {
                                  StandardPaths.HomeLocation)
     property string currentPath: ""
     property var fileExtensions: ["*.*"]
+    property alias filterExtensions: fileBrowserModal.fileExtensions
     property string browserTitle: "Select File"
     property string browserIcon: "folder_open"
     property string browserType: "generic" // "wallpaper" or "profile" for last path memory
+    property bool showHiddenFiles: false
 
     FolderListModel {
         id: folderModel
         showDirsFirst: true
         showDotAndDotDot: false
-        showHidden: false
+        showHidden: fileBrowserModal.showHiddenFiles
         nameFilters: fileExtensions
         showFiles: true
         showDirs: true

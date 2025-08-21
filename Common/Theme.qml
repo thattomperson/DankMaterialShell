@@ -1,24 +1,23 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
+import QtCore
 import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.UPower
-import Qt.labs.platform
+import qs.Services
 import "StockThemes.js" as StockThemes
 
 Singleton {
     id: root
 
-    // Theme selection
     property string currentTheme: "blue"
     property bool isLightMode: false
     
     readonly property string dynamic: "dynamic"
     readonly property bool isDynamicTheme: !StockThemes.isStockTheme(currentTheme)
 
-    // Dynamic color extraction properties
     readonly property string homeDir: {
         const url = StandardPaths.writableLocation(StandardPaths.HomeLocation).toString()
         return url.startsWith("file://") ? url.substring(7) : url
@@ -31,14 +30,14 @@ Singleton {
     readonly property string wallpaperPath: typeof SessionData !== "undefined" ? SessionData.wallpaperPath : ""
     
     property bool matugenAvailable: false
-    property bool gtkThemingEnabled: false
-    property bool qtThemingEnabled: false
+    property bool gtkThemingEnabled: typeof SettingsData !== "undefined" ? SettingsData.gtkAvailable : false
+    property bool qtThemingEnabled: typeof SettingsData !== "undefined" ? (SettingsData.qt5ctAvailable || SettingsData.qt6ctAvailable) : false
     property bool systemThemeGenerationInProgress: false
     property var matugenColors: ({})
     property bool extractionRequested: false
     property int colorUpdateTrigger: 0
+    property var customThemeData: null
 
-    // Helper function to get matugen colors (unified from Colors.qml)
     function getMatugenColor(path, fallback) {
         colorUpdateTrigger
         const colorMode = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "light" : "dark"
@@ -51,9 +50,10 @@ Singleton {
         return cur || fallback
     }
 
-    // Current theme data
     readonly property var currentThemeData: {
-        if (isDynamicTheme) {
+        if (currentTheme === "custom") {
+            return customThemeData || StockThemes.getThemeByName("blue", isLightMode)
+        } else if (currentTheme === dynamic) {
             return {
                 primary: getMatugenColor("primary", "#42a5f5"),
                 primaryText: getMatugenColor("on_primary", "#ffffff"),
@@ -68,14 +68,16 @@ Singleton {
                 backgroundText: getMatugenColor("on_background", "#e3e8ef"),
                 outline: getMatugenColor("outline", "#8e918f"),
                 surfaceContainer: getMatugenColor("surface_container", "#1e2023"),
-                surfaceContainerHigh: getMatugenColor("surface_container_high", "#292b2f")
+                surfaceContainerHigh: getMatugenColor("surface_container_high", "#292b2f"),
+                error: "#F2B8B5",
+                warning: "#FF9800",
+                info: "#2196F3"
             }
         } else {
             return StockThemes.getThemeByName(currentTheme, isLightMode)
         }
     }
 
-    // Core color properties (unified from both Theme.qml and Colors.qml)
     property color primary: currentThemeData.primary
     property color primaryText: currentThemeData.primaryText
     property color primaryContainer: currentThemeData.primaryContainer
@@ -91,12 +93,10 @@ Singleton {
     property color surfaceContainer: currentThemeData.surfaceContainer
     property color surfaceContainerHigh: currentThemeData.surfaceContainerHigh
 
-    // Additional semantic colors
-    property color error: "#F2B8B5"
-    property color warning: "#FF9800"
-    property color info: "#2196F3"
+    property color error: currentThemeData.error || "#F2B8B5"
+    property color warning: currentThemeData.warning || "#FF9800"
+    property color info: currentThemeData.info || "#2196F3"
 
-    // Interaction states
     property color primaryHover: Qt.rgba(primary.r, primary.g, primary.b, 0.12)
     property color primaryHoverLight: Qt.rgba(primary.r, primary.g, primary.b, 0.08)
     property color primaryPressed: Qt.rgba(primary.r, primary.g, primary.b, 0.16)
@@ -125,7 +125,6 @@ Singleton {
     property color shadowMedium: Qt.rgba(0, 0, 0, 0.08)
     property color shadowStrong: Qt.rgba(0, 0, 0, 0.3)
 
-    // Animation and timing
     property int shortDuration: 150
     property int mediumDuration: 300
     property int longDuration: 500
@@ -133,7 +132,6 @@ Singleton {
     property int standardEasing: Easing.OutCubic
     property int emphasizedEasing: Easing.OutQuart
 
-    // Layout and sizing
     property real cornerRadius: typeof SettingsData !== "undefined" ? SettingsData.cornerRadius : 12
     property real spacingXS: 4
     property real spacingS: 8
@@ -149,29 +147,26 @@ Singleton {
     property real iconSizeSmall: 16
     property real iconSizeLarge: 32
 
-    // Transparency settings
     property real panelTransparency: 0.85
     property real widgetTransparency: typeof SettingsData !== "undefined" && SettingsData.topBarWidgetTransparency !== undefined ? SettingsData.topBarWidgetTransparency : 0.85
     property real popupTransparency: typeof SettingsData !== "undefined" && SettingsData.popupTransparency !== undefined ? SettingsData.popupTransparency : 0.92
 
-    // Theme switching API
     function switchTheme(themeName, savePrefs = true) {
         if (themeName === dynamic) {
-            if (StockThemes.isStockTheme(currentTheme)) {
-                // Switching from stock to dynamic, restore old theme
-                restoreSystemThemes()
-            }
             currentTheme = dynamic
             extractColors()
-        } else {
-            if (!StockThemes.isStockTheme(currentTheme)) {
-                // Switching from dynamic to stock
-                restoreSystemThemes()
+        } else if (themeName === "custom") {
+            currentTheme = "custom"
+            if (typeof SettingsData !== "undefined" && SettingsData.customThemeFile) {
+                loadCustomThemeFromFile(SettingsData.customThemeFile)
             }
+        } else {
             currentTheme = themeName
         }
         if (savePrefs && typeof SettingsData !== "undefined")
             SettingsData.setTheme(currentTheme)
+        
+        generateSystemThemesFromCurrentTheme()
     }
 
     function toggleLightMode(savePrefs = true) {
@@ -190,7 +185,26 @@ Singleton {
     }
 
     function getThemeColors(themeName) {
+        if (themeName === "custom" && customThemeData) {
+            return customThemeData
+        }
         return StockThemes.getThemeByName(themeName, isLightMode)
+    }
+
+    function loadCustomTheme(themeData) {
+        if (themeData.dark || themeData.light) {
+            const colorMode = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "light" : "dark"
+            const selectedTheme = themeData[colorMode] || themeData.dark || themeData.light
+            customThemeData = selectedTheme
+        } else {
+            customThemeData = themeData
+        }
+        
+        generateSystemThemesFromCurrentTheme()
+    }
+
+    function loadCustomThemeFromFile(filePath) {
+        customThemeFileView.path = filePath
     }
 
     property alias availableThemeNames: root._availableThemeNames
@@ -198,7 +212,6 @@ Singleton {
     property string currentThemeName: currentTheme
 
 
-    // Background helper functions
     function popupBackground() {
         return Qt.rgba(surfaceContainer.r, surfaceContainer.g, surfaceContainer.b, popupTransparency)
     }
@@ -223,7 +236,6 @@ Singleton {
         return popupTransparency
     }
 
-    // Utility functions
     function isColorDark(c) {
         return (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) < 0.5
     }
@@ -305,7 +317,6 @@ Singleton {
         }
     }
 
-    // Dynamic color extraction (merged from Colors.qml)
     function extractColors() {
         extractionRequested = true
         if (matugenAvailable)
@@ -320,6 +331,10 @@ Singleton {
             if (isDynamicTheme) {
                 generateSystemThemes()
             }
+        }
+        
+        if (currentTheme === "custom" && customThemeFileView.path) {
+            customThemeFileView.reload()
         }
     }
 
@@ -337,19 +352,30 @@ Singleton {
         systemThemeGenerator.running = true
     }
 
-    function restoreSystemThemes() {
-        if (!shellDir) return
+    function generateSystemThemesFromCurrentTheme() {
+        if (!isDynamicTheme)
+            return
+        
+        if (systemThemeGenerationInProgress)
+            return
+
+        if (!matugenAvailable || !wallpaperPath)
+            return
 
         const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "true" : "false"
         const iconTheme = (typeof SettingsData !== "undefined" && SettingsData.iconTheme) ? SettingsData.iconTheme : "System Default"
         const gtkTheming = (typeof SettingsData !== "undefined" && SettingsData.gtkThemingEnabled) ? "true" : "false"
         const qtTheming = (typeof SettingsData !== "undefined" && SettingsData.qtThemingEnabled) ? "true" : "false"
 
-        systemThemeRestoreProcess.command = [shellDir + "/generate-themes.sh", "", shellDir, configDir, "restore", isLight, iconTheme, gtkTheming, qtTheming]
-        systemThemeRestoreProcess.running = true
+        if (gtkTheming === "false" && qtTheming === "false")
+            return
+
+        systemThemeGenerationInProgress = true
+        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme, gtkTheming, qtTheming]
+        systemThemeGenerator.running = true
     }
 
-    // JSON extraction helper
+
     function extractJsonFromText(text) {
         if (!text) return null
 
@@ -400,7 +426,6 @@ Singleton {
         return null
     }
 
-    // Process definitions for dynamic theming
     Process {
         id: matugenCheck
         command: ["which", "matugen"]
@@ -505,30 +530,7 @@ Singleton {
         }
     }
 
-    Process {
-        id: systemThemeRestoreProcess
-        running: false
 
-        stdout: StdioCollector {
-            id: restoreThemeStdout
-        }
-
-        stderr: StdioCollector {
-            id: restoreThemeStderr
-        }
-
-        onExited: exitCode => {
-            if (typeof ToastService !== "undefined") {
-                if (exitCode === 0) {
-                    ToastService.showInfo("System themes restored to default")
-                } else {
-                    ToastService.showWarning("Failed to restore system themes: " + restoreThemeStderr.text)
-                }
-            }
-        }
-    }
-
-    // Generate app configs
     function generateAppConfigs() {
         if (!matugenColors || !matugenColors.colors) {
             return
@@ -622,5 +624,33 @@ Singleton {
         matugenCheck.running = true
         if (typeof SessionData !== "undefined")
             SessionData.isLightModeChanged.connect(root.onLightModeChanged)
+    }
+
+    FileView {
+        id: customThemeFileView
+        watchChanges: true
+        
+        function parseAndLoadTheme() {
+            try {
+                var themeData = JSON.parse(customThemeFileView.text())
+                loadCustomTheme(themeData)
+            } catch (e) {
+                ToastService.showError("Invalid JSON format: " + e.message)
+            }
+        }
+        
+        onLoaded: {
+            parseAndLoadTheme()
+        }
+
+        onFileChanged: {
+            customThemeFileView.reload()
+        }
+
+        onLoadFailed: function(error) {
+            if (typeof ToastService !== "undefined") {
+                ToastService.showError("Failed to read theme file: " + error)
+            }
+        }
     }
 }

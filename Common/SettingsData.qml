@@ -12,6 +12,7 @@ Singleton {
 
     // Theme settings
     property string currentThemeName: "blue"
+    property string customThemeFile: ""
     property real topBarTransparency: 0.75
     property real topBarWidgetTransparency: 0.85
     property real popupTransparency: 0.92
@@ -65,6 +66,7 @@ Singleton {
     property string systemDefaultIconTheme: ""
     property bool qt5ctAvailable: false
     property bool qt6ctAvailable: false
+    property bool gtkAvailable: false
     property bool useOSLogo: false
     property string osLogoColorOverride: ""
     property real osLogoBrightness: 0.5
@@ -126,6 +128,7 @@ Singleton {
                 } else {
                     currentThemeName = settings.currentThemeName !== undefined ? settings.currentThemeName : "blue"
                 }
+                customThemeFile = settings.customThemeFile !== undefined ? settings.customThemeFile : ""
                 topBarTransparency = settings.topBarTransparency
                         !== undefined ? (settings.topBarTransparency
                                          > 1 ? settings.topBarTransparency
@@ -288,6 +291,7 @@ Singleton {
     function saveSettings() {
         settingsFile.setText(JSON.stringify({
                                                 "currentThemeName": currentThemeName,
+                                                "customThemeFile": customThemeFile,
                                                 "topBarTransparency": topBarTransparency,
                                                 "topBarWidgetTransparency": topBarWidgetTransparency,
                                                 "popupTransparency": popupTransparency,
@@ -456,6 +460,11 @@ Singleton {
 
     function setTheme(themeName) {
         currentThemeName = themeName
+        saveSettings()
+    }
+
+    function setCustomThemeFile(filePath) {
+        customThemeFile = filePath
         saveSettings()
     }
 
@@ -808,11 +817,17 @@ Singleton {
     function setGtkThemingEnabled(enabled) {
         gtkThemingEnabled = enabled
         saveSettings()
+        if (enabled && typeof Theme !== "undefined") {
+            Theme.generateSystemThemesFromCurrentTheme()
+        }
     }
 
     function setQtThemingEnabled(enabled) {
         qtThemingEnabled = enabled
         saveSettings()
+        if (enabled && typeof Theme !== "undefined") {
+            Theme.generateSystemThemesFromCurrentTheme()
+        }
     }
 
     function setShowDock(enabled) {
@@ -967,7 +982,7 @@ Singleton {
     Process {
         id: qtToolsDetectionProcess
 
-        command: ["sh", "-c", "echo -n 'qt5ct:'; command -v qt5ct >/dev/null && echo 'true' || echo 'false'; echo -n 'qt6ct:'; command -v qt6ct >/dev/null && echo 'true' || echo 'false'"]
+        command: ["sh", "-c", "echo -n 'qt5ct:'; command -v qt5ct >/dev/null && echo 'true' || echo 'false'; echo -n 'qt6ct:'; command -v qt6ct >/dev/null && echo 'true' || echo 'false'; echo -n 'gtk:'; (command -v gsettings >/dev/null || command -v dconf >/dev/null) && echo 'true' || echo 'false'"]
         running: false
 
         stdout: StdioCollector {
@@ -980,6 +995,8 @@ Singleton {
                             qt5ctAvailable = line.split(':')[1] === 'true'
                         else if (line.startsWith('qt6ct:'))
                             qt6ctAvailable = line.split(':')[1] === 'true'
+                        else if (line.startsWith('gtk:'))
+                            gtkAvailable = line.split(':')[1] === 'true'
                     }
                 }
             }

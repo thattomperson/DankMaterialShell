@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Controls
+import Quickshell.Io
 import qs.Common
+import qs.Modals
 import qs.Services
 import qs.Widgets
 
@@ -179,7 +181,6 @@ Item {
 
                         Row {
                             spacing: Theme.spacingM
-                            anchors.horizontalCenter: parent.horizontalCenter
 
                             Repeater {
                                 model: Theme.availableThemeNames.slice(0, 5)
@@ -248,7 +249,6 @@ Item {
 
                         Row {
                             spacing: Theme.spacingM
-                            anchors.horizontalCenter: parent.horizontalCenter
 
                             Repeater {
                                 model: Theme.availableThemeNames.slice(5, 10)
@@ -320,41 +320,44 @@ Item {
                             height: Theme.spacingM
                         }
 
-                        Rectangle {
-                            width: 120
-                            height: 40
-                            radius: 20
+                        Row {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            color: {
-                                if (ToastService.wallpaperErrorStatus === "error"
-                                        || ToastService.wallpaperErrorStatus === "matugen_missing")
-                                    return Qt.rgba(Theme.error.r,
-                                                   Theme.error.g,
-                                                   Theme.error.b, 0.12)
-                                else
-                                    return Qt.rgba(Theme.surfaceVariant.r,
-                                                   Theme.surfaceVariant.g,
-                                                   Theme.surfaceVariant.b, 0.3)
-                            }
-                            border.color: {
-                                if (ToastService.wallpaperErrorStatus === "error"
-                                        || ToastService.wallpaperErrorStatus === "matugen_missing")
-                                    return Qt.rgba(Theme.error.r,
-                                                   Theme.error.g,
-                                                   Theme.error.b, 0.5)
-                                else if (Theme.isDynamicTheme)
-                                    return Theme.primary
-                                else
-                                    return Theme.outline
-                            }
-                            border.width: Theme.isDynamicTheme ? 2 : 1
-                            scale: Theme.isDynamicTheme ? 1.1 : (autoMouseArea.containsMouse ? 1.02 : 1)
+                            spacing: Theme.spacingL
 
-                            Row {
-                                anchors.centerIn: parent
-                                spacing: Theme.spacingS
+                            Rectangle {
+                                width: 120
+                                height: 40
+                                radius: 20
+                                color: {
+                                    if (ToastService.wallpaperErrorStatus === "error"
+                                            || ToastService.wallpaperErrorStatus === "matugen_missing")
+                                        return Qt.rgba(Theme.error.r,
+                                                       Theme.error.g,
+                                                       Theme.error.b, 0.12)
+                                    else
+                                        return Qt.rgba(Theme.surfaceVariant.r,
+                                                       Theme.surfaceVariant.g,
+                                                       Theme.surfaceVariant.b, 0.3)
+                                }
+                                border.color: {
+                                    if (ToastService.wallpaperErrorStatus === "error"
+                                            || ToastService.wallpaperErrorStatus === "matugen_missing")
+                                        return Qt.rgba(Theme.error.r,
+                                                       Theme.error.g,
+                                                       Theme.error.b, 0.5)
+                                    else if (Theme.currentThemeName === "dynamic")
+                                        return Theme.primary
+                                    else
+                                        return Theme.outline
+                                }
+                                border.width: (Theme.currentThemeName === "dynamic") ? 2 : 1
+                                scale: (Theme.currentThemeName === "dynamic") ? 1.1 : (autoMouseArea.containsMouse ? 1.02 : 1)
 
-                                DankIcon {
+                                Row {
+                                    anchors.centerIn: parent
+                                    spacing: Theme.spacingS
+
+                                    DankIcon {
                                     name: {
                                         if (ToastService.wallpaperErrorStatus === "error"
                                                 || ToastService.wallpaperErrorStatus
@@ -474,6 +477,86 @@ Item {
                                 }
                             }
                         }
+
+                        Rectangle {
+                            width: 120
+                            height: 40
+                            radius: 20
+                            color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+                            border.color: (Theme.currentThemeName === "custom") ? Theme.primary : Theme.outline
+                            border.width: (Theme.currentThemeName === "custom") ? 2 : 1
+                            scale: (Theme.currentThemeName === "custom") ? 1.1 : (customMouseArea.containsMouse ? 1.02 : 1)
+
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: Theme.spacingS
+
+                                DankIcon {
+                                    name: "folder_open"
+                                    size: 16
+                                    color: Theme.surfaceText
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                StyledText {
+                                    text: "Custom"
+                                    font.pixelSize: Theme.fontSizeMedium
+                                    color: Theme.surfaceText
+                                    font.weight: Font.Medium
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                id: customMouseArea
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    fileBrowserModal.open()
+                                }
+                            }
+
+                            Rectangle {
+                                width: customTooltipText.contentWidth + Theme.spacingM * 2
+                                height: customTooltipText.contentHeight + Theme.spacingS * 2
+                                color: Theme.surfaceContainer
+                                border.color: Theme.outline
+                                border.width: 1
+                                radius: Theme.cornerRadius
+                                anchors.bottom: parent.top
+                                anchors.bottomMargin: Theme.spacingS
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                visible: customMouseArea.containsMouse && (Theme.currentThemeName !== "custom")
+
+                                StyledText {
+                                    id: customTooltipText
+                                    text: "Load custom theme from JSON file"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    color: Theme.surfaceText
+                                    anchors.centerIn: parent
+                                    wrapMode: Text.WordWrap
+                                    width: Math.min(implicitWidth, 250)
+                                    horizontalAlignment: Text.AlignHCenter
+                                }
+                            }
+
+                            Behavior on scale {
+                                NumberAnimation {
+                                    duration: Theme.shortDuration
+                                    easing.type: Theme.emphasizedEasing
+                                }
+                            }
+
+                            Behavior on border.width {
+                                NumberAnimation {
+                                    duration: Theme.shortDuration
+                                    easing.type: Theme.emphasizedEasing
+                                }
+                            }
+                        }
+                        } // Close Row
                     }
                 }
             }
@@ -625,7 +708,7 @@ Item {
                     StyledText {
                         id: warningText
 
-                        text: "Changing these settings will manipulate GTK and Qt configurations on the system"
+                        text: "Changing these settings will manipulate GTK and Qt configurations on the system, requires \"Auto\" theme"
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.warning
                         wrapMode: Text.WordWrap
@@ -732,9 +815,9 @@ Item {
                     DankToggle {
                         width: parent.width
                         text: "Theme GTK Applications"
-                        description: Theme.gtkThemingEnabled ? "File managers, text editors, and system dialogs will match your theme" : "GTK theming not available (install gsettings)"
-                        enabled: Theme.gtkThemingEnabled
-                        checked: Theme.gtkThemingEnabled
+                        description: SettingsData.gtkAvailable ? "File managers, text editors, and system dialogs will match your theme" : "GTK theming not available (install gsettings)"
+                        enabled: SettingsData.gtkAvailable
+                        checked: SettingsData.gtkAvailable
                                  && SettingsData.gtkThemingEnabled
                         onToggled: function (checked) {
                             SettingsData.setGtkThemingEnabled(checked)
@@ -744,15 +827,35 @@ Item {
                     DankToggle {
                         width: parent.width
                         text: "Theme Qt Applications"
-                        description: Theme.qtThemingEnabled ? "Qt applications will match your theme colors" : "Qt theming not available (install qt5ct or qt6ct)"
-                        enabled: Theme.qtThemingEnabled
-                        checked: Theme.qtThemingEnabled
+                        description: (SettingsData.qt5ctAvailable || SettingsData.qt6ctAvailable) ? "Qt applications will match your theme colors" : "Qt theming not available (install qt5ct or qt6ct)"
+                        enabled: (SettingsData.qt5ctAvailable || SettingsData.qt6ctAvailable)
+                        checked: (SettingsData.qt5ctAvailable || SettingsData.qt6ctAvailable)
                                  && SettingsData.qtThemingEnabled
                         onToggled: function (checked) {
                             SettingsData.setQtThemingEnabled(checked)
                         }
                     }
                 }
+            }
+        }
+    }
+
+    FileBrowserModal {
+        id: fileBrowserModal
+        browserTitle: "Select Custom Theme"
+        filterExtensions: ["*.json"]
+        showHiddenFiles: true
+
+        function selectCustomTheme() {
+            shouldBeVisible = true
+        }
+
+        onFileSelected: function(filePath) {
+            // Save the custom theme file path and switch to custom theme
+            if (filePath.endsWith(".json")) {
+                SettingsData.setCustomThemeFile(filePath)
+                Theme.switchTheme("custom")
+                close()
             }
         }
     }
