@@ -115,6 +115,8 @@ paru -S niri-git
 sudo dnf copr enable alebastr/niri && sudo dnf install niri
 ```
 
+For detailed niri installation instructions, see the [niri Getting Started guide](https://yalter.github.io/niri/Getting-Started.html).
+
 **Hyprland**:
 ```bash
 # Arch Linux
