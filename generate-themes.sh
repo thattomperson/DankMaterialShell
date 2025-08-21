@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # System theme generation script for DankMaterialShell
 # This script uses matugen to generate GTK and Qt themes from wallpaper or color
