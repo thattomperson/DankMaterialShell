@@ -2,10 +2,13 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
 import qs.Common
+import qs.Services
 import qs.Widgets
 
 Item {
     id: aboutTab
+
+    property bool isHyprland: CompositorService.isHyprland
 
     DankFlickable {
         anchors.fill: parent
@@ -66,11 +69,17 @@ Item {
                         id: communityIcons
                         anchors.horizontalCenter: parent.horizontalCenter
                         height: 24
-                        width: niriButton.width + matrixButton.width + 4 + discordButton.width + Theme.spacingM + redditButton.width + Theme.spacingM
+                        width: {
+                            if (isHyprland) {
+                                return compositorButton.width + discordButton.width + Theme.spacingM + redditButton.width + Theme.spacingM
+                            } else {
+                                return compositorButton.width + matrixButton.width + 4 + discordButton.width + Theme.spacingM + redditButton.width + Theme.spacingM
+                            }
+                        }
 
-                        // Niri logo
+                        // Compositor logo (Niri or Hyprland)
                         Item {
-                            id: niriButton
+                            id: compositorButton
                             width: 24
                             height: 24
                             anchors.verticalCenter: parent.verticalCenter
@@ -78,14 +87,14 @@ Item {
                             x: 0
 
                             property bool hovered: false
-                            property string tooltipText: "niri GitHub"
+                            property string tooltipText: isHyprland ? "Hyprland Website" : "niri GitHub"
 
                             Image {
                                 anchors.fill: parent
                                 source: Qt.resolvedUrl(".").toString().replace(
                                             "file://", "").replace(
                                             "/Modules/Settings/",
-                                            "") + "/assets/niri.svg"
+                                            "") + (isHyprland ? "/assets/hyprland.svg" : "/assets/niri.svg")
                                 sourceSize: Qt.size(24, 24)
                                 smooth: true
                                 fillMode: Image.PreserveAspectFit
@@ -98,16 +107,17 @@ Item {
                                 onEntered: parent.hovered = true
                                 onExited: parent.hovered = false
                                 onClicked: Qt.openUrlExternally(
-                                               "https://github.com/YaLTeR/niri")
+                                               isHyprland ? "https://hypr.land" : "https://github.com/YaLTeR/niri")
                             }
                         }
 
-                        // Matrix button
+                        // Matrix button (only for Niri)
                         Item {
                             id: matrixButton
                             width: 30
                             height: 24
-                            x: niriButton.x + niriButton.width + 4
+                            x: compositorButton.x + compositorButton.width + 4
+                            visible: !isHyprland
 
                             property bool hovered: false
                             property string tooltipText: "niri Matrix Chat"
@@ -145,11 +155,11 @@ Item {
                             id: discordButton
                             width: 20
                             height: 20
-                            x: matrixButton.x + matrixButton.width + Theme.spacingM
+                            x: isHyprland ? compositorButton.x + compositorButton.width + Theme.spacingM : matrixButton.x + matrixButton.width + Theme.spacingM
                             anchors.verticalCenter: parent.verticalCenter
 
                             property bool hovered: false
-                            property string tooltipText: "niri Discord Server"
+                            property string tooltipText: isHyprland ? "Hyprland Discord Server" : "niri Discord Server"
 
                             Image {
                                 anchors.fill: parent
@@ -169,7 +179,7 @@ Item {
                                 onEntered: parent.hovered = true
                                 onExited: parent.hovered = false
                                 onClicked: Qt.openUrlExternally(
-                                               "https://discord.gg/vT8Sfjy7sx")
+                                               isHyprland ? "https://discord.com/invite/hQ9XvMUjjr" : "https://discord.gg/vT8Sfjy7sx")
                             }
                         }
 
@@ -182,7 +192,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
 
                             property bool hovered: false
-                            property string tooltipText: "r/niri Subreddit"
+                            property string tooltipText: isHyprland ? "r/hyprland Subreddit" : "r/niri Subreddit"
 
                             Image {
                                 anchors.fill: parent
@@ -202,7 +212,7 @@ Item {
                                 onEntered: parent.hovered = true
                                 onExited: parent.hovered = false
                                 onClicked: Qt.openUrlExternally(
-                                               "https://reddit.com/r/niri")
+                                               isHyprland ? "https://reddit.com/r/hyprland" : "https://reddit.com/r/niri")
                             }
                         }
                     }
@@ -485,8 +495,8 @@ Item {
         z: 1000
 
         property var hoveredButton: {
-            if (niriButton.hovered) return niriButton
-            if (matrixButton.hovered) return matrixButton
+            if (compositorButton.hovered) return compositorButton
+            if (matrixButton.visible && matrixButton.hovered) return matrixButton
             if (discordButton.hovered) return discordButton
             if (redditButton.hovered) return redditButton
             return null
