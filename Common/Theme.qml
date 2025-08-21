@@ -628,8 +628,8 @@ Singleton {
 
     FileView {
         id: customThemeFileView
-        watchChanges: true
-        
+        watchChanges: currentTheme === "custom"
+
         function parseAndLoadTheme() {
             try {
                 var themeData = JSON.parse(customThemeFileView.text())
