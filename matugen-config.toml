@@ -19,3 +19,7 @@ output_path = '~/.config/qt6ct/colors/matugen.conf'
 [templates.kcolorscheme]
 input_path = './templates/matugen-kcolorscheme.colors'
 output_path = '~/.local/share/color-schemes/DankMatugen.colors'
+
+[templates.dgop]
+input_path = './templates/dgop.json'
+output_path = '~/.config/dgop/colors.json'
