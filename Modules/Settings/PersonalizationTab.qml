@@ -621,7 +621,7 @@ Item {
                             id: toggle
 
                             anchors.verticalCenter: parent.verticalCenter
-                            checked: Theme.isDynamicTheme
+                            checked: Theme.currentTheme === Theme.dynamic
                             enabled: ToastService.wallpaperErrorStatus !== "matugen_missing"
                             onToggled: toggled => {
                                            if (toggled)

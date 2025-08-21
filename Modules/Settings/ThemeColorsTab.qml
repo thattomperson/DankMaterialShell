@@ -140,7 +140,7 @@ Item {
                         spacing: Theme.spacingS
 
                         StyledText {
-                            text: "Current Theme: " + (Theme.isDynamicTheme ? "Dynamic" : Theme.getThemeColors(Theme.currentThemeName).name)
+                            text: "Current Theme: " + (Theme.currentTheme === Theme.dynamic ? "Dynamic" : Theme.getThemeColors(Theme.currentThemeName).name)
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceText
                             font.weight: Font.Medium
@@ -149,7 +149,7 @@ Item {
 
                         StyledText {
                             text: {
-                                if (Theme.isDynamicTheme)
+                                if (Theme.currentTheme === Theme.dynamic)
                                     return "Wallpaper-based dynamic colors"
 
                                 var descriptions = {
@@ -193,9 +193,9 @@ Item {
                                     color: Theme.getThemeColors(themeName).primary
                                     border.color: Theme.outline
                                     border.width: (Theme.currentThemeName === themeName
-                                                   && !Theme.isDynamicTheme) ? 2 : 1
+                                                   && Theme.currentTheme !== Theme.dynamic) ? 2 : 1
                                     scale: (Theme.currentThemeName === themeName
-                                            && !Theme.isDynamicTheme) ? 1.1 : 1
+                                            && Theme.currentTheme !== Theme.dynamic) ? 1.1 : 1
 
                                     Rectangle {
                                         width: nameText.contentWidth + Theme.spacingS * 2
@@ -226,7 +226,7 @@ Item {
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            Theme.switchTheme(themeName, false)
+                                            Theme.switchTheme(themeName)
                                         }
                                     }
 
@@ -431,7 +431,7 @@ Item {
                                 anchors.bottomMargin: Theme.spacingS
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 visible: autoMouseArea.containsMouse
-                                         && (!Theme.isDynamicTheme
+                                         && (Theme.currentTheme !== Theme.dynamic
                                              || ToastService.wallpaperErrorStatus === "error"
                                              || ToastService.wallpaperErrorStatus
                                              === "matugen_missing")
@@ -788,7 +788,7 @@ Item {
                 border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                                       Theme.outline.b, 0.2)
                 border.width: 1
-                visible: Theme.isDynamicTheme && Theme.matugenAvailable
+                visible: Theme.currentTheme === Theme.dynamic && Theme.matugenAvailable
 
                 Column {
                     id: systemThemingSection

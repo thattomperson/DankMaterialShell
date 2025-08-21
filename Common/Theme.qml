@@ -16,7 +16,6 @@ Singleton {
     property bool isLightMode: false
     
     readonly property string dynamic: "dynamic"
-    readonly property bool isDynamicTheme: !StockThemes.isStockTheme(currentTheme)
 
     readonly property string homeDir: {
         const url = StandardPaths.writableLocation(StandardPaths.HomeLocation).toString()
@@ -328,7 +327,7 @@ Singleton {
     function onLightModeChanged() {
         if (matugenColors && Object.keys(matugenColors).length > 0) {
             colorUpdateTrigger++
-            if (isDynamicTheme) {
+            if (currentTheme === dynamic) {
                 generateSystemThemes()
             }
         }
@@ -353,7 +352,7 @@ Singleton {
     }
 
     function generateSystemThemesFromCurrentTheme() {
-        if (!isDynamicTheme)
+        if (currentTheme !== dynamic)
             return
         
         if (systemThemeGenerationInProgress)

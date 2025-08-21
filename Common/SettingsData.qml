@@ -732,7 +732,7 @@ Singleton {
         updateGtkIconTheme(themeName)
         updateQtIconTheme(themeName)
         saveSettings()
-        if (typeof Theme !== "undefined" && Theme.isDynamicTheme)
+        if (typeof Theme !== "undefined" && Theme.currentTheme === Theme.dynamic)
             Theme.generateSystemThemes()
     }
 
