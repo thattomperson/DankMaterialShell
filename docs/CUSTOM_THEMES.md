@@ -55,7 +55,17 @@ These are the essential colors that define your theme's appearance:
 }
 ```
 
-You can the colors at the top level if you do not want "dark" and "light" variants.
+You can define colors at the top level if you do not want "dark" and "light" variants.
+
+For example:
+
+```json
+{
+  "name": "Theme name",
+  "primary": "#eeeeee",
+  ....
+}
+```
 
 ## Example Themes
 

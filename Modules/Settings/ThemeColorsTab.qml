@@ -528,11 +528,16 @@ Item {
                                 anchors.bottom: parent.top
                                 anchors.bottomMargin: Theme.spacingS
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                visible: customMouseArea.containsMouse && (Theme.currentThemeName !== "custom")
+                                visible: customMouseArea.containsMouse
 
                                 StyledText {
                                     id: customTooltipText
-                                    text: "Load custom theme from JSON file"
+                                    text: {
+                                        if (Theme.currentThemeName === "custom")
+                                            return SettingsData.customThemeFile || "Custom theme loaded"
+                                        else
+                                            return "Load custom theme from JSON file"
+                                    }
                                     font.pixelSize: Theme.fontSizeSmall
                                     color: Theme.surfaceText
                                     anchors.centerIn: parent
