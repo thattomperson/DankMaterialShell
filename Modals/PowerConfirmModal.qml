@@ -23,7 +23,7 @@ DankModal {
     function executePowerAction(action) {
         switch (action) {
         case "logout":
-            NiriService.quit()
+            CompositorService.logout()
             break
         case "suspend":
             Quickshell.execDetached(["systemctl", "suspend"])

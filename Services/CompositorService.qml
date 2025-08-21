@@ -6,6 +6,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import Quickshell.Hyprland
 
 Singleton {
     id: root
@@ -85,5 +86,13 @@ Singleton {
                 console.warn("CompositorService: Niri socket check failed, defaulting to Niri anyway")
             }
         }
+    }
+
+    function logout() {
+        if (isNiri) {
+            NiriService.quit()
+            return
+        }
+        Hyprland.dispatch("exit")
     }
 }
