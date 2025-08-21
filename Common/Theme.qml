@@ -535,11 +535,7 @@ Singleton {
             return
         }
 
-        if (gtkThemingEnabled && typeof SettingsData !== "undefined" && SettingsData.gtkThemingEnabled) {
-            generateSystemThemes()
-        } else if (qtThemingEnabled && typeof SettingsData !== "undefined" && SettingsData.qtThemingEnabled) {
-            generateSystemThemes()
-        }
+        generateSystemThemes()
     }
 
 
