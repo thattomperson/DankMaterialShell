@@ -31,12 +31,29 @@ Singleton {
     // WiFi details
     property string currentWifiSSID: ""
     property int wifiSignalStrength: 0
+    property int wifiRSSI: -100 // dBm value, -100 = no signal
     property var wifiNetworks: []
     property var savedConnections: []
     property var wifiSignalIcon: {
         if (currentWifiSSID == "" || !wifiEnabled) {
             return "wifi_off"
         }
+        
+        // Use RSSI if available
+        if (wifiRSSI > -100) {
+            // Use RSSI-based thresholds (dBm values)
+            if (wifiRSSI >= -50) {
+                return "wifi"  // Excellent: -50 dBm and better
+            }
+            if (wifiRSSI >= -65) {
+                return "wifi_2_bar"  // Good: -65 to -50 dBm
+            }
+            if (wifiRSSI >= -80) {
+                return "wifi_1_bar"  // Fair: -80 to -65 dBm
+            }
+            return "signal_wifi_0_bar"  // Poor: worse than -80 dBm
+        } 
+        // Fall back to nmcli signal strength percentage
         if (wifiSignalStrength >= 75) {
             return "wifi"
         }
@@ -101,7 +118,7 @@ Singleton {
 
     function initializeDBusMonitors() {
         nmStateMonitor.running = true
-        refreshNetworkState()
+        doRefreshNetworkState()
     }
 
     Process {
@@ -115,7 +132,8 @@ Singleton {
                 if (line.includes("StateChanged") || line.includes(
                         "PrimaryConnectionChanged") || line.includes(
                         "WirelessEnabled") || line.includes(
-                        "ActiveConnection")) {
+                        "ActiveConnection") || line.includes(
+                        "PropertiesChanged")) {
                     refreshNetworkState()
                 }
             }
@@ -136,7 +154,18 @@ Singleton {
         onTriggered: nmStateMonitor.running = true
     }
 
+    Timer {
+        id: refreshDebounceTimer
+        interval: 100
+        running: false
+        onTriggered: doRefreshNetworkState()
+    }
+
     function refreshNetworkState() {
+        refreshDebounceTimer.restart()
+    }
+
+    function doRefreshNetworkState() {
         updatePrimaryConnection()
         updateDeviceStates()
         updateActiveConnections()
@@ -304,6 +333,8 @@ Singleton {
 
                 if (wifiInterface) {
                     root.wifiInterface = wifiInterface
+                    // Try to parse RSSI now that we have the interface
+                    wirelessFileView.parseWifiRSSI()
                     getWifiDevicePath.command = ["gdbus", "call", "--system", "--dest", "org.freedesktop.NetworkManager", "--object-path", "/org/freedesktop/NetworkManager", "--method", "org.freedesktop.NetworkManager.GetDeviceByIpIface", wifiInterface]
                     getWifiDevicePath.running = true
                 } else {
@@ -349,6 +380,8 @@ Singleton {
                 if (root.wifiConnected) {
                     getWifiIP.running = true
                     getCurrentWifiInfo.running = true
+                    // Parse RSSI now that we're connected
+                    wirelessFileView.parseWifiRSSI()
                     // Ensure SSID is resolved even if scan output lacks ACTIVE marker
                     if (root.currentWifiSSID === "") {
                         if (root.wifiConnectionUuid) {
@@ -362,6 +395,7 @@ Singleton {
                     root.wifiIP = ""
                     root.currentWifiSSID = ""
                     root.wifiSignalStrength = 0
+                    root.wifiRSSI = -100
                 }
             }
         }
@@ -397,6 +431,60 @@ Singleton {
                     }
                 }
             }
+        }
+    }
+
+    FileView {
+        id: wirelessFileView
+        path: "/proc/net/wireless"
+        watchChanges: wifiConnected && wifiInterface !== ""
+
+        function parseWifiRSSI() {
+            if (!root.wifiInterface || !wifiConnected) {
+                root.wifiRSSI = -100
+                return
+            }
+
+            try {
+                const content = wirelessFileView.text()
+                if (!content) {
+                    root.wifiRSSI = -100
+                    return
+                }
+
+                const lines = content.trim().split('\n')
+                for (const line of lines) {
+                    if (line.includes(root.wifiInterface + ":")) {
+                        const parts = line.trim().split(/\s+/)
+                        if (parts.length >= 4) {
+                            // Level is the 4th column (signal strength in dBm)
+                            const level = parseFloat(parts[3])
+                            if (!isNaN(level)) {
+                                root.wifiRSSI = Math.round(level)
+                                return
+                            }
+                        }
+                    }
+                }
+                root.wifiRSSI = -100 // Interface not found
+            } catch (e) {
+                console.warn("Failed to parse /proc/net/wireless:", e)
+                root.wifiRSSI = -100
+            }
+        }
+
+        onLoaded: {
+            parseWifiRSSI()
+        }
+
+        onFileChanged: {
+            console.log("FILE CHANGE")
+            wirelessFileView.reload()
+        }
+
+        onLoadFailed: function(error) {
+            console.warn("Failed to read /proc/net/wireless:", error)
+            root.wifiRSSI = -100
         }
     }
 
