@@ -70,7 +70,8 @@ Singleton {
                 surfaceContainerHigh: getMatugenColor("surface_container_high", "#292b2f"),
                 error: "#F2B8B5",
                 warning: "#FF9800",
-                info: "#2196F3"
+                info: "#2196F3",
+                success: "#4CAF50"
             }
         } else {
             return StockThemes.getThemeByName(currentTheme, isLightMode)
@@ -97,6 +98,7 @@ Singleton {
     property color info: currentThemeData.info || "#2196F3"
     property color tempWarning: "#ff9933"
     property color tempDanger: "#ff5555"
+    property color success: currentThemeData.success || "#4CAF50"
 
     property color primaryHover: Qt.rgba(primary.r, primary.g, primary.b, 0.12)
     property color primaryHoverLight: Qt.rgba(primary.r, primary.g, primary.b, 0.08)

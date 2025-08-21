@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Enhanced Notification System Test Script with Common Icons
 # Uses icons that are more likely to be available on most systems
