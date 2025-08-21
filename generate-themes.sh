@@ -201,7 +201,7 @@ elif [ "$MODE" = "generate-color" ]; then
     echo "Generating system themes from color: $INPUT_SOURCE"
     echo "Using config: $SHELL_DIR/matugen-config.toml"
     
-    if ! matugen -v -c matugen-config.toml color hex "$INPUT_SOURCE"; then
+    if ! matugen -v -c matugen-config.toml color hex "$INPUT_SOURCE" --type scheme-fidelity; then
         echo "Failed to generate system themes with matugen" >&2
         exit 1
     fi
