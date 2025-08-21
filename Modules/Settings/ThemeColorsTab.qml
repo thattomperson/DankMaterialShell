@@ -713,7 +713,7 @@ Item {
                     StyledText {
                         id: warningText
 
-                        text: "Changing these settings will manipulate GTK and Qt configurations on the system, requires \"Auto\" theme"
+                        text: "System app theming will generate GTK and Qt themes based on your selected theme colors"
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.warning
                         wrapMode: Text.WordWrap
@@ -826,6 +826,7 @@ Item {
                                  && SettingsData.gtkThemingEnabled
                         onToggled: function (checked) {
                             SettingsData.setGtkThemingEnabled(checked)
+                            Theme.forceGenerateSystemThemes()
                         }
                     }
 
@@ -838,6 +839,7 @@ Item {
                                  && SettingsData.qtThemingEnabled
                         onToggled: function (checked) {
                             SettingsData.setQtThemingEnabled(checked)
+                            Theme.forceGenerateSystemThemes()
                         }
                     }
                 }

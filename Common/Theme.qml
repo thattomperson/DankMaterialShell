@@ -172,6 +172,17 @@ Singleton {
         isLightMode = !isLightMode
         if (savePrefs && typeof SessionData !== "undefined")
             SessionData.setLightMode(isLightMode)
+        generateSystemThemesFromCurrentTheme()
+    }
+    
+    function forceGenerateSystemThemes() {
+        if (!matugenAvailable) {
+            if (typeof ToastService !== "undefined") {
+                ToastService.showWarning("matugen not available - cannot generate system themes")
+            }
+            return
+        }
+        generateSystemThemesFromCurrentTheme()
     }
 
     function getAvailableThemes() {
@@ -327,14 +338,13 @@ Singleton {
     function onLightModeChanged() {
         if (matugenColors && Object.keys(matugenColors).length > 0) {
             colorUpdateTrigger++
-            if (currentTheme === dynamic) {
-                generateSystemThemes()
-            }
         }
         
         if (currentTheme === "custom" && customThemeFileView.path) {
             customThemeFileView.reload()
         }
+        
+        generateSystemThemesFromCurrentTheme()
     }
 
     function generateSystemThemes() {
@@ -352,26 +362,45 @@ Singleton {
     }
 
     function generateSystemThemesFromCurrentTheme() {
-        if (currentTheme !== dynamic)
-            return
-        
-        if (systemThemeGenerationInProgress)
-            return
-
-        if (!matugenAvailable || !wallpaperPath)
+        if (systemThemeGenerationInProgress || !matugenAvailable)
             return
 
         const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "true" : "false"
         const iconTheme = (typeof SettingsData !== "undefined" && SettingsData.iconTheme) ? SettingsData.iconTheme : "System Default"
-        const gtkTheming = (typeof SettingsData !== "undefined" && SettingsData.gtkThemingEnabled) ? "true" : "false"
-        const qtTheming = (typeof SettingsData !== "undefined" && SettingsData.qtThemingEnabled) ? "true" : "false"
-
-        if (gtkTheming === "false" && qtTheming === "false")
-            return
-
-        systemThemeGenerationInProgress = true
-        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme, gtkTheming, qtTheming]
-        systemThemeGenerator.running = true
+        
+        // For non-dynamic themes, always generate if matugen is available
+        // For dynamic themes, respect the GTK/Qt theming toggles
+        if (currentTheme === dynamic) {
+            const gtkTheming = (typeof SettingsData !== "undefined" && SettingsData.gtkThemingEnabled) ? "true" : "false"
+            const qtTheming = (typeof SettingsData !== "undefined" && SettingsData.qtThemingEnabled) ? "true" : "false"
+            
+            if (gtkTheming === "false" && qtTheming === "false")
+                return
+                
+            if (!wallpaperPath)
+                return
+            systemThemeGenerationInProgress = true
+            systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme, gtkTheming, qtTheming]
+            systemThemeGenerator.running = true
+        } else {
+            // For stock and custom themes, always generate with both GTK and Qt enabled
+            let primaryColor
+            if (currentTheme === "custom") {
+                if (!customThemeData || !customThemeData.primary) {
+                    console.warn("Custom theme data not available for system theme generation")
+                    return
+                }
+                primaryColor = customThemeData.primary
+            } else {
+                primaryColor = currentThemeData.primary
+            }
+            
+            if (!primaryColor)
+                return
+            systemThemeGenerationInProgress = true
+            systemThemeGenerator.command = [shellDir + "/generate-themes.sh", primaryColor, shellDir, configDir, "generate-color", isLight, iconTheme, "true", "true"]
+            systemThemeGenerator.running = true
+        }
     }
 
 
@@ -544,6 +573,9 @@ Singleton {
         matugenCheck.running = true
         if (typeof SessionData !== "undefined")
             SessionData.isLightModeChanged.connect(root.onLightModeChanged)
+        
+        // Generate system themes on startup for current theme
+        Qt.callLater(generateSystemThemesFromCurrentTheme)
     }
 
     FileView {

@@ -1,20 +1,21 @@
 #!/bin/bash
 
 # System theme generation script for DankMaterialShell
-# This script uses matugen to generate GTK and Qt themes from wallpaper
+# This script uses matugen to generate GTK and Qt themes from wallpaper or color
 
-WALLPAPER_PATH="$1"
+INPUT_SOURCE="$1"       # Wallpaper path or hex color (e.g., "#42a5f5")
 SHELL_DIR="$2"
-CONFIG_DIR="$3"  # Config directory (typically ~/.config)
-MODE="$4"        # "generate" or "restore"
-IS_LIGHT="$5"    # "true" for light mode, "false" for dark mode
-ICON_THEME="$6"  # Icon theme name
-GTK_THEMING="$7" # "true" to enable GTK theming, "false" to disable
-QT_THEMING="$8"  # "true" to enable Qt theming, "false" to disable
+CONFIG_DIR="$3"         # Config directory (typically ~/.config)
+MODE="$4"               # "generate", "generate-color", or "restore"
+IS_LIGHT="$5"           # "true" for light mode, "false" for dark mode
+ICON_THEME="$6"         # Icon theme name
+GTK_THEMING="$7"        # "true" to enable GTK theming, "false" to disable
+QT_THEMING="$8"         # "true" to enable Qt theming, "false" to disable
 
 if [ -z "$SHELL_DIR" ] || [ -z "$CONFIG_DIR" ]; then
-    echo "Usage: $0 <wallpaper_path> <shell_dir> <config_dir> [mode] [is_light] [icon_theme] [gtk_theming] [qt_theming]" >&2
-    echo "  For restore mode, wallpaper_path can be empty" >&2
+    echo "Usage: $0 <input_source> <shell_dir> <config_dir> [mode] [is_light] [icon_theme] [gtk_theming] [qt_theming]" >&2
+    echo "  input_source: wallpaper path for 'generate' mode, hex color for 'generate-color' mode" >&2
+    echo "  For restore mode, input_source can be empty" >&2
     exit 1
 fi
 
@@ -158,9 +159,17 @@ if [ "$MODE" = "restore" ]; then
 fi
 
 # Continue with generation mode
-if [ ! -f "$WALLPAPER_PATH" ]; then
-    echo "Wallpaper file not found: $WALLPAPER_PATH" >&2
-    exit 1
+if [ "$MODE" = "generate" ]; then
+    if [ ! -f "$INPUT_SOURCE" ]; then
+        echo "Wallpaper file not found: $INPUT_SOURCE" >&2
+        exit 1
+    fi
+elif [ "$MODE" = "generate-color" ]; then
+    # Validate hex color format
+    if ! echo "$INPUT_SOURCE" | grep -qE '^#[0-9A-Fa-f]{6}$'; then
+        echo "Invalid hex color format: $INPUT_SOURCE (expected format: #RRGGBB)" >&2
+        exit 1
+    fi
 fi
 
 if [ ! -d "$SHELL_DIR" ]; then
@@ -180,12 +189,22 @@ if [ ! -f "matugen-config.toml" ]; then
 fi
 
 # Generate themes using matugen with verbose output
-echo "Generating system themes from wallpaper: $WALLPAPER_PATH"
-echo "Using config: $SHELL_DIR/matugen-config.toml"
-
-if ! matugen -v -c matugen-config.toml image "$WALLPAPER_PATH"; then
-    echo "Failed to generate system themes with matugen" >&2
-    exit 1
+if [ "$MODE" = "generate" ]; then
+    echo "Generating system themes from wallpaper: $INPUT_SOURCE"
+    echo "Using config: $SHELL_DIR/matugen-config.toml"
+    
+    if ! matugen -v -c matugen-config.toml image "$INPUT_SOURCE"; then
+        echo "Failed to generate system themes with matugen" >&2
+        exit 1
+    fi
+elif [ "$MODE" = "generate-color" ]; then
+    echo "Generating system themes from color: $INPUT_SOURCE"
+    echo "Using config: $SHELL_DIR/matugen-config.toml"
+    
+    if ! matugen -v -c matugen-config.toml color hex "$INPUT_SOURCE"; then
+        echo "Failed to generate system themes with matugen" >&2
+        exit 1
+    fi
 fi
 
 # Set color scheme and icon theme based on light/dark mode
