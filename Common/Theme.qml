@@ -535,9 +535,6 @@ Singleton {
             return
         }
 
-        generateNiriConfig()
-        generateGhosttyConfig()
-
         if (gtkThemingEnabled && typeof SettingsData !== "undefined" && SettingsData.gtkThemingEnabled) {
             generateSystemThemes()
         } else if (qtThemingEnabled && typeof SettingsData !== "undefined" && SettingsData.qtThemingEnabled) {
@@ -545,79 +542,7 @@ Singleton {
         }
     }
 
-    function generateNiriConfig() {
-        var dark = matugenColors.colors.dark
-        if (!dark) return
 
-        var bg = dark.background || "#1a1c1e"
-        var primary = dark.primary || "#42a5f5"
-        var secondary = dark.secondary || "#8ab4f8"
-        var inverse = dark.inverse_primary || "#6200ea"
-
-        var content = `layout {
-        border {
-        active-color   "${primary}"
-        inactive-color "${secondary}"
-        }
-        focus-ring {
-        active-color   "${inverse}"
-        }
-        background-color "${bg}"
-        }`
-
-        Quickshell.execDetached(["bash", "-c", `echo '${content}' > niri-colors.generated.kdl`])
-    }
-
-    function generateGhosttyConfig() {
-        var dark = matugenColors.colors.dark
-        var light = matugenColors.colors.light
-        if (!dark || !light) return
-
-        var bg = dark.background || "#1a1c1e"
-        var fg = dark.on_background || "#e3e8ef"
-        var primary = dark.primary || "#42a5f5"
-        var secondary = dark.secondary || "#8ab4f8"
-        var tertiary = dark.tertiary || "#bb86fc"
-        var tertiary_ctr = dark.tertiary_container || "#3700b3"
-        var error = dark.error || "#cf6679"
-        var inverse = dark.inverse_primary || "#6200ea"
-
-        var bg_b = light.background || "#fef7ff"
-        var fg_b = light.on_background || "#1d1b20"
-        var primary_b = light.primary || "#1976d2"
-        var secondary_b = light.secondary || "#1565c0"
-        var tertiary_b = light.tertiary || "#7b1fa2"
-        var tertiary_ctr_b = light.tertiary_container || "#e1bee7"
-        var error_b = light.error || "#b00020"
-        var inverse_b = light.inverse_primary || "#bb86fc"
-
-        var content = `background = ${bg}
-        foreground = ${fg}
-        cursor-color = ${inverse}
-        selection-background = ${secondary}
-        selection-foreground = #ffffff
-        palette = 0=${bg}
-        palette = 1=${error}
-        palette = 2=${tertiary}
-        palette = 3=${secondary}
-        palette = 4=${primary}
-        palette = 5=${tertiary_ctr}
-        palette = 6=${inverse}
-        palette = 7=${fg}
-        palette = 8=${bg_b}
-        palette = 9=${error_b}
-        palette = 10=${tertiary_b}
-        palette = 11=${secondary_b}
-        palette = 12=${primary_b}
-        palette = 13=${tertiary_ctr_b}
-        palette = 14=${inverse_b}
-        palette = 15=${fg_b}`
-
-        var ghosttyConfigDir = configDir + "/ghostty"
-        var ghosttyConfigPath = ghosttyConfigDir + "/config-dankcolors"
-
-        Quickshell.execDetached(["bash", "-c", `mkdir -p '${ghosttyConfigDir}' && echo '${content}' > '${ghosttyConfigPath}'`])
-    }
 
     Component.onCompleted: {
         matugenCheck.running = true
