@@ -95,6 +95,8 @@ Singleton {
     property color error: currentThemeData.error || "#F2B8B5"
     property color warning: currentThemeData.warning || "#FF9800"
     property color info: currentThemeData.info || "#2196F3"
+    property color tempWarning: "#ff9933"
+    property color tempDanger: "#ff5555"
 
     property color primaryHover: Qt.rgba(primary.r, primary.g, primary.b, 0.12)
     property color primaryHoverLight: Qt.rgba(primary.r, primary.g, primary.b, 0.08)

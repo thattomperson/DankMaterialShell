@@ -25,6 +25,17 @@ Singleton {
     property int seqCounter: 0
     property bool bulkDismissing: false
 
+    property var _dismissQueue: []
+    property int _dismissBatchSize: 8
+    property int _dismissTickMs: 8
+    property bool _suspendGrouping: false
+    property var _groupCache: ({"notifications": [], "popups": []})
+    property bool _groupsDirty: false
+
+    Component.onCompleted: {
+        _recomputeGroups()
+    }
+
     Timer {
         id: addGate
         interval: enterAnimMs + 50
@@ -47,11 +58,41 @@ Singleton {
         }
     }
 
+    Timer {
+        id: dismissPump
+        interval: _dismissTickMs
+        repeat: true
+        running: false
+        onTriggered: {
+            let n = Math.min(_dismissBatchSize, _dismissQueue.length)
+            for (let i = 0; i < n; ++i) {
+                const w = _dismissQueue.pop()
+                try {
+                    if (w && w.notification) w.notification.dismiss()
+                } catch (e) {}
+            }
+            if (_dismissQueue.length === 0) {
+                dismissPump.stop()
+                _suspendGrouping = false
+                bulkDismissing = false
+                popupsDisabled = false
+                _recomputeGroupsLater()
+            }
+        }
+    }
+
+    Timer {
+        id: groupsDebounce
+        interval: 16
+        repeat: false
+        onTriggered: _recomputeGroups()
+    }
+
     property bool timeUpdateTick: false
     property bool clockFormatChanged: false
 
-    readonly property var groupedNotifications: getGroupedNotifications()
-    readonly property var groupedPopups: getGroupedPopups()
+    readonly property var groupedNotifications: _groupCache.notifications
+    readonly property var groupedPopups: _groupCache.popups
 
     property var expandedGroups: ({})
     property var expandedMessages: ({})
@@ -89,6 +130,8 @@ Singleton {
                     processQueue()
                 }
             }
+
+            _recomputeGroupsLater()
         }
     }
 
@@ -217,12 +260,8 @@ Singleton {
             target: wrapper.notification.Retainable
 
             function onDropped(): void {
-                const notifIndex = root.notifications.indexOf(wrapper)
-                const allIndex = root.allWrappers.indexOf(wrapper)
-                if (allIndex !== -1)
-                    root.allWrappers.splice(allIndex, 1)
-                if (notifIndex !== -1)
-                    root.notifications.splice(notifIndex, 1)
+                root.allWrappers = root.allWrappers.filter(w => w !== wrapper)
+                root.notifications = root.notifications.filter(w => w !== wrapper)
 
                 if (root.bulkDismissing)
                     return
@@ -236,6 +275,7 @@ Singleton {
                 }
 
                 cleanupExpansionStates()
+                root._recomputeGroupsLater()
             }
 
             function onAboutToDestroy(): void {
@@ -256,30 +296,20 @@ Singleton {
         addGateBusy = false
         notificationQueue = []
 
-        for (const w of visibleNotifications)
+        for (const w of allWrappers)
             w.popup = false
         visibleNotifications = []
 
-        const toDismiss = notifications.slice()
-
+        _dismissQueue = notifications.slice()
         if (notifications.length)
-            notifications.splice(0, notifications.length)
+            notifications = []
         expandedGroups = {}
         expandedMessages = {}
 
-        for (var i = 0; i < toDismiss.length; ++i) {
-            const w = toDismiss[i]
-            if (w && w.notification) {
-                try {
-                    w.notification.dismiss()
-                } catch (e) {
+        _suspendGrouping = true
 
-                }
-            }
-        }
-
-        bulkDismissing = false
-        popupsDisabled = false
+        if (!dismissPump.running && _dismissQueue.length)
+            dismissPump.start()
     }
 
     function dismissNotification(wrapper) {
@@ -293,10 +323,10 @@ Singleton {
         popupsDisabled = disable
         if (disable) {
             notificationQueue = []
-            visibleNotifications = []
-            for (const notif of root.allWrappers) {
+            for (const notif of visibleNotifications) {
                 notif.popup = false
             }
+            visibleNotifications = []
         }
     }
 
@@ -325,32 +355,20 @@ Singleton {
     }
 
     function removeFromVisibleNotifications(wrapper) {
-        const i = visibleNotifications.findIndex(n => n === wrapper)
-        if (i !== -1) {
-            const v = [...visibleNotifications]
-            v.splice(i, 1)
-            visibleNotifications = v
-            processQueue()
-        }
+        visibleNotifications = visibleNotifications.filter(n => n !== wrapper)
+        processQueue()
     }
 
     function releaseWrapper(w) {
-        let v = visibleNotifications.slice()
-        const vi = v.indexOf(w)
-        if (vi !== -1) {
-            v.splice(vi, 1)
-            visibleNotifications = v
-        }
-
-        let q = notificationQueue.slice()
-        const qi = q.indexOf(w)
-        if (qi !== -1) {
-            q.splice(qi, 1)
-            notificationQueue = q
-        }
+        visibleNotifications = visibleNotifications.filter(n => n !== w)
+        notificationQueue = notificationQueue.filter(n => n !== w)
 
         if (w && w.destroy && !w.isPersistent) {
-            w.destroy()
+            Qt.callLater(() => {
+                try {
+                    w.destroy()
+                } catch (e) {}
+            })
         }
     }
 
@@ -362,7 +380,25 @@ Singleton {
         return wrapper.appName.toLowerCase()
     }
 
-    function getGroupedNotifications() {
+    function _recomputeGroups() {
+        if (_suspendGrouping) {
+            _groupsDirty = true
+            return
+        }
+        _groupCache = {
+            "notifications": _calcGroupedNotifications(),
+            "popups": _calcGroupedPopups()
+        }
+        _groupsDirty = false
+    }
+
+    function _recomputeGroupsLater() {
+        _groupsDirty = true
+        if (!groupsDebounce.running)
+            groupsDebounce.start()
+    }
+
+    function _calcGroupedNotifications() {
         const groups = {}
 
         for (const notif of notifications) {
@@ -400,7 +436,7 @@ Singleton {
                                           })
     }
 
-    function getGroupedPopups() {
+    function _calcGroupedPopups() {
         const groups = {}
 
         for (const notif of popups) {

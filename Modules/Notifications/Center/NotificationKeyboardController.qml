@@ -308,109 +308,25 @@ QtObject {
         if (!group)
             return
 
-        // Save current state for smart navigation
-        const currentGroupKey = group.key
-        const isNotification = currentItem.type === "notification"
-        const notificationIndex = currentItem.notificationIndex
-        const totalNotificationsInGroup = group.notifications ? group.notifications.length : 0
-        const isLastNotificationInGroup = isNotification
-                                        && totalNotificationsInGroup === 1
-        const isLastNotificationInList = isNotification
-                                       && notificationIndex === totalNotificationsInGroup - 1
-
-        // Store what to select next BEFORE clearing
-        let nextTargetType = ""
-        let nextTargetGroupKey = ""
-        let nextTargetNotificationIndex = -1
-
         if (currentItem.type === "group") {
             NotificationService.dismissGroup(group.key)
-
-            // Look for next group
-            for (var i = currentItem.groupIndex + 1; i < groups.length; i++) {
-                nextTargetType = "group"
-                nextTargetGroupKey = groups[i].key
-                break
-            }
-
-            if (!nextTargetGroupKey && currentItem.groupIndex > 0) {
-                nextTargetType = "group"
-                nextTargetGroupKey = groups[currentItem.groupIndex - 1].key
-            }
-        } else if (isNotification) {
-            const notification = group.notifications[notificationIndex]
+        } else if (currentItem.type === "notification") {
+            const notification = group.notifications[currentItem.notificationIndex]
             NotificationService.dismissNotification(notification)
-
-            if (isLastNotificationInGroup) {
-                for (var i = currentItem.groupIndex + 1; i < groups.length; i++) {
-                    nextTargetType = "group"
-                    nextTargetGroupKey = groups[i].key
-                    break
-                }
-
-                if (!nextTargetGroupKey && currentItem.groupIndex > 0) {
-                    nextTargetType = "group"
-                    nextTargetGroupKey = groups[currentItem.groupIndex - 1].key
-                }
-            } else if (isLastNotificationInList) {
-                // If group still has notifications after this one is removed, select the new last one
-                if (group.count > 1) {
-                    nextTargetType = "notification"
-                    nextTargetGroupKey = currentGroupKey
-                    // After removing current notification, the new last index will be count-2
-                    nextTargetNotificationIndex = group.count - 2
-                } else {
-                    // Group will be empty or collapsed, select the group header
-                    nextTargetType = "group"
-                    nextTargetGroupKey = currentGroupKey
-                    nextTargetNotificationIndex = -1
-                }
-            } else {
-                nextTargetType = "notification"
-                nextTargetGroupKey = currentGroupKey
-                nextTargetNotificationIndex = notificationIndex
-            }
         }
 
         rebuildFlatNavigation()
 
-        // Find and select the target we identified
         if (flatNavigation.length === 0) {
-            selectedFlatIndex = 0
-            updateSelectedIdFromIndex()
-        } else if (nextTargetGroupKey) {
-            let found = false
-            for (var i = 0; i < flatNavigation.length; i++) {
-                const item = flatNavigation[i]
-
-                if (nextTargetType === "group" && item.type === "group"
-                        && item.groupKey === nextTargetGroupKey) {
-                    selectedFlatIndex = i
-                    found = true
-                    break
-                } else if (nextTargetType === "notification"
-                           && item.type === "notification"
-                           && item.groupKey === nextTargetGroupKey
-                           && item.notificationIndex === nextTargetNotificationIndex) {
-                    selectedFlatIndex = i
-                    found = true
-                    break
-                }
+            keyboardNavigationActive = false
+            if (listView) {
+                listView.keyboardActive = false
             }
-
-            if (!found) {
-                selectedFlatIndex = Math.min(selectedFlatIndex,
-                                             flatNavigation.length - 1)
-            }
-
-            updateSelectedIdFromIndex()
         } else {
-            selectedFlatIndex = Math.min(selectedFlatIndex,
-                                         flatNavigation.length - 1)
+            selectedFlatIndex = Math.min(selectedFlatIndex, flatNavigation.length - 1)
             updateSelectedIdFromIndex()
+            ensureVisible()
         }
-
-        ensureVisible()
     }
 
     function ensureVisible() {
