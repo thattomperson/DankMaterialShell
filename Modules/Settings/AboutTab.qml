@@ -378,10 +378,27 @@ Item {
                             }
                             
                             StyledText {
-                                text: "(Hyprland Soon™)"
+                                text: "&"
                                 font.pixelSize: Theme.fontSizeMedium
                                 color: Theme.surfaceVariantText
                                 anchors.verticalCenter: parent.verticalCenter
+                            }
+                            
+                            StyledText {
+                                text: `<a href="https://github.com/hyprwm/Hyprland" style="text-decoration:none; color:${Theme.primary};">hyprland</a>`
+                                font.pixelSize: Theme.fontSizeMedium
+                                linkColor: Theme.primary
+                                textFormat: Text.RichText
+                                color: Theme.surfaceVariantText
+                                onLinkActivated: url => Qt.openUrlExternally(url)
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                    acceptedButtons: Qt.NoButton
+                                    propagateComposedEvents: true
+                                }
                             }
                         }
 

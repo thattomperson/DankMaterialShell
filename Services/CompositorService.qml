@@ -6,6 +6,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import Quickshell.Hyprland
 
 Singleton {
     id: root
@@ -19,6 +20,7 @@ Singleton {
     readonly property string niriSocket: Quickshell.env("NIRI_SOCKET")
 
     property bool useNiriSorting: isNiri && NiriService
+    property bool useHyprlandSorting: isHyprland && HyprlandService
 
     // Unified sorted toplevels - automatically chooses sorting based on compositor
     property var sortedToplevels: {
@@ -31,12 +33,16 @@ Singleton {
             return NiriService.sortToplevels(ToplevelManager.toplevels.values)
         }
 
-        // For non-niri compositors or when niri isn't ready yet, return unsorted toplevels
+        // Use Hyprland sorting when both compositor is Hyprland AND hyprland service is ready
+        if (useHyprlandSorting) {
+            return HyprlandService.sortToplevels(ToplevelManager.toplevels.values)
+        }
+
+        // For other compositors or when services aren't ready yet, return unsorted toplevels
         return ToplevelManager.toplevels.values
     }
 
     Component.onCompleted: {
-        console.log("CompositorService: Starting detection...")
         detectCompositor()
     }
 
@@ -46,7 +52,7 @@ Singleton {
             isHyprland = true
             isNiri = false
             compositor = "hyprland"
-            console.log("CompositorService: Detected Hyprland with signature:", hyprlandSignature)
+            console.log("CompositorService: Detected Hyprland")
             return
         }
 
@@ -80,5 +86,13 @@ Singleton {
                 console.warn("CompositorService: Niri socket check failed, defaulting to Niri anyway")
             }
         }
+    }
+
+    function logout() {
+        if (isNiri) {
+            NiriService.quit()
+            return
+        }
+        Hyprland.dispatch("exit")
     }
 }
