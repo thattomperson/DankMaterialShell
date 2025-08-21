@@ -38,7 +38,6 @@ PanelWindow {
     function forceExit() {
         if (_isDestroying)
             return
-
         _isDestroying = true
         exiting = true
         visible = false

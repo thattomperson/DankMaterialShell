@@ -54,7 +54,7 @@ DankPopout {
 
     onShouldBeVisibleChanged: {
         if (shouldBeVisible) {
-            NotificationService.disablePopups(true)
+            NotificationService.onOverlayOpen()
             // Set up keyboard controller when content is loaded
             Qt.callLater(function () {
                 if (contentLoader.item) {
@@ -79,7 +79,7 @@ DankPopout {
                 }
             })
         } else {
-            NotificationService.disablePopups(false)
+            NotificationService.onOverlayClose()
             // Reset keyboard state when closing
             keyboardController.keyboardNavigationActive = false
         }

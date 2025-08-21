@@ -9,7 +9,7 @@ QtObject {
     property var modelData
     property int topMargin: 0
     property int baseNotificationHeight: 120
-    property int maxTargetNotifications: 3
+    property int maxTargetNotifications: 4
     property var popupWindows: [] // strong refs to windows (live until exitFinished)
     property var destroyingWindows: new Set()
     property Component popupComponent
@@ -34,50 +34,31 @@ QtObject {
     property Timer sweeper
 
     sweeper: Timer {
-        interval: 2000
-        running: false // Not running by default
+        interval: 500
+        running: false
         repeat: true
         onTriggered: {
             let toRemove = []
             for (let p of popupWindows) {
-                if (!p) {
-                    toRemove.push(p)
-                    continue
-                }
-                const isZombie = p.status === Component.Null || (!p.visible
-                                                                 && !p.exiting)
-                               || (!p.notificationData && !p._isDestroying)
-                               || (!p.hasValidData && !p._isDestroying)
+                if (!p) { toRemove.push(p); continue }
+                const isZombie =
+                    p.status === Component.Null ||
+                    (!p.visible && !p.exiting) ||
+                    (!p.notificationData && !p._isDestroying) ||
+                    (!p.hasValidData && !p._isDestroying)
                 if (isZombie) {
-
                     toRemove.push(p)
-                    if (p.forceExit) {
-                        p.forceExit()
-                    } else if (p.destroy) {
-                        try {
-                            p.destroy()
-                        } catch (e) {
-
-                        }
-                    }
+                    if (p.forceExit) p.forceExit()
+                    else if (p.destroy) { try { p.destroy() } catch(e) {} }
                 }
             }
-            if (toRemove.length > 0) {
-                for (let zombie of toRemove) {
-                    const i = popupWindows.indexOf(zombie)
-                    if (i !== -1)
-                        popupWindows.splice(i, 1)
-                }
-                popupWindows = popupWindows.slice()
-                const survivors = _active().sort((a, b) => {
-                                                     return a.screenY - b.screenY
-                                                 })
-                for (var k = 0; k < survivors.length; ++k) {
+            if (toRemove.length) {
+                popupWindows = popupWindows.filter(p => toRemove.indexOf(p) === -1)
+                const survivors = _active().sort((a,b)=>a.screenY-b.screenY)
+                for (var k=0; k<survivors.length; ++k)
                     survivors[k].screenY = topMargin + k * baseNotificationHeight
-                }
             }
-            if (popupWindows.length === 0)
-                sweeper.stop()
+            if (popupWindows.length === 0) sweeper.stop()
         }
     }
 
@@ -94,11 +75,82 @@ QtObject {
                 && p.hasValidData
     }
 
+    function _canMakeRoomFor(wrapper) {
+        const activeWindows = _active()
+        if (activeWindows.length < maxTargetNotifications)
+            return true
+        
+        if (!wrapper || !wrapper.notification)
+            return false
+            
+        const incomingUrgency = wrapper.notification.urgency || 0
+        
+        for (let p of activeWindows) {
+            if (!p.notificationData || !p.notificationData.notification)
+                continue
+            
+            const existingUrgency = p.notificationData.notification.urgency || 0
+            
+            if (existingUrgency < incomingUrgency)
+                return true
+                
+            if (existingUrgency === incomingUrgency) {
+                const timer = p.notificationData.timer
+                if (timer && !timer.running)
+                    return true
+            }
+        }
+        
+        return false
+    }
+
+    function _makeRoomForNew(wrapper) {
+        const activeWindows = _active()
+        if (activeWindows.length < maxTargetNotifications)
+            return
+            
+        const toRemove = _selectPopupToRemove(activeWindows, wrapper)
+        if (toRemove && !toRemove.exiting) {
+            toRemove.notificationData.removedByLimit = true
+            toRemove.notificationData.popup = false
+            if (toRemove.notificationData.timer)
+                toRemove.notificationData.timer.stop()
+        }
+    }
+
+    function _selectPopupToRemove(activeWindows, incomingWrapper) {
+        const incomingUrgency = (incomingWrapper && incomingWrapper.notification) 
+                                ? incomingWrapper.notification.urgency || 0 : 0
+        
+        const sortedWindows = activeWindows.slice().sort((a, b) => {
+            const aUrgency = (a.notificationData && a.notificationData.notification) 
+                           ? a.notificationData.notification.urgency || 0 : 0
+            const bUrgency = (b.notificationData && b.notificationData.notification) 
+                           ? b.notificationData.notification.urgency || 0 : 0
+            
+            if (aUrgency !== bUrgency)
+                return aUrgency - bUrgency
+            
+            const aTimer = a.notificationData && a.notificationData.timer
+            const bTimer = b.notificationData && b.notificationData.timer
+            const aRunning = aTimer && aTimer.running
+            const bRunning = bTimer && bTimer.running
+            
+            if (aRunning !== bRunning)
+                return aRunning ? 1 : -1
+            
+            return b.screenY - a.screenY
+        })
+        
+        return sortedWindows[0]
+    }
+
     function _sync(newWrappers) {
         for (let w of newWrappers) {
             if (w && !_hasWindowFor(w))
                 insertNewestAtTop(w)
         }
+        
         for (let p of popupWindows.slice()) {
             if (!_isValidWindow(p))
                 continue
@@ -116,6 +168,7 @@ QtObject {
 
             return
         }
+        
         for (let p of popupWindows) {
             if (!_isValidWindow(p))
                 continue
@@ -145,8 +198,6 @@ QtObject {
         popupWindows.push(win)
         if (!sweeper.running)
             sweeper.start()
-
-        _maybeStartOverflow()
     }
 
     function _active() {
@@ -168,64 +219,7 @@ QtObject {
         return b
     }
 
-    function _maybeStartOverflow() {
-        const activeWindows = _active()
-        if (activeWindows.length <= maxTargetNotifications + 1)
-            return
-
-        const expiredCandidates = activeWindows.filter(p => {
-                                                           if (!p.notificationData
-                                                               || !p.notificationData.notification)
-                                                           return false
-                                                           if (p.notificationData.notification.urgency === 2)
-                                                           return false
-
-                                                           const timeoutMs = p.notificationData.timer ? p.notificationData.timer.interval : 5000
-                                                           if (timeoutMs === 0)
-                                                           return false
-
-                                                           return !p.notificationData.timer.running
-                                                       }).sort(
-                                    (a, b) => b.screenY - a.screenY)
-
-        if (expiredCandidates.length > 0) {
-            const toRemove = expiredCandidates[0]
-            if (toRemove && !toRemove.exiting) {
-                toRemove.notificationData.removedByLimit = true
-                toRemove.notificationData.popup = false
-            }
-            return
-        }
-
-        const timeoutCandidates = activeWindows.filter(p => {
-                                                           if (!p.notificationData
-                                                               || !p.notificationData.notification)
-                                                           return false
-                                                           if (p.notificationData.notification.urgency === 2)
-                                                           return false
-
-                                                           const timeoutMs = p.notificationData.timer ? p.notificationData.timer.interval : 5000
-                                                           return timeoutMs > 0
-                                                       }).sort((a, b) => {
-                                                                   const aTimeout = a.notificationData.timer ? a.notificationData.timer.interval : 5000
-                                                                   const bTimeout = b.notificationData.timer ? b.notificationData.timer.interval : 5000
-                                                                   if (aTimeout !== bTimeout)
-                                                                   return aTimeout - bTimeout
-                                                                   return b.screenY - a.screenY
-                                                               })
-
-        if (timeoutCandidates.length > 0) {
-            const toRemove = timeoutCandidates[0]
-            if (toRemove && !toRemove.exiting) {
-                toRemove.notificationData.removedByLimit = true
-                toRemove.notificationData.popup = false
-            }
-        }
-    }
-
     function _onPopupEntered(p) {
-        if (_isValidWindow(p))
-            _maybeStartOverflow()
     }
 
     function _onPopupExitFinished(p) {
@@ -263,7 +257,6 @@ QtObject {
         for (var k = 0; k < survivors.length; ++k) {
             survivors[k].screenY = topMargin + k * baseNotificationHeight
         }
-        _maybeStartOverflow()
     }
 
     function cleanupAllWindows() {

@@ -15,7 +15,7 @@ Singleton {
     readonly property list<NotifWrapper> notifications: []
     readonly property list<NotifWrapper> allWrappers: []
     readonly property list<NotifWrapper> popups: allWrappers.filter(
-                                                     n => n.popup)
+                                                     n => n && n.popup)
 
     property list<NotifWrapper> notificationQueue: []
     property list<NotifWrapper> visibleNotifications: []
@@ -24,6 +24,12 @@ Singleton {
     property int enterAnimMs: 400
     property int seqCounter: 0
     property bool bulkDismissing: false
+
+    property int maxQueueSize: 32
+    property int maxIngressPerSecond: 20
+    property double _lastIngressSec: 0
+    property int _ingressCountThisSec: 0
+    property int maxStoredNotifications: 300
 
     property var _dismissQueue: []
     property int _dismissBatchSize: 8
@@ -34,6 +40,80 @@ Singleton {
 
     Component.onCompleted: {
         _recomputeGroups()
+    }
+
+    function _nowSec() { return Date.now() / 1000.0 }
+
+    function _ingressAllowed(notif) {
+        const t = _nowSec()
+        if (t - _lastIngressSec >= 1.0) {
+            _lastIngressSec = t
+            _ingressCountThisSec = 0
+        }
+        _ingressCountThisSec += 1
+        if (notif.urgency === NotificationUrgency.Critical)
+            return true
+        return _ingressCountThisSec <= maxIngressPerSecond
+    }
+
+    function _enqueuePopup(wrapper) {
+        if (notificationQueue.length >= maxQueueSize) {
+            const gk = getGroupKey(wrapper)
+            let idx = notificationQueue.findIndex(w =>
+                w && getGroupKey(w) === gk && w.urgency !== NotificationUrgency.Critical)
+            if (idx === -1) {
+                idx = notificationQueue.findIndex(w => w && w.urgency !== NotificationUrgency.Critical)
+            }
+            if (idx === -1) idx = 0
+            const victim = notificationQueue[idx]
+            if (victim) victim.popup = false
+            notificationQueue.splice(idx, 1)
+        }
+        notificationQueue = [...notificationQueue, wrapper]
+    }
+
+    function _initWrapperPersistence(wrapper) {
+        const timeoutMs = wrapper.timer ? wrapper.timer.interval : 5000
+        const isCritical = wrapper.notification && wrapper.notification.urgency === NotificationUrgency.Critical
+        wrapper.isPersistent = isCritical || (timeoutMs === 0)
+    }
+
+    function _trimStored() {
+        if (notifications.length > maxStoredNotifications) {
+            const overflow = notifications.length - maxStoredNotifications
+            let toDrop = []
+            for (let i = notifications.length - 1; i >= 0 && toDrop.length < overflow; --i) {
+                const w = notifications[i]
+                if (w && w.notification && w.urgency !== NotificationUrgency.Critical)
+                    toDrop.push(w)
+            }
+            for (let i = notifications.length - 1; i >= 0 && toDrop.length < overflow; --i) {
+                const w = notifications[i]
+                if (w && w.notification && toDrop.indexOf(w) === -1)
+                    toDrop.push(w)
+            }
+            for (const w of toDrop) { try { w.notification.dismiss() } catch(e) {} }
+        }
+    }
+
+    function onOverlayOpen() {
+        popupsDisabled = true
+        addGate.stop()
+        addGateBusy = false
+
+        notificationQueue = []
+        for (const w of visibleNotifications) {
+            if (w) {
+                w.popup = false
+            }
+        }
+        visibleNotifications = []
+        _recomputeGroupsLater()
+    }
+
+    function onOverlayClose() {
+        popupsDisabled = false
+        processQueue()
     }
 
     Timer {
@@ -51,7 +131,7 @@ Singleton {
         id: timeUpdateTimer
         interval: 30000
         repeat: true
-        running: root.allWrappers.length > 0
+        running: root.allWrappers.length > 0 || visibleNotifications.length > 0
         triggeredOnStart: false
         onTriggered: {
             root.timeUpdateTick = !root.timeUpdateTick
@@ -114,8 +194,14 @@ Singleton {
         onNotification: notif => {
             notif.tracked = true
 
-            const shouldShowPopup = !root.popupsDisabled
-            && !SessionData.doNotDisturb
+            if (!_ingressAllowed(notif)) {
+                if (notif.urgency !== NotificationUrgency.Critical) {
+                    try { notif.dismiss() } catch(e) {}
+                    return
+                }
+            }
+
+            const shouldShowPopup = !root.popupsDisabled && !SessionData.doNotDisturb
             const wrapper = notifComponent.createObject(root, {
                                                             "popup": shouldShowPopup,
                                                             "notification": notif
@@ -124,9 +210,14 @@ Singleton {
             if (wrapper) {
                 root.allWrappers.push(wrapper)
                 root.notifications.push(wrapper)
+                _trimStored()
+
+                Qt.callLater(() => {
+                    _initWrapperPersistence(wrapper)
+                })
 
                 if (shouldShowPopup) {
-                    notificationQueue = [...notificationQueue, wrapper]
+                    _enqueuePopup(wrapper)
                     processQueue()
                 }
             }
@@ -228,6 +319,7 @@ Singleton {
         readonly property string summary: notification.summary
         readonly property string body: notification.body
         readonly property string htmlBody: {
+            if (!popup && !root.popupsDisabled) return ""
             if (body && (body.includes('<') && body.includes('>'))) {
                 return body
             }
@@ -340,6 +432,11 @@ Singleton {
         if (notificationQueue.length === 0)
             return
 
+        const activePopupCount = visibleNotifications.filter(n => n && n.popup).length
+        if (activePopupCount >= 4) {
+            return
+        }
+
         const next = notificationQueue.shift()
 
         next.seq = ++seqCounter
@@ -363,7 +460,7 @@ Singleton {
         visibleNotifications = visibleNotifications.filter(n => n !== w)
         notificationQueue = notificationQueue.filter(n => n !== w)
 
-        if (w && w.destroy && !w.isPersistent) {
+        if (w && w.destroy && !w.isPersistent && notifications.indexOf(w) === -1) {
             Qt.callLater(() => {
                 try {
                     w.destroy()

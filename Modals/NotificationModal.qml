@@ -39,6 +39,7 @@ DankModal {
 
     function show() {
         notificationModalOpen = true
+        NotificationService.onOverlayOpen()
         open()
         modalKeyboardController.reset()
 
@@ -50,6 +51,7 @@ DankModal {
 
     function hide() {
         notificationModalOpen = false
+        NotificationService.onOverlayClose()
         close()
         modalKeyboardController.reset()
     }
