@@ -712,10 +712,8 @@ Item {
 
                     StyledText {
                         id: warningText
-
-                        text: "System app theming will generate GTK and Qt themes based on your selected theme colors"
                         font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.warning
+                        text: "The below settings will modify your GTK and Qt settings. If you wish to preserve your current configurations, please back them up (qt5ct.conf|qt6ct.conf and ~/.config/gtk-3.0|gtk-4.0)."
                         wrapMode: Text.WordWrap
                         width: parent.width - Theme.iconSizeSmall - Theme.spacingM
                         anchors.verticalCenter: parent.verticalCenter
@@ -788,7 +786,7 @@ Item {
                 border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                                       Theme.outline.b, 0.2)
                 border.width: 1
-                visible: Theme.currentTheme === Theme.dynamic && Theme.matugenAvailable
+                visible: Theme.matugenAvailable
 
                 Column {
                     id: systemThemingSection
@@ -817,30 +815,90 @@ Item {
                         }
                     }
 
-                    DankToggle {
+                    Row {
                         width: parent.width
-                        text: "Theme GTK Applications"
-                        description: SettingsData.gtkAvailable ? "File managers, text editors, and system dialogs will match your theme" : "GTK theming not available (install gsettings)"
-                        enabled: SettingsData.gtkAvailable
-                        checked: SettingsData.gtkAvailable
-                                 && SettingsData.gtkThemingEnabled
-                        onToggled: function (checked) {
-                            SettingsData.setGtkThemingEnabled(checked)
-                            Theme.forceGenerateSystemThemes()
+                        spacing: Theme.spacingM
+
+                        Rectangle {
+                            width: (parent.width - Theme.spacingM) / 2
+                            height: 48
+                            radius: Theme.cornerRadius
+                            color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
+                            border.color: Theme.primary
+                            border.width: 1
+
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: Theme.spacingS
+
+                                DankIcon {
+                                    name: "folder"
+                                    size: 16
+                                    color: Theme.primary
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                StyledText {
+                                    text: "Apply GTK Colors"
+                                    font.pixelSize: Theme.fontSizeMedium
+                                    color: Theme.primary
+                                    font.weight: Font.Medium
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: Theme.applyGtkColors()
+                            }
+                        }
+
+                        Rectangle {
+                            width: (parent.width - Theme.spacingM) / 2
+                            height: 48
+                            radius: Theme.cornerRadius
+                            color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
+                            border.color: Theme.primary
+                            border.width: 1
+
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: Theme.spacingS
+
+                                DankIcon {
+                                    name: "settings"
+                                    size: 16
+                                    color: Theme.primary
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                StyledText {
+                                    text: "Apply Qt Colors"
+                                    font.pixelSize: Theme.fontSizeMedium
+                                    color: Theme.primary
+                                    font.weight: Font.Medium
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: Theme.applyQtColors()
+                            }
                         }
                     }
 
-                    DankToggle {
+                    StyledText {
+                        text: "Generate baseline GTK3/4 or QT5/QT6 (requires qt6ct-kde) configurations to follow DMS colors. Only needed once."
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
+                        wrapMode: Text.WordWrap
                         width: parent.width
-                        text: "Theme Qt Applications"
-                        description: (SettingsData.qt5ctAvailable || SettingsData.qt6ctAvailable) ? "Qt applications will match your theme colors" : "Qt theming not available (install qt5ct or qt6ct)"
-                        enabled: (SettingsData.qt5ctAvailable || SettingsData.qt6ctAvailable)
-                        checked: (SettingsData.qt5ctAvailable || SettingsData.qt6ctAvailable)
-                                 && SettingsData.qtThemingEnabled
-                        onToggled: function (checked) {
-                            SettingsData.setQtThemingEnabled(checked)
-                            Theme.forceGenerateSystemThemes()
-                        }
+                        horizontalAlignment: Text.AlignHCenter
                     }
                 }
             }

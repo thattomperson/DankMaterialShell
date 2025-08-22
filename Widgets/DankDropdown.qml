@@ -348,7 +348,7 @@ Rectangle {
                                     onClicked: {
                                         root.currentValue = modelData
                                         root.valueChanged(modelData)
-                                        ListView.view.popupRef.close()
+                                        dropdownMenu.close()
                                     }
                                 }
                             }

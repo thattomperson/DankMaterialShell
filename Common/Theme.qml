@@ -357,11 +357,9 @@ Singleton {
 
         const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "true" : "false"
         const iconTheme = (typeof SettingsData !== "undefined" && SettingsData.iconTheme) ? SettingsData.iconTheme : "System Default"
-        const gtkTheming = (typeof SettingsData !== "undefined" && SettingsData.gtkThemingEnabled) ? "true" : "false"
-        const qtTheming = (typeof SettingsData !== "undefined" && SettingsData.qtThemingEnabled) ? "true" : "false"
 
         systemThemeGenerationInProgress = true
-        systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme, gtkTheming, qtTheming]
+        systemThemeGenerator.command = [shellDir + "/scripts/matugen.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme]
         systemThemeGenerator.running = true
     }
 
@@ -372,22 +370,13 @@ Singleton {
         const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "true" : "false"
         const iconTheme = (typeof SettingsData !== "undefined" && SettingsData.iconTheme) ? SettingsData.iconTheme : "System Default"
         
-        // For non-dynamic themes, always generate if matugen is available
-        // For dynamic themes, respect the GTK/Qt theming toggles
         if (currentTheme === dynamic) {
-            const gtkTheming = (typeof SettingsData !== "undefined" && SettingsData.gtkThemingEnabled) ? "true" : "false"
-            const qtTheming = (typeof SettingsData !== "undefined" && SettingsData.qtThemingEnabled) ? "true" : "false"
-            
-            if (gtkTheming === "false" && qtTheming === "false")
-                return
-                
             if (!wallpaperPath)
                 return
             systemThemeGenerationInProgress = true
-            systemThemeGenerator.command = [shellDir + "/generate-themes.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme, gtkTheming, qtTheming]
+            systemThemeGenerator.command = [shellDir + "/scripts/matugen.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme]
             systemThemeGenerator.running = true
         } else {
-            // For stock and custom themes, always generate with both GTK and Qt enabled
             let primaryColor
             if (currentTheme === "custom") {
                 if (!customThemeData || !customThemeData.primary) {
@@ -402,9 +391,34 @@ Singleton {
             if (!primaryColor)
                 return
             systemThemeGenerationInProgress = true
-            systemThemeGenerator.command = [shellDir + "/generate-themes.sh", primaryColor, shellDir, configDir, "generate-color", isLight, iconTheme, "true", "true"]
+            systemThemeGenerator.command = [shellDir + "/scripts/matugen.sh", primaryColor, shellDir, configDir, "generate-color", isLight, iconTheme]
             systemThemeGenerator.running = true
         }
+    }
+
+    function applyGtkColors() {
+        if (!matugenAvailable) {
+            if (typeof ToastService !== "undefined") {
+                ToastService.showError("matugen not available - cannot apply GTK colors")
+            }
+            return
+        }
+
+        const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "true" : "false"
+        gtkApplier.command = [shellDir + "/scripts/gtk.sh", configDir, isLight, shellDir]
+        gtkApplier.running = true
+    }
+
+    function applyQtColors() {
+        if (!matugenAvailable) {
+            if (typeof ToastService !== "undefined") {
+                ToastService.showError("matugen not available - cannot apply Qt colors")
+            }
+            return
+        }
+
+        qtApplier.command = [shellDir + "/scripts/qt.sh", configDir]
+        qtApplier.running = true
     }
 
 
@@ -557,6 +571,56 @@ Singleton {
             if (exitCode !== 0) {
                 if (typeof ToastService !== "undefined") {
                     ToastService.showError("Failed to generate system themes: " + systemThemeStderr.text)
+                }
+            }
+        }
+    }
+
+    Process {
+        id: gtkApplier
+        running: false
+
+        stdout: StdioCollector {
+            id: gtkStdout
+        }
+
+        stderr: StdioCollector {
+            id: gtkStderr
+        }
+
+        onExited: exitCode => {
+            if (exitCode === 0) {
+                if (typeof ToastService !== "undefined") {
+                    ToastService.showInfo("GTK colors applied successfully")
+                }
+            } else {
+                if (typeof ToastService !== "undefined") {
+                    ToastService.showError("Failed to apply GTK colors: " + gtkStderr.text)
+                }
+            }
+        }
+    }
+
+    Process {
+        id: qtApplier
+        running: false
+
+        stdout: StdioCollector {
+            id: qtStdout
+        }
+
+        stderr: StdioCollector {
+            id: qtStderr
+        }
+
+        onExited: exitCode => {
+            if (exitCode === 0) {
+                if (typeof ToastService !== "undefined") {
+                    ToastService.showInfo("Qt colors applied successfully")
+                }
+            } else {
+                if (typeof ToastService !== "undefined") {
+                    ToastService.showError("Failed to apply Qt colors: " + qtStderr.text)
                 }
             }
         }
