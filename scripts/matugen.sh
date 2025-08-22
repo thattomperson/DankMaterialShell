@@ -69,23 +69,46 @@ if [ ! -f "matugen-config.toml" ]; then
     exit 1
 fi
 
+TEMP_CONFIG="/tmp/matugen-config-$$.toml"
+cp "matugen-config.toml" "$TEMP_CONFIG"
+
+if [ "$IS_LIGHT" = "true" ]; then
+    COLLOID_TEMPLATE="$SHELL_DIR/templates/gtk3-colloid-light.css"
+else
+    COLLOID_TEMPLATE="$SHELL_DIR/templates/gtk3-colloid-dark.css"
+fi
+
+sed -i "/\[templates\.gtk3\]/,/^\[/ s|input_path = './templates/gtk-colors.css'|input_path = '$COLLOID_TEMPLATE'|" "$TEMP_CONFIG"
+sed -i "s|input_path = './templates/|input_path = '$SHELL_DIR/templates/|g" "$TEMP_CONFIG"
+
+MATUGEN_MODE=""
+if [ "$IS_LIGHT" = "true" ]; then
+    MATUGEN_MODE="-m light"
+else
+    MATUGEN_MODE="-m dark"
+fi
+
 if [ "$MODE" = "generate" ]; then
     echo "Generating matugen themes from wallpaper: $INPUT_SOURCE"
-    echo "Using config: $SHELL_DIR/matugen-config.toml"
+    echo "Using config: $TEMP_CONFIG with template: $COLLOID_TEMPLATE"
     
-    if ! matugen -v -c matugen-config.toml image "$INPUT_SOURCE"; then
+    if ! matugen -v -c "$TEMP_CONFIG" image "$INPUT_SOURCE" $MATUGEN_MODE; then
         echo "Failed to generate themes with matugen" >&2
+        rm -f "$TEMP_CONFIG"
         exit 1
     fi
 elif [ "$MODE" = "generate-color" ]; then
     echo "Generating matugen themes from color: $INPUT_SOURCE"
-    echo "Using config: $SHELL_DIR/matugen-config.toml"
+    echo "Using config: $TEMP_CONFIG with template: $COLLOID_TEMPLATE"
     
-    if ! matugen -v -c matugen-config.toml color hex "$INPUT_SOURCE"; then
+    if ! matugen -v -c "$TEMP_CONFIG" color hex "$INPUT_SOURCE" $MATUGEN_MODE; then
         echo "Failed to generate themes with matugen" >&2
+        rm -f "$TEMP_CONFIG"
         exit 1
     fi
 fi
+
+rm -f "$TEMP_CONFIG"
 
 echo "Updating system theme preferences..."
 

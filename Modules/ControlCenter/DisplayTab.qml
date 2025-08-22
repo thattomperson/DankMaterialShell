@@ -218,29 +218,29 @@ Item {
                     width: (parent.width - Theme.spacingM) / 2
                     height: 80
                     radius: Theme.cornerRadius
-                    color: Theme.isLightMode ? Qt.rgba(
+                    color: SessionData.isLightMode ? Qt.rgba(
                                                    Theme.primary.r,
                                                    Theme.primary.g,
                                                    Theme.primary.b,
                                                    0.12) : (lightModeToggle.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.08))
-                    border.color: Theme.isLightMode ? Theme.primary : "transparent"
-                    border.width: Theme.isLightMode ? 1 : 0
+                    border.color: SessionData.isLightMode ? Theme.primary : "transparent"
+                    border.width: SessionData.isLightMode ? 1 : 0
 
                     Column {
                         anchors.centerIn: parent
                         spacing: Theme.spacingS
 
                         DankIcon {
-                            name: Theme.isLightMode ? "light_mode" : "palette"
+                            name: SessionData.isLightMode ? "light_mode" : "palette"
                             size: Theme.iconSizeLarge
-                            color: Theme.isLightMode ? Theme.primary : Theme.surfaceText
+                            color: SessionData.isLightMode ? Theme.primary : Theme.surfaceText
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
 
                         StyledText {
-                            text: Theme.isLightMode ? "Light Mode" : "Dark Mode"
+                            text: SessionData.isLightMode ? "Light Mode" : "Dark Mode"
                             font.pixelSize: Theme.fontSizeMedium
-                            color: Theme.isLightMode ? Theme.primary : Theme.surfaceText
+                            color: SessionData.isLightMode ? Theme.primary : Theme.surfaceText
                             font.weight: Font.Medium
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
@@ -253,7 +253,10 @@ Item {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            Theme.toggleLightMode()
+                            const newLightMode = !SessionData.isLightMode
+                            SessionData.setLightMode(newLightMode)
+                            Theme.isLightMode = newLightMode
+                            PortalService.setLightMode(newLightMode)
                         }
                     }
 
