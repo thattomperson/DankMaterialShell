@@ -7,20 +7,13 @@ import Quickshell.Hyprland
 
 Singleton {
     id: root
-
-    property bool hyprlandAvailable: {
-        const signature = Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
-        return signature && signature.length > 0
-    }
-
-    property var allWorkspaces: hyprlandAvailable && Hyprland.workspaces ? Hyprland.workspaces.values : []
-    property var focusedWorkspace: hyprlandAvailable ? Hyprland.focusedWorkspace : null
-    property var monitors: hyprlandAvailable ? Hyprland.monitors : []
-    property var focusedMonitor: hyprlandAvailable ? Hyprland.focusedMonitor : null
+    
+    property var allWorkspaces: CompositorService.isHyprland && Hyprland.workspaces ? Hyprland.workspaces.values : []
+    property var focusedWorkspace: CompositorService.isHyprland ? Hyprland.focusedWorkspace : null
+    property var monitors: CompositorService.isHyprland ? Hyprland.monitors : []
+    property var focusedMonitor: CompositorService.isHyprland ? Hyprland.focusedMonitor : null
 
     function getWorkspacesForMonitor(monitorName) {
-        if (!hyprlandAvailable) return []
-        
         const workspaces = Hyprland.workspaces ? Hyprland.workspaces.values : []
         if (!workspaces || workspaces.length === 0) return []
         
@@ -51,8 +44,6 @@ Singleton {
     }
 
     function getCurrentWorkspaceForMonitor(monitorName) {
-        if (!hyprlandAvailable) return null
-        
         // If no monitor name specified, return the globally focused workspace
         if (!monitorName) {
             return focusedWorkspace
@@ -72,33 +63,7 @@ Singleton {
         return null
     }
 
-    function switchToWorkspace(workspaceId) {
-        if (!hyprlandAvailable) return
-        
-        Hyprland.dispatch(`workspace ${workspaceId}`)
-    }
-
-    function switchToWorkspaceByName(workspaceName) {
-        if (!hyprlandAvailable) return
-        
-        Hyprland.dispatch(`workspace name:${workspaceName}`)
-    }
-
-    function moveToWorkspace(workspaceId) {
-        if (!hyprlandAvailable) return
-        
-        Hyprland.dispatch(`movetoworkspace ${workspaceId}`)
-    }
-
-    function createWorkspace(workspaceId) {
-        if (!hyprlandAvailable) return
-        
-        Hyprland.dispatch(`workspace ${workspaceId}`)
-    }
-
-    function getWorkspaceDisplayNumbers() {
-        if (!hyprlandAvailable) return [1, 2, 3, 4]
-        
+    function getWorkspaceDisplayNumbers() {       
         // Get all existing workspaces from Hyprland.workspaces.values
         const workspaces = Hyprland.workspaces ? Hyprland.workspaces.values : []
         if (!workspaces || workspaces.length === 0) {
@@ -129,16 +94,12 @@ Singleton {
     }
 
     function getCurrentWorkspaceNumber() {
-        if (!hyprlandAvailable) return 1
-        
         // Use the focused workspace directly
         const focused = Hyprland.focusedWorkspace
         return focused ? focused.id : 1
     }
 
-    function sortToplevels(toplevels) {
-        if (!hyprlandAvailable || !toplevels) return []
-        
+    function sortToplevels(toplevels) {       
         // Create a copy of the array since the original might be readonly
         const sortedArray = Array.from(toplevels)
         
@@ -166,10 +127,4 @@ Singleton {
     onAllWorkspacesChanged: workspacesUpdated()
     onFocusedWorkspaceChanged: focusedWorkspaceUpdated()
     onFocusedMonitorChanged: focusedMonitorUpdated()
-
-    Component.onCompleted: {
-        if (hyprlandAvailable) {
-            console.log("HyprlandService: Initialized with Hyprland support")
-        }
-    }
 }

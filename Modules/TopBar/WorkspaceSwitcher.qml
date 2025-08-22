@@ -188,7 +188,7 @@ Rectangle {
                             if (CompositorService.isNiri) {
                                 NiriService.switchToWorkspace(modelData - 1)
                             } else if (CompositorService.isHyprland) {
-                                HyprlandService.switchToWorkspace(modelData)
+                                Hyprland.dispatch(`workspace ${modelData}`)
                             }
                         }
                     }
