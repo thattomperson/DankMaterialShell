@@ -893,12 +893,22 @@ Item {
                     }
 
                     StyledText {
-                        text: "Generate baseline GTK3/4 or QT5/QT6 (requires qt6ct-kde) configurations to follow DMS colors. Only needed once."
+                        text: `Generate baseline GTK3/4 or QT5/QT6 (requires qt6ct-kde) configurations to follow DMS colors. Only needed once.<br /><br />It is recommended to install <a href="https://github.com/AvengeMedia/DankMaterialShell/blob/master/README.md#Theming" style="text-decoration:none; color:${Theme.primary};">Colloid</a> GTK theme prior to applying GTK themes.`
+                        textFormat: Text.RichText
+                        linkColor: Theme.primary
+                        onLinkActivated: url => Qt.openUrlExternally(url)
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         wrapMode: Text.WordWrap
                         width: parent.width
                         horizontalAlignment: Text.AlignHCenter
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            acceptedButtons: Qt.NoButton
+                            propagateComposedEvents: true
+                        }
                     }
                 }
             }
