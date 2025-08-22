@@ -156,4 +156,70 @@ Singleton {
         device.trusted = true
         device.connect()
     }
+
+    function getCardName(device) {
+        if (!device)
+            return ""
+        return "bluez_card." + device.address.replace(/:/g, "_")
+    }
+
+    function isAudioDevice(device) {
+        if (!device)
+            return false
+        let icon = getDeviceIcon(device)
+        return icon === "headset" || icon === "speaker"
+    }
+
+    function getCodecInfo(codecName) {
+        let codec = codecName.replace(/-/g, "_").toUpperCase()
+        
+        let codecMap = {
+            "LDAC": {
+                name: "LDAC",
+                description: "Highest quality • Higher battery usage",
+                qualityColor: "#4CAF50"
+            },
+            "APTX_HD": {
+                name: "aptX HD",
+                description: "High quality • Balanced battery",
+                qualityColor: "#FF9800"
+            },
+            "APTX": {
+                name: "aptX",
+                description: "Good quality • Low latency",
+                qualityColor: "#FF9800"
+            },
+            "AAC": {
+                name: "AAC",
+                description: "Balanced quality and battery",
+                qualityColor: "#2196F3"
+            },
+            "SBC_XQ": {
+                name: "SBC-XQ",
+                description: "Enhanced SBC • Better compatibility",
+                qualityColor: "#2196F3"
+            },
+            "SBC": {
+                name: "SBC",
+                description: "Basic quality • Universal compatibility",
+                qualityColor: "#9E9E9E"
+            },
+            "MSBC": {
+                name: "mSBC",
+                description: "Modified SBC • Optimized for speech",
+                qualityColor: "#9E9E9E"
+            },
+            "CVSD": {
+                name: "CVSD",
+                description: "Basic speech codec • Legacy compatibility",
+                qualityColor: "#9E9E9E"
+            }
+        }
+
+        return codecMap[codec] || {
+            name: codecName,
+            description: "Unknown codec",
+            qualityColor: "#9E9E9E"
+        }
+    }
 }

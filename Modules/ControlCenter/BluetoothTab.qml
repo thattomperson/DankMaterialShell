@@ -22,6 +22,7 @@ Item {
 
         Column {
             id: mainColumn
+
             width: parent.width
             spacing: Theme.spacingL
 
@@ -39,19 +40,30 @@ Item {
                 width: parent.width
                 sourceComponent: availableComponent
             }
+
         }
+
     }
 
     BluetoothContextMenu {
         id: bluetoothContextMenuWindow
+
+        parentItem: bluetoothTab
+        codecSelector: codecSelector
+    }
+
+    BluetoothCodecSelector {
+        id: codecSelector
+
         parentItem: bluetoothTab
     }
 
     MouseArea {
         anchors.fill: parent
-        visible: bluetoothContextMenuWindow.visible
+        visible: bluetoothContextMenuWindow.visible || codecSelector.visible
         onClicked: {
-            bluetoothContextMenuWindow.hide()
+            bluetoothContextMenuWindow.hide();
+            codecSelector.hide();
         }
 
         MouseArea {
@@ -60,29 +72,36 @@ Item {
             width: bluetoothContextMenuWindow.width
             height: bluetoothContextMenuWindow.height
             onClicked: {
-
             }
         }
+
     }
 
     Component {
         id: toggleComponent
+
         BluetoothToggle {
             width: parent.width
         }
+
     }
 
     Component {
         id: pairedComponent
+
         PairedDevicesList {
             width: parent.width
         }
+
     }
 
     Component {
         id: availableComponent
+
         AvailableDevicesList {
             width: parent.width
         }
+
     }
+
 }

@@ -14,25 +14,26 @@ Rectangle {
     property var deviceData: null
     property bool menuVisible: false
     property var parentItem
+    property var codecSelector
 
     function show(x, y) {
-        const menuWidth = 160
-        const menuHeight = menuColumn.implicitHeight + Theme.spacingS * 2
-        let finalX = x - menuWidth / 2
-        let finalY = y
-        finalX = Math.max(0, Math.min(finalX, parentItem.width - menuWidth))
-        finalY = Math.max(0, Math.min(finalY, parentItem.height - menuHeight))
-        root.x = finalX
-        root.y = finalY
-        root.visible = true
-        root.menuVisible = true
+        const menuWidth = 160;
+        const menuHeight = menuColumn.implicitHeight + Theme.spacingS * 2;
+        let finalX = x - menuWidth / 2;
+        let finalY = y;
+        finalX = Math.max(0, Math.min(finalX, parentItem.width - menuWidth));
+        finalY = Math.max(0, Math.min(finalY, parentItem.height - menuHeight));
+        root.x = finalX;
+        root.y = finalY;
+        root.visible = true;
+        root.menuVisible = true;
     }
 
     function hide() {
-        root.menuVisible = false
+        root.menuVisible = false;
         Qt.callLater(() => {
-                         root.visible = false
-                     })
+            root.visible = false;
+        });
     }
 
     visible: false
@@ -40,8 +41,7 @@ Rectangle {
     height: menuColumn.implicitHeight + Theme.spacingS * 2
     radius: Theme.cornerRadius
     color: Theme.popupBackground()
-    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                          Theme.outline.b, 0.08)
+    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
     border.width: 1
     z: 1000
     opacity: menuVisible ? 1 : 0
@@ -69,10 +69,7 @@ Rectangle {
             width: parent.width
             height: 32
             radius: Theme.cornerRadius
-            color: connectArea.containsMouse ? Qt.rgba(Theme.primary.r,
-                                                       Theme.primary.g,
-                                                       Theme.primary.b,
-                                                       0.12) : "transparent"
+            color: connectArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
 
             Row {
                 anchors.left: parent.left
@@ -81,8 +78,7 @@ Rectangle {
                 spacing: Theme.spacingS
 
                 DankIcon {
-                    name: root.deviceData
-                          && root.deviceData.connected ? "link_off" : "link"
+                    name: root.deviceData && root.deviceData.connected ? "link_off" : "link"
                     size: Theme.iconSize - 2
                     color: Theme.surfaceText
                     opacity: 0.7
@@ -90,13 +86,13 @@ Rectangle {
                 }
 
                 StyledText {
-                    text: root.deviceData
-                          && root.deviceData.connected ? "Disconnect" : "Connect"
+                    text: root.deviceData && root.deviceData.connected ? "Disconnect" : "Connect"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText
                     font.weight: Font.Normal
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
             }
 
             MouseArea {
@@ -108,12 +104,11 @@ Rectangle {
                 onClicked: {
                     if (root.deviceData) {
                         if (root.deviceData.connected)
-                            root.deviceData.disconnect()
+                            root.deviceData.disconnect();
                         else
-                            BluetoothService.connectDeviceWithTrust(
-                                        root.deviceData)
+                            BluetoothService.connectDeviceWithTrust(root.deviceData);
                     }
-                    root.hide()
+                    root.hide();
                 }
             }
 
@@ -122,7 +117,62 @@ Rectangle {
                     duration: Theme.shortDuration
                     easing.type: Theme.standardEasing
                 }
+
             }
+
+        }
+
+        Rectangle {
+            width: parent.width
+            height: 32
+            radius: Theme.cornerRadius
+            color: codecArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : "transparent"
+            visible: root.deviceData && BluetoothService.isAudioDevice(root.deviceData) && root.deviceData.connected
+
+            Row {
+                anchors.left: parent.left
+                anchors.leftMargin: Theme.spacingS
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: Theme.spacingS
+
+                DankIcon {
+                    name: "high_quality"
+                    size: Theme.iconSize - 2
+                    color: Theme.surfaceText
+                    opacity: 0.7
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                StyledText {
+                    text: "Audio Codec"
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceText
+                    font.weight: Font.Normal
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+            }
+
+            MouseArea {
+                id: codecArea
+
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    codecSelector.show(root.deviceData);
+                    root.hide();
+                }
+            }
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: Theme.shortDuration
+                    easing.type: Theme.standardEasing
+                }
+
+            }
+
         }
 
         Rectangle {
@@ -135,19 +185,16 @@ Rectangle {
                 anchors.centerIn: parent
                 width: parent.width
                 height: 1
-                color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                               Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
             }
+
         }
 
         Rectangle {
             width: parent.width
             height: 32
             radius: Theme.cornerRadius
-            color: forgetArea.containsMouse ? Qt.rgba(Theme.error.r,
-                                                      Theme.error.g,
-                                                      Theme.error.b,
-                                                      0.12) : "transparent"
+            color: forgetArea.containsMouse ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12) : "transparent"
 
             Row {
                 anchors.left: parent.left
@@ -170,6 +217,7 @@ Rectangle {
                     font.weight: Font.Normal
                     anchors.verticalCenter: parent.verticalCenter
                 }
+
             }
 
             MouseArea {
@@ -180,9 +228,9 @@ Rectangle {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     if (root.deviceData)
-                        root.deviceData.forget()
+                        root.deviceData.forget();
 
-                    root.hide()
+                    root.hide();
                 }
             }
 
@@ -191,8 +239,11 @@ Rectangle {
                     duration: Theme.shortDuration
                     easing.type: Theme.standardEasing
                 }
+
             }
+
         }
+
     }
 
     Behavior on opacity {
@@ -200,6 +251,7 @@ Rectangle {
             duration: Theme.mediumDuration
             easing.type: Theme.emphasizedEasing
         }
+
     }
 
     Behavior on scale {
@@ -207,5 +259,7 @@ Rectangle {
             duration: Theme.mediumDuration
             easing.type: Theme.emphasizedEasing
         }
+
     }
+
 }
