@@ -1,4 +1,4 @@
-# DankMaterialShell
+# DankMaterialShell (dms)
 
 <div align=center>
 
@@ -136,10 +136,11 @@ For detailed Hyprland installation instructions, see the [Hyprland wiki](https:/
 
 ### Quick Start
 
+We don't have a nice install setup yet to just isntall everything with some nice default dotfiles, but it's coming soon™ (it's pretty easy though, especially with niri)
+
 \*If you do not already have niri or Hyprland, see the Compositor Setup section below
 
 **Dependencies:**
-
 
 # Arch Linux
 ```bash
@@ -162,7 +163,6 @@ fc-cache -f
 ```
 
 **Get the shell:**
-
 
 # Arch linux available via AUR
 ```bash

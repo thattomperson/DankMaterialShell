@@ -1,5 +1,3 @@
-pragma ComponentBehavior
-
 import QtQuick
 import qs.Common
 import qs.Widgets

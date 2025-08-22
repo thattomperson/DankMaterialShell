@@ -7,7 +7,6 @@ import qs.Common
 import qs.Modules.Settings
 import qs.Services
 import qs.Widgets
-pragma ComponentBehavior
 
 DankModal {
     id: settingsModal

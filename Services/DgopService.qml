@@ -1,10 +1,10 @@
+pragma Singleton
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.Common
-pragma Singleton
-
-pragma ComponentBehavior
 
 Singleton {
     id: root
@@ -501,8 +501,8 @@ Singleton {
 
     function getProcessIcon(command) {
         const cmd = command.toLowerCase()
-        if (cmd.includes("firefox") || cmd.includes("chrome") || cmd.includes(
-                    "browser"))
+        if (cmd.includes("firefox") || cmd.includes("chrome") || 
+        cmd.includes("browser") || cmd.includes("chromium"))
             return "web"
         if (cmd.includes("code") || cmd.includes("editor")
                 || cmd.includes("vim"))
@@ -515,8 +515,9 @@ Singleton {
             return "music_note"
         if (cmd.includes("video") || cmd.includes("vlc") || cmd.includes("mpv"))
             return "play_circle"
-        if (cmd.includes("systemd") || cmd.includes("kernel") || cmd.includes(
-                    "kthread"))
+        if (cmd.includes("systemd") || cmd.includes("elogind") || 
+            cmd.includes("kernel") || cmd.includes("kthread") ||
+            cmd.includes("kworker"))
             return "settings"
         return "memory"
     }

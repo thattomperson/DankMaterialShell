@@ -1,5 +1,3 @@
-pragma ComponentBehavior
-
 import QtQuick
 import QtQuick.Controls
 import QtCore

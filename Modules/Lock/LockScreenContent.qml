@@ -9,7 +9,6 @@ import qs.Common
 import qs.Modals
 import qs.Services
 import qs.Widgets
-pragma ComponentBehavior
 
 Item {
     id: root
@@ -966,8 +965,7 @@ Item {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 powerDialog.close()
-                                Quickshell.execDetached(
-                                            ["systemctl", "poweroff"])
+                                SessionService.poweroff()
                             }
                         }
                     }
@@ -1077,7 +1075,7 @@ Item {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 rebootDialog.close()
-                                Quickshell.execDetached(["systemctl", "reboot"])
+                                SessionService.reboot()
                             }
                         }
                     }
