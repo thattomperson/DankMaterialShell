@@ -42,7 +42,7 @@ Item {
         source: SessionData.wallpaperPath || ""
         fillMode: Image.PreserveAspectCrop
         smooth: true
-        asynchronous: true
+        asynchronous: false
         cache: true
         visible: source !== ""
         layer.enabled: true
