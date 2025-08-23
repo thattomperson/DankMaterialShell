@@ -98,10 +98,6 @@ Rectangle {
             }
         }
 
-        function onFocusedWorkspaceIndexChanged() {
-            // Niri workspace changes handled automatically by currentWorkspace binding
-        }
-
         target: NiriService
         enabled: CompositorService.isNiri
     }
@@ -256,7 +252,7 @@ Rectangle {
                         if (CompositorService.isHyprland) {
                             return modelData && modelData.id ? modelData.id : ""
                         }
-                        return modelData
+                        return modelData - 1
                     }
                     color: isActive ? Qt.rgba(
                                           Theme.surfaceContainer.r,
