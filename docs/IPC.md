@@ -3,7 +3,7 @@
 DankMaterialShell provides comprehensive IPC (Inter-Process Communication) functionality that allows external control of the shell through command-line commands. All IPC commands follow the format:
 
 ```bash
-qs -c DankMaterialShell ipc call <target> <function> [parameters...]
+qs -c DMS ipc call <target> <function> [parameters...]
 ```
 
 ## Target: `audio`
@@ -44,9 +44,9 @@ Audio system control and information.
 
 ### Examples
 ```bash
-qs -c DankMaterialShell ipc call audio setvolume 50
-qs -c DankMaterialShell ipc call audio increment 10
-qs -c DankMaterialShell ipc call audio mute
+qs -c DMS ipc call audio setvolume 50
+qs -c DMS ipc call audio increment 10
+qs -c DMS ipc call audio mute
 ```
 
 ## Target: `brightness`
@@ -86,9 +86,9 @@ Display brightness control for internal and external displays.
 
 ### Examples
 ```bash
-qs -c DankMaterialShell ipc call brightness set 80
-qs -c DankMaterialShell ipc call brightness increment 10 ""
-qs -c DankMaterialShell ipc call brightness decrement 5 "intel_backlight"
+qs -c DMS ipc call brightness set 80
+qs -c DMS ipc call brightness increment 10 ""
+qs -c DMS ipc call brightness decrement 5 "intel_backlight"
 ```
 
 ## Target: `night`
@@ -121,8 +121,8 @@ Night mode (gamma/color temperature) control.
 
 ### Examples
 ```bash
-qs -c DankMaterialShell ipc call night toggle
-qs -c DankMaterialShell ipc call night temperature 4000
+qs -c DMS ipc call night toggle
+qs -c DMS ipc call night temperature 4000
 ```
 
 ## Target: `mpris`
@@ -161,8 +161,8 @@ Media player control via MPRIS interface.
 
 ### Examples
 ```bash
-qs -c DankMaterialShell ipc call mpris playPause
-qs -c DankMaterialShell ipc call mpris next
+qs -c DMS ipc call mpris playPause
+qs -c DMS ipc call mpris next
 ```
 
 ## Target: `lock`
@@ -185,8 +185,8 @@ Screen lock control and status.
 
 ### Examples
 ```bash
-qs -c DankMaterialShell ipc call lock lock
-qs -c DankMaterialShell ipc call lock isLocked
+qs -c DMS ipc call lock lock
+qs -c DMS ipc call lock isLocked
 ```
 
 ## Target: `inhibit`
@@ -209,8 +209,8 @@ Idle inhibitor control to prevent automatic sleep/lock.
 
 ### Examples
 ```bash
-qs -c DankMaterialShell ipc call inhibit toggle
-qs -c DankMaterialShell ipc call inhibit enable
+qs -c DMS ipc call inhibit toggle
+qs -c DMS ipc call inhibit enable
 ```
 
 ## Target: `wallpaper`
@@ -230,8 +230,8 @@ Wallpaper management and retrieval.
 
 ### Examples
 ```bash
-qs -c DankMaterialShell ipc call wallpaper get
-qs -c DankMaterialShell ipc call wallpaper set /path/to/image.jpg
+qs -c DMS ipc call wallpaper get
+qs -c DMS ipc call wallpaper set /path/to/image.jpg
 ```
 
 ## Target: `theme`
@@ -254,8 +254,8 @@ Theme mode control (light/dark mode switching).
 
 ### Examples
 ```bash
-qs -c DankMaterialShell ipc call theme toggle
-qs -c DankMaterialShell ipc call theme dark
+qs -c DMS ipc call theme toggle
+qs -c DMS ipc call theme dark
 ```
 
 ## Modal Controls
@@ -305,19 +305,19 @@ System process list and performance modal control.
 ### Modal Examples
 ```bash
 # Open application launcher
-qs -c DankMaterialShell ipc call spotlight toggle
+qs -c DMS ipc call spotlight toggle
 
 # Show clipboard history
-qs -c DankMaterialShell ipc call clipboard open
+qs -c DMS ipc call clipboard open
 
 # Toggle notification center
-qs -c DankMaterialShell ipc call notifications toggle
+qs -c DMS ipc call notifications toggle
 
 # Show settings
-qs -c DankMaterialShell ipc call settings open
+qs -c DMS ipc call settings open
 
 # Show system monitor
-qs -c DankMaterialShell ipc call processlist toggle
+qs -c DMS ipc call processlist toggle
 ```
 
 ## Common Usage Patterns
@@ -328,10 +328,10 @@ These IPC commands are designed to be used with window manager keybindings. Exam
 
 ```kdl
 binds {
-    Mod+Space { spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "spotlight" "toggle"; }
-    Mod+V { spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "clipboard" "toggle"; }
-    XF86AudioRaiseVolume { spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "audio" "increment" "3"; }
-    XF86MonBrightnessUp { spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "brightness" "increment" "5" ""; }
+    Mod+Space { spawn "qs" "-c" "DMS" "ipc" "call" "spotlight" "toggle"; }
+    Mod+V { spawn "qs" "-c" "DMS" "ipc" "call" "clipboard" "toggle"; }
+    XF86AudioRaiseVolume { spawn "qs" "-c" "DMS" "ipc" "call" "audio" "increment" "3"; }
+    XF86MonBrightnessUp { spawn "qs" "-c" "DMS" "ipc" "call" "brightness" "increment" "5" ""; }
 }
 ```
 
@@ -344,9 +344,9 @@ IPC commands can be used in scripts for automation:
 # Toggle night mode based on time of day
 hour=$(date +%H)
 if [ $hour -ge 20 ] || [ $hour -le 6 ]; then
-    qs -c DankMaterialShell ipc call night enable
+    qs -c DMS ipc call night enable
 else
-    qs -c DankMaterialShell ipc call night disable
+    qs -c DMS ipc call night disable
 fi
 ```
 
@@ -356,9 +356,9 @@ Many commands provide status information useful for scripts:
 
 ```bash
 # Check if screen is locked before performing action
-if qs -c DankMaterialShell ipc call lock isLocked | grep -q "false"; then
+if qs -c DMS ipc call lock isLocked | grep -q "false"; then
     # Perform action only if unlocked
-    qs -c DankMaterialShell ipc call notifications open
+    qs -c DMS ipc call notifications open
 fi
 ```
 
