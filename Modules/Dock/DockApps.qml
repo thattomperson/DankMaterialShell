@@ -157,6 +157,7 @@ Item {
             dockModel.updateModel()
         }
     }
+
     
 
     Connections {

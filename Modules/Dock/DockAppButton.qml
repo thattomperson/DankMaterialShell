@@ -9,6 +9,7 @@ import qs.Widgets
 Item {
     id: root
 
+    clip: false
     property var appData
     property var contextMenu: null
     property var dockApps: null
@@ -23,6 +24,20 @@ Item {
     property string windowTitle: ""
     property bool isHovered: mouseArea.containsMouse && !dragging
     property bool showTooltip: mouseArea.containsMouse && !dragging
+    property bool isWindowFocused: {
+        if (!appData || appData.type !== "window") {
+            return false
+        }
+        
+        var toplevels = CompositorService.sortedToplevels
+        for (var i = 0; i < toplevels.length; i++) {
+            var toplevel = toplevels[i]
+            if (toplevel.appId === appData.appId) {
+                return toplevel.activated
+            }
+        }
+        return false
+    }
     property string tooltipText: {
         if (!appData)
             return ""
@@ -198,13 +213,17 @@ Item {
                                                                        "comment": desktopEntry.comment || ""
                                                                    })
 
-                                   Quickshell.execDetached(
-                                       ["gtk-launch", appData.appId])
+                                   desktopEntry.execute()
                                }
                            } else if (appData.type === "window") {
-                               // Focus the specific window using toplevel
-                               if (appData.toplevelObject) {
-                                   appData.toplevelObject.activate()
+                               // Find the toplevel by matching appId from sorted list
+                               var toplevels = CompositorService.sortedToplevels
+                               for (var i = 0; i < toplevels.length; i++) {
+                                   var toplevel = toplevels[i]
+                                   if (toplevel.appId === appData.appId && toplevel.title === appData.windowTitle) {
+                                       toplevel.activate()
+                                       break
+                                   }
                                }
                            }
                        } else if (mouse.button === Qt.MiddleButton) {
@@ -224,8 +243,7 @@ Item {
                                                                               || ""
                                                                })
 
-                               Quickshell.execDetached(
-                                   ["gtk-launch", appData.appId])
+                                 desktopEntry.execute()
                            }
                        } else if (mouse.button === Qt.RightButton) {
                            if (contextMenu)
@@ -237,9 +255,8 @@ Item {
     IconImage {
         id: iconImg
 
-        width: 40
-        height: 40
         anchors.centerIn: parent
+        implicitSize: 40
         source: {
             if (!appData || !appData.appId)
                 return ""
@@ -253,11 +270,9 @@ Item {
             }
             return ""
         }
-        smooth: true
         mipmap: true
+        smooth: true
         asynchronous: true
-        visible: status === Image.Ready
-        implicitSize: 40
     }
 
     Rectangle {
@@ -302,7 +317,7 @@ Item {
                 return "transparent"
 
             // For window type, check if focused using reactive property
-            if (appData.type === "window" && appData.toplevelObject && appData.toplevelObject.activated)
+            if (isWindowFocused)
                 return Theme.primary
 
             // For running apps, show dimmer indicator

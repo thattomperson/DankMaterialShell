@@ -19,7 +19,7 @@ Singleton {
     readonly property string niriSocket: Quickshell.env("NIRI_SOCKET")
 
     property bool useNiriSorting: isNiri && NiriService
-    property bool useHyprlandSorting: isHyprland && HyprlandService
+    property bool useHyprlandSorting: false
 
     // Unified sorted toplevels - automatically chooses sorting based on compositor
     property var sortedToplevels: {
@@ -32,9 +32,34 @@ Singleton {
             return NiriService.sortToplevels(ToplevelManager.toplevels.values)
         }
 
-        // Use Hyprland sorting when both compositor is Hyprland AND hyprland service is ready
-        if (useHyprlandSorting) {
-            return HyprlandService.sortToplevels(ToplevelManager.toplevels.values)
+        if (isHyprland) {
+            const hyprlandToplevels = Array.from(Hyprland.toplevels.values)
+            
+            const sortedHyprland = hyprlandToplevels.sort((a, b) => {
+                // Sort by monitor first
+                if (a.monitor && b.monitor) {
+                    const monitorCompare = a.monitor.name.localeCompare(b.monitor.name)
+                    if (monitorCompare !== 0) return monitorCompare
+                }
+                
+                // Then by workspace
+                if (a.workspace && b.workspace) {
+                    const workspaceCompare = a.workspace.id - b.workspace.id
+                    if (workspaceCompare !== 0) return workspaceCompare
+                }
+                
+                // Then by position on workspace (x first for columns, then y within column)
+                if (a.lastIpcObject && b.lastIpcObject && a.lastIpcObject.at && b.lastIpcObject.at) {
+                    const xCompare = a.lastIpcObject.at[0] - b.lastIpcObject.at[0]
+                    if (xCompare !== 0) return xCompare
+                    return a.lastIpcObject.at[1] - b.lastIpcObject.at[1]
+                }
+                
+                return 0
+            })
+            
+            // Return the wayland Toplevel objects
+            return sortedHyprland.map(hyprToplevel => hyprToplevel.wayland).filter(wayland => wayland !== null)
         }
 
         // For other compositors or when services aren't ready yet, return unsorted toplevels
