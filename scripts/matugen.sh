@@ -64,22 +64,22 @@ mkdir -p "$CONFIG_DIR/gtk-3.0" "$CONFIG_DIR/gtk-4.0" "$CONFIG_DIR/qt5ct/colors" 
 
 cd "$SHELL_DIR" || exit 1
 
-if [ ! -f "matugen-config.toml" ]; then
-    echo "Config file not found: $SHELL_DIR/matugen-config.toml" >&2
+if [ ! -f "matugen/matugen-default-cfg.toml" ]; then
+    echo "Config file not found: $SHELL_DIR/matugen/matugen-default-cfg.toml" >&2
     exit 1
 fi
 
 TEMP_CONFIG="/tmp/matugen-config-$$.toml"
-cp "matugen-config.toml" "$TEMP_CONFIG"
+cp "matugen/matugen-default-cfg.toml" "$TEMP_CONFIG"
 
 if [ "$IS_LIGHT" = "true" ]; then
-    COLLOID_TEMPLATE="$SHELL_DIR/templates/gtk3-colloid-light.css"
+    COLLOID_TEMPLATE="$SHELL_DIR/matugen/templates/gtk3-colloid-light.css"
 else
-    COLLOID_TEMPLATE="$SHELL_DIR/templates/gtk3-colloid-dark.css"
+    COLLOID_TEMPLATE="$SHELL_DIR/matugen/templates/gtk3-colloid-dark.css"
 fi
 
-sed -i "/\[templates\.gtk3\]/,/^\[/ s|input_path = './templates/gtk-colors.css'|input_path = '$COLLOID_TEMPLATE'|" "$TEMP_CONFIG"
-sed -i "s|input_path = './templates/|input_path = '$SHELL_DIR/templates/|g" "$TEMP_CONFIG"
+sed -i "/\[templates\.gtk3\]/,/^\[/ s|input_path = './matugen/templates/gtk-colors.css'|input_path = '$COLLOID_TEMPLATE'|" "$TEMP_CONFIG"
+sed -i "s|input_path = './matugen/templates/|input_path = '$SHELL_DIR/matugen/templates/|g" "$TEMP_CONFIG"
 
 MATUGEN_MODE=""
 if [ "$IS_LIGHT" = "true" ]; then
@@ -108,7 +108,27 @@ elif [ "$MODE" = "generate-color" ]; then
     fi
 fi
 
-rm -f "$TEMP_CONFIG"
+# Generate ghostty, dgop, and fastfetch colors with content scheme for better contrast
+TEMP_CONTENT_CONFIG="/tmp/matugen-content-config-$$.toml"
+cp "matugen/matugen-content-cfg.toml" "$TEMP_CONTENT_CONFIG"
+sed -i "s|input_path = './matugen/templates/|input_path = '$SHELL_DIR/matugen/templates/|g" "$TEMP_CONTENT_CONFIG"
+
+# Remove the unused ghostty template based on light/dark mode
+if [ "$IS_LIGHT" = "true" ]; then
+    sed -i '/\[templates\.ghostty-dark\]/,/^$/d' "$TEMP_CONTENT_CONFIG"
+else
+    sed -i '/\[templates\.ghostty-light\]/,/^$/d' "$TEMP_CONTENT_CONFIG"
+fi
+
+if [ "$MODE" = "generate" ]; then
+    echo "Generating ghostty, dgop, and fastfetch colors with content scheme..."
+    matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-fidelity image "$INPUT_SOURCE" $MATUGEN_MODE
+elif [ "$MODE" = "generate-color" ]; then
+    echo "Generating ghostty, dgop, and fastfetch colors with content scheme..."  
+    matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-fidelity color hex "$INPUT_SOURCE" $MATUGEN_MODE
+fi
+
+rm -f "$TEMP_CONFIG" "$TEMP_CONTENT_CONFIG"
 
 echo "Updating system theme preferences..."
 

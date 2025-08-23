@@ -1,0 +1,11 @@
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "display": {
+        "color": {
+            "keys": "{{colors.primary.default.hex}}",
+            "title": "{{colors.on_surface.default.hex}}",
+            "separator": "{{colors.outline.default.hex}}",
+            "output": "{{colors.secondary.default.hex}}"
+        }
+    }
+}
