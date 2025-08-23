@@ -174,7 +174,7 @@ paru -S dankmaterialshell-git
 mkdir -p ~/.config/quickshell
 ```
 ```bash
-git clone https://github.com/AvengeMedia/DankMaterialShell.git ~/.config/quickshell/DMS
+git clone https://github.com/AvengeMedia/DankMaterialShell.git ~/.config/quickshell/dms
 ```
 ```bash
 qs -c DankMaterialShell
@@ -267,7 +267,7 @@ spawn-at-startup "/usr/lib/mate-polkit/polkit-mate-authentication-agent-1"
 // This may be a different path on different distributions, the above is for the arch linux mate-polkit package
 
 // Starts DankShell
-spawn-at-startup "qs" "-c" "DMS"
+spawn-at-startup "qs" "-c" "dms"
 
 // If using niri newer than 271534e115e5915231c99df287bbfe396185924d (~aug 17 2025)
 // you can add this to disable built in config load errors since dank shell provides this
@@ -282,41 +282,41 @@ config-notification {
 // 4. For the increment/decrement ones you can change the steps to whatever you like too
 binds {
    Mod+Space hotkey-overlay-title="Application Launcher" {
-      spawn "qs" "-c" "DMS" "ipc" "call" "spotlight" "toggle";
+      spawn "qs" "-c" "dms" "ipc" "call" "spotlight" "toggle";
    }
    Mod+V hotkey-overlay-title="Clipboard Manager" {
-      spawn "qs" "-c" "DMS" "ipc" "call" "clipboard" "toggle";
+      spawn "qs" "-c" "dms" "ipc" "call" "clipboard" "toggle";
    }
    Mod+M hotkey-overlay-title="Task Manager" {
-      spawn "qs" "-c" "DMS" "ipc" "call" "processlist" "toggle";
+      spawn "qs" "-c" "dms" "ipc" "call" "processlist" "toggle";
    }
    Mod+N hotkey-overlay-title="Notification Center" {
-      spawn "qs" "-c" "DMS" "ipc" "call" "notifications" "toggle";
+      spawn "qs" "-c" "dms" "ipc" "call" "notifications" "toggle";
    }
    Mod+Comma hotkey-overlay-title="Settings" {
-      spawn "qs" "-c" "DMS" "ipc" "call" "settings" "toggle";
+      spawn "qs" "-c" "dms" "ipc" "call" "settings" "toggle";
    }
    Super+Alt+L hotkey-overlay-title="Lock Screen" {
-      spawn "qs" "-c" "DMS" "ipc" "call" "lock" "lock";
+      spawn "qs" "-c" "dms" "ipc" "call" "lock" "lock";
    }
    XF86AudioRaiseVolume allow-when-locked=true {
-      spawn "qs" "-c" "DMS" "ipc" "call" "audio" "increment" "3";
+      spawn "qs" "-c" "dms" "ipc" "call" "audio" "increment" "3";
    }
    XF86AudioLowerVolume allow-when-locked=true {
-      spawn "qs" "-c" "DMS" "ipc" "call" "audio" "decrement" "3";
+      spawn "qs" "-c" "dms" "ipc" "call" "audio" "decrement" "3";
    }
    XF86AudioMute allow-when-locked=true {
-      spawn "qs" "-c" "DMS" "ipc" "call" "audio" "mute";
+      spawn "qs" "-c" "dms" "ipc" "call" "audio" "mute";
    }
    XF86AudioMicMute allow-when-locked=true {
-      spawn "qs" "-c" "DMS" "ipc" "call" "audio" "micmute";
+      spawn "qs" "-c" "dms" "ipc" "call" "audio" "micmute";
    }
    XF86MonBrightnessUp allow-when-locked=true {
-      spawn "qs" "-c" "DMS" "ipc" "call" "brightness" "increment" "5" "";
+      spawn "qs" "-c" "dms" "ipc" "call" "brightness" "increment" "5" "";
    }
    // You can override the default device for e.g. keyboards by adding the device name to the last param
    XF86MonBrightnessDown allow-when-locked=true {
-      spawn "qs" "-c" "DMS" "ipc" "call" "brightness" "decrement" "5" "";
+      spawn "qs" "-c" "dms" "ipc" "call" "brightness" "decrement" "5" "";
    }
 }
 ```
@@ -334,7 +334,7 @@ exec-once = /usr/lib/mate-polkit/polkit-mate-authentication-agent-1
 # This may be a different path on different distributions, the above is for the arch linux mate-polkit package
 
 # Starts DankShell
-exec-once = qs -c DMS
+exec-once = qs -c dms
 
 # Dank keybinds
 # 1. These should not be in conflict with any pre-existing keybindings
@@ -343,23 +343,23 @@ exec-once = qs -c DMS
 # 4. For the increment/decrement ones you can change the steps to whatever you like too
 
 # Application and system controls
-bind = SUPER, Space, exec, qs -c DMS ipc call spotlight toggle
-bind = SUPER, V, exec, qs -c DMS ipc call clipboard toggle
-bind = SUPER, M, exec, qs -c DMS ipc call processlist toggle
-bind = SUPER, N, exec, qs -c DMS ipc call notifications toggle
-bind = SUPER, comma, exec, qs -c DMS ipc call settings toggle
-bind = SUPERALT, L, exec, qs -c DMS ipc call lock lock
+bind = SUPER, Space, exec, qs -c dms ipc call spotlight toggle
+bind = SUPER, V, exec, qs -c dms ipc call clipboard toggle
+bind = SUPER, M, exec, qs -c dms ipc call processlist toggle
+bind = SUPER, N, exec, qs -c dms ipc call notifications toggle
+bind = SUPER, comma, exec, qs -c dms ipc call settings toggle
+bind = SUPERALT, L, exec, qs -c dms ipc call lock lock
 
 # Audio controls (function keys)
-bindl = , XF86AudioRaiseVolume, exec, qs -c DMS ipc call audio increment 3
-bindl = , XF86AudioLowerVolume, exec, qs -c DMS ipc call audio decrement 3
-bindl = , XF86AudioMute, exec, qs -c DMS ipc call audio mute
-bindl = , XF86AudioMicMute, exec, qs -c DMS ipc call audio micmute
+bindl = , XF86AudioRaiseVolume, exec, qs -c dms ipc call audio increment 3
+bindl = , XF86AudioLowerVolume, exec, qs -c dms ipc call audio decrement 3
+bindl = , XF86AudioMute, exec, qs -c dms ipc call audio mute
+bindl = , XF86AudioMicMute, exec, qs -c dms ipc call audio micmute
 
 # Brightness controls (function keys)
-bindl = , XF86MonBrightnessUp, exec, qs -c DMS ipc call brightness increment 5 ""
+bindl = , XF86MonBrightnessUp, exec, qs -c dms ipc call brightness increment 5 ""
 # You can override the default device for e.g. keyboards by adding the device name to the last param
-bindl = , XF86MonBrightnessDown, exec, qs -c DMS ipc call brightness decrement 5 ""
+bindl = , XF86MonBrightnessDown, exec, qs -c dms ipc call brightness decrement 5 ""
 ```
 
 ### IPC Commands
@@ -369,24 +369,24 @@ Control everything from the command line, or via keybinds. For comprehensive doc
 
 # Audio control
 ```bash
-qs -c DMS ipc call audio setvolume 50
-qs -c DMS ipc call audio mute
+qs -c dms ipc call audio setvolume 50
+qs -c dms ipc call audio mute
 ```
 # Launch applications
 ```bash
-qs -c DMS ipc call spotlight toggle
-qs -c DMS ipc call processlist toggle
+qs -c dms ipc call spotlight toggle
+qs -c dms ipc call processlist toggle
 ```
 # System control
 ```
-qs -c DMS ipc call wallpaper set /path/to/image.jpg
-qs -c DMS ipc call theme toggle
-qs -c DMS ipc call lock lock
+qs -c dms ipc call wallpaper set /path/to/image.jpg
+qs -c dms ipc call theme toggle
+qs -c dms ipc call lock lock
 ```
 # Media control
 ```
-qs -c DMS ipc call mpris playPause
-qs -c DMS ipc call mpris next
+qs -c dms ipc call mpris playPause
+qs -c dms ipc call mpris next
 ```
 
 ## Theming
@@ -563,7 +563,7 @@ All settings are configurable in
 **Getting help:**
 
 - Check the [issues](https://github.com/AvengeMedia/DankMaterialShell/issues) for known problems
-- Share logs from `qs -c DMS` for debugging
+- Share logs from `qs -c dms` for debugging
 - Join the niri community for compositor-specific questions
 
 ## Contributing
