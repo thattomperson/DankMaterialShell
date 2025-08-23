@@ -88,22 +88,22 @@ Item {
                     }
 
                     // Second section: Running windows (sorted using Theme.sortToplevels)
-                    sortedToplevels.forEach(toplevel => {
+                    sortedToplevels.forEach((toplevel, index) => {
                                                 // Limit window title length for tooltip
                                                 var title = toplevel.title || "(Unnamed)"
                                                 if (title.length > 50) {
                                                     title = title.substring(0, 47) + "..."
                                                 }
-                                                
+                                                var uniqueId = toplevel.title + "|" + (toplevel.appId || "") + "|" + index
                                                 items.push({
                                                                "type": "window",
                                                                "appId": toplevel.appId || "",
-                                                               "windowId": -1, // Toplevel doesn't have numeric ID
+                                                               "windowId": index,
                                                                "windowTitle": title,
                                                                "workspaceId": -1, // Will be handled by sorting
                                                                "isPinned": false,
                                                                "isRunning": true,
-                                                               "toplevelObject": toplevel
+                                                               "uniqueId": uniqueId
                                                            })
                                             })
 

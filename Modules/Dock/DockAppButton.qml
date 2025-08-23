@@ -25,10 +25,14 @@ Item {
     property bool isHovered: mouseArea.containsMouse && !dragging
     property bool showTooltip: mouseArea.containsMouse && !dragging
     property bool isWindowFocused: {
-        if (!appData || appData.type !== "window" || !appData.toplevelObject) {
+        if (!appData || appData.type !== "window") {
             return false
         }
-        return appData.toplevelObject.activated
+        var toplevel = getToplevelObject()
+        if (!toplevel) {
+            return false
+        }
+        return toplevel.activated
     }
     property string tooltipText: {
         if (!appData)
@@ -52,6 +56,35 @@ Item {
 
     width: 40
     height: 40
+    
+    function getToplevelObject() {
+        if (!appData || appData.type !== "window") {
+            return null
+        }
+        
+        var sortedToplevels = CompositorService.sortedToplevels
+        if (!sortedToplevels) {
+            return null
+        }
+
+        if (appData.uniqueId) {
+            for (var i = 0; i < sortedToplevels.length; i++) {
+                var toplevel = sortedToplevels[i]
+                var checkId = toplevel.title + "|" + (toplevel.appId || "") + "|" + i
+                if (checkId === appData.uniqueId) {
+                    return toplevel
+                }
+            }
+        }
+
+        if (appData.windowId !== undefined && appData.windowId !== null && appData.windowId >= 0) {
+            if (appData.windowId < sortedToplevels.length) {
+                return sortedToplevels[appData.windowId]
+            }
+        }
+        
+        return null
+    }
     onIsHoveredChanged: {
         if (isHovered) {
             exitAnimation.stop()
@@ -208,8 +241,9 @@ Item {
                                    desktopEntry.execute()
                                }
                            } else if (appData.type === "window") {
-                               if (appData.toplevelObject) {
-                                   appData.toplevelObject.activate()
+                               var toplevel = getToplevelObject()
+                               if (toplevel) {
+                                   toplevel.activate()
                                }
                            }
                        } else if (mouse.button === Qt.MiddleButton) {
