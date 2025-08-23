@@ -108,12 +108,9 @@ elif [ "$MODE" = "generate-color" ]; then
     fi
 fi
 
-# Generate ghostty, dgop, and fastfetch colors with content scheme for better contrast
 TEMP_CONTENT_CONFIG="/tmp/matugen-content-config-$$.toml"
 cp "matugen/matugen-content-cfg.toml" "$TEMP_CONTENT_CONFIG"
 sed -i "s|input_path = './matugen/templates/|input_path = '$SHELL_DIR/matugen/templates/|g" "$TEMP_CONTENT_CONFIG"
-
-# Remove the unused ghostty template based on light/dark mode
 if [ "$IS_LIGHT" = "true" ]; then
     sed -i '/\[templates\.ghostty-dark\]/,/^$/d' "$TEMP_CONTENT_CONFIG"
 else
@@ -121,10 +118,8 @@ else
 fi
 
 if [ "$MODE" = "generate" ]; then
-    echo "Generating ghostty, dgop, and fastfetch colors with content scheme..."
     matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-fidelity image "$INPUT_SOURCE" $MATUGEN_MODE
 elif [ "$MODE" = "generate-color" ]; then
-    echo "Generating ghostty, dgop, and fastfetch colors with content scheme..."  
     matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-fidelity color hex "$INPUT_SOURCE" $MATUGEN_MODE
 fi
 

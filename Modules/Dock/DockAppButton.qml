@@ -25,18 +25,10 @@ Item {
     property bool isHovered: mouseArea.containsMouse && !dragging
     property bool showTooltip: mouseArea.containsMouse && !dragging
     property bool isWindowFocused: {
-        if (!appData || appData.type !== "window") {
+        if (!appData || appData.type !== "window" || !appData.toplevelObject) {
             return false
         }
-        
-        var toplevels = CompositorService.sortedToplevels
-        for (var i = 0; i < toplevels.length; i++) {
-            var toplevel = toplevels[i]
-            if (toplevel.appId === appData.appId) {
-                return toplevel.activated
-            }
-        }
-        return false
+        return appData.toplevelObject.activated
     }
     property string tooltipText: {
         if (!appData)
@@ -216,14 +208,8 @@ Item {
                                    desktopEntry.execute()
                                }
                            } else if (appData.type === "window") {
-                               // Find the toplevel by matching appId from sorted list
-                               var toplevels = CompositorService.sortedToplevels
-                               for (var i = 0; i < toplevels.length; i++) {
-                                   var toplevel = toplevels[i]
-                                   if (toplevel.appId === appData.appId && toplevel.title === appData.windowTitle) {
-                                       toplevel.activate()
-                                       break
-                                   }
+                               if (appData.toplevelObject) {
+                                   appData.toplevelObject.activate()
                                }
                            }
                        } else if (mouse.button === Qt.MiddleButton) {
