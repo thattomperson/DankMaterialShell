@@ -79,9 +79,9 @@ Rectangle {
 
     width: SettingsData.showWorkspacePadding ? Math.max(
                                                    120,
-                                                   workspaceRow.implicitWidth + SettingsData.topBarInnerPadding
+                                                   workspaceRow.implicitWidth + Math.max(Theme.spacingS, SettingsData.topBarInnerPadding)
                                                    * 2) : workspaceRow.implicitWidth
-                                               + SettingsData.topBarInnerPadding * 2
+                                               + Math.max(Theme.spacingS, SettingsData.topBarInnerPadding) * 2
     height: widgetHeight
     radius: Theme.cornerRadius
     color: {
