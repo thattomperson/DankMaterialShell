@@ -662,7 +662,7 @@ Item {
                         spacing: Theme.spacingS
 
                         StyledText {
-                            text: "Gap Around Top Bar (0 = edge-to-edge)"
+                            text: "Top/Left/Right Gaps (0 = edge-to-edge)"
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceText
                             font.weight: Font.Medium
@@ -688,7 +688,7 @@ Item {
                         spacing: Theme.spacingS
 
                         StyledText {
-                            text: "Vertical Padding (0 = minimal height)"
+                            text: "Size"
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceText
                             font.weight: Font.Medium
