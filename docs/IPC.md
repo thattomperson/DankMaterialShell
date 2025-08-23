@@ -258,6 +258,35 @@ qs -c dms ipc call theme toggle
 qs -c dms ipc call theme dark
 ```
 
+## Target: `bar`
+
+Top bar visibility control.
+
+### Functions
+
+**`show`**
+- Show the top bar
+- Returns: Success confirmation
+
+**`hide`**
+- Hide the top bar
+- Returns: Success confirmation
+
+**`toggle`**
+- Toggle top bar visibility
+- Returns: Success confirmation with current state
+
+**`status`**
+- Get current top bar visibility status
+- Returns: "visible" or "hidden"
+
+### Examples
+```bash
+qs -c dms ipc call bar toggle
+qs -c dms ipc call bar hide
+qs -c dms ipc call bar status
+```
+
 ## Modal Controls
 
 These targets control various modal windows and overlays.

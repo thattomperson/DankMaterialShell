@@ -22,7 +22,7 @@ PanelWindow {
     property real backgroundTransparency: SettingsData.topBarTransparency
     readonly property int notificationCount: NotificationService.notifications.length
     property bool autoHide: SettingsData.topBarAutoHide
-    property bool reveal: !autoHide || topBarMouseArea.containsMouse
+    property bool reveal: SettingsData.topBarVisible && (!autoHide || topBarMouseArea.containsMouse)
     readonly property real effectiveBarHeight: Math.max(root.widgetHeight + SettingsData.topBarInnerPadding + 4, Theme.barHeight - 4 - (8 - SettingsData.topBarInnerPadding))
     readonly property real widgetHeight: Math.max(20, 26 + SettingsData.topBarInnerPadding * 0.6)
 
@@ -155,7 +155,7 @@ PanelWindow {
         right: true
     }
 
-    exclusiveZone: autoHide ? -1 : root.effectiveBarHeight + SettingsData.topBarSpacing - 2
+    exclusiveZone: !SettingsData.topBarVisible || autoHide ? -1 : root.effectiveBarHeight + SettingsData.topBarSpacing - 2
 
     mask: Region {
         item: topBarMouseArea
