@@ -11,9 +11,10 @@ Rectangle {
     property string section: "right"
     property var popupTarget: null
     property var parentScreen: null
+    property real widgetHeight: 30
 
     width: 40
-    height: 30
+    height: widgetHeight
     radius: Theme.cornerRadius
     color: {
         const baseColor = mouseArea.containsMouse ? Theme.primaryPressed : (SessionService.idleInhibited ? Theme.primaryHover : Theme.secondaryHover)

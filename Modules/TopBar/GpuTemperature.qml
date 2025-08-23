@@ -14,6 +14,8 @@ Rectangle {
     property var popupTarget: null
     property var parentScreen: null
     property var widgetData: null
+    property real barHeight: 48
+    property real widgetHeight: 30
     property int selectedGpuIndex: (widgetData && widgetData.selectedGpuIndex
                                     !== undefined) ? widgetData.selectedGpuIndex : 0
 
@@ -29,7 +31,7 @@ Rectangle {
     }
 
     width: 55
-    height: 30
+    height: widgetHeight
     radius: Theme.cornerRadius
     color: {
         const baseColor = gpuArea.containsMouse ? Theme.primaryPressed : Theme.secondaryHover
@@ -84,7 +86,7 @@ Rectangle {
                 var screenX = currentScreen.x || 0
                 var relativeX = globalPos.x - screenX
                 popupTarget.setTriggerPosition(
-                            relativeX, Theme.barHeight + Theme.spacingXS,
+                            relativeX, barHeight + Theme.spacingXS,
                             width, section, currentScreen)
             }
             DgopService.setSortBy("cpu")

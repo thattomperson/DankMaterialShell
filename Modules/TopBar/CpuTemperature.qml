@@ -13,9 +13,11 @@ Rectangle {
     property string section: "right"
     property var popupTarget: null
     property var parentScreen: null
+    property real barHeight: 48
+    property real widgetHeight: 30
 
     width: 55
-    height: 30
+    height: widgetHeight
     radius: Theme.cornerRadius
     color: {
         const baseColor = cpuTempArea.containsMouse ? Theme.primaryPressed : Theme.secondaryHover
@@ -42,7 +44,7 @@ Rectangle {
                 var screenX = currentScreen.x || 0
                 var relativeX = globalPos.x - screenX
                 popupTarget.setTriggerPosition(
-                            relativeX, Theme.barHeight + Theme.spacingXS,
+                            relativeX, barHeight + Theme.spacingXS,
                             width, section, currentScreen)
             }
             DgopService.setSortBy("cpu")

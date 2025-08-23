@@ -11,11 +11,13 @@ Rectangle {
     property string section: "right"
     property var popupTarget: null
     property var parentScreen: null
+    property real widgetHeight: 30
+    property real barHeight: 48
 
     signal toggleBatteryPopup
 
     width: BatteryService.batteryAvailable ? 70 : 40
-    height: 30
+    height: widgetHeight
     radius: Theme.cornerRadius
     color: {
         const baseColor = batteryArea.containsMouse
@@ -132,7 +134,7 @@ Rectangle {
                 var screenX = currentScreen.x || 0
                 var relativeX = globalPos.x - screenX
                 popupTarget.setTriggerPosition(
-                            relativeX, Theme.barHeight + Theme.spacingXS,
+                            relativeX, barHeight + Theme.spacingXS,
                             width, section, currentScreen)
             }
             toggleBatteryPopup()

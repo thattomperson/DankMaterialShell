@@ -15,12 +15,14 @@ Rectangle {
     property bool showNetworkIcon: SettingsData.controlCenterShowNetworkIcon
     property bool showBluetoothIcon: SettingsData.controlCenterShowBluetoothIcon
     property bool showAudioIcon: SettingsData.controlCenterShowAudioIcon
+    property real widgetHeight: 30
+    property real barHeight: 48
 
     signal clicked
     signal iconClicked(string tab)
 
     width: controlIndicators.implicitWidth + Theme.spacingS * 2
-    height: 30
+    height: widgetHeight
     radius: Theme.cornerRadius
     color: {
         const baseColor = controlCenterArea.containsMouse
@@ -143,7 +145,7 @@ Rectangle {
                 var screenX = currentScreen.x || 0
                 var relativeX = globalPos.x - screenX
                 popupTarget.setTriggerPosition(
-                            relativeX, Theme.barHeight + Theme.spacingXS,
+                            relativeX, barHeight + Theme.spacingXS,
                             width, section, currentScreen)
             }
 

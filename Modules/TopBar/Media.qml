@@ -29,10 +29,12 @@ Rectangle {
     property string section: "center"
     property var popupTarget: null
     property var parentScreen: null
+    property real barHeight: 48
+    property real widgetHeight: 30
 
     signal clicked
 
-    height: 30
+    height: widgetHeight
     radius: Theme.cornerRadius
     color: {
         const baseColor = Theme.surfaceTextHover
@@ -210,7 +212,7 @@ Rectangle {
                             var relativeX = globalPos.x - screenX
                             root.popupTarget.setTriggerPosition(
                                         relativeX,
-                                        Theme.barHeight + Theme.spacingXS,
+                                        barHeight + Theme.spacingXS,
                                         root.width, root.section, currentScreen)
                         }
                         root.clicked()

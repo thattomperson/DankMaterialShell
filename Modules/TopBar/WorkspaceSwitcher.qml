@@ -10,6 +10,7 @@ Rectangle {
     id: root
 
     property string screenName: ""
+    property real widgetHeight: 30
     property int currentWorkspace: {
         if (CompositorService.isNiri) {
             return getNiriActiveWorkspace()
@@ -78,10 +79,10 @@ Rectangle {
 
     width: SettingsData.showWorkspacePadding ? Math.max(
                                                    120,
-                                                   workspaceRow.implicitWidth + Theme.spacingL
+                                                   workspaceRow.implicitWidth + SettingsData.topBarInnerPadding
                                                    * 2) : workspaceRow.implicitWidth
-                                               + Theme.spacingL * 2
-    height: 30
+                                               + SettingsData.topBarInnerPadding * 2
+    height: widgetHeight
     radius: Theme.cornerRadius
     color: {
         const baseColor = Theme.surfaceTextHover
@@ -192,9 +193,8 @@ Rectangle {
                                                                    workspaceData.name) : null
                 property bool hasIcon: iconData !== null
 
-                width: isActive ? Theme.spacingXL + Theme.spacingM : Theme.spacingL
-                                  + Theme.spacingXS
-                height: Theme.spacingL
+                width: isActive ? widgetHeight * 1.2 + Theme.spacingXS : widgetHeight * 0.8
+                height: widgetHeight * 0.6
                 radius: height / 2
                 color: isActive ? Theme.primary : isPlaceholder ? Theme.surfaceTextLight : isHovered ? Theme.outlineButton : Theme.surfaceTextAlpha
 

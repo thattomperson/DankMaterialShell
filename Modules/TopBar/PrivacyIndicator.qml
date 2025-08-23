@@ -10,13 +10,14 @@ Rectangle {
     property string section: "right"
     property var popupTarget: null
     property var parentScreen: null
+    property real widgetHeight: 30
 
     readonly property bool hasActivePrivacy: PrivacyService.anyPrivacyActive
     readonly property int activeCount: PrivacyService.microphoneActive + PrivacyService.cameraActive
                                        + PrivacyService.screensharingActive
 
     width: hasActivePrivacy ? (activeCount > 1 ? 80 : 60) : 0
-    height: hasActivePrivacy ? 30 : 0
+    height: hasActivePrivacy ? widgetHeight : 0
     radius: Theme.cornerRadius
     visible: hasActivePrivacy
     opacity: hasActivePrivacy ? 1 : 0

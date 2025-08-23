@@ -14,6 +14,7 @@ Rectangle {
     property var parentScreen
     property var hoveredItem: null
     property var topBar: null
+    property real widgetHeight: 30
     // The visual root for this window
     property Item windowRoot: (Window.window ? Window.window.contentItem : null)
     readonly property var sortedToplevels: CompositorService.sortedToplevels
@@ -30,7 +31,7 @@ Rectangle {
     }
 
     width: calculatedWidth
-    height: 30
+    height: widgetHeight
     radius: Theme.cornerRadius
     visible: windowCount > 0
     clip: false

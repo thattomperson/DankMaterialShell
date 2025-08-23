@@ -618,10 +618,62 @@ Item {
                         }
                     }
 
+                    Column {
+                        width: parent.width
+                        spacing: Theme.spacingS
+
+                        StyledText {
+                            text: "Vertical Padding (0 = minimal height)"
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
+                        }
+
+                        DankSlider {
+                            width: parent.width
+                            height: 24
+                            value: SettingsData.topBarInnerPadding
+                            minimum: 0
+                            maximum: 24
+                            unit: ""
+                            showValue: true
+                            onSliderValueChanged: newValue => {
+                                                      SettingsData.setTopBarInnerPadding(
+                                                          newValue)
+                                                  }
+                        }
+                    }
+
+                    Column {
+                        width: parent.width
+                        spacing: Theme.spacingS
+
+                        StyledText {
+                            text: "Corner Radius (0 = square corners)"
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
+                        }
+
+                        DankSlider {
+                            width: parent.width
+                            height: 24
+                            value: SettingsData.cornerRadius
+                            minimum: 0
+                            maximum: 32
+                            unit: ""
+                            showValue: true
+                            onSliderValueChanged: newValue => {
+                                                      SettingsData.setCornerRadius(
+                                                          newValue)
+                                                  }
+                        }
+                    }
+
                     DankToggle {
                         width: parent.width
                         text: "Square Corners"
-                        description: "Disable corner radius for the top bar (always square corners)"
+                        description: "Removes rounded corners from bar container."
                         checked: SettingsData.topBarSquareCorners
                         onToggled: checked => {
                                        SettingsData.setTopBarSquareCorners(

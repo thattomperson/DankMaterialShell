@@ -11,11 +11,13 @@ Rectangle {
     property string section: "center"
     property var popupTarget: null
     property var parentScreen: null
+    property real barHeight: 48
+    property real widgetHeight: 30
 
     signal clockClicked
 
     width: clockRow.implicitWidth + Theme.spacingS * 2
-    height: 30
+    height: widgetHeight
     radius: Theme.cornerRadius
     color: {
         const baseColor = clockMouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
@@ -79,7 +81,7 @@ Rectangle {
                 var screenX = currentScreen.x || 0
                 var relativeX = globalPos.x - screenX
                 popupTarget.setTriggerPosition(
-                            relativeX, Theme.barHeight + Theme.spacingXS,
+                            relativeX, barHeight + Theme.spacingXS,
                             width, section, currentScreen)
             }
             root.clockClicked()

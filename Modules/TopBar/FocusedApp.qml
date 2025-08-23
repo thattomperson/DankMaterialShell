@@ -10,6 +10,7 @@ Rectangle {
 
     property bool compactMode: SettingsData.focusedWindowCompactMode
     property int availableWidth: 400
+    property real widgetHeight: 30
     readonly property int baseWidth: contentRow.implicitWidth + Theme.spacingS * 2
     readonly property int maxNormalWidth: 456
     readonly property int maxCompactWidth: 288
@@ -18,7 +19,7 @@ Rectangle {
     width: compactMode ? Math.min(baseWidth,
                                   maxCompactWidth) : Math.min(baseWidth,
                                                               maxNormalWidth)
-    height: 30
+    height: widgetHeight
     radius: Theme.cornerRadius
     color: {
         if (!activeWindow || !activeWindow.title)

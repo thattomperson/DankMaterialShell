@@ -84,6 +84,7 @@ Singleton {
     property bool notificationOverlayEnabled: false
     property bool topBarAutoHide: false
     property real topBarSpacing: 4
+    property real topBarInnerPadding: 8
     property bool topBarSquareCorners: false
     property int notificationTimeoutLow: 5000
     property int notificationTimeoutNormal: 5000
@@ -273,6 +274,7 @@ Singleton {
                 notificationTimeoutCritical = settings.notificationTimeoutCritical
                         !== undefined ? settings.notificationTimeoutCritical : 0
                 topBarSpacing = settings.topBarSpacing !== undefined ? settings.topBarSpacing : 4
+                topBarInnerPadding = settings.topBarInnerPadding !== undefined ? settings.topBarInnerPadding : 8
                 topBarSquareCorners = settings.topBarSquareCorners
                         !== undefined ? settings.topBarSquareCorners : false
                 applyStoredTheme()
@@ -355,6 +357,7 @@ Singleton {
                                                 "notificationOverlayEnabled": notificationOverlayEnabled,
                                                 "topBarAutoHide": topBarAutoHide,
                                                 "topBarSpacing": topBarSpacing,
+                                                "topBarInnerPadding": topBarInnerPadding,
                                                 "topBarSquareCorners": topBarSquareCorners,
                                                 "notificationTimeoutLow": notificationTimeoutLow,
                                                 "notificationTimeoutNormal": notificationTimeoutNormal,
@@ -872,6 +875,11 @@ Singleton {
 
     function setTopBarSpacing(spacing) {
         topBarSpacing = spacing
+        saveSettings()
+    }
+
+    function setTopBarInnerPadding(padding) {
+        topBarInnerPadding = padding
         saveSettings()
     }
 

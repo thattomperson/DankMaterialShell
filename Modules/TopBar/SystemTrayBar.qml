@@ -9,13 +9,14 @@ Rectangle {
 
     property var parentWindow: null
     property var parentScreen: null
+    property real widgetHeight: 30
 
     readonly property int calculatedWidth: SystemTray.items.values.length
                                            > 0 ? SystemTray.items.values.length
                                                  * 24 + Theme.spacingS * 2 : 0
 
     width: calculatedWidth
-    height: 30
+    height: widgetHeight
     radius: Theme.cornerRadius
     color: {
         if (SystemTray.items.values.length === 0)
