@@ -259,13 +259,14 @@ Item {
         mipmap: true
         smooth: true
         asynchronous: true
+        visible: status === Image.Ready
     }
 
     Rectangle {
         width: 40
         height: 40
         anchors.centerIn: parent
-        visible: !iconImg.visible
+        visible: iconImg.status !== Image.Ready
         color: Theme.surfaceLight
         radius: Theme.cornerRadius
         border.width: 1
