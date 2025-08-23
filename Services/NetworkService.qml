@@ -848,7 +848,7 @@ Singleton {
 
     Process {
         id: wifiInfoFetcher
-        command: ["nmcli", "-t", "-f", "SSID,SIGNAL,SECURITY,FREQ,RATE,MODE,CHAN,WPA-FLAGS,RSN-FLAGS", "dev", "wifi", "list"]
+        command: ["nmcli", "-t", "-f", "SSID,SIGNAL,SECURITY,FREQ,RATE,MODE,CHAN,WPA-FLAGS,RSN-FLAGS,ACTIVE,BSSID", "dev", "wifi", "list"]
         running: false
 
         stdout: StdioCollector {
@@ -856,19 +856,31 @@ Singleton {
                 let details = ""
                 if (text.trim()) {
                     let lines = text.trim().split('\n')
+                    let bands = []
+                    
+                    // Collect all access points for this SSID
                     for (let line of lines) {
                         let parts = line.split(':')
-                        if (parts.length >= 9
-                            && parts[0] === root.networkInfoSSID) {
-                            let ssid = parts[0] || "Unknown"
+                        if (parts.length >= 11 && parts[0] === root.networkInfoSSID) {
                             let signal = parts[1] || "0"
                             let security = parts[2] || "Open"
                             let freq = parts[3] || "Unknown"
                             let rate = parts[4] || "Unknown"
-                            let mode = parts[5] || "Unknown"
                             let channel = parts[6] || "Unknown"
-                            let wpaFlags = parts[7] || ""
-                            let rsnFlags = parts[8] || ""
+                            let isActive = parts[9] === "yes"
+                            // BSSID is the last field, find it by counting colons
+                            let colonCount = 0
+                            let bssidStart = -1
+                            for (let i = 0; i < line.length; i++) {
+                                if (line[i] === ':') {
+                                    colonCount++
+                                    if (colonCount === 10) {
+                                        bssidStart = i + 1
+                                        break
+                                    }
+                                }
+                            }
+                            let bssid = bssidStart >= 0 ? line.substring(bssidStart).replace(/\\:/g, ":") : ""
 
                             let band = "Unknown"
                             let freqNum = parseInt(freq)
@@ -880,23 +892,39 @@ Singleton {
                                 band = "6 GHz"
                             }
 
-                            details = "Network Name: " + ssid + "\\n"
-                            details += "Signal Strength: " + signal + "%\\n"
-                            details += "Security: " + (security === "" ? "Open" : security) + "\\n"
-                            details += "Frequency: " + freq + " MHz\\n"
-                            details += "Band: " + band + "\\n"
-                            details += "Channel: " + channel + "\\n"
-                            details += "Mode: " + mode + "\\n"
-                            details += "Max Rate: " + rate + " Mbit/s\\n"
-
-                            if (wpaFlags !== "") {
-                                details += "WPA Flags: " + wpaFlags + "\\n"
+                            bands.push({
+                                band: band,
+                                freq: freq,
+                                channel: channel,
+                                signal: signal,
+                                rate: rate,
+                                security: security,
+                                isActive: isActive,
+                                bssid: bssid
+                            })
+                        }
+                    }
+                    
+                    if (bands.length > 0) {
+                        // Sort bands: active first, then by signal strength
+                        bands.sort((a, b) => {
+                            if (a.isActive && !b.isActive) return -1
+                            if (!a.isActive && b.isActive) return 1
+                            return parseInt(b.signal) - parseInt(a.signal)
+                        })
+                        
+                        for (let i = 0; i < bands.length; i++) {
+                            let b = bands[i]
+                            if (b.isActive) {
+                                details += "● " + b.band + " (Connected) - " + b.signal + "%\\n"
+                            } else {
+                                details += "  " + b.band + " - " + b.signal + "%\\n"
                             }
-                            if (rsnFlags !== "") {
-                                details += "RSN Flags: " + rsnFlags + "\\n"
+                            details += "  Channel " + b.channel + " (" + b.freq + " MHz) • " + b.rate + " Mbit/s\\n"
+                            details += "  " + b.bssid
+                            if (i < bands.length - 1) {
+                                details += "\\n\\n"
                             }
-
-                            break
                         }
                     }
                 }

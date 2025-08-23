@@ -89,54 +89,25 @@ DankModal {
                     }
                 }
 
-                Flickable {
+                DankFlickable {
+                    id: flickableArea
                     width: parent.width
                     height: parent.height - 140
                     clip: true
                     contentWidth: width
                     contentHeight: detailsRect.height
 
-                    // Qt 6.9+ scrolling: flickDeceleration/maximumFlickVelocity only affect touch now
-                    interactive: true
-                    flickDeceleration: 1500
-                    maximumFlickVelocity: 2000
-                    boundsBehavior: Flickable.DragAndOvershootBounds
-                    boundsMovement: Flickable.FollowBoundsBehavior
-                    pressDelay: 0
-                    flickableDirection: Flickable.VerticalFlick
-
-                    // Custom wheel handler for Qt 6.9+ responsive mouse wheel scrolling
-                    WheelHandler {
-                        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-                        onWheel: event => {
-                                     let delta = event.pixelDelta.y
-                                     !== 0 ? event.pixelDelta.y
-                                             * 1.8 : event.angleDelta.y / 120 * 60
-                                     let newY = parent.contentY - delta
-                                     newY = Math.max(
-                                         0, Math.min(
-                                             parent.contentHeight - parent.height,
-                                             newY))
-                                     parent.contentY = newY
-                                     event.accepted = true
-                                 }
-                    }
-
                     Rectangle {
                         id: detailsRect
-
                         width: parent.width
-                        height: Math.max(
-                                    parent.parent.height,
-                                    detailsText.contentHeight + Theme.spacingM * 2)
+                        height: detailsText.contentHeight + Theme.spacingM * 2
                         radius: Theme.cornerRadius
                         color: Theme.surfaceHover
                         border.color: Theme.outlineStrong
                         border.width: 1
 
-                        StyledText {
+                        TextArea {
                             id: detailsText
-
                             anchors.fill: parent
                             anchors.margins: Theme.spacingM
                             text: NetworkService.networkInfoDetails.replace(
@@ -145,16 +116,11 @@ DankModal {
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceText
                             wrapMode: Text.WordWrap
-                            lineHeight: 1.5
+                            readOnly: true
+                            selectByMouse: true
+                            background: null
+                            padding: 0
                         }
-                    }
-
-                    ScrollBar.vertical: ScrollBar {
-                        policy: ScrollBar.AsNeeded
-                    }
-
-                    ScrollBar.horizontal: ScrollBar {
-                        policy: ScrollBar.AlwaysOff
                     }
                 }
 
