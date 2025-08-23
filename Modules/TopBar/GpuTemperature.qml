@@ -30,10 +30,13 @@ Rectangle {
         }
     }
 
-    width: 55
+    readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 0 : Math.max(Theme.spacingXS, Theme.spacingS * (widgetHeight / 30))
+
+    width: gpuTempContent.implicitWidth + horizontalPadding * 2
     height: widgetHeight
-    radius: Theme.cornerRadius
+    radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
     color: {
+        if (SettingsData.topBarNoBackground) return "transparent"
         const baseColor = gpuArea.containsMouse ? Theme.primaryPressed : Theme.secondaryHover
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
                        baseColor.a * Theme.widgetTransparency)
@@ -96,6 +99,7 @@ Rectangle {
     }
 
     Row {
+        id: gpuTempContent
         anchors.centerIn: parent
         spacing: 3
 

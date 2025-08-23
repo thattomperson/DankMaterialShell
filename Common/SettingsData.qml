@@ -87,6 +87,7 @@ Singleton {
     property real topBarSpacing: 4
     property real topBarInnerPadding: 8
     property bool topBarSquareCorners: false
+    property bool topBarNoBackground: false
     property int notificationTimeoutLow: 5000
     property int notificationTimeoutNormal: 5000
     property int notificationTimeoutCritical: 0
@@ -280,6 +281,8 @@ Singleton {
                 topBarInnerPadding = settings.topBarInnerPadding !== undefined ? settings.topBarInnerPadding : 8
                 topBarSquareCorners = settings.topBarSquareCorners
                         !== undefined ? settings.topBarSquareCorners : false
+                topBarNoBackground = settings.topBarNoBackground
+                        !== undefined ? settings.topBarNoBackground : false
                 applyStoredTheme()
                 detectAvailableIconThemes()
                 detectQtTools()
@@ -363,6 +366,7 @@ Singleton {
                                                 "topBarSpacing": topBarSpacing,
                                                 "topBarInnerPadding": topBarInnerPadding,
                                                 "topBarSquareCorners": topBarSquareCorners,
+                                                "topBarNoBackground": topBarNoBackground,
                                                 "notificationTimeoutLow": notificationTimeoutLow,
                                                 "notificationTimeoutNormal": notificationTimeoutNormal,
                                                 "notificationTimeoutCritical": notificationTimeoutCritical
@@ -899,6 +903,11 @@ Singleton {
 
     function setTopBarSquareCorners(enabled) {
         topBarSquareCorners = enabled
+        saveSettings()
+    }
+
+    function setTopBarNoBackground(enabled) {
+        topBarNoBackground = enabled
         saveSettings()
     }
 

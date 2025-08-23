@@ -13,13 +13,15 @@ Rectangle {
     property var parentScreen: null
     property real barHeight: 48
     property real widgetHeight: 30
+    readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 2 : Theme.spacingS
 
     signal clockClicked
 
-    width: clockRow.implicitWidth + Theme.spacingS * 2
+    width: clockRow.implicitWidth + horizontalPadding * 2
     height: widgetHeight
-    radius: Theme.cornerRadius
+    radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
     color: {
+        if (SettingsData.topBarNoBackground) return "transparent"
         const baseColor = clockMouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
                        baseColor.a * Theme.widgetTransparency)

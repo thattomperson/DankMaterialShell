@@ -13,13 +13,15 @@ Rectangle {
     property var parentScreen: null
     property real widgetHeight: 30
     property real barHeight: 48
+    readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 0 : Math.max(Theme.spacingXS, Theme.spacingS * (widgetHeight / 30))
 
     signal toggleBatteryPopup
 
-    width: BatteryService.batteryAvailable ? 70 : 40
+    width: batteryContent.implicitWidth + horizontalPadding * 2
     height: widgetHeight
-    radius: Theme.cornerRadius
+    radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
     color: {
+        if (SettingsData.topBarNoBackground) return "transparent"
         const baseColor = batteryArea.containsMouse
                         || batteryPopupVisible ? Theme.primaryPressed : Theme.secondaryHover
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
@@ -28,8 +30,9 @@ Rectangle {
     visible: true
 
     Row {
+        id: batteryContent
         anchors.centerIn: parent
-        spacing: 2
+        spacing: SettingsData.topBarNoBackground ? 1 : 2
 
         DankIcon {
             name: {

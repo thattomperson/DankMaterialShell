@@ -11,15 +11,17 @@ Rectangle {
     property var parentScreen: null
     property real barHeight: 48
     property real widgetHeight: 30
+    readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 2 : Theme.spacingS
 
     signal clicked
 
     visible: SettingsData.weatherEnabled
     width: visible ? Math.min(100,
-                              weatherRow.implicitWidth + Theme.spacingS * 2) : 0
+                              weatherRow.implicitWidth + horizontalPadding * 2) : 0
     height: widgetHeight
-    radius: Theme.cornerRadius
+    radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
     color: {
+        if (SettingsData.topBarNoBackground) return "transparent"
         const baseColor = weatherArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
                        baseColor.a * Theme.widgetTransparency)

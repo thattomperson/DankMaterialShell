@@ -11,7 +11,8 @@ Rectangle {
     property bool compactMode: SettingsData.focusedWindowCompactMode
     property int availableWidth: 400
     property real widgetHeight: 30
-    readonly property int baseWidth: contentRow.implicitWidth + Theme.spacingS * 2
+    readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 2 : Theme.spacingS
+    readonly property int baseWidth: contentRow.implicitWidth + horizontalPadding * 2
     readonly property int maxNormalWidth: 456
     readonly property int maxCompactWidth: 288
     readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
@@ -20,11 +21,12 @@ Rectangle {
                                   maxCompactWidth) : Math.min(baseWidth,
                                                               maxNormalWidth)
     height: widgetHeight
-    radius: Theme.cornerRadius
+    radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
     color: {
         if (!activeWindow || !activeWindow.title)
             return "transparent"
-
+        
+        if (SettingsData.topBarNoBackground) return "transparent"
         const baseColor = mouseArea.containsMouse ? Theme.primaryHover : Theme.surfaceTextHover
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
                        baseColor.a * Theme.widgetTransparency)

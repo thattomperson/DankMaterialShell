@@ -77,14 +77,16 @@ Rectangle {
         return 1
     }
 
+    readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 2 : Math.max(Theme.spacingS, SettingsData.topBarInnerPadding)
+    
     width: SettingsData.showWorkspacePadding ? Math.max(
                                                    120,
-                                                   workspaceRow.implicitWidth + Math.max(Theme.spacingS, SettingsData.topBarInnerPadding)
-                                                   * 2) : workspaceRow.implicitWidth
-                                               + Math.max(Theme.spacingS, SettingsData.topBarInnerPadding) * 2
+                                                   workspaceRow.implicitWidth + horizontalPadding * 2) : workspaceRow.implicitWidth
+                                               + horizontalPadding * 2
     height: widgetHeight
-    radius: Theme.cornerRadius
+    radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
     color: {
+        if (SettingsData.topBarNoBackground) return "transparent"
         const baseColor = Theme.surfaceTextHover
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
                        baseColor.a * Theme.widgetTransparency)

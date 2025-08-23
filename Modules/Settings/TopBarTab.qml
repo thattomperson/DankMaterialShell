@@ -745,6 +745,17 @@ Item {
                                            checked)
                                    }
                     }
+
+                    DankToggle {
+                        width: parent.width
+                        text: "No Background"
+                        description: "Remove widget backgrounds for a minimal look with tighter spacing."
+                        checked: SettingsData.topBarNoBackground
+                        onToggled: checked => {
+                                       SettingsData.setTopBarNoBackground(
+                                           checked)
+                                   }
+                    }
                 }
             }
 

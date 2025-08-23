@@ -398,7 +398,7 @@ PanelWindow {
                         id: leftSection
 
                         height: parent.height
-                        spacing: Theme.spacingXS
+                        spacing: SettingsData.topBarNoBackground ? 2 : Theme.spacingXS
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
 
@@ -428,7 +428,7 @@ PanelWindow {
                         property var centerWidgets: []
                         property int totalWidgets: 0
                         property real totalWidth: 0
-                        property real spacing: Theme.spacingS
+                        property real spacing: SettingsData.topBarNoBackground ? 2 : Theme.spacingS
 
                         function updateLayout() {
                             // Defer layout if dimensions are invalid
@@ -577,7 +577,7 @@ PanelWindow {
                         id: rightSection
 
                         height: parent.height
-                        spacing: Theme.spacingXS
+                        spacing: SettingsData.topBarNoBackground ? 2 : Theme.spacingXS
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
 
@@ -605,10 +605,12 @@ PanelWindow {
                         id: clipboardComponent
 
                         Rectangle {
-                            width: 40
+                            readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 0 : Math.max(Theme.spacingXS, Theme.spacingS * (root.widgetHeight / 30))
+                            width: clipboardIcon.width + horizontalPadding * 2
                             height: root.widgetHeight
-                            radius: Theme.cornerRadius
+                            radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
                             color: {
+                                if (SettingsData.topBarNoBackground) return "transparent"
                                 const baseColor = clipboardArea.containsMouse ? Theme.primaryHover : Theme.secondaryHover
                                 return Qt.rgba(
                                             baseColor.r, baseColor.g,
@@ -617,6 +619,7 @@ PanelWindow {
                             }
 
                             DankIcon {
+                                id: clipboardIcon
                                 anchors.centerIn: parent
                                 name: "content_paste"
                                 size: Theme.iconSize - 6

@@ -15,6 +15,7 @@ Rectangle {
     property var hoveredItem: null
     property var topBar: null
     property real widgetHeight: 30
+    readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 2 : Theme.spacingS
     // The visual root for this window
     property Item windowRoot: (Window.window ? Window.window.contentItem : null)
     readonly property var sortedToplevels: CompositorService.sortedToplevels
@@ -23,22 +24,23 @@ Rectangle {
         if (windowCount === 0)
             return 0
         if (SettingsData.runningAppsCompactMode) {
-            return windowCount * 24 + (windowCount - 1) * Theme.spacingXS + Theme.spacingS * 2
+            return windowCount * 24 + (windowCount - 1) * Theme.spacingXS + horizontalPadding * 2
         } else {
             return windowCount * (24 + Theme.spacingXS + 120)
-                    + (windowCount - 1) * Theme.spacingXS + Theme.spacingS * 2
+                    + (windowCount - 1) * Theme.spacingXS + horizontalPadding * 2
         }
     }
 
     width: calculatedWidth
     height: widgetHeight
-    radius: Theme.cornerRadius
+    radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
     visible: windowCount > 0
     clip: false
     color: {
         if (windowCount === 0)
             return "transparent"
-
+        
+        if (SettingsData.topBarNoBackground) return "transparent"
         const baseColor = Theme.secondaryHover
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
                        baseColor.a * Theme.widgetTransparency)

@@ -17,14 +17,16 @@ Rectangle {
     property bool showAudioIcon: SettingsData.controlCenterShowAudioIcon
     property real widgetHeight: 30
     property real barHeight: 48
+    readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 0 : Math.max(Theme.spacingXS, Theme.spacingS * (widgetHeight / 30))
 
     signal clicked
     signal iconClicked(string tab)
 
-    width: controlIndicators.implicitWidth + Theme.spacingS * 2
+    width: controlIndicators.implicitWidth + horizontalPadding * 2
     height: widgetHeight
-    radius: Theme.cornerRadius
+    radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
     color: {
+        if (SettingsData.topBarNoBackground) return "transparent"
         const baseColor = controlCenterArea.containsMouse
                         || root.isActive ? Theme.primaryPressed : Theme.secondaryHover
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,

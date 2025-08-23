@@ -15,11 +15,13 @@ Rectangle {
     property var parentScreen: null
     property real barHeight: 48
     property real widgetHeight: 30
+    readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 0 : Math.max(Theme.spacingXS, Theme.spacingS * (widgetHeight / 30))
 
-    width: 55
+    width: ramContent.implicitWidth + horizontalPadding * 2
     height: widgetHeight
-    radius: Theme.cornerRadius
+    radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
     color: {
+        if (SettingsData.topBarNoBackground) return "transparent"
         const baseColor = ramArea.containsMouse ? Theme.primaryPressed : Theme.secondaryHover
         return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
                        baseColor.a * Theme.widgetTransparency)
@@ -54,6 +56,7 @@ Rectangle {
     }
 
     Row {
+        id: ramContent
         anchors.centerIn: parent
         spacing: 3
 
