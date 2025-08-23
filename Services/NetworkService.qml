@@ -34,20 +34,22 @@ Singleton {
     property var savedConnections: []
     property var wifiSignalIcon: {
         if (currentWifiSSID == "" || !wifiEnabled) {
-            return "wifi_off"
+            return "signal_wifi_off"
         }
-        
         // Use nmcli signal strength percentage
-        if (wifiSignalStrength >= 75) {
-            return "wifi"
+        if (wifiSignalStrength >= 70) {
+            return "signal_wifi_4_bar"
         }
         if (wifiSignalStrength >= 50) {
-            return "wifi_2_bar"
+            return "network_wifi_3_bar"
         }
         if (wifiSignalStrength >= 25) {
-            return "wifi_1_bar"
+            return "network_wifi_2_bar"
         }
-        return "signal_wifi_0_bar"
+        if (wifiSignalStrength >= 10) {
+            return "network_wifi_1_bar"
+        }
+        return "signal_wifi_bad"
     }
 
     // Connection management
