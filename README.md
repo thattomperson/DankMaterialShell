@@ -449,11 +449,11 @@ environment {
 1. Install qt6ct and qt5ct
 
 
-# Arch
+## Arch
 ```bash
 sudo pacman -S qt5ct qt6ct
 ```
-# Fedora
+## Fedora
 ```bash
 sudo dnf install qt5ct qt6ct
 ```
@@ -468,7 +468,7 @@ sudo dnf install qt5ct qt6ct
 
 You'll have to restart your session for themes to take effect.
 
-### Terminal Integration
+## Terminal Integration
 
 **Ghostty users** can add automatic color theming:
 
