@@ -1,0 +1,3 @@
+[templates.fastfetch]
+input_path = './matugen/templates/fastfetch-colors.jsonc'
+output_path = '~/.config/fastfetch/colors.jsonc'

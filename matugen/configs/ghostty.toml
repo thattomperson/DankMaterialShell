@@ -1,0 +1,7 @@
+[templates.ghostty-dark]
+input_path = './matugen/templates/ghostty-colors-dark.conf'
+output_path = '~/.config/ghostty/config-dankcolors'
+
+[templates.ghostty-light]
+input_path = './matugen/templates/ghostty-colors-light.conf'
+output_path = '~/.config/ghostty/config-dankcolors'

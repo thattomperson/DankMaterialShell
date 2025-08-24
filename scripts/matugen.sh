@@ -43,6 +43,93 @@ update_theme_settings() {
     fi
 }
 
+build_dynamic_config() {
+    local temp_config="$1"
+    local is_light="$2"
+    local shell_dir="$3"
+    
+    echo "Building dynamic matugen configuration..."
+    
+    cat "$shell_dir/matugen/configs/base.toml" > "$temp_config"
+    echo "" >> "$temp_config"
+    
+    if command -v niri >/dev/null 2>&1; then
+        echo "  - Including niri config (niri found)"
+        cat "$shell_dir/matugen/configs/niri.toml" >> "$temp_config"
+        echo "" >> "$temp_config"
+    else
+        echo "  - Skipping niri config (niri not found)"
+    fi
+    
+    if command -v qt5ct >/dev/null 2>&1; then
+        echo "  - Including qt5ct config (qt5ct found)"
+        cat "$shell_dir/matugen/configs/qt5ct.toml" >> "$temp_config"
+        echo "" >> "$temp_config"
+    else
+        echo "  - Skipping qt5ct config (qt5ct not found)"
+    fi
+    
+    if command -v qt6ct >/dev/null 2>&1; then
+        echo "  - Including qt6ct config (qt6ct found)"
+        cat "$shell_dir/matugen/configs/qt6ct.toml" >> "$temp_config"
+        echo "" >> "$temp_config"
+    else
+        echo "  - Skipping qt6ct config (qt6ct not found)"
+    fi
+    
+    if [ "$is_light" = "true" ]; then
+        COLLOID_TEMPLATE="$shell_dir/matugen/templates/gtk3-colloid-light.css"
+    else
+        COLLOID_TEMPLATE="$shell_dir/matugen/templates/gtk3-colloid-dark.css"
+    fi
+    
+    sed -i "/\[templates\.gtk3\]/,/^$/ s|input_path = './matugen/templates/gtk-colors.css'|input_path = '$COLLOID_TEMPLATE'|" "$temp_config"
+    sed -i "s|input_path = './matugen/templates/|input_path = '$shell_dir/matugen/templates/|g" "$temp_config"
+}
+
+build_content_config() {
+    local temp_config="$1"
+    local is_light="$2"
+    local shell_dir="$3"
+    
+    echo "Building dynamic content configuration..."
+    
+    echo "[config]" > "$temp_config"
+    echo "" >> "$temp_config"
+    
+    if command -v ghostty >/dev/null 2>&1; then
+        echo "  - Including ghostty config (ghostty found)"
+        cat "$shell_dir/matugen/configs/ghostty.toml" >> "$temp_config"
+        if [ "$is_light" = "true" ]; then
+            sed -i '/\[templates\.ghostty-dark\]/,/^$/d' "$temp_config"
+        else
+            sed -i '/\[templates\.ghostty-light\]/,/^$/d' "$temp_config"
+        fi
+        sed -i "s|input_path = './matugen/templates/|input_path = '$shell_dir/matugen/templates/|g" "$temp_config"
+        echo "" >> "$temp_config"
+    else
+        echo "  - Skipping ghostty config (ghostty not found)"
+    fi
+    
+    if command -v dgop >/dev/null 2>&1; then
+        echo "  - Including dgop config (dgop found)"
+        cat "$shell_dir/matugen/configs/dgop.toml" >> "$temp_config"
+        sed -i "s|input_path = './matugen/templates/|input_path = '$shell_dir/matugen/templates/|g" "$temp_config"
+        echo "" >> "$temp_config"
+    else
+        echo "  - Skipping dgop config (dgop not found)"
+    fi
+    
+    if command -v fastfetch >/dev/null 2>&1; then
+        echo "  - Including fastfetch config (fastfetch found)"
+        cat "$shell_dir/matugen/configs/fastfetch.toml" >> "$temp_config"
+        sed -i "s|input_path = './matugen/templates/|input_path = '$shell_dir/matugen/templates/|g" "$temp_config"
+        echo "" >> "$temp_config"
+    else
+        echo "  - Skipping fastfetch config (fastfetch not found)"
+    fi
+}
+
 if [ "$MODE" = "generate" ]; then
     if [ ! -f "$INPUT_SOURCE" ]; then
         echo "Wallpaper file not found: $INPUT_SOURCE" >&2
@@ -60,26 +147,15 @@ if [ ! -d "$SHELL_DIR" ]; then
     exit 1
 fi
 
-mkdir -p "$CONFIG_DIR/gtk-3.0" "$CONFIG_DIR/gtk-4.0" "$CONFIG_DIR/qt5ct/colors" "$CONFIG_DIR/qt6ct/colors" "$(dirname "$CONFIG_DIR")/.local/share/color-schemes"
-
 cd "$SHELL_DIR" || exit 1
 
-if [ ! -f "matugen/matugen-default-cfg.toml" ]; then
-    echo "Config file not found: $SHELL_DIR/matugen/matugen-default-cfg.toml" >&2
+if [ ! -d "matugen/configs" ]; then
+    echo "Config directory not found: $SHELL_DIR/matugen/configs" >&2
     exit 1
 fi
 
 TEMP_CONFIG="/tmp/matugen-config-$$.toml"
-cp "matugen/matugen-default-cfg.toml" "$TEMP_CONFIG"
-
-if [ "$IS_LIGHT" = "true" ]; then
-    COLLOID_TEMPLATE="$SHELL_DIR/matugen/templates/gtk3-colloid-light.css"
-else
-    COLLOID_TEMPLATE="$SHELL_DIR/matugen/templates/gtk3-colloid-dark.css"
-fi
-
-sed -i "/\[templates\.gtk3\]/,/^\[/ s|input_path = './matugen/templates/gtk-colors.css'|input_path = '$COLLOID_TEMPLATE'|" "$TEMP_CONFIG"
-sed -i "s|input_path = './matugen/templates/|input_path = '$SHELL_DIR/matugen/templates/|g" "$TEMP_CONFIG"
+build_dynamic_config "$TEMP_CONFIG" "$IS_LIGHT" "$SHELL_DIR"
 
 MATUGEN_MODE=""
 if [ "$IS_LIGHT" = "true" ]; then
@@ -90,7 +166,7 @@ fi
 
 if [ "$MODE" = "generate" ]; then
     echo "Generating matugen themes from wallpaper: $INPUT_SOURCE"
-    echo "Using config: $TEMP_CONFIG with template: $COLLOID_TEMPLATE"
+    echo "Using dynamic config: $TEMP_CONFIG"
     
     if ! matugen -v -c "$TEMP_CONFIG" image "$INPUT_SOURCE" $MATUGEN_MODE; then
         echo "Failed to generate themes with matugen" >&2
@@ -99,7 +175,7 @@ if [ "$MODE" = "generate" ]; then
     fi
 elif [ "$MODE" = "generate-color" ]; then
     echo "Generating matugen themes from color: $INPUT_SOURCE"
-    echo "Using config: $TEMP_CONFIG with template: $COLLOID_TEMPLATE"
+    echo "Using dynamic config: $TEMP_CONFIG"
     
     if ! matugen -v -c "$TEMP_CONFIG" color hex "$INPUT_SOURCE" $MATUGEN_MODE; then
         echo "Failed to generate themes with matugen" >&2
@@ -109,18 +185,17 @@ elif [ "$MODE" = "generate-color" ]; then
 fi
 
 TEMP_CONTENT_CONFIG="/tmp/matugen-content-config-$$.toml"
-cp "matugen/matugen-content-cfg.toml" "$TEMP_CONTENT_CONFIG"
-sed -i "s|input_path = './matugen/templates/|input_path = '$SHELL_DIR/matugen/templates/|g" "$TEMP_CONTENT_CONFIG"
-if [ "$IS_LIGHT" = "true" ]; then
-    sed -i '/\[templates\.ghostty-dark\]/,/^$/d' "$TEMP_CONTENT_CONFIG"
-else
-    sed -i '/\[templates\.ghostty-light\]/,/^$/d' "$TEMP_CONTENT_CONFIG"
-fi
+build_content_config "$TEMP_CONTENT_CONFIG" "$IS_LIGHT" "$SHELL_DIR"
 
-if [ "$MODE" = "generate" ]; then
-    matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-fidelity image "$INPUT_SOURCE" $MATUGEN_MODE
-elif [ "$MODE" = "generate-color" ]; then
-    matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-fidelity color hex "$INPUT_SOURCE" $MATUGEN_MODE
+if [ -s "$TEMP_CONTENT_CONFIG" ] && grep -q '\[templates\.' "$TEMP_CONTENT_CONFIG"; then
+    echo "Running content-specific theme generation..."
+    if [ "$MODE" = "generate" ]; then
+        matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-fidelity image "$INPUT_SOURCE" $MATUGEN_MODE
+    elif [ "$MODE" = "generate-color" ]; then
+        matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-fidelity color hex "$INPUT_SOURCE" $MATUGEN_MODE
+    fi
+else
+    echo "No content-specific tools found, skipping content generation"
 fi
 
 rm -f "$TEMP_CONFIG" "$TEMP_CONTENT_CONFIG"
@@ -137,5 +212,12 @@ fi
 update_theme_settings "$color_scheme" "$ICON_THEME"
 
 echo "Matugen theme generation completed successfully"
-echo "dank-colors.css files generated in $CONFIG_DIR/gtk-3.0/ and $CONFIG_DIR/gtk-4.0/"
-echo "Qt color schemes generated in $CONFIG_DIR/qt5ct/colors/ and $CONFIG_DIR/qt6ct/colors/"
+echo "Generated configs for detected tools:"
+[ -f "$CONFIG_DIR/gtk-3.0/dank-colors.css" ] && echo "  - GTK 3/4 themes"
+[ -f "$(eval echo ~/.local/share/color-schemes/DankMatugen.colors)" ] && echo "  - KDE color scheme"
+command -v niri >/dev/null 2>&1 && [ -f "$CONFIG_DIR/niri/dankshell-colors.kdl" ] && echo "  - Niri compositor"
+command -v qt5ct >/dev/null 2>&1 && [ -f "$CONFIG_DIR/qt5ct/colors/matugen.conf" ] && echo "  - Qt5ct themes"
+command -v qt6ct >/dev/null 2>&1 && [ -f "$CONFIG_DIR/qt6ct/colors/matugen.conf" ] && echo "  - Qt6ct themes"
+command -v ghostty >/dev/null 2>&1 && [ -f "$CONFIG_DIR/ghostty/config-dankcolors" ] && echo "  - Ghostty terminal"
+command -v dgop >/dev/null 2>&1 && [ -f "$CONFIG_DIR/dgop/colors.json" ] && echo "  - Dgop colors"
+command -v fastfetch >/dev/null 2>&1 && [ -f "$CONFIG_DIR/fastfetch/colors.jsonc" ] && echo "  - Fastfetch colors"
