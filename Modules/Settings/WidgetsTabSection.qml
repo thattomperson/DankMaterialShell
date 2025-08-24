@@ -17,7 +17,7 @@ Column {
     signal itemOrderChanged(var newOrder)
     signal addWidget(string sectionId)
     signal removeWidget(string sectionId, int widgetIndex)
-    signal spacerSizeChanged(string sectionId, string itemId, int newSize)
+    signal spacerSizeChanged(string sectionId, int widgetIndex, int newSize)
     signal compactModeChanged(string widgetId, var value)
     signal gpuSelectionChanged(string sectionId, int widgetIndex, int selectedIndex)
     signal controlCenterSettingChanged(string sectionId, int widgetIndex, string settingName, bool value)
@@ -419,7 +419,7 @@ Column {
                                     var currentSize = modelData.size || 20
                                     var newSize = Math.max(5, currentSize - 5)
                                     root.spacerSizeChanged(root.sectionId,
-                                                           modelData.id,
+                                                           index,
                                                            newSize)
                                 }
                             }
@@ -441,7 +441,7 @@ Column {
                                     var newSize = Math.min(5000,
                                                            currentSize + 5)
                                     root.spacerSizeChanged(root.sectionId,
-                                                           modelData.id,
+                                                           index,
                                                            newSize)
                                 }
                             }

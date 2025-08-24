@@ -288,7 +288,7 @@ Item {
             SettingsData.setTopBarRightWidgets(newOrder)
     }
 
-    function handleSpacerSizeChanged(sectionId, itemId, newSize) {
+    function handleSpacerSizeChanged(sectionId, widgetIndex, newSize) {
         var widgets = []
         if (sectionId === "left")
             widgets = SettingsData.topBarLeftWidgets.slice()
@@ -296,12 +296,13 @@ Item {
             widgets = SettingsData.topBarCenterWidgets.slice()
         else if (sectionId === "right")
             widgets = SettingsData.topBarRightWidgets.slice()
-        for (var i = 0; i < widgets.length; i++) {
-            var widget = widgets[i]
+        
+        if (widgetIndex >= 0 && widgetIndex < widgets.length) {
+            var widget = widgets[widgetIndex]
             var widgetId = typeof widget === "string" ? widget : widget.id
-            if (widgetId === itemId && widgetId === "spacer") {
+            if (widgetId === "spacer") {
                 if (typeof widget === "string") {
-                    widgets[i] = {
+                    widgets[widgetIndex] = {
                         "id": widget,
                         "enabled": true,
                         "size": newSize
@@ -321,11 +322,11 @@ Item {
                         newWidget.showBluetoothIcon = widget.showBluetoothIcon !== undefined ? widget.showBluetoothIcon : true
                         newWidget.showAudioIcon = widget.showAudioIcon !== undefined ? widget.showAudioIcon : true
                     }
-                    widgets[i] = newWidget
+                    widgets[widgetIndex] = newWidget
                 }
-                break
             }
         }
+        
         if (sectionId === "left")
             SettingsData.setTopBarLeftWidgets(widgets)
         else if (sectionId === "center")
@@ -923,9 +924,9 @@ Item {
                                             topBarTab.removeWidgetFromSection(
                                                 sectionId, widgetIndex)
                                         }
-                        onSpacerSizeChanged: (sectionId, itemId, newSize) => {
+                        onSpacerSizeChanged: (sectionId, widgetIndex, newSize) => {
                                                  topBarTab.handleSpacerSizeChanged(
-                                                     sectionId, itemId, newSize)
+                                                     sectionId, widgetIndex, newSize)
                                              }
                         onCompactModeChanged: (widgetId, value) => {
                                                   if (widgetId === "clock") {
@@ -993,9 +994,9 @@ Item {
                                             topBarTab.removeWidgetFromSection(
                                                 sectionId, widgetIndex)
                                         }
-                        onSpacerSizeChanged: (sectionId, itemId, newSize) => {
+                        onSpacerSizeChanged: (sectionId, widgetIndex, newSize) => {
                                                  topBarTab.handleSpacerSizeChanged(
-                                                     sectionId, itemId, newSize)
+                                                     sectionId, widgetIndex, newSize)
                                              }
                         onCompactModeChanged: (widgetId, value) => {
                                                   if (widgetId === "clock") {
@@ -1063,9 +1064,9 @@ Item {
                                             topBarTab.removeWidgetFromSection(
                                                 sectionId, widgetIndex)
                                         }
-                        onSpacerSizeChanged: (sectionId, itemId, newSize) => {
+                        onSpacerSizeChanged: (sectionId, widgetIndex, newSize) => {
                                                  topBarTab.handleSpacerSizeChanged(
-                                                     sectionId, itemId, newSize)
+                                                     sectionId, widgetIndex, newSize)
                                              }
                         onCompactModeChanged: (widgetId, value) => {
                                                   if (widgetId === "clock") {
