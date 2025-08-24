@@ -362,6 +362,9 @@ DankModal {
                                         "text": "Dock",
                                         "icon": "dock_to_bottom"
                                     }, {
+                                        "text": "Displays",
+                                        "icon": "monitor"
+                                    }, {
                                         "text": "Recent Apps",
                                         "icon": "history"
                                     }, {
@@ -508,10 +511,20 @@ DankModal {
                             }
 
                             Loader {
-                                id: recentAppsLoader
+                                id: displaysLoader
 
                                 anchors.fill: parent
                                 active: sidebarContainer.currentIndex === 6
+                                visible: active
+                                asynchronous: true
+                                sourceComponent: DisplaysTab {}
+                            }
+
+                            Loader {
+                                id: recentAppsLoader
+
+                                anchors.fill: parent
+                                active: sidebarContainer.currentIndex === 7
                                 visible: active
                                 asynchronous: true
                                 sourceComponent: RecentAppsTab {}
@@ -521,7 +534,7 @@ DankModal {
                                 id: themeColorsLoader
 
                                 anchors.fill: parent
-                                active: sidebarContainer.currentIndex === 7
+                                active: sidebarContainer.currentIndex === 8
                                 visible: active
                                 asynchronous: true
                                 sourceComponent: ThemeColorsTab {}
@@ -531,7 +544,7 @@ DankModal {
                                 id: aboutLoader
 
                                 anchors.fill: parent
-                                active: sidebarContainer.currentIndex === 8
+                                active: sidebarContainer.currentIndex === 9
                                 visible: active
                                 asynchronous: true
                                 sourceComponent: AboutTab {}

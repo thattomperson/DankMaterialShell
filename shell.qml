@@ -18,6 +18,7 @@ import qs.Modules.Settings
 import qs.Modules.TopBar
 import qs.Modules.Dock
 import qs.Services
+import qs.Common
 
 ShellRoot {
     id: root
@@ -31,7 +32,7 @@ ShellRoot {
     }
 
     Variants {
-        model: Quickshell.screens
+        model: SettingsData.getFilteredScreens("topBar")
 
         delegate: TopBar {
             modelData: item
@@ -39,7 +40,7 @@ ShellRoot {
     }
 
     Variants {
-        model: Quickshell.screens
+        model: SettingsData.getFilteredScreens("dock")
 
         delegate: Dock {
             modelData: item
@@ -81,7 +82,7 @@ ShellRoot {
     }
 
     Variants {
-        model: Quickshell.screens
+        model: SettingsData.getFilteredScreens("notifications")
 
         delegate: NotificationPopupManager {
             modelData: item
@@ -232,7 +233,7 @@ ShellRoot {
     }
 
     Variants {
-        model: Quickshell.screens
+        model: SettingsData.getFilteredScreens("toast")
 
         delegate: Toast {
             modelData: item
@@ -241,7 +242,7 @@ ShellRoot {
     }
 
     Variants {
-        model: Quickshell.screens
+        model: SettingsData.getFilteredScreens("osd")
 
         delegate: VolumeOSD {
             modelData: item
@@ -252,7 +253,7 @@ ShellRoot {
 
 
     Variants {
-        model: Quickshell.screens
+        model: SettingsData.getFilteredScreens("osd")
 
         delegate: MicMuteOSD {
             modelData: item
@@ -260,7 +261,7 @@ ShellRoot {
     }
 
     Variants {
-        model: Quickshell.screens
+        model: SettingsData.getFilteredScreens("osd")
 
         delegate: BrightnessOSD {
             modelData: item
@@ -268,7 +269,7 @@ ShellRoot {
     }
 
     Variants {
-        model: Quickshell.screens
+        model: SettingsData.getFilteredScreens("osd")
 
         delegate: IdleInhibitorOSD {
             modelData: item
