@@ -335,6 +335,8 @@ PanelWindow {
                             return true
                         case "separator":
                             return true
+                        case "network_speed_monitor":
+                            return DgopService.dgopAvailable
                         default:
                             return false
                         }
@@ -382,6 +384,8 @@ PanelWindow {
                             return spacerComponent
                         case "separator":
                             return separatorComponent
+                        case "network_speed_monitor":
+                            return networkComponent
                         default:
                             return null
                         }
@@ -943,6 +947,12 @@ PanelWindow {
                                                    return processListPopoutLoader.item.toggle()
                                                }
                         }
+                    }
+
+                    Component {
+                        id: networkComponent
+
+                        NetworkMonitor {}
                     }
 
                     Component {
