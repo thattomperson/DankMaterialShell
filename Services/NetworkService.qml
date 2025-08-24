@@ -83,6 +83,30 @@ Singleton {
     signal networksUpdated
     signal connectionChanged
 
+    // Helper: split nmcli -t output respecting escaped colons (\:)
+    function splitNmcliFields(line) {
+        let parts = []
+        let cur = ""
+        let escape = false
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i]
+            if (escape) {
+                // Keep literal for escaped colon and other sequences
+                cur += ch
+                escape = false
+            } else if (ch === '\\') {
+                escape = true
+            } else if (ch === ':') {
+                parts.push(cur)
+                cur = ""
+            } else {
+                cur += ch
+            }
+        }
+        parts.push(cur)
+        return parts
+    }
+
     Component.onCompleted: {
         root.userPreference = SettingsData.networkPreference
         initializeDBusMonitors()
@@ -398,18 +422,33 @@ Singleton {
 
     Process {
         id: getCurrentWifiInfo
-        command: root.wifiInterface ? ["nmcli", "-t", "-f", "ACTIVE,SSID,SIGNAL", "dev", "wifi", "list", "ifname", root.wifiInterface] : []
+        // Prefer IN-USE,SIGNAL,SSID, but we'll also parse legacy ACTIVE format
+        command: root.wifiInterface ? ["nmcli", "-t", "-f", "IN-USE,SIGNAL,SSID", "device", "wifi", "list", "ifname", root.wifiInterface] : []
         running: false
 
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: line => {
+                // IN-USE format: "*:SIGNAL:SSID"
+                if (line.startsWith("*:")) {
+                    const rest = line.substring(2)
+                    const parts = root.splitNmcliFields(rest)
+                    if (parts.length >= 2) {
+                        const signal = parseInt(parts[0])
+                        root.wifiSignalStrength = isNaN(signal) ? 0 : signal
+                        root.currentWifiSSID = parts.slice(1).join(":")
+                    }
+                    return
+                }
                 if (line.startsWith("yes:")) {
-                    const parts = line.substring(4).split(":")
+                    const rest = line.substring(4)
+                    const parts = root.splitNmcliFields(rest)
                     if (parts.length >= 2) {
                         root.currentWifiSSID = parts[0]
-                        root.wifiSignalStrength = parseInt(parts[1]) || 0
+                        const signal = parseInt(parts[1])
+                        root.wifiSignalStrength = isNaN(signal) ? 0 : signal
                     }
+                    return
                 }
             }
         }
@@ -543,7 +582,7 @@ Singleton {
                 const seen = new Set()
 
                 for (const line of lines) {
-                    const parts = line.split(':')
+                    const parts = root.splitNmcliFields(line)
                     if (parts.length >= 4 && parts[0]) {
                         const ssid = parts[0]
                         if (!seen.has(ssid)) {
