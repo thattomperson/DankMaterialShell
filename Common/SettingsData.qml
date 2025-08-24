@@ -91,6 +91,7 @@ Singleton {
     property int notificationTimeoutLow: 5000
     property int notificationTimeoutNormal: 5000
     property int notificationTimeoutCritical: 0
+    property var screenPreferences: ({})
     readonly property string defaultFontFamily: "Inter Variable"
     readonly property string defaultMonoFontFamily: "Fira Code"
     readonly property string _homeUrl: StandardPaths.writableLocation(
@@ -283,6 +284,8 @@ Singleton {
                         !== undefined ? settings.topBarSquareCorners : false
                 topBarNoBackground = settings.topBarNoBackground
                         !== undefined ? settings.topBarNoBackground : false
+                screenPreferences = settings.screenPreferences
+                        !== undefined ? settings.screenPreferences : ({})
                 applyStoredTheme()
                 detectAvailableIconThemes()
                 detectQtTools()
@@ -369,7 +372,8 @@ Singleton {
                                                 "topBarNoBackground": topBarNoBackground,
                                                 "notificationTimeoutLow": notificationTimeoutLow,
                                                 "notificationTimeoutNormal": notificationTimeoutNormal,
-                                                "notificationTimeoutCritical": notificationTimeoutCritical
+                                                "notificationTimeoutCritical": notificationTimeoutCritical,
+                                                "screenPreferences": screenPreferences
                                             }, null, 2))
     }
 
@@ -909,6 +913,19 @@ Singleton {
     function setTopBarNoBackground(enabled) {
         topBarNoBackground = enabled
         saveSettings()
+    }
+
+    function setScreenPreferences(prefs) {
+        screenPreferences = prefs
+        saveSettings()
+    }
+
+    function getFilteredScreens(componentId) {
+        var prefs = screenPreferences && screenPreferences[componentId] || ["all"]
+        if (prefs.includes("all")) {
+            return Quickshell.screens
+        }
+        return Quickshell.screens.filter(screen => prefs.includes(screen.name))
     }
 
     function _shq(s) {

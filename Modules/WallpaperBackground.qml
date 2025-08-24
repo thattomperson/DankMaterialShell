@@ -9,7 +9,7 @@ LazyLoader {
     active: SessionData.wallpaperPath !== ""
 
     Variants {
-        model: Quickshell.screens
+        model: SettingsData.getFilteredScreens("wallpaper")
 
         PanelWindow {
             id: wallpaperWindow

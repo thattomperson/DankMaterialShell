@@ -33,7 +33,7 @@ Singleton {
     property var wifiNetworks: []
     property var savedConnections: []
     property var wifiSignalIcon: {
-        if (currentWifiSSID == "" || !wifiEnabled) {
+        if (!wifiConnected || networkStatus !== "wifi") {
             return "signal_wifi_off"
         }
         // Use nmcli signal strength percentage
