@@ -22,10 +22,10 @@ Column {
         width: parent.width
         minimum: 0
         maximum: 100
-        value: AudioService.sink?.ready && AudioService.sink.audio ? Math.round(AudioService.sink.audio.volume * 100) : 0
-        leftIcon: (AudioService.sink?.ready && AudioService.sink.audio && AudioService.sink.audio.muted) ? "volume_off" : "volume_down"
+        value: AudioService.sink.audio ? Math.round(AudioService.sink.audio.volume * 100) : 0
+        leftIcon: (AudioService.sink.audio && AudioService.sink.audio.muted) ? "volume_off" : "volume_down"
         rightIcon: "volume_up"
-        enabled: !(AudioService.sink?.ready && AudioService.sink.audio && AudioService.sink.audio.muted)
+        enabled: !(AudioService.sink.audio && AudioService.sink.audio.muted)
         showValue: true
         unit: "%"
 

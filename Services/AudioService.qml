@@ -72,7 +72,9 @@ Singleton {
     }
 
     PwObjectTracker {
-        objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource]
+        objects: Pipewire.nodes.values.filter(
+            node => node.audio && (node.isSink || node.isSource) && !node.isStream
+        )
     }
 
     // Volume control functions

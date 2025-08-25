@@ -32,7 +32,9 @@ Singleton {
     }
 
     PwObjectTracker {
-        objects: Pipewire.nodes.values
+        objects: Pipewire.nodes.values.filter(
+            node => node.audio && (node.isSink || node.isSource) && !node.isStream
+        )
     }
 
     readonly property bool cameraActive: {
