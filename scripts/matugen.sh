@@ -198,25 +198,51 @@ if [ -s "$TEMP_CONTENT_CONFIG" ] && grep -q '\[templates\.' "$TEMP_CONTENT_CONFI
         matugen -c "$TEMP_CONTENT_CONFIG" -t scheme-content color hex "$INPUT_SOURCE" $MATUGEN_MODE
     fi
     
+    # Small delay to ensure content generation completes
+    sleep 0.1
+    
+    # Get JSON with error handling
     if [ "$MODE" = "generate" ]; then
-        DEFAULT_JSON=$(matugen --json hex image "$INPUT_SOURCE" $MATUGEN_MODE 2>/dev/null)
+        if ! DEFAULT_JSON=$(matugen --json hex image "$INPUT_SOURCE" $MATUGEN_MODE 2>&1); then
+            echo "Warning: Failed to get JSON from matugen for image mode"
+            DEFAULT_JSON=""
+        fi
     elif [ "$MODE" = "generate-color" ]; then
-        DEFAULT_JSON=$(matugen --json hex color hex "$INPUT_SOURCE" $MATUGEN_MODE 2>/dev/null)
+        if ! DEFAULT_JSON=$(matugen --json hex color hex "$INPUT_SOURCE" $MATUGEN_MODE 2>&1); then
+            echo "Warning: Failed to get JSON from matugen for color mode"  
+            DEFAULT_JSON=""
+        fi
     fi
 
-    if [ "$IS_LIGHT" = "true" ]; then
+    # Extract primary_container for b16 base color and primary for honoring
+    if [ -n "$DEFAULT_JSON" ] && echo "$DEFAULT_JSON" | grep -q '"primary_container"'; then
         EXTRACTED_PRIMARY=$(echo "$DEFAULT_JSON" | grep -oE '"primary_container":"#[0-9a-fA-F]{6}"' | sed -n '1p' | cut -d'"' -f4)
+        echo "Successfully extracted primary_container: $EXTRACTED_PRIMARY"
+        
+        # Also extract the actual primary color to honor in palette
+        if [ "$IS_LIGHT" = "true" ]; then
+            # Light mode: get primary from light theme (second occurrence)
+            HONOR_PRIMARY=$(echo "$DEFAULT_JSON" | grep -oE '"primary":"#[0-9a-fA-F]{6}"' | sed -n '2p' | cut -d'"' -f4)
+        else
+            # Dark mode: get primary from dark theme (first occurrence)
+            HONOR_PRIMARY=$(echo "$DEFAULT_JSON" | grep -oE '"primary":"#[0-9a-fA-F]{6}"' | sed -n '1p' | cut -d'"' -f4)
+        fi
+        echo "Successfully extracted primary for honoring: $HONOR_PRIMARY"
     else
-        EXTRACTED_PRIMARY=$(echo "$DEFAULT_JSON" | grep -oE '"primary":"#[0-9a-fA-F]{6}"' | sed -n '2p' | cut -d'"' -f4)
+        echo "Warning: No primary_container found in JSON output"
+        EXTRACTED_PRIMARY=""
+        HONOR_PRIMARY=""
     fi
 
     # Fallback if extraction failed
     if [ -z "$EXTRACTED_PRIMARY" ]; then
         if [ "$MODE" = "generate-color" ]; then
             EXTRACTED_PRIMARY="$INPUT_SOURCE"
+            HONOR_PRIMARY="$INPUT_SOURCE"
             echo "Using input color as primary: $EXTRACTED_PRIMARY"
         else
             EXTRACTED_PRIMARY="#6b5f8e"
+            HONOR_PRIMARY="#ccbeff"  # Default Material Design primary for fallback
             echo "Warning: Could not extract primary color, using fallback: $EXTRACTED_PRIMARY"
         fi
     else
@@ -240,6 +266,9 @@ if [ -s "$TEMP_CONTENT_CONFIG" ] && grep -q '\[templates\.' "$TEMP_CONTENT_CONFI
         B16_ARGS="$PRIMARY_COLOR"
         if [ "$IS_LIGHT" = "true" ]; then
             B16_ARGS="$B16_ARGS --light"
+        fi
+        if [ -n "$HONOR_PRIMARY" ]; then
+            B16_ARGS="$B16_ARGS --honor-primary $HONOR_PRIMARY"
         fi
         
         B16_OUTPUT=$("$SHELL_DIR/matugen/b16.py" $B16_ARGS)
@@ -279,6 +308,9 @@ if [ -s "$TEMP_CONTENT_CONFIG" ] && grep -q '\[templates\.' "$TEMP_CONTENT_CONFI
         B16_ARGS="$PRIMARY_COLOR"
         if [ "$IS_LIGHT" = "true" ]; then
             B16_ARGS="$B16_ARGS --light"
+        fi
+        if [ -n "$HONOR_PRIMARY" ]; then
+            B16_ARGS="$B16_ARGS --honor-primary $HONOR_PRIMARY"
         fi
         
         B16_OUTPUT=$("$SHELL_DIR/matugen/b16.py" $B16_ARGS --kitty)

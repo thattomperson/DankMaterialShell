@@ -32,6 +32,7 @@ Singleton {
     property bool gtkThemingEnabled: typeof SettingsData !== "undefined" ? SettingsData.gtkAvailable : false
     property bool qtThemingEnabled: typeof SettingsData !== "undefined" ? (SettingsData.qt5ctAvailable || SettingsData.qt6ctAvailable) : false
     property bool systemThemeGenerationInProgress: false
+    property var pendingThemeRequest: null
     property var matugenColors: ({})
     property bool extractionRequested: false
     property int colorUpdateTrigger: 0
@@ -155,6 +156,10 @@ Singleton {
     property real popupTransparency: typeof SettingsData !== "undefined" && SettingsData.popupTransparency !== undefined ? SettingsData.popupTransparency : 0.92
 
     function switchTheme(themeName, savePrefs = true) {
+        // Clear cached colors when switching themes
+        matugenColors = {}
+        colorUpdateTrigger++
+        
         if (themeName === dynamic) {
             currentTheme = dynamic
             extractColors()
@@ -364,18 +369,17 @@ Singleton {
     }
 
     function generateSystemThemesFromCurrentTheme() {
-        if (systemThemeGenerationInProgress || !matugenAvailable)
+        if (!matugenAvailable)
             return
 
         const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "true" : "false"
         const iconTheme = (typeof SettingsData !== "undefined" && SettingsData.iconTheme) ? SettingsData.iconTheme : "System Default"
         
+        let cmd
         if (currentTheme === dynamic) {
             if (!wallpaperPath)
                 return
-            systemThemeGenerationInProgress = true
-            systemThemeGenerator.command = [shellDir + "/scripts/matugen.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme]
-            systemThemeGenerator.running = true
+            cmd = [shellDir + "/scripts/matugen.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme]
         } else {
             let primaryColor
             if (currentTheme === "custom") {
@@ -388,11 +392,42 @@ Singleton {
                 primaryColor = currentThemeData.primary
             }
             
-            if (!primaryColor)
+            if (!primaryColor) {
+                console.warn("No primary color available for theme:", currentTheme)
                 return
-            systemThemeGenerationInProgress = true
-            systemThemeGenerator.command = [shellDir + "/scripts/matugen.sh", primaryColor, shellDir, configDir, "generate-color", isLight, iconTheme]
-            systemThemeGenerator.running = true
+            }
+            cmd = [shellDir + "/scripts/matugen.sh", primaryColor, shellDir, configDir, "generate-color", isLight, iconTheme]
+        }
+        
+        // Clear any pending request and queue this new one
+        pendingThemeRequest = {
+            command: cmd,
+            isDynamic: currentTheme === dynamic,
+            timestamp: Date.now()
+        }
+        
+        // Clear cached colors to force refresh
+        matugenColors = {}
+        colorUpdateTrigger++
+        
+        // Process the queue
+        processThemeQueue()
+    }
+    
+    function processThemeQueue() {
+        if (systemThemeGenerationInProgress || !pendingThemeRequest)
+            return
+            
+        const request = pendingThemeRequest
+        pendingThemeRequest = null
+        
+        systemThemeGenerationInProgress = true
+        systemThemeGenerator.command = request.command
+        systemThemeGenerator.running = true
+        
+        if (request.isDynamic) {
+            // Re-extract colors after system theme generation
+            Qt.callLater(extractColors)
         }
     }
 
@@ -572,7 +607,14 @@ Singleton {
                 if (typeof ToastService !== "undefined") {
                     ToastService.showError("Failed to generate system themes: " + systemThemeStderr.text)
                 }
+                console.warn("System theme generation failed with exit code:", exitCode)
+                console.warn("STDOUT:", systemThemeStdout.text)
+                console.warn("STDERR:", systemThemeStderr.text)
+            } else {
             }
+            
+            // Process next request in queue if any
+            Qt.callLater(processThemeQueue)
         }
     }
 
