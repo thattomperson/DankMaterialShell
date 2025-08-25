@@ -7,6 +7,10 @@ def hex_to_rgb(hex_color):
     return tuple(int(hex_color[i:i+2], 16)/255.0 for i in (0, 2, 4))
 
 def rgb_to_hex(r, g, b):
+    # Clamp RGB values to valid range [0, 1]
+    r = max(0, min(1, r))
+    g = max(0, min(1, g)) 
+    b = max(0, min(1, b))
     return f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
 
 def generate_palette(base_color, is_light=False):

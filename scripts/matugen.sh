@@ -165,24 +165,25 @@ if [ "$MODE" = "generate" ]; then
     echo "Generating matugen themes from wallpaper: $INPUT_SOURCE"
     echo "Using dynamic config: $TEMP_CONFIG"
     
-    if ! MATUGEN_OUTPUT=$(matugen -v -c "$TEMP_CONFIG" image "$INPUT_SOURCE" $MATUGEN_MODE 2>&1); then
+    # Generate templates (no JSON needed for main themes)
+    if ! matugen -c "$TEMP_CONFIG" image "$INPUT_SOURCE" $MATUGEN_MODE; then
         echo "Failed to generate themes with matugen" >&2
-        echo "$MATUGEN_OUTPUT"
         rm -f "$TEMP_CONFIG"
         exit 1
     fi
-    EXTRACTED_PRIMARY=$(echo "$MATUGEN_OUTPUT" | grep -oP 'Primary: \K#[0-9a-fA-F]{6}' | head -1)
 elif [ "$MODE" = "generate-color" ]; then
     echo "Generating matugen themes from color: $INPUT_SOURCE"
     echo "Using dynamic config: $TEMP_CONFIG"
     
-    if ! MATUGEN_OUTPUT=$(matugen -v -c "$TEMP_CONFIG" color hex "$INPUT_SOURCE" $MATUGEN_MODE 2>&1); then
+    # Generate templates, for color mode we already have the primary
+    if ! matugen -c "$TEMP_CONFIG" color hex "$INPUT_SOURCE" $MATUGEN_MODE; then
         echo "Failed to generate themes with matugen" >&2
-        echo "$MATUGEN_OUTPUT"
         rm -f "$TEMP_CONFIG"
         exit 1
     fi
-    EXTRACTED_PRIMARY=$(echo "$MATUGEN_OUTPUT" | grep -oP 'Primary: \K#[0-9a-fA-F]{6}' | head -1)
+    
+    # For color mode, we already have the input color as primary
+    EXTRACTED_PRIMARY="$INPUT_SOURCE"
 fi
 
 TEMP_CONTENT_CONFIG="/tmp/matugen-content-config-$$.toml"
@@ -190,10 +191,36 @@ build_content_config "$TEMP_CONTENT_CONFIG" "$IS_LIGHT" "$SHELL_DIR"
 
 if [ -s "$TEMP_CONTENT_CONFIG" ] && grep -q '\[templates\.' "$TEMP_CONTENT_CONFIG"; then
     echo "Running content-specific theme generation..."
+    # Generate content-specific templates 
     if [ "$MODE" = "generate" ]; then
-        matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-content image "$INPUT_SOURCE" $MATUGEN_MODE
+        matugen -c "$TEMP_CONTENT_CONFIG" -t scheme-content image "$INPUT_SOURCE" $MATUGEN_MODE
     elif [ "$MODE" = "generate-color" ]; then
-        matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-content color hex "$INPUT_SOURCE" $MATUGEN_MODE
+        matugen -c "$TEMP_CONTENT_CONFIG" -t scheme-content color hex "$INPUT_SOURCE" $MATUGEN_MODE
+    fi
+    
+    if [ "$MODE" = "generate" ]; then
+        DEFAULT_JSON=$(matugen --json hex image "$INPUT_SOURCE" $MATUGEN_MODE 2>/dev/null)
+    elif [ "$MODE" = "generate-color" ]; then
+        DEFAULT_JSON=$(matugen --json hex color hex "$INPUT_SOURCE" $MATUGEN_MODE 2>/dev/null)
+    fi
+
+    if [ "$IS_LIGHT" = "true" ]; then
+        EXTRACTED_PRIMARY=$(echo "$DEFAULT_JSON" | grep -oE '"primary_container":"#[0-9a-fA-F]{6}"' | sed -n '1p' | cut -d'"' -f4)
+    else
+        EXTRACTED_PRIMARY=$(echo "$DEFAULT_JSON" | grep -oE '"primary":"#[0-9a-fA-F]{6}"' | sed -n '2p' | cut -d'"' -f4)
+    fi
+
+    # Fallback if extraction failed
+    if [ -z "$EXTRACTED_PRIMARY" ]; then
+        if [ "$MODE" = "generate-color" ]; then
+            EXTRACTED_PRIMARY="$INPUT_SOURCE"
+            echo "Using input color as primary: $EXTRACTED_PRIMARY"
+        else
+            EXTRACTED_PRIMARY="#6b5f8e"
+            echo "Warning: Could not extract primary color, using fallback: $EXTRACTED_PRIMARY"
+        fi
+    else
+        echo "Extracted primary color from scheme-content: $EXTRACTED_PRIMARY"
     fi
     
     if command -v ghostty >/dev/null 2>&1; then
@@ -201,8 +228,13 @@ if [ -s "$TEMP_CONTENT_CONFIG" ] && grep -q '\[templates\.' "$TEMP_CONTENT_CONFI
         
         PRIMARY_COLOR="$EXTRACTED_PRIMARY"
         if [ -z "$PRIMARY_COLOR" ]; then
-            PRIMARY_COLOR="#6b5f8e"
-            echo "Warning: Could not extract primary color, using fallback: $PRIMARY_COLOR"
+            if [ "$MODE" = "generate-color" ]; then
+                PRIMARY_COLOR="$INPUT_SOURCE"
+                echo "Using input color as primary: $PRIMARY_COLOR"
+            else
+                PRIMARY_COLOR="#6b5f8e"
+                echo "Warning: Could not extract primary color, using fallback: $PRIMARY_COLOR"
+            fi
         fi
         
         B16_ARGS="$PRIMARY_COLOR"
@@ -219,13 +251,12 @@ if [ -s "$TEMP_CONTENT_CONFIG" ] && grep -q '\[templates\.' "$TEMP_CONTENT_CONFI
             
             if [ -f "$CONFIG_DIR/ghostty/config-dankcolors" ]; then
                 cat "$CONFIG_DIR/ghostty/config-dankcolors" >> "$TEMP_GHOSTTY"
+                mv "$TEMP_GHOSTTY" "$CONFIG_DIR/ghostty/config-dankcolors"
+                echo "Base16 palette prepended to ghostty config"
             else
-                echo "Warning: $CONFIG_DIR/ghostty/config-dankcolors not found"
+                echo "Warning: $CONFIG_DIR/ghostty/config-dankcolors not found, skipping b16 prepend"
+                rm -f "$TEMP_GHOSTTY"
             fi
-            
-            mkdir -p "$CONFIG_DIR/ghostty"
-            mv "$TEMP_GHOSTTY" "$CONFIG_DIR/ghostty/config-dankcolors"
-            echo "Base16 palette prepended to ghostty config"
         else
             echo "Warning: Failed to generate base16 palette"
         fi
@@ -236,8 +267,13 @@ if [ -s "$TEMP_CONTENT_CONFIG" ] && grep -q '\[templates\.' "$TEMP_CONTENT_CONFI
         
         PRIMARY_COLOR="$EXTRACTED_PRIMARY"
         if [ -z "$PRIMARY_COLOR" ]; then
-            PRIMARY_COLOR="#6b5f8e"
-            echo "Warning: Could not extract primary color, using fallback: $PRIMARY_COLOR"
+            if [ "$MODE" = "generate-color" ]; then
+                PRIMARY_COLOR="$INPUT_SOURCE"
+                echo "Using input color as primary: $PRIMARY_COLOR"
+            else
+                PRIMARY_COLOR="#6b5f8e"
+                echo "Warning: Could not extract primary color, using fallback: $PRIMARY_COLOR"
+            fi
         fi
         
         B16_ARGS="$PRIMARY_COLOR"
@@ -254,13 +290,12 @@ if [ -s "$TEMP_CONTENT_CONFIG" ] && grep -q '\[templates\.' "$TEMP_CONTENT_CONFI
             
             if [ -f "$CONFIG_DIR/kitty/dank-theme.conf" ]; then
                 cat "$CONFIG_DIR/kitty/dank-theme.conf" >> "$TEMP_KITTY"
+                mv "$TEMP_KITTY" "$CONFIG_DIR/kitty/dank-theme.conf"
+                echo "Base16 palette prepended to kitty config"
             else
-                echo "Warning: $CONFIG_DIR/kitty/dank-theme.conf not found"
+                echo "Warning: $CONFIG_DIR/kitty/dank-theme.conf not found, skipping b16 prepend"
+                rm -f "$TEMP_KITTY"
             fi
-            
-            mkdir -p "$CONFIG_DIR/kitty"
-            mv "$TEMP_KITTY" "$CONFIG_DIR/kitty/dank-theme.conf"
-            echo "Base16 palette prepended to kitty config"
         else
             echo "Warning: Failed to generate base16 palette for kitty"
         fi
