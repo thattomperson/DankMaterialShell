@@ -107,6 +107,19 @@ Singleton {
     signal workspaceIconsUpdated
 
     function initializeListModels() {
+        // ! Hack-ish to add all properties to the listmodel once
+        // ! allows the properties to be bound on new widget addtions
+        var dummyItem = {
+            "widgetId": "dummy",
+            "enabled": true,
+            "size": 20,
+            "selectedGpuIndex": 0,
+            "pciId": ""
+        }
+        leftWidgetsModel.append(dummyItem)
+        centerWidgetsModel.append(dummyItem)
+        rightWidgetsModel.append(dummyItem)
+        
         updateListModel(leftWidgetsModel, topBarLeftWidgets)
         updateListModel(centerWidgetsModel, topBarCenterWidgets)
         updateListModel(rightWidgetsModel, topBarRightWidgets)
@@ -658,10 +671,8 @@ Singleton {
             }
             if (size !== undefined)
                 item.size = size
-
             if (selectedGpuIndex !== undefined)
                 item.selectedGpuIndex = selectedGpuIndex
-
             if (pciId !== undefined)
                 item.pciId = pciId
 

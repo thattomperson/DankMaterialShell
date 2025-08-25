@@ -422,6 +422,7 @@ PanelWindow {
                                 opacity: topBarContent.getWidgetEnabled(
                                              model.enabled) ? 1 : 0
                                 asynchronous: false
+                                
                             }
                         }
                     }
@@ -601,6 +602,7 @@ PanelWindow {
                                 opacity: topBarContent.getWidgetEnabled(
                                              model.enabled) ? 1 : 0
                                 asynchronous: false
+                                
                             }
                         }
                     }
