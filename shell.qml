@@ -23,6 +23,10 @@ import qs.Common
 ShellRoot {
     id: root
 
+    Component.onCompleted: {
+        PortalService.init()
+    }
+
     WallpaperBackground {}
 
     Lock {

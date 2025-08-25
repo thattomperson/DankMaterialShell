@@ -234,6 +234,32 @@ qs -c dms ipc call wallpaper get
 qs -c dms ipc call wallpaper set /path/to/image.jpg
 ```
 
+## Target: `profile`
+
+User profile image management.
+
+### Functions
+
+**`getImage`**
+- Get current profile image path
+- Returns: Full path to profile image or empty string if not set
+
+**`setImage <path>`**
+- Set profile image to specified path
+- Parameters: `path` - Absolute or relative path to image file
+- Returns: Success message with path or error message
+
+**`clearImage`**
+- Clear the profile image
+- Returns: Success confirmation message
+
+### Examples
+```bash
+qs -c dms ipc call profile getImage
+qs -c dms ipc call profile setImage /path/to/avatar.png
+qs -c dms ipc call profile clearImage
+```
+
 ## Target: `theme`
 
 Theme mode control (light/dark mode switching).
