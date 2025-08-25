@@ -100,11 +100,6 @@ build_content_config() {
     if command -v ghostty >/dev/null 2>&1; then
         echo "  - Including ghostty config (ghostty found)"
         cat "$shell_dir/matugen/configs/ghostty.toml" >> "$temp_config"
-        if [ "$is_light" = "true" ]; then
-            sed -i '/\[templates\.ghostty-dark\]/,/^$/d' "$temp_config"
-        else
-            sed -i '/\[templates\.ghostty-light\]/,/^$/d' "$temp_config"
-        fi
         sed -i "s|input_path = './matugen/templates/|input_path = '$shell_dir/matugen/templates/|g" "$temp_config"
         echo "" >> "$temp_config"
     else
@@ -118,15 +113,6 @@ build_content_config() {
         echo "" >> "$temp_config"
     else
         echo "  - Skipping dgop config (dgop not found)"
-    fi
-    
-    if command -v fastfetch >/dev/null 2>&1; then
-        echo "  - Including fastfetch config (fastfetch found)"
-        cat "$shell_dir/matugen/configs/fastfetch.toml" >> "$temp_config"
-        sed -i "s|input_path = './matugen/templates/|input_path = '$shell_dir/matugen/templates/|g" "$temp_config"
-        echo "" >> "$temp_config"
-    else
-        echo "  - Skipping fastfetch config (fastfetch not found)"
     fi
 }
 
@@ -164,24 +150,30 @@ else
     MATUGEN_MODE="-m dark"
 fi
 
+EXTRACTED_PRIMARY=""
+
 if [ "$MODE" = "generate" ]; then
     echo "Generating matugen themes from wallpaper: $INPUT_SOURCE"
     echo "Using dynamic config: $TEMP_CONFIG"
     
-    if ! matugen -v -c "$TEMP_CONFIG" image "$INPUT_SOURCE" $MATUGEN_MODE; then
+    if ! MATUGEN_OUTPUT=$(matugen -v -c "$TEMP_CONFIG" image "$INPUT_SOURCE" $MATUGEN_MODE 2>&1); then
         echo "Failed to generate themes with matugen" >&2
+        echo "$MATUGEN_OUTPUT"
         rm -f "$TEMP_CONFIG"
         exit 1
     fi
+    EXTRACTED_PRIMARY=$(echo "$MATUGEN_OUTPUT" | grep -oP 'Primary: \K#[0-9a-fA-F]{6}' | head -1)
 elif [ "$MODE" = "generate-color" ]; then
     echo "Generating matugen themes from color: $INPUT_SOURCE"
     echo "Using dynamic config: $TEMP_CONFIG"
     
-    if ! matugen -v -c "$TEMP_CONFIG" color hex "$INPUT_SOURCE" $MATUGEN_MODE; then
+    if ! MATUGEN_OUTPUT=$(matugen -v -c "$TEMP_CONFIG" color hex "$INPUT_SOURCE" $MATUGEN_MODE 2>&1); then
         echo "Failed to generate themes with matugen" >&2
+        echo "$MATUGEN_OUTPUT"
         rm -f "$TEMP_CONFIG"
         exit 1
     fi
+    EXTRACTED_PRIMARY=$(echo "$MATUGEN_OUTPUT" | grep -oP 'Primary: \K#[0-9a-fA-F]{6}' | head -1)
 fi
 
 TEMP_CONTENT_CONFIG="/tmp/matugen-content-config-$$.toml"
@@ -190,9 +182,44 @@ build_content_config "$TEMP_CONTENT_CONFIG" "$IS_LIGHT" "$SHELL_DIR"
 if [ -s "$TEMP_CONTENT_CONFIG" ] && grep -q '\[templates\.' "$TEMP_CONTENT_CONFIG"; then
     echo "Running content-specific theme generation..."
     if [ "$MODE" = "generate" ]; then
-        matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-fidelity image "$INPUT_SOURCE" $MATUGEN_MODE
+        matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-content image "$INPUT_SOURCE" $MATUGEN_MODE
     elif [ "$MODE" = "generate-color" ]; then
-        matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-fidelity color hex "$INPUT_SOURCE" $MATUGEN_MODE
+        matugen -v -c "$TEMP_CONTENT_CONFIG" -t scheme-content color hex "$INPUT_SOURCE" $MATUGEN_MODE
+    fi
+    
+    if command -v ghostty >/dev/null 2>&1; then
+        echo "Generating base16 palette for ghostty..."
+        
+        PRIMARY_COLOR="$EXTRACTED_PRIMARY"
+        if [ -z "$PRIMARY_COLOR" ]; then
+            PRIMARY_COLOR="#6b5f8e"
+            echo "Warning: Could not extract primary color, using fallback: $PRIMARY_COLOR"
+        fi
+        
+        B16_ARGS="$PRIMARY_COLOR"
+        if [ "$IS_LIGHT" = "true" ]; then
+            B16_ARGS="$B16_ARGS --light"
+        fi
+        
+        B16_OUTPUT=$("$SHELL_DIR/matugen/b16.py" $B16_ARGS)
+        
+        if [ $? -eq 0 ] && [ -n "$B16_OUTPUT" ]; then
+            TEMP_GHOSTTY="/tmp/ghostty-config-$$.conf"
+            echo "$B16_OUTPUT" > "$TEMP_GHOSTTY"
+            echo "" >> "$TEMP_GHOSTTY"
+            
+            if [ -f "$CONFIG_DIR/ghostty/config-dankcolors" ]; then
+                cat "$CONFIG_DIR/ghostty/config-dankcolors" >> "$TEMP_GHOSTTY"
+            else
+                echo "Warning: $CONFIG_DIR/ghostty/config-dankcolors not found"
+            fi
+            
+            mkdir -p "$CONFIG_DIR/ghostty"
+            mv "$TEMP_GHOSTTY" "$CONFIG_DIR/ghostty/config-dankcolors"
+            echo "Base16 palette prepended to ghostty config"
+        else
+            echo "Warning: Failed to generate base16 palette"
+        fi
     fi
 else
     echo "No content-specific tools found, skipping content generation"
@@ -220,4 +247,3 @@ command -v qt5ct >/dev/null 2>&1 && [ -f "$CONFIG_DIR/qt5ct/colors/matugen.conf"
 command -v qt6ct >/dev/null 2>&1 && [ -f "$CONFIG_DIR/qt6ct/colors/matugen.conf" ] && echo "  - Qt6ct themes"
 command -v ghostty >/dev/null 2>&1 && [ -f "$CONFIG_DIR/ghostty/config-dankcolors" ] && echo "  - Ghostty terminal"
 command -v dgop >/dev/null 2>&1 && [ -f "$CONFIG_DIR/dgop/colors.json" ] && echo "  - Dgop colors"
-command -v fastfetch >/dev/null 2>&1 && [ -f "$CONFIG_DIR/fastfetch/colors.jsonc" ] && echo "  - Fastfetch colors"
