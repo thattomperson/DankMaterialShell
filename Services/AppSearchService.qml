@@ -10,7 +10,7 @@ import "../Common/fuzzysort.js" as Fuzzy
 Singleton {
     id: root
 
-    property var applications: DesktopEntries.applications.values
+    property var applications: DesktopEntries.applications.values.filter(app => !app.noDisplay && !app.runInTerminal)
 
     property var preppedApps: applications.map(app => ({
                                                            "name": Fuzzy.prepare(
