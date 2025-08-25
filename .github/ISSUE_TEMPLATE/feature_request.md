@@ -14,6 +14,14 @@ assignees: ""
 
 <!-- Explain the purpose of this feature/why it'd be useful to you -->
 
+## Compositor
+
+Is this feature specific to one compositor?
+
+- [ ] All compositors
+- [ ] niri
+- [ ] Hyprland
+
 ## Proposed Solution
 
 <!-- If you have any ideas for how to implement this, please share! -->

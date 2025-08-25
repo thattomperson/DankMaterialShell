@@ -20,6 +20,11 @@ assignees: ""
  shell is restarted.
   -->
 
+## Compositor
+
+- [ ] niri
+- [ ] Hyprland
+- [ ] Other (specify)
 
 ## Description
 

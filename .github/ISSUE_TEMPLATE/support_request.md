@@ -6,6 +6,12 @@ labels: "support"
 assignees: ""
 ---
 
+## Compositor
+
+- [ ] niri
+- [ ] Hyprland
+- [ ] other
+
 ## Description
 
 <!-- Brief description of the support needed -->
