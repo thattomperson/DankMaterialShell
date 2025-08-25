@@ -56,21 +56,9 @@ Column {
     }
 
     Repeater {
-        model: {
-            if (!Pipewire.ready || !Pipewire.nodes || !Pipewire.nodes.values)
-                return []
-
-            let sinks = []
-            for (var i = 0; i < Pipewire.nodes.values.length; i++) {
-                let node = Pipewire.nodes.values[i]
-                if (!node || node.isStream)
-                    continue
-
-                if ((node.type & PwNodeType.AudioSink) === PwNodeType.AudioSink)
-                    sinks.push(node)
-            }
-            return sinks
-        }
+        model: Pipewire.nodes.values.filter(node => {
+            return  node.audio && node.isSink && !node.isStream
+        })
 
         Rectangle {
             width: parent.width
