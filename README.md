@@ -472,10 +472,20 @@ You'll have to restart your session for themes to take effect.
 
 ## Terminal Integration
 
-**Ghostty users** can add automatic color theming:
+The matugen integration will automatically generate new colors for certain apps only if they are installed.
+
+You can enable the dynamic color schemes in supported terminal apps by modifying their configurations:
+
+**Ghostty**:
 
 ```bash
 echo "config-file = ./config-dankcolors" >> ~/.config/ghostty/config
+```
+
+**kitty**:
+
+```bash
+echo "include dank-theme.conf" >> ~/.config/kitty/kitty.conf
 ```
 
 ## Calendar Setup

@@ -106,6 +106,15 @@ build_content_config() {
         echo "  - Skipping ghostty config (ghostty not found)"
     fi
     
+    if command -v kitty >/dev/null 2>&1; then
+        echo "  - Including kitty config (kitty found)"
+        cat "$shell_dir/matugen/configs/kitty.toml" >> "$temp_config"
+        sed -i "s|input_path = './matugen/templates/|input_path = '$shell_dir/matugen/templates/|g" "$temp_config"
+        echo "" >> "$temp_config"
+    else
+        echo "  - Skipping kitty config (kitty not found)"
+    fi
+    
     if command -v dgop >/dev/null 2>&1; then
         echo "  - Including dgop config (dgop found)"
         cat "$shell_dir/matugen/configs/dgop.toml" >> "$temp_config"
@@ -221,6 +230,41 @@ if [ -s "$TEMP_CONTENT_CONFIG" ] && grep -q '\[templates\.' "$TEMP_CONTENT_CONFI
             echo "Warning: Failed to generate base16 palette"
         fi
     fi
+    
+    if command -v kitty >/dev/null 2>&1; then
+        echo "Generating base16 palette for kitty..."
+        
+        PRIMARY_COLOR="$EXTRACTED_PRIMARY"
+        if [ -z "$PRIMARY_COLOR" ]; then
+            PRIMARY_COLOR="#6b5f8e"
+            echo "Warning: Could not extract primary color, using fallback: $PRIMARY_COLOR"
+        fi
+        
+        B16_ARGS="$PRIMARY_COLOR"
+        if [ "$IS_LIGHT" = "true" ]; then
+            B16_ARGS="$B16_ARGS --light"
+        fi
+        
+        B16_OUTPUT=$("$SHELL_DIR/matugen/b16.py" $B16_ARGS --kitty)
+        
+        if [ $? -eq 0 ] && [ -n "$B16_OUTPUT" ]; then
+            TEMP_KITTY="/tmp/kitty-config-$$.conf"
+            echo "$B16_OUTPUT" > "$TEMP_KITTY"
+            echo "" >> "$TEMP_KITTY"
+            
+            if [ -f "$CONFIG_DIR/kitty/dank-theme.conf" ]; then
+                cat "$CONFIG_DIR/kitty/dank-theme.conf" >> "$TEMP_KITTY"
+            else
+                echo "Warning: $CONFIG_DIR/kitty/dank-theme.conf not found"
+            fi
+            
+            mkdir -p "$CONFIG_DIR/kitty"
+            mv "$TEMP_KITTY" "$CONFIG_DIR/kitty/dank-theme.conf"
+            echo "Base16 palette prepended to kitty config"
+        else
+            echo "Warning: Failed to generate base16 palette for kitty"
+        fi
+    fi
 else
     echo "No content-specific tools found, skipping content generation"
 fi
@@ -246,4 +290,5 @@ command -v niri >/dev/null 2>&1 && [ -f "$CONFIG_DIR/niri/dankshell-colors.kdl" 
 command -v qt5ct >/dev/null 2>&1 && [ -f "$CONFIG_DIR/qt5ct/colors/matugen.conf" ] && echo "  - Qt5ct themes"
 command -v qt6ct >/dev/null 2>&1 && [ -f "$CONFIG_DIR/qt6ct/colors/matugen.conf" ] && echo "  - Qt6ct themes"
 command -v ghostty >/dev/null 2>&1 && [ -f "$CONFIG_DIR/ghostty/config-dankcolors" ] && echo "  - Ghostty terminal"
+command -v kitty >/dev/null 2>&1 && [ -f "$CONFIG_DIR/kitty/dank-theme.conf" ] && echo "  - Kitty terminal"
 command -v dgop >/dev/null 2>&1 && [ -f "$CONFIG_DIR/dgop/colors.json" ] && echo "  - Dgop colors"

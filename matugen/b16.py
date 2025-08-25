@@ -59,16 +59,42 @@ def generate_palette(base_color, is_light=False):
     return palette
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or len(sys.argv) > 3:
-        print("Usage: b16.py <hex_color> [--light]", file=sys.stderr)
+    if len(sys.argv) < 2 or len(sys.argv) > 4:
+        print("Usage: b16.py <hex_color> [--light] [--kitty]", file=sys.stderr)
         sys.exit(1)
     
     base = sys.argv[1]
     if not base.startswith('#'):
         base = '#' + base
     
-    is_light = len(sys.argv) == 3 and sys.argv[2] == "--light"
+    is_light = "--light" in sys.argv
+    is_kitty = "--kitty" in sys.argv
     colors = generate_palette(base, is_light)
     
-    for i, color in enumerate(colors):
-        print(f"palette = {i}={color}")
+    if is_kitty:
+        # Kitty color format mapping
+        kitty_colors = [
+            ("color0", colors[0]),   # black
+            ("color1", colors[1]),   # red
+            ("color2", colors[2]),   # green
+            ("color3", colors[3]),   # yellow
+            ("color4", colors[4]),   # blue
+            ("color5", colors[5]),   # magenta
+            ("color6", colors[6]),   # cyan
+            ("color7", colors[7]),   # white
+            ("color8", colors[8]),   # bright black
+            ("color9", colors[9]),   # bright red
+            ("color10", colors[10]), # bright green
+            ("color11", colors[11]), # bright yellow
+            ("color12", colors[12]), # bright blue
+            ("color13", colors[13]), # bright magenta
+            ("color14", colors[14]), # bright cyan
+            ("color15", colors[15])  # bright white
+        ]
+        
+        for name, color in kitty_colors:
+            print(f"{name}   {color}")
+    else:
+        # Ghostty format (original)
+        for i, color in enumerate(colors):
+            print(f"palette = {i}={color}")
