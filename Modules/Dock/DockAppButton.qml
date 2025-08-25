@@ -277,19 +277,7 @@ Item {
 
         anchors.centerIn: parent
         implicitSize: 40
-        source: {
-            if (!appData || !appData.appId)
-                return ""
-
-            var desktopEntry = DesktopEntries.byId(appData.appId)
-            if (desktopEntry && desktopEntry.icon) {
-                var iconPath = Quickshell.iconPath(
-                            desktopEntry.icon, SettingsData.iconTheme
-                            === "System Default" ? "" : SettingsData.iconTheme)
-                return iconPath
-            }
-            return ""
-        }
+        source: Quickshell.iconPath(DesktopEntries.byId(appData.appId).icon, true)
         mipmap: true
         smooth: true
         asynchronous: true

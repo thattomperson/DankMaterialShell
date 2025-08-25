@@ -421,9 +421,7 @@ DankPopout {
                                             id: listIconImg
 
                                             anchors.fill: parent
-                                            source: (model.icon) ? Quickshell.iconPath(
-                                                                       model.icon,
-                                                                       SettingsData.iconTheme === "System Default" ? "" : SettingsData.iconTheme) : ""
+                                            source: Quickshell.iconPath(model.icon, true)
                                             smooth: true
                                             asynchronous: true
                                             visible: status === Image.Ready
@@ -614,9 +612,7 @@ DankPopout {
                                             id: gridIconImg
 
                                             anchors.fill: parent
-                                            source: (model.icon) ? Quickshell.iconPath(
-                                                                       model.icon,
-                                                                       SettingsData.iconTheme === "System Default" ? "" : SettingsData.iconTheme) : ""
+                                            source: Quickshell.iconPath(model.icon, true)
                                             smooth: true
                                             asynchronous: true
                                             visible: status === Image.Ready

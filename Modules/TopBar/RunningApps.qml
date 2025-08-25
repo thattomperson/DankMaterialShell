@@ -116,20 +116,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 18
                     height: 18
-                    source: {
-                        if (!appId)
-                            return ""
-
-                        var desktopEntry = DesktopEntries.byId(appId)
-                        if (desktopEntry && desktopEntry.icon) {
-                            var iconPath = Quickshell.iconPath(
-                                        desktopEntry.icon,
-                                        SettingsData.iconTheme
-                                        === "System Default" ? "" : SettingsData.iconTheme)
-                            return iconPath
-                        }
-                        return ""
-                    }
+                    source: Quickshell.iconPath(DesktopEntries.byId(appId).icon, true)
                     smooth: true
                     mipmap: true
                     asynchronous: true
