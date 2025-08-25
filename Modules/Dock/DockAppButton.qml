@@ -277,7 +277,7 @@ Item {
 
         anchors.centerIn: parent
         implicitSize: 40
-        source: Quickshell.iconPath(DesktopEntries.byId(appData.appId).icon, true)
+        source: Quickshell.iconPath(DesktopEntries.byId(Paths.moddedAppId(appData.appId)).icon, true)
         mipmap: true
         smooth: true
         asynchronous: true

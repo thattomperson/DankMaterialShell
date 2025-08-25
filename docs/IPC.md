@@ -278,6 +278,10 @@ Theme mode control (light/dark mode switching).
 - Switch to dark theme mode  
 - Returns: "dark"
 
+**`getMode`**
+- Returns current mode
+- Returns: "dark" or "light"
+
 ### Examples
 ```bash
 qs -c dms ipc call theme toggle

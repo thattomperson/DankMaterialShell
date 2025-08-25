@@ -116,7 +116,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 18
                     height: 18
-                    source: Quickshell.iconPath(DesktopEntries.byId(appId).icon, true)
+                    source: Quickshell.iconPath(DesktopEntries.byId(Paths.moddedAppId(appId)).icon, true)
                     smooth: true
                     mipmap: true
                     asynchronous: true
@@ -125,9 +125,7 @@ Rectangle {
 
                 // Fallback text if no icon found
                 Text {
-                    anchors.left: parent.left
-                    anchors.leftMargin: SettingsData.runningAppsCompactMode ? (parent.width - 18) / 2 : Theme.spacingXS
-                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.centerIn: parent
                     visible: !iconImg.visible
                     text: {
                         if (!appId)

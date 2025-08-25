@@ -45,4 +45,11 @@ Singleton {
     function copy(from: url, to: url): void {
         Quickshell.execDetached(["cp", strip(from), strip(to)])
     }
+
+    // ! Spotify and maybe some other apps report the wrong app id in toplevels, hardcode special case
+    function moddedAppId(appId: string): string {
+        if (appId === "Spotify")
+            return "spotify-launcher"
+        return appId
+    }
 }
