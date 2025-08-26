@@ -12,12 +12,25 @@ DankModal {
     property string powerConfirmAction: ""
     property string powerConfirmTitle: ""
     property string powerConfirmMessage: ""
+    property int selectedButton: -1 // -1 = none, 0 = Cancel, 1 = Confirm
+    property bool keyboardNavigation: false
 
     function show(action, title, message) {
         powerConfirmAction = action
         powerConfirmTitle = title
         powerConfirmMessage = message
+        selectedButton = -1 // No button selected initially
+        keyboardNavigation = false
         open()
+    }
+
+    function selectButton() {
+        if (selectedButton === 0) {
+            close()
+        } else {
+            close()
+            executePowerAction(powerConfirmAction)
+        }
     }
 
     function executePowerAction(action) {
@@ -43,6 +56,35 @@ DankModal {
     enableShadow: false
     onBackgroundClicked: {
         close()
+    }
+    onOpened: {
+        modalFocusScope.forceActiveFocus()
+    }
+    modalFocusScope.Keys.onPressed: function(event) {
+        switch (event.key) {
+        case Qt.Key_Left:
+        case Qt.Key_Up:
+            keyboardNavigation = true
+            selectedButton = 0
+            event.accepted = true
+            break
+        case Qt.Key_Right:
+        case Qt.Key_Down:
+            keyboardNavigation = true
+            selectedButton = 1
+            event.accepted = true
+            break
+        case Qt.Key_Tab:
+            keyboardNavigation = true
+            selectedButton = selectedButton === -1 ? 0 : (selectedButton + 1) % 2
+            event.accepted = true
+            break
+        case Qt.Key_Return:
+        case Qt.Key_Enter:
+            selectButton()
+            event.accepted = true
+            break
+        }
     }
 
     content: Component {
@@ -93,7 +135,16 @@ DankModal {
                         width: 120
                         height: 40
                         radius: Theme.cornerRadius
-                        color: cancelButton.containsMouse ? Theme.surfaceTextPressed : Theme.surfaceVariantAlpha
+                        color: {
+                            if (keyboardNavigation && selectedButton === 0)
+                                return Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
+                            else if (cancelButton.containsMouse)
+                                return Theme.surfacePressed
+                            else
+                                return Theme.surfaceVariantAlpha
+                        }
+                        border.color: (keyboardNavigation && selectedButton === 0) ? Theme.primary : "transparent"
+                        border.width: (keyboardNavigation && selectedButton === 0) ? 1 : 0
 
                         StyledText {
                             text: "Cancel"
@@ -110,9 +161,11 @@ DankModal {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                close()
+                                selectedButton = 0
+                                selectButton()
                             }
                         }
+
                     }
 
                     Rectangle {
@@ -132,12 +185,15 @@ DankModal {
                                 baseColor = Theme.primary
                                 break
                             }
-                            return confirmButton.containsMouse ? Qt.rgba(
-                                                                     baseColor.r,
-                                                                     baseColor.g,
-                                                                     baseColor.b,
-                                                                     0.9) : baseColor
+                            if (keyboardNavigation && selectedButton === 1)
+                                return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, 1)
+                            else if (confirmButton.containsMouse)
+                                return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, 0.9)
+                            else
+                                return baseColor
                         }
+                        border.color: (keyboardNavigation && selectedButton === 1) ? "white" : "transparent"
+                        border.width: (keyboardNavigation && selectedButton === 1) ? 1 : 0
 
                         StyledText {
                             text: "Confirm"
@@ -154,13 +210,19 @@ DankModal {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                close()
-                                executePowerAction(powerConfirmAction)
+                                selectedButton = 1
+                                selectButton()
                             }
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }
