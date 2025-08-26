@@ -70,6 +70,15 @@ Singleton {
         detectCompositor()
     }
 
+    // return only the toplevels on the current workspace on the given screen
+    function filterCurrentWorkspace(toplevels, screen){
+	    if (useNiriSorting) {
+		    return NiriService.filterCurrentWorkspace(toplevels, screen)
+	    }
+	    //fallback to returning everything
+	    return toplevels
+    }
+
     function detectCompositor() {
         // Check for Hyprland first
         if (hyprlandSignature && hyprlandSignature.length > 0) {

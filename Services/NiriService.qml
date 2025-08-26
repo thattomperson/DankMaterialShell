@@ -451,11 +451,7 @@ Singleton {
 
 
 
-    function sortToplevels(toplevels) {
-        if (!toplevels || toplevels.length === 0 || !CompositorService.isNiri || windows.length === 0) {
-            return [...toplevels]
-        }
-       
+    function getToplevelToNiriMap(toplevels){
         // Create a map to match toplevels to niri windows
         // We'll match by appId and title since toplevels don't have numeric IDs
         var toplevelToNiriMap = {}
@@ -488,6 +484,15 @@ Singleton {
                 }
             }
         }
+        return toplevelToNiriMap
+    }
+
+    function sortToplevels(toplevels) {
+        if (!toplevels || toplevels.length === 0 || !CompositorService.isNiri || windows.length === 0) {
+            return [...toplevels]
+        }
+
+        const toplevelToNiriMap = getToplevelToNiriMap(toplevels)
         
         // Sort toplevels using niri's ordering
         return [...toplevels].sort((a, b) => {
@@ -509,6 +514,19 @@ Singleton {
             // If neither has niri data, keep original toplevel order
             return 0
         })
+    }
+
+    function filterCurrentWorkspace(toplevels, screenName){
+        const toplevelToNiriMap = getToplevelToNiriMap(toplevels)
+        var currentWorkspaceId = null
+        for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
+            var ws = NiriService.allWorkspaces[i]
+            if (ws.output === screenName && ws.is_active){
+                currentWorkspaceId = ws.id
+            }
+
+        }
+        return toplevels.filter((t, idx) => toplevelToNiriMap[idx] && toplevelToNiriMap[idx].niriWindow.workspace_id == currentWorkspaceId)
     }
 
 }

@@ -49,6 +49,7 @@ Singleton {
     property bool clockCompactMode: false
     property bool focusedWindowCompactMode: false
     property bool runningAppsCompactMode: true
+    property bool runningAppsCurrentWorkspace: false
     property string clockDateFormat: "ddd d"
     property string lockDateFormat: "dddd, MMMM d"
     property int mediaSize: 1
@@ -220,6 +221,8 @@ Singleton {
                         !== undefined ? settings.focusedWindowCompactMode : false
                 runningAppsCompactMode = settings.runningAppsCompactMode
                         !== undefined ? settings.runningAppsCompactMode : true
+                runningAppsCurrentWorkspace = settings.runningAppsCurrentWorkspace
+                        !== undefined ? settings.runningAppsCurrentWorkspace : false
                 clockDateFormat = settings.clockDateFormat
                         !== undefined ? settings.clockDateFormat : "ddd d"
                 lockDateFormat = settings.lockDateFormat
@@ -355,6 +358,7 @@ Singleton {
                                                 "clockCompactMode": clockCompactMode,
                                                 "focusedWindowCompactMode": focusedWindowCompactMode,
                                                 "runningAppsCompactMode": runningAppsCompactMode,
+                                                "runningAppsCurrentWorkspace": runningAppsCurrentWorkspace,
                                                 "clockDateFormat": clockDateFormat,
                                                 "lockDateFormat": lockDateFormat,
                                                 "mediaSize": mediaSize,
@@ -461,6 +465,11 @@ Singleton {
 
     function setRunningAppsCompactMode(enabled) {
         runningAppsCompactMode = enabled
+        saveSettings()
+    }
+
+    function setRunningAppsCurrentWorkspace(enabled) {
+        runningAppsCurrentWorkspace = enabled
         saveSettings()
     }
 

@@ -18,7 +18,12 @@ Rectangle {
     readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 2 : Theme.spacingS
     // The visual root for this window
     property Item windowRoot: (Window.window ? Window.window.contentItem : null)
-    readonly property var sortedToplevels: CompositorService.sortedToplevels
+    readonly property var sortedToplevels: {
+            if (SettingsData.runningAppsCurrentWorkspace){
+                    return CompositorService.filterCurrentWorkspace(CompositorService.sortedToplevels, parentScreen.name)
+            }
+            return CompositorService.sortedToplevels
+    }
     readonly property int windowCount: sortedToplevels.length
     readonly property int calculatedWidth: {
         if (windowCount === 0)
