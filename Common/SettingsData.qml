@@ -85,6 +85,7 @@ Singleton {
     property bool topBarAutoHide: false
     property bool topBarVisible: true
     property real topBarSpacing: 4
+    property real topBarBottomGap: 0
     property real topBarInnerPadding: 8
     property bool topBarSquareCorners: false
     property bool topBarNoBackground: false
@@ -292,6 +293,7 @@ Singleton {
                 notificationTimeoutCritical = settings.notificationTimeoutCritical
                         !== undefined ? settings.notificationTimeoutCritical : 0
                 topBarSpacing = settings.topBarSpacing !== undefined ? settings.topBarSpacing : 4
+                topBarBottomGap = settings.topBarBottomGap !== undefined ? settings.topBarBottomGap : 0
                 topBarInnerPadding = settings.topBarInnerPadding !== undefined ? settings.topBarInnerPadding : 8
                 topBarSquareCorners = settings.topBarSquareCorners
                         !== undefined ? settings.topBarSquareCorners : false
@@ -380,6 +382,7 @@ Singleton {
                                                 "topBarAutoHide": topBarAutoHide,
                                                 "topBarVisible": topBarVisible,
                                                 "topBarSpacing": topBarSpacing,
+                                                "topBarBottomGap": topBarBottomGap,
                                                 "topBarInnerPadding": topBarInnerPadding,
                                                 "topBarSquareCorners": topBarSquareCorners,
                                                 "topBarNoBackground": topBarNoBackground,
@@ -908,6 +911,11 @@ Singleton {
 
     function setTopBarSpacing(spacing) {
         topBarSpacing = spacing
+        saveSettings()
+    }
+
+    function setTopBarBottomGap(gap) {
+        topBarBottomGap = gap
         saveSettings()
     }
 

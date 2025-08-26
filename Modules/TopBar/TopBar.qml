@@ -155,7 +155,7 @@ PanelWindow {
         right: true
     }
 
-    exclusiveZone: !SettingsData.topBarVisible || autoHide ? -1 : root.effectiveBarHeight + SettingsData.topBarSpacing - 2
+    exclusiveZone: !SettingsData.topBarVisible || autoHide ? -1 : root.effectiveBarHeight + SettingsData.topBarSpacing - 2 + SettingsData.topBarBottomGap
 
     mask: Region {
         item: topBarMouseArea
