@@ -1109,4 +1109,5 @@ Singleton {
 
         target: "bar"
     }
+
 }

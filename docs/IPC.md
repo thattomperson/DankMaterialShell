@@ -369,6 +369,16 @@ Power menu modal control for system power actions.
 - `close` - Hide power menu modal
 - `toggle` - Toggle power menu modal visibility
 
+### Target: `file`
+File browser controls for selecting wallpapers and profile images.
+
+**Functions:**
+- `browse <type>` - Open file browser for specific file type
+  - Parameters: `type` - Either "wallpaper" or "profile"
+  - `wallpaper` - Opens wallpaper file browser in Pictures directory
+  - `profile` - Opens profile image file browser in Pictures directory
+  - Both browsers support common image formats (jpg, jpeg, png, bmp, gif, webp)
+
 ### Modal Examples
 ```bash
 # Open application launcher
@@ -388,6 +398,10 @@ qs -c dms ipc call processlist toggle
 
 # Show power menu
 qs -c dms ipc call powermenu toggle
+
+# Open file browsers
+qs -c dms ipc call file browse wallpaper
+qs -c dms ipc call file browse profile
 ```
 
 ## Common Usage Patterns

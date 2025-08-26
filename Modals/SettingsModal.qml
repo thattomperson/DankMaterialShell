@@ -56,6 +56,20 @@ DankModal {
         target: "settings"
     }
 
+    IpcHandler {
+        function browse(type: string) {
+            if (type === "wallpaper") {
+                wallpaperBrowser.allowStacking = false
+                wallpaperBrowser.open()
+            } else if (type === "profile") {
+                profileBrowser.allowStacking = false
+                profileBrowser.open()
+            }
+        }
+
+        target: "file"
+    }
+
     settingsContent: Component {
         Item {
             anchors.fill: parent
@@ -561,6 +575,7 @@ DankModal {
     FileBrowserModal {
         id: profileBrowser
 
+        allowStacking: true
         browserTitle: "Select Profile Image"
         browserIcon: "person"
         browserType: "profile"
@@ -576,6 +591,24 @@ DankModal {
                                                                return settingsModal.shouldBeVisible
                                                            })
             }
+            allowStacking = true
+        }
+    }
+
+    FileBrowserModal {
+        id: wallpaperBrowser
+
+        allowStacking: true
+        browserTitle: "Select Wallpaper"
+        browserIcon: "wallpaper"
+        browserType: "wallpaper"
+        fileExtensions: ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"]
+        onFileSelected: path => {
+                            SessionData.setWallpaper(path)
+                            close()
+                        }
+        onDialogClosed: {
+            allowStacking = true
         }
     }
 }
