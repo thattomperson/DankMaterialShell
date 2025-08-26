@@ -612,7 +612,10 @@ Singleton {
         onExited: exitCode => {
             workerRunning = false
             
-            if (exitCode !== 0) {
+            if (exitCode === 2) {
+                // Exit code 2 means wallpaper/color not found - this is expected on first run
+                console.log("Theme worker: wallpaper/color not found, skipping theme generation")
+            } else if (exitCode !== 0) {
                 if (typeof ToastService !== "undefined") {
                     ToastService.showError("Theme worker failed (" + exitCode + ")")
                 }
