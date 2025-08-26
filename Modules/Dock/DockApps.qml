@@ -95,12 +95,13 @@ Item {
                                                     title = title.substring(0, 47) + "..."
                                                 }
                                                 var uniqueId = toplevel.title + "|" + (toplevel.appId || "") + "|" + index
+                                                                                                
                                                 items.push({
                                                                "type": "window",
-                                                               "appId": toplevel.appId || "",
+                                                               "appId": toplevel.appId,
                                                                "windowId": index,
                                                                "windowTitle": title,
-                                                               "workspaceId": -1, // Will be handled by sorting
+                                                               "workspaceId": -1,
                                                                "isPinned": false,
                                                                "isRunning": true,
                                                                "uniqueId": uniqueId
