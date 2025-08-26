@@ -250,7 +250,7 @@ Rectangle {
                                 if (modelData.allDay) {
                                     return "All day"
                                 } else {
-                                    let timeFormat = SettingsData.use24HourClock ? "HH:mm" : "hh:mm AP"
+                                    let timeFormat = SettingsData.use24HourClock ? "HH:mm" : "h:mm AP"
                                     let startTime = Qt.formatTime(
                                             modelData.start, timeFormat)
                                     if (modelData.start.toDateString(

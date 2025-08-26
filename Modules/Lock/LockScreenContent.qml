@@ -94,7 +94,7 @@ Item {
                                                         systemClock.date,
                                                         "HH:mm") : Qt.formatTime(
                                                         systemClock.date,
-                                                        "hh:mm AP")
+                                                        "h:mm AP")
                 font.pixelSize: 120
                 font.weight: Font.Light
                 color: "white"
