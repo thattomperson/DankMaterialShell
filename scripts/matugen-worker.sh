@@ -201,3 +201,5 @@ while :; do
     exit 2
   fi
 done
+
+exit 0
