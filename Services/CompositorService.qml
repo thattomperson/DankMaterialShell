@@ -13,6 +13,7 @@ Singleton {
     // Compositor detection
     property bool isHyprland: false
     property bool isNiri: false
+    property bool uwsmActive: false
     property string compositor: "unknown"
 
     readonly property string hyprlandSignature: Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
@@ -80,6 +81,7 @@ Singleton {
 
     Component.onCompleted: {
         detectCompositor()
+        uwsmCheck.running = true
     }
 
     function filterCurrentWorkspace(toplevels, screen){
@@ -187,10 +189,27 @@ Singleton {
     }
 
     function logout() {
+        if (uwsmActive) {
+            Quickshell.execDetached(["uwsm", "stop"])
+            return
+        }
+
         if (isNiri) {
             NiriService.quit()
             return
         }
+
+        // Hyprland fallback
         Hyprland.dispatch("exit")
+    }
+
+    Process {
+        id: uwsmCheck
+        // `uwsm check is-active` returns 0 if in uwsm-managed session, 1 otherwise
+        command: ["uwsm", "check", "is-active"]
+        running: false
+        onExited: function(exitCode) {
+            uwsmActive = exitCode === 0
+        }
     }
 }
