@@ -187,10 +187,33 @@ Singleton {
     }
 
     function logout() {
-        if (isNiri) {
-            NiriService.quit()
-            return
+    // Trigger the check process
+    uwsmCheck.running = true
+    }
+
+    Process {
+        id: uwsmCheck
+        // `uwsm check is-active` returns 0 if in uwsm-managed session, 1 otherwise
+        command: ["uwsm", "check", "is-active"]
+        running: false
+        onExited: function(exitCode) {
+            if (exitCode === 0) {
+                uwsmStop.running = true
+                return
+            }
+
+            // Not a uwsm-managed session; fall back to compositor-specific logout
+            if (isNiri) {
+                NiriService.quit()
+                return
+            }
+            Hyprland.dispatch("exit")
         }
-        Hyprland.dispatch("exit")
+    }
+
+    Process {
+        id: uwsmStop
+        command: ["uwsm", "stop"]
+        running: false
     }
 }
