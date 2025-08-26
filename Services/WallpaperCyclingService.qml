@@ -115,7 +115,7 @@ Singleton {
     }
 
     function checkTimeBasedCycling() {
-        const currentTime = Qt.formatTime(systemClock.date, "h:mm")
+        const currentTime = Qt.formatTime(systemClock.date, "hh:mm")
 
         if (currentTime === cachedCyclingTime
                 && currentTime !== lastTimeCheck) {
