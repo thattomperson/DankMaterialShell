@@ -92,9 +92,9 @@ Item {
                 anchors.top: parent.top
                 text: SettingsData.use24HourClock ? Qt.formatTime(
                                                         systemClock.date,
-                                                        "H:mm") : Qt.formatTime(
+                                                        "HH:mm") : Qt.formatTime(
                                                         systemClock.date,
-                                                        "h:mm AP")
+                                                        "hh:mm AP")
                 font.pixelSize: 120
                 font.weight: Font.Light
                 color: "white"

@@ -310,7 +310,7 @@ Singleton {
             if (use24Hour) {
                 return date.toLocaleTimeString(Qt.locale(), "HH:mm")
             } else {
-                return date.toLocaleTimeString(Qt.locale(), "h:mm AP")
+                return date.toLocaleTimeString(Qt.locale(), "hh:mm AP")
             }
         }
 
