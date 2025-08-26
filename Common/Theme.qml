@@ -31,12 +31,17 @@ Singleton {
     property bool matugenAvailable: false
     property bool gtkThemingEnabled: typeof SettingsData !== "undefined" ? SettingsData.gtkAvailable : false
     property bool qtThemingEnabled: typeof SettingsData !== "undefined" ? (SettingsData.qt5ctAvailable || SettingsData.qt6ctAvailable) : false
-    property bool systemThemeGenerationInProgress: false
-    property var pendingThemeRequest: null
+    property var workerRunning: false
     property var matugenColors: ({})
     property bool extractionRequested: false
     property int colorUpdateTrigger: 0
     property var customThemeData: null
+    
+    readonly property string stateDir: {
+        const cacheHome = StandardPaths.writableLocation(StandardPaths.CacheLocation).toString()
+        const path = cacheHome.startsWith("file://") ? cacheHome.substring(7) : cacheHome
+        return path + "/dankshell"
+    }
 
     function getMatugenColor(path, fallback) {
         colorUpdateTrigger
@@ -156,10 +161,6 @@ Singleton {
     property real popupTransparency: typeof SettingsData !== "undefined" && SettingsData.popupTransparency !== undefined ? SettingsData.popupTransparency : 0.92
 
     function switchTheme(themeName, savePrefs = true) {
-        // Clear cached colors when switching themes
-        matugenColors = {}
-        colorUpdateTrigger++
-        
         if (themeName === dynamic) {
             currentTheme = dynamic
             extractColors()
@@ -356,30 +357,43 @@ Singleton {
         generateSystemThemesFromCurrentTheme()
     }
 
-    function generateSystemThemes() {
-        if (systemThemeGenerationInProgress || !matugenAvailable || !wallpaperPath)
+    function setDesiredTheme(kind, value, isLight, iconTheme) {
+        if (!matugenAvailable) {
+            console.warn("matugen not available - cannot set system theme")
             return
-
-        const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "true" : "false"
-        const iconTheme = (typeof SettingsData !== "undefined" && SettingsData.iconTheme) ? SettingsData.iconTheme : "System Default"
-
-        systemThemeGenerationInProgress = true
-        systemThemeGenerator.command = [shellDir + "/scripts/matugen.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme]
+        }
+        
+        const desired = {
+            "kind": kind,
+            "value": value,
+            "mode": isLight ? "light" : "dark",
+            "iconTheme": iconTheme || "System Default"
+        }
+        
+        const json = JSON.stringify(desired)
+        const desiredPath = stateDir + "/matugen.desired.json"
+        
+        Quickshell.execDetached([
+            "sh", "-c", 
+            `cat > '${desiredPath}' << 'EOF'\n${json}\nEOF`
+        ])
+        workerRunning = true
+        systemThemeGenerator.command = [shellDir + "/scripts/matugen-worker.sh", stateDir, shellDir, "--run"]
         systemThemeGenerator.running = true
     }
-
+    
     function generateSystemThemesFromCurrentTheme() {
         if (!matugenAvailable)
             return
 
-        const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "true" : "false"
+        const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode)
         const iconTheme = (typeof SettingsData !== "undefined" && SettingsData.iconTheme) ? SettingsData.iconTheme : "System Default"
         
-        let cmd
         if (currentTheme === dynamic) {
-            if (!wallpaperPath)
+            if (!wallpaperPath) {
                 return
-            cmd = [shellDir + "/scripts/matugen.sh", wallpaperPath, shellDir, configDir, "generate", isLight, iconTheme]
+            }
+            setDesiredTheme("image", wallpaperPath, isLight, iconTheme)
         } else {
             let primaryColor
             if (currentTheme === "custom") {
@@ -396,38 +410,7 @@ Singleton {
                 console.warn("No primary color available for theme:", currentTheme)
                 return
             }
-            cmd = [shellDir + "/scripts/matugen.sh", primaryColor, shellDir, configDir, "generate-color", isLight, iconTheme]
-        }
-        
-        // Clear any pending request and queue this new one
-        pendingThemeRequest = {
-            command: cmd,
-            isDynamic: currentTheme === dynamic,
-            timestamp: Date.now()
-        }
-        
-        // Clear cached colors to force refresh
-        matugenColors = {}
-        colorUpdateTrigger++
-        
-        // Process the queue
-        processThemeQueue()
-    }
-    
-    function processThemeQueue() {
-        if (systemThemeGenerationInProgress || !pendingThemeRequest)
-            return
-            
-        const request = pendingThemeRequest
-        pendingThemeRequest = null
-        
-        systemThemeGenerationInProgress = true
-        systemThemeGenerator.command = request.command
-        systemThemeGenerator.running = true
-        
-        if (request.isDynamic) {
-            // Re-extract colors after system theme generation
-            Qt.callLater(extractColors)
+            setDesiredTheme("hex", primaryColor, isLight, iconTheme)
         }
     }
 
@@ -522,6 +505,35 @@ Singleton {
             if (extractionRequested) {
                 fileChecker.running = true
             }
+            
+            
+            const isLight = (typeof SessionData !== "undefined" && SessionData.isLightMode)
+            const iconTheme = (typeof SettingsData !== "undefined" && SettingsData.iconTheme) ? SettingsData.iconTheme : "System Default"
+            
+            if (currentTheme === dynamic) {
+                if (wallpaperPath) {
+                    // Clear cache on startup to force regeneration
+                    Quickshell.execDetached(["rm", "-f", stateDir + "/matugen.key"])
+                    setDesiredTheme("image", wallpaperPath, isLight, iconTheme)
+                } else {
+                }
+            } else {
+                let primaryColor
+                if (currentTheme === "custom") {
+                    if (customThemeData && customThemeData.primary) {
+                        primaryColor = customThemeData.primary
+                    }
+                } else {
+                    primaryColor = currentThemeData.primary
+                }
+                
+                if (primaryColor) {
+                    // Clear cache on startup to force regeneration
+                    Quickshell.execDetached(["rm", "-f", stateDir + "/matugen.key"])
+                    setDesiredTheme("hex", primaryColor, isLight, iconTheme)
+                } else {
+                }
+            }
         }
     }
 
@@ -566,7 +578,6 @@ Singleton {
                 try {
                     root.matugenColors = JSON.parse(extractedJson)
                     root.colorUpdateTrigger++
-                    generateAppConfigs()
                     if (typeof ToastService !== "undefined") {
                         ToastService.clearWallpaperError()
                     }
@@ -590,31 +601,23 @@ Singleton {
     }
 
     Process {
+        id: ensureStateDir
+    }
+    
+    
+    Process {
         id: systemThemeGenerator
         running: false
 
-        stdout: StdioCollector {
-            id: systemThemeStdout
-        }
-
-        stderr: StdioCollector {
-            id: systemThemeStderr
-        }
-
         onExited: exitCode => {
-            systemThemeGenerationInProgress = false
+            workerRunning = false
+            
             if (exitCode !== 0) {
                 if (typeof ToastService !== "undefined") {
-                    ToastService.showError("Failed to generate system themes: " + systemThemeStderr.text)
+                    ToastService.showError("Theme worker failed (" + exitCode + ")")
                 }
-                console.warn("System theme generation failed with exit code:", exitCode)
-                console.warn("STDOUT:", systemThemeStdout.text)
-                console.warn("STDERR:", systemThemeStderr.text)
-            } else {
+                console.warn("Theme worker failed with exit code:", exitCode)
             }
-            
-            // Process next request in queue if any
-            Qt.callLater(processThemeQueue)
         }
     }
 
@@ -669,13 +672,6 @@ Singleton {
     }
 
 
-    function generateAppConfigs() {
-        if (!matugenColors || !matugenColors.colors) {
-            return
-        }
-
-        generateSystemThemes()
-    }
 
 
 
@@ -683,9 +679,6 @@ Singleton {
         matugenCheck.running = true
         if (typeof SessionData !== "undefined")
             SessionData.isLightModeChanged.connect(root.onLightModeChanged)
-        
-        // Generate system themes on startup for current theme
-        Qt.callLater(generateSystemThemesFromCurrentTheme)
     }
 
     FileView {

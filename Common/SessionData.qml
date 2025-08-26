@@ -125,12 +125,22 @@ Singleton {
     }
 
     function setWallpaper(imagePath) {
+        console.log("SessionData.setWallpaper called with:", imagePath)
         wallpaperPath = imagePath
         saveSettings()
 
-        if (typeof Theme !== "undefined" && typeof SettingsData !== "undefined"
-                && SettingsData.wallpaperDynamicTheming) {
-            Theme.extractColors()
+        if (typeof Theme !== "undefined") {
+            console.log("Theme is available, current theme:", Theme.currentTheme)
+            // Always extract colors for shell UI if dynamic theming is enabled
+            if (typeof SettingsData !== "undefined" && SettingsData.wallpaperDynamicTheming) {
+                console.log("Dynamic theming enabled, extracting colors")
+                Theme.extractColors()
+            }
+            // Always generate system themes (matugen templates) when wallpaper changes
+            console.log("Calling generateSystemThemesFromCurrentTheme")
+            Theme.generateSystemThemesFromCurrentTheme()
+        } else {
+            console.log("Theme is undefined!")
         }
     }
 
