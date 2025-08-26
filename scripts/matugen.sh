@@ -359,3 +359,5 @@ command -v qt6ct >/dev/null 2>&1 && [ -f "$CONFIG_DIR/qt6ct/colors/matugen.conf"
 command -v ghostty >/dev/null 2>&1 && [ -f "$CONFIG_DIR/ghostty/config-dankcolors" ] && echo "  - Ghostty terminal"
 command -v kitty >/dev/null 2>&1 && [ -f "$CONFIG_DIR/kitty/dank-theme.conf" ] && echo "  - Kitty terminal"
 command -v dgop >/dev/null 2>&1 && [ -f "$CONFIG_DIR/dgop/colors.json" ] && echo "  - Dgop colors"
+
+exit 0
