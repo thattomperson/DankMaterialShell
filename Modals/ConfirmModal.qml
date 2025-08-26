@@ -9,17 +9,39 @@ import qs.Widgets
 DankModal {
     id: root
 
-    property string powerConfirmAction: ""
-    property string powerConfirmTitle: ""
-    property string powerConfirmMessage: ""
+    property string confirmTitle: ""
+    property string confirmMessage: ""
+    property string confirmButtonText: "Confirm"
+    property string cancelButtonText: "Cancel"
+    property color confirmButtonColor: Theme.error
+    property var onConfirm: function() {}
+    property var onCancel: function() {}
+    
     property int selectedButton: -1 // -1 = none, 0 = Cancel, 1 = Confirm
     property bool keyboardNavigation: false
 
-    function show(action, title, message) {
-        powerConfirmAction = action
-        powerConfirmTitle = title
-        powerConfirmMessage = message
-        selectedButton = -1 // No button selected initially
+    function show(title, message, onConfirmCallback, onCancelCallback) {
+        confirmTitle = title || ""
+        confirmMessage = message || ""
+        confirmButtonText = "Confirm"
+        cancelButtonText = "Cancel"
+        confirmButtonColor = Theme.error
+        onConfirm = onConfirmCallback || function() {}
+        onCancel = onCancelCallback || function() {}
+        selectedButton = -1
+        keyboardNavigation = false
+        open()
+    }
+    
+    function showWithOptions(options) {
+        confirmTitle = options.title || ""
+        confirmMessage = options.message || ""
+        confirmButtonText = options.confirmText || "Confirm"
+        cancelButtonText = options.cancelText || "Cancel"
+        confirmButtonColor = options.confirmColor || Theme.error
+        onConfirm = options.onConfirm || function() {}
+        onCancel = options.onCancel || function() {}
+        selectedButton = -1
         keyboardNavigation = false
         open()
     }
@@ -27,41 +49,35 @@ DankModal {
     function selectButton() {
         if (selectedButton === 0) {
             close()
+            if (onCancel) onCancel()
         } else {
             close()
-            executePowerAction(powerConfirmAction)
-        }
-    }
-
-    function executePowerAction(action) {
-        switch (action) {
-        case "logout":
-            CompositorService.logout()
-            break
-        case "suspend":
-            SessionService.suspend()
-            break
-        case "reboot":
-            SessionService.reboot()
-            break
-        case "poweroff":
-            SessionService.poweroff()
-            break
+            if (onConfirm) onConfirm()
         }
     }
 
     shouldBeVisible: false
+    allowStacking: true
     width: 350
     height: 160
-    enableShadow: false
+    enableShadow: true
+    shouldHaveFocus: true
     onBackgroundClicked: {
         close()
+        if (onCancel) onCancel()
     }
     onOpened: {
         modalFocusScope.forceActiveFocus()
+        modalFocusScope.focus = true
+        shouldHaveFocus = true
     }
     modalFocusScope.Keys.onPressed: function(event) {
         switch (event.key) {
+        case Qt.Key_Escape:
+            close()
+            if (onCancel) onCancel()
+            event.accepted = true
+            break
         case Qt.Key_Left:
         case Qt.Key_Up:
             keyboardNavigation = true
@@ -81,7 +97,12 @@ DankModal {
             break
         case Qt.Key_Return:
         case Qt.Key_Enter:
-            selectButton()
+            if (selectedButton !== -1) {
+                selectButton()
+            } else {
+                selectedButton = 1
+                selectButton()
+            }
             event.accepted = true
             break
         }
@@ -97,25 +118,16 @@ DankModal {
                 spacing: Theme.spacingM
 
                 StyledText {
-                    text: powerConfirmTitle
+                    text: confirmTitle
                     font.pixelSize: Theme.fontSizeLarge
-                    color: {
-                        switch (powerConfirmAction) {
-                        case "poweroff":
-                            return Theme.error
-                        case "reboot":
-                            return Theme.warning
-                        default:
-                            return Theme.surfaceText
-                        }
-                    }
+                    color: Theme.surfaceText
                     font.weight: Font.Medium
                     width: parent.width
                     horizontalAlignment: Text.AlignHCenter
                 }
 
                 StyledText {
-                    text: powerConfirmMessage
+                    text: confirmMessage
                     font.pixelSize: Theme.fontSizeMedium
                     color: Theme.surfaceText
                     width: parent.width
@@ -147,7 +159,7 @@ DankModal {
                         border.width: (keyboardNavigation && selectedButton === 0) ? 1 : 0
 
                         StyledText {
-                            text: "Cancel"
+                            text: cancelButtonText
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceText
                             font.weight: Font.Medium
@@ -173,18 +185,7 @@ DankModal {
                         height: 40
                         radius: Theme.cornerRadius
                         color: {
-                            let baseColor
-                            switch (powerConfirmAction) {
-                            case "poweroff":
-                                baseColor = Theme.error
-                                break
-                            case "reboot":
-                                baseColor = Theme.warning
-                                break
-                            default:
-                                baseColor = Theme.primary
-                                break
-                            }
+                            let baseColor = confirmButtonColor
                             if (keyboardNavigation && selectedButton === 1)
                                 return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, 1)
                             else if (confirmButton.containsMouse)
@@ -196,7 +197,7 @@ DankModal {
                         border.width: (keyboardNavigation && selectedButton === 1) ? 1 : 0
 
                         StyledText {
-                            text: "Confirm"
+                            text: confirmButtonText
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.primaryText
                             font.weight: Font.Medium

@@ -34,7 +34,7 @@ PanelWindow {
         demoActive = false
     }
 
-    PowerConfirmModal {
+    ConfirmModal {
         id: powerModal
     }
 

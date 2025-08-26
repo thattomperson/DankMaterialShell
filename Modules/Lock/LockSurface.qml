@@ -20,7 +20,7 @@ WlSessionLockSurface {
 
     color: "transparent"
 
-    PowerConfirmModal {
+    ConfirmModal {
         id: powerConfirmModal
     }
 

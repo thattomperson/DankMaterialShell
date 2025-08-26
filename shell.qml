@@ -113,8 +113,27 @@ ShellRoot {
 
             onPowerActionRequested: (action, title, message) => {
                 powerConfirmModalLoader.active = true
-                if (powerConfirmModalLoader.item)
-                    powerConfirmModalLoader.item.show(action, title, message)
+                if (powerConfirmModalLoader.item) {
+                    powerConfirmModalLoader.item.confirmButtonColor = 
+                        action === "poweroff" ? Theme.error : 
+                        action === "reboot" ? Theme.warning : Theme.primary
+                    powerConfirmModalLoader.item.show(title, message, function() {
+                        switch (action) {
+                        case "logout":
+                            CompositorService.logout()
+                            break
+                        case "suspend":
+                            SessionService.suspend()
+                            break
+                        case "reboot":
+                            SessionService.reboot()
+                            break
+                        case "poweroff":
+                            SessionService.poweroff()
+                            break
+                        }
+                    }, function() {})
+                }
             }
             onLockRequested: {
                 lock.activate()
@@ -166,8 +185,27 @@ ShellRoot {
 
             onPowerActionRequested: (action, title, message) => {
                 powerConfirmModalLoader.active = true
-                if (powerConfirmModalLoader.item)
-                    powerConfirmModalLoader.item.show(action, title, message)
+                if (powerConfirmModalLoader.item) {
+                    powerConfirmModalLoader.item.confirmButtonColor = 
+                        action === "poweroff" ? Theme.error : 
+                        action === "reboot" ? Theme.warning : Theme.primary
+                    powerConfirmModalLoader.item.show(title, message, function() {
+                        switch (action) {
+                        case "logout":
+                            CompositorService.logout()
+                            break
+                        case "suspend":
+                            SessionService.suspend()
+                            break
+                        case "reboot":
+                            SessionService.reboot()
+                            break
+                        case "poweroff":
+                            SessionService.poweroff()
+                            break
+                        }
+                    }, function() {})
+                }
             }
         }
 
@@ -178,7 +216,7 @@ ShellRoot {
 
         active: false
 
-        PowerConfirmModal {
+        ConfirmModal {
             id: powerConfirmModal
         }
 
@@ -243,8 +281,27 @@ ShellRoot {
 
             onPowerActionRequested: (action, title, message) => {
                 powerConfirmModalLoader.active = true
-                if (powerConfirmModalLoader.item)
-                    powerConfirmModalLoader.item.show(action, title, message)
+                if (powerConfirmModalLoader.item) {
+                    powerConfirmModalLoader.item.confirmButtonColor = 
+                        action === "poweroff" ? Theme.error : 
+                        action === "reboot" ? Theme.warning : Theme.primary
+                    powerConfirmModalLoader.item.show(title, message, function() {
+                        switch (action) {
+                        case "logout":
+                            CompositorService.logout()
+                            break
+                        case "suspend":
+                            SessionService.suspend()
+                            break
+                        case "reboot":
+                            SessionService.reboot()
+                            break
+                        case "poweroff":
+                            SessionService.poweroff()
+                            break
+                        }
+                    }, function() {})
+                }
             }
         }
 
