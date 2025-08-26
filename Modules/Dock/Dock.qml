@@ -65,12 +65,16 @@ PanelWindow {
 
     MouseArea {
         id: dockMouseArea
-        height: dock.reveal ? 65 : 12
+        property real currentScreen: modelData ? modelData : dock.screen
+        property real screenWidth: currentScreen ? currentScreen.geometry.width : 1920
+        property real maxDockWidth: Math.min(screenWidth * 0.8, 1200)
+        
+        height: dock.reveal ? 65 : 20
+        width: dock.reveal ? Math.min(dockBackground.width + 32, maxDockWidth) : Math.min(Math.max(dockBackground.width + 64, 200), screenWidth * 0.5)
         anchors {
             bottom: parent.bottom
             horizontalCenter: parent.horizontalCenter
         }
-        implicitWidth: dock.reveal ? dockBackground.width + 32 : (dockBackground.width + 32)
         hoverEnabled: true
 
         Behavior on height {
