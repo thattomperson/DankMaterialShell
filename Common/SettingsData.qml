@@ -1005,7 +1005,8 @@ Singleton {
             parseSettings(settingsFile.text())
         }
         onLoadFailed: error => {
-                          applyStoredTheme()
+                          // Check if default-settings.json exists and copy it
+                          defaultSettingsCheckProcess.running = true
                       }
     }
 
@@ -1068,6 +1069,22 @@ Singleton {
                 }
             }
         }
+    }
+
+    Process {
+        id: defaultSettingsCheckProcess
+
+        command: ["sh", "-c", "CONFIG_DIR=\"" + _configDir + "/DankMaterialShell\"; if [ -f \"$CONFIG_DIR/default-settings.json\" ] && [ ! -f \"$CONFIG_DIR/settings.json\" ]; then cp \"$CONFIG_DIR/default-settings.json\" \"$CONFIG_DIR/settings.json\" && echo 'copied'; else echo 'not_found'; fi"]
+        running: false
+        onExited: exitCode => {
+                      if (exitCode === 0) {
+                          console.log("Copied default-settings.json to settings.json")
+                          settingsFile.reload()
+                      } else {
+                          // No default settings file found, just apply stored theme
+                          applyStoredTheme()
+                      }
+                  }
     }
 
     IpcHandler {
