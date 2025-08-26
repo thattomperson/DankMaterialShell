@@ -39,7 +39,7 @@ Rectangle {
         StyledText {
             text: SettingsData.use24HourClock ? Qt.formatTime(
                                                     root.currentDate,
-                                                    "H:mm") : Qt.formatTime(
+                                                    "HH:mm") : Qt.formatTime(
                                                     root.currentDate, "h:mm AP")
             font.pixelSize: Theme.fontSizeMedium - 1
             color: Theme.surfaceText
