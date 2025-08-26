@@ -375,7 +375,7 @@ Singleton {
         
         Quickshell.execDetached([
             "sh", "-c", 
-            `cat > '${desiredPath}' << 'EOF'\n${json}\nEOF`
+            `mkdir -p '${stateDir}' && cat > '${desiredPath}' << 'EOF'\n${json}\nEOF`
         ])
         workerRunning = true
         systemThemeGenerator.command = [shellDir + "/scripts/matugen-worker.sh", stateDir, shellDir, "--run"]
