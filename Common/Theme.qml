@@ -543,11 +543,6 @@ Singleton {
         onExited: code => {
             if (code === 0) {
                 matugenProcess.running = true
-            } else {
-                if (typeof ToastService !== "undefined") {
-                    ToastService.wallpaperErrorStatus = "error"
-                    ToastService.showError("Wallpaper processing failed")
-                }
             }
         }
     }

@@ -187,6 +187,80 @@ Item {
                                 color: Theme.surfaceVariantText
                                 visible: SessionData.wallpaperPath === ""
                             }
+
+                            Rectangle {
+                                anchors.fill: parent
+                                anchors.margins: 1
+                                radius: Theme.cornerRadius - 1
+                                color: Qt.rgba(0, 0, 0, 0.7)
+                                visible: wallpaperMouseArea.containsMouse
+
+                                Row {
+                                    anchors.centerIn: parent
+                                    spacing: 4
+
+                                    Rectangle {
+                                        width: 32
+                                        height: 32
+                                        radius: 16
+                                        color: Qt.rgba(255, 255, 255, 0.9)
+
+                                        DankIcon {
+                                            anchors.centerIn: parent
+                                            name: "folder_open"
+                                            size: 18
+                                            color: "black"
+                                        }
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                if (parentModal) {
+                                                    parentModal.allowFocusOverride = true
+                                                    parentModal.shouldHaveFocus = false
+                                                }
+                                                wallpaperBrowser.open()
+                                            }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        width: 32
+                                        height: 32
+                                        radius: 16
+                                        color: Qt.rgba(255, 255, 255, 0.9)
+                                        visible: SessionData.wallpaperPath !== ""
+
+                                        DankIcon {
+                                            anchors.centerIn: parent
+                                            name: "clear"
+                                            size: 18
+                                            color: "black"
+                                        }
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                if (Theme.currentTheme === Theme.dynamic) {
+                                                    Theme.switchTheme("blue")
+                                                }
+                                                SessionData.setWallpaper("")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            MouseArea {
+                                id: wallpaperMouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                propagateComposedEvents: true
+                                acceptedButtons: Qt.NoButton
+                            }
                         }
 
                         Column {
@@ -217,78 +291,41 @@ Item {
 
                             Row {
                                 spacing: Theme.spacingS
+                                visible: SessionData.wallpaperPath !== ""
 
-                                StyledRect {
-                                    width: 100
-                                    height: 32
-                                    radius: Theme.cornerRadius
-                                    color: Theme.primary
-
-                                    Row {
-                                        anchors.centerIn: parent
-                                        spacing: Theme.spacingXS
-
-                                        DankIcon {
-                                            name: "folder_open"
-                                            size: Theme.iconSizeSmall
-                                            color: Theme.primaryText
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
-
-                                        StyledText {
-                                            text: "Browse"
-                                            color: Theme.primaryText
-                                            font.pixelSize: Theme.fontSizeSmall
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            if (parentModal) {
-                                                parentModal.allowFocusOverride = true
-                                                parentModal.shouldHaveFocus = false
-                                            }
-                                            wallpaperBrowser.open()
-                                        }
+                                DankActionButton {
+                                    buttonSize: 32
+                                    iconName: "skip_previous"
+                                    iconSize: Theme.iconSizeSmall
+                                    enabled: SessionData.wallpaperPath
+                                    opacity: SessionData.wallpaperPath ? 1 : 0.5
+                                    backgroundColor: Qt.rgba(Theme.surfaceVariant.r,
+                                                            Theme.surfaceVariant.g,
+                                                            Theme.surfaceVariant.b, 0.5)
+                                    hoverColor: Qt.rgba(Theme.primary.r,
+                                                       Theme.primary.g,
+                                                       Theme.primary.b, 0.12)
+                                    iconColor: Theme.surfaceText
+                                    onClicked: {
+                                        WallpaperCyclingService.cyclePrevManually()
                                     }
                                 }
 
-                                StyledRect {
-                                    width: 80
-                                    height: 32
-                                    radius: Theme.cornerRadius
-                                    color: Theme.surfaceVariant
-                                    opacity: SessionData.wallpaperPath !== "" ? 1 : 0.5
-
-                                    Row {
-                                        anchors.centerIn: parent
-                                        spacing: Theme.spacingXS
-
-                                        DankIcon {
-                                            name: "clear"
-                                            size: Theme.iconSizeSmall
-                                            color: Theme.surfaceVariantText
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
-
-                                        StyledText {
-                                            text: "Clear"
-                                            color: Theme.surfaceVariantText
-                                            font.pixelSize: Theme.fontSizeSmall
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        enabled: SessionData.wallpaperPath !== ""
-                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        onClicked: {
-                                            SessionData.setWallpaper("")
-                                        }
+                                DankActionButton {
+                                    buttonSize: 32
+                                    iconName: "skip_next"
+                                    iconSize: Theme.iconSizeSmall
+                                    enabled: SessionData.wallpaperPath
+                                    opacity: SessionData.wallpaperPath ? 1 : 0.5
+                                    backgroundColor: Qt.rgba(Theme.surfaceVariant.r,
+                                                            Theme.surfaceVariant.g,
+                                                            Theme.surfaceVariant.b, 0.5)
+                                    hoverColor: Qt.rgba(Theme.primary.r,
+                                                       Theme.primary.g,
+                                                       Theme.primary.b, 0.12)
+                                    iconColor: Theme.surfaceText
+                                    onClicked: {
+                                        WallpaperCyclingService.cycleNextManually()
                                     }
                                 }
                             }
@@ -321,13 +358,12 @@ Item {
                             }
 
                             Column {
-                                width: parent.width - Theme.iconSize - Theme.spacingM
-                                       - controlsRow.width - Theme.spacingM
+                                width: parent.width - Theme.iconSize - Theme.spacingM - cyclingToggle.width - Theme.spacingM
                                 spacing: Theme.spacingXS
                                 anchors.verticalCenter: parent.verticalCenter
 
                                 StyledText {
-                                    text: "Wallpaper Cycling"
+                                    text: "Automatic Cycling"
                                     font.pixelSize: Theme.fontSizeLarge
                                     font.weight: Font.Medium
                                     color: Theme.surfaceText
@@ -341,108 +377,15 @@ Item {
                                 }
                             }
 
-                            Row {
-                                id: controlsRow
+                            DankToggle {
+                                id: cyclingToggle
 
-                                spacing: Theme.spacingS
                                 anchors.verticalCenter: parent.verticalCenter
-
-                                StyledRect {
-                                    width: 60
-                                    height: 32
-                                    radius: Theme.cornerRadius
-                                    color: prevButtonArea.containsMouse ? Qt.rgba(
-                                                                              Theme.primary.r,
-                                                                              Theme.primary.g,
-                                                                              Theme.primary.b,
-                                                                              0.8) : Theme.primary
-                                    opacity: SessionData.wallpaperPath ? 1 : 0.5
-
-                                    Row {
-                                        anchors.centerIn: parent
-                                        spacing: Theme.spacingXS
-
-                                        DankIcon {
-                                            name: "skip_previous"
-                                            size: Theme.iconSizeSmall
-                                            color: Theme.primaryText
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
-
-                                        StyledText {
-                                            text: "Prev"
-                                            color: Theme.primaryText
-                                            font.pixelSize: Theme.fontSizeSmall
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
-                                    }
-
-                                    MouseArea {
-                                        id: prevButtonArea
-
-                                        anchors.fill: parent
-                                        enabled: SessionData.wallpaperPath
-                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        hoverEnabled: true
-                                        onClicked: {
-                                            WallpaperCyclingService.cyclePrevManually()
-                                        }
-                                    }
-                                }
-
-                                StyledRect {
-                                    width: 60
-                                    height: 32
-                                    radius: Theme.cornerRadius
-                                    color: nextButtonArea.containsMouse ? Qt.rgba(
-                                                                              Theme.primary.r,
-                                                                              Theme.primary.g,
-                                                                              Theme.primary.b,
-                                                                              0.8) : Theme.primary
-                                    opacity: SessionData.wallpaperPath ? 1 : 0.5
-
-                                    Row {
-                                        anchors.centerIn: parent
-                                        spacing: Theme.spacingXS
-
-                                        DankIcon {
-                                            name: "skip_next"
-                                            size: Theme.iconSizeSmall
-                                            color: Theme.primaryText
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
-
-                                        StyledText {
-                                            text: "Next"
-                                            color: Theme.primaryText
-                                            font.pixelSize: Theme.fontSizeSmall
-                                            anchors.verticalCenter: parent.verticalCenter
-                                        }
-                                    }
-
-                                    MouseArea {
-                                        id: nextButtonArea
-
-                                        anchors.fill: parent
-                                        enabled: SessionData.wallpaperPath
-                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        hoverEnabled: true
-                                        onClicked: {
-                                            WallpaperCyclingService.cycleNextManually()
-                                        }
-                                    }
-                                }
-
-                                DankToggle {
-                                    id: cyclingToggle
-
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    checked: SessionData.wallpaperCyclingEnabled
-                                    onToggled: toggled => {
-                                                   return SessionData.setWallpaperCyclingEnabled(
-                                                       toggled)
-                                               }
-                                }
+                                checked: SessionData.wallpaperCyclingEnabled
+                                onToggled: toggled => {
+                                               return SessionData.setWallpaperCyclingEnabled(
+                                                   toggled)
+                                           }
                             }
                         }
 
@@ -621,8 +564,8 @@ Item {
                             id: toggle
 
                             anchors.verticalCenter: parent.verticalCenter
-                            checked: Theme.currentTheme === Theme.dynamic
-                            enabled: ToastService.wallpaperErrorStatus !== "matugen_missing"
+                            checked: Theme.wallpaperPath !== "" && Theme.currentTheme === Theme.dynamic
+                            enabled: ToastService.wallpaperErrorStatus !== "matugen_missing" && Theme.wallpaperPath !== ""
                             onToggled: toggled => {
                                            if (toggled)
                                            Theme.switchTheme(Theme.dynamic)
