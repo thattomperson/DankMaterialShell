@@ -111,7 +111,7 @@ def generate_palette(base_color, is_light=False, honor_primary=None):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: b16.py <hex_color> [--light] [--kitty] [--honor-primary HEX]", file=sys.stderr)
+        print("Usage: dank16.py <hex_color> [--light] [--kitty] [--honor-primary HEX]", file=sys.stderr)
         sys.exit(1)
     
     base = sys.argv[1]
