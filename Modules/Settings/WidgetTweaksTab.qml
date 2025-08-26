@@ -272,7 +272,7 @@ Item {
                     DankToggle {
                         width: parent.width
                         text: "Running Apps Only In Current Workspace"
-                        description: "Show only apps running in current workspace (currently niri only)"
+                        description: "Show only apps running in current workspace"
                         checked: SettingsData.runningAppsCurrentWorkspace
                         onToggled: checked => {
                                        return SettingsData.setRunningAppsCurrentWorkspace(

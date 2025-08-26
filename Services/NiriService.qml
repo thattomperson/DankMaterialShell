@@ -33,6 +33,10 @@ Singleton {
 
     readonly property string socketPath: Quickshell.env("NIRI_SOCKET")
 
+    Component.onCompleted: {
+        fetchOutputs()
+    }
+
     function fetchOutputs() {
         if (CompositorService.isNiri) {
             outputsProcess.running = true
@@ -451,82 +455,87 @@ Singleton {
 
 
 
-    function getToplevelToNiriMap(toplevels){
-        // Create a map to match toplevels to niri windows
-        // We'll match by appId and title since toplevels don't have numeric IDs
-        var toplevelToNiriMap = {}
+    function findNiriWindow(toplevel) {
+        if (!toplevel.appId) return null
         
-        for (var i = 0; i < toplevels.length; i++) {
-            var toplevel = toplevels[i]
-            if (!toplevel.appId) continue
-            
-            // Find matching niri window by appId and optionally title
-            for (var j = 0; j < windows.length; j++) {
-                var niriWindow = windows[j]
-                
-                // Match by appId
-                if (niriWindow.app_id === toplevel.appId) {
-                    // If title also matches or niri window has no title, use this match
-                    if (!niriWindow.title || niriWindow.title === toplevel.title) {
-                        toplevelToNiriMap[i] = {
-                            niriIndex: j,
-                            niriWindow: niriWindow
-                        }
-                        break
-                    }
-                    // If we found appId match but no title match yet, store as fallback
-                    if (!(i in toplevelToNiriMap)) {
-                        toplevelToNiriMap[i] = {
-                            niriIndex: j,
-                            niriWindow: niriWindow
-                        }
-                    }
+        for (var j = 0; j < windows.length; j++) {
+            var niriWindow = windows[j]
+            if (niriWindow.app_id === toplevel.appId) {
+                if (!niriWindow.title || niriWindow.title === toplevel.title) {
+                    return { niriIndex: j, niriWindow: niriWindow }
                 }
             }
         }
-        return toplevelToNiriMap
+        return null
     }
 
     function sortToplevels(toplevels) {
         if (!toplevels || toplevels.length === 0 || !CompositorService.isNiri || windows.length === 0) {
             return [...toplevels]
         }
-
-        const toplevelToNiriMap = getToplevelToNiriMap(toplevels)
         
-        // Sort toplevels using niri's ordering
         return [...toplevels].sort((a, b) => {
-            var aIndex = toplevels.indexOf(a)
-            var bIndex = toplevels.indexOf(b)
+            var aNiri = findNiriWindow(a)
+            var bNiri = findNiriWindow(b)
             
-            var aNiri = toplevelToNiriMap[aIndex]
-            var bNiri = toplevelToNiriMap[bIndex]
+            if (!aNiri && !bNiri) return 0
+            if (!aNiri) return 1
+            if (!bNiri) return -1
             
-            // If both have niri data, use niri ordering
-            if (aNiri && bNiri) {
-                return aNiri.niriIndex - bNiri.niriIndex
+            var aWindow = aNiri.niriWindow
+            var bWindow = bNiri.niriWindow
+            var aWorkspace = allWorkspaces.find(ws => ws.id === aWindow.workspace_id)
+            var bWorkspace = allWorkspaces.find(ws => ws.id === bWindow.workspace_id)
+            
+            if (aWorkspace && bWorkspace) {
+                if (aWorkspace.output !== bWorkspace.output) {
+                    return aWorkspace.output.localeCompare(bWorkspace.output)
+                }
+                
+                if (aWorkspace.output === bWorkspace.output && aWorkspace.idx !== bWorkspace.idx) {
+                    return aWorkspace.idx - bWorkspace.idx
+                }
             }
             
-            // If only one has niri data, prioritize it
-            if (aNiri && !bNiri) return -1
-            if (!aNiri && bNiri) return 1
+            if (aWindow.workspace_id === bWindow.workspace_id && 
+                aWindow.layout && bWindow.layout && 
+                aWindow.layout.pos_in_scrolling_layout && 
+                bWindow.layout.pos_in_scrolling_layout) {
+                var aPos = aWindow.layout.pos_in_scrolling_layout
+                var bPos = bWindow.layout.pos_in_scrolling_layout
+                
+                if (aPos.length > 1 && bPos.length > 1) {
+                    if (aPos[0] !== bPos[0]) {
+                        return aPos[0] - bPos[0]
+                    }
+                    if (aPos[1] !== bPos[1]) {
+                        return aPos[1] - bPos[1]
+                    }
+                }
+            }
             
-            // If neither has niri data, keep original toplevel order
-            return 0
+            return aWindow.id - bWindow.id
         })
     }
 
     function filterCurrentWorkspace(toplevels, screenName){
-        const toplevelToNiriMap = getToplevelToNiriMap(toplevels)
         var currentWorkspaceId = null
-        for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
-            var ws = NiriService.allWorkspaces[i]
+        for (var i = 0; i < allWorkspaces.length; i++) {
+            var ws = allWorkspaces[i]
             if (ws.output === screenName && ws.is_active){
                 currentWorkspaceId = ws.id
+                break
             }
-
         }
-        return toplevels.filter((t, idx) => toplevelToNiriMap[idx] && toplevelToNiriMap[idx].niriWindow.workspace_id == currentWorkspaceId)
+        
+        if (currentWorkspaceId === null) {
+            return toplevels
+        }
+
+        return toplevels.filter(toplevel => {
+            var niriMatch = findNiriWindow(toplevel)
+            return niriMatch && niriMatch.niriWindow.workspace_id === currentWorkspaceId
+        })
     }
 
 }

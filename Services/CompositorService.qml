@@ -70,13 +70,49 @@ Singleton {
         detectCompositor()
     }
 
-    // return only the toplevels on the current workspace on the given screen
     function filterCurrentWorkspace(toplevels, screen){
-	    if (useNiriSorting) {
-		    return NiriService.filterCurrentWorkspace(toplevels, screen)
-	    }
-	    //fallback to returning everything
-	    return toplevels
+        if (useNiriSorting) {
+            return NiriService.filterCurrentWorkspace(toplevels, screen)
+        }
+        if (isHyprland) {
+            return filterHyprlandCurrentWorkspace(toplevels, screen)
+        }
+        return toplevels
+    }
+
+    function filterHyprlandCurrentWorkspace(toplevels, screenName) {
+        if (!toplevels || toplevels.length === 0 || !Hyprland.toplevels) {
+            return toplevels
+        }
+
+        var currentWorkspaceId = null
+        const hyprlandToplevels = Array.from(Hyprland.toplevels.values)
+        
+        for (var i = 0; i < hyprlandToplevels.length; i++) {
+            var hyprToplevel = hyprlandToplevels[i]
+            if (hyprToplevel.activated && hyprToplevel.monitor && hyprToplevel.monitor.name === screenName) {
+                currentWorkspaceId = hyprToplevel.workspace ? hyprToplevel.workspace.id : null
+                break
+            }
+        }
+
+        if (currentWorkspaceId === null && Hyprland.focusedWorkspace) {
+            currentWorkspaceId = Hyprland.focusedWorkspace.id
+        }
+
+        if (currentWorkspaceId === null) {
+            return toplevels
+        }
+
+        return toplevels.filter(toplevel => {
+            for (var j = 0; j < hyprlandToplevels.length; j++) {
+                var hyprToplevel = hyprlandToplevels[j]
+                if (hyprToplevel.wayland === toplevel) {
+                    return hyprToplevel.workspace && hyprToplevel.workspace.id === currentWorkspaceId
+                }
+            }
+            return false
+        })
     }
 
     function detectCompositor() {
