@@ -3,22 +3,22 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
+import qs.Common
 import qs.Modals
 import qs.Modules
 import qs.Modules.AppDrawer
-import qs.Modules.OSD
 import qs.Modules.CentcomCenter
 import qs.Modules.ControlCenter
 import qs.Modules.ControlCenter.Network
+import qs.Modules.Dock
 import qs.Modules.Lock
 import qs.Modules.Notifications.Center
 import qs.Modules.Notifications.Popup
+import qs.Modules.OSD
 import qs.Modules.ProcessList
 import qs.Modules.Settings
 import qs.Modules.TopBar
-import qs.Modules.Dock
 import qs.Services
-import qs.Common
 
 ShellRoot {
     id: root
@@ -27,7 +27,8 @@ ShellRoot {
         PortalService.init()
     }
 
-    WallpaperBackground {}
+    WallpaperBackground {
+    }
 
     Lock {
         id: lock
@@ -41,6 +42,7 @@ ShellRoot {
         delegate: TopBar {
             modelData: item
         }
+
     }
 
     Variants {
@@ -49,40 +51,47 @@ ShellRoot {
         delegate: Dock {
             modelData: item
             contextMenu: dockContextMenuLoader.item ? dockContextMenuLoader.item : null
-
             Component.onCompleted: {
                 dockContextMenuLoader.active = true
             }
         }
+
     }
 
     Loader {
         id: centcomPopoutLoader
+
         active: false
+
         sourceComponent: Component {
             CentcomPopout {
                 id: centcomPopout
             }
+
         }
+
     }
 
     LazyLoader {
         id: dockContextMenuLoader
+
         active: false
 
         DockContextMenu {
             id: dockContextMenu
         }
-    }
 
+    }
 
     LazyLoader {
         id: notificationCenterLoader
+
         active: false
 
         NotificationCenterPopout {
             id: notificationCenter
         }
+
     }
 
     Variants {
@@ -91,87 +100,99 @@ ShellRoot {
         delegate: NotificationPopupManager {
             modelData: item
         }
+
     }
 
     LazyLoader {
         id: controlCenterLoader
+
         active: false
 
         ControlCenterPopout {
             id: controlCenterPopout
 
             onPowerActionRequested: (action, title, message) => {
-                                        powerConfirmModalLoader.active = true
-                                        if (powerConfirmModalLoader.item) {
-                                            powerConfirmModalLoader.item.show(
-                                                action, title, message)
-                                        }
-                                    }
+                powerConfirmModalLoader.active = true
+                if (powerConfirmModalLoader.item)
+                    powerConfirmModalLoader.item.show(action, title, message)
+            }
             onLockRequested: {
                 lock.activate()
             }
         }
+
     }
 
     LazyLoader {
         id: wifiPasswordModalLoader
+
         active: false
 
         WifiPasswordModal {
             id: wifiPasswordModal
         }
+
     }
 
     LazyLoader {
         id: networkInfoModalLoader
+
         active: false
 
         NetworkInfoModal {
             id: networkInfoModal
         }
+
     }
 
     LazyLoader {
         id: batteryPopoutLoader
+
         active: false
 
         BatteryPopout {
             id: batteryPopout
         }
+
     }
 
     LazyLoader {
         id: powerMenuLoader
+
         active: false
 
         PowerMenu {
             id: powerMenu
+
             onPowerActionRequested: (action, title, message) => {
-                                        powerConfirmModalLoader.active = true
-                                        if (powerConfirmModalLoader.item) {
-                                            powerConfirmModalLoader.item.show(
-                                                action, title, message)
-                                        }
-                                    }
+                powerConfirmModalLoader.active = true
+                if (powerConfirmModalLoader.item)
+                    powerConfirmModalLoader.item.show(action, title, message)
+            }
         }
+
     }
 
     LazyLoader {
         id: powerConfirmModalLoader
+
         active: false
 
         PowerConfirmModal {
             id: powerConfirmModal
         }
+
     }
 
     LazyLoader {
         id: processListPopoutLoader
+
         active: false
 
         ProcessListPopout {
             id: processListPopout
         }
+
     }
 
     SettingsModal {
@@ -180,11 +201,13 @@ ShellRoot {
 
     LazyLoader {
         id: appDrawerLoader
+
         active: false
 
         AppDrawerPopout {
             id: appDrawerPopout
         }
+
     }
 
     SpotlightModal {
@@ -207,6 +230,51 @@ ShellRoot {
         ProcessListModal {
             id: processListModal
         }
+
+    }
+
+    LazyLoader {
+        id: powerMenuModalLoader
+
+        active: false
+
+        PowerMenuModal {
+            id: powerMenuModal
+
+            onPowerActionRequested: (action, title, message) => {
+                powerConfirmModalLoader.active = true
+                if (powerConfirmModalLoader.item)
+                    powerConfirmModalLoader.item.show(action, title, message)
+            }
+        }
+
+    }
+
+    IpcHandler {
+        function open() {
+            powerMenuModalLoader.active = true
+            if (powerMenuModalLoader.item)
+                powerMenuModalLoader.item.open()
+
+            return "POWERMENU_OPEN_SUCCESS"
+        }
+
+        function close() {
+            if (powerMenuModalLoader.item)
+                powerMenuModalLoader.item.close()
+
+            return "POWERMENU_CLOSE_SUCCESS"
+        }
+
+        function toggle() {
+            powerMenuModalLoader.active = true
+            if (powerMenuModalLoader.item)
+                powerMenuModalLoader.item.toggle()
+
+            return "POWERMENU_TOGGLE_SUCCESS"
+        }
+
+        target: "powermenu"
     }
 
     IpcHandler {
@@ -243,6 +311,7 @@ ShellRoot {
             modelData: item
             visible: ToastService.toastVisible
         }
+
     }
 
     Variants {
@@ -251,10 +320,8 @@ ShellRoot {
         delegate: VolumeOSD {
             modelData: item
         }
+
     }
-
-
-
 
     Variants {
         model: SettingsData.getFilteredScreens("osd")
@@ -262,6 +329,7 @@ ShellRoot {
         delegate: MicMuteOSD {
             modelData: item
         }
+
     }
 
     Variants {
@@ -270,6 +338,7 @@ ShellRoot {
         delegate: BrightnessOSD {
             modelData: item
         }
+
     }
 
     Variants {
@@ -278,5 +347,7 @@ ShellRoot {
         delegate: IdleInhibitorOSD {
             modelData: item
         }
+
     }
+
 }

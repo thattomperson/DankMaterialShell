@@ -301,6 +301,9 @@ binds {
    Super+Alt+L hotkey-overlay-title="Lock Screen" {
       spawn "qs" "-c" "dms" "ipc" "call" "lock" "lock";
    }
+   Mod+X hotkey-overlay-title="Power Menu" {
+      spawn "qs" "-c" "dms" "ipc" "call" "powermenu" "toggle";
+   }
    XF86AudioRaiseVolume allow-when-locked=true {
       spawn "qs" "-c" "dms" "ipc" "call" "audio" "increment" "3";
    }
@@ -351,6 +354,7 @@ bind = SUPER, M, exec, qs -c dms ipc call processlist toggle
 bind = SUPER, N, exec, qs -c dms ipc call notifications toggle
 bind = SUPER, comma, exec, qs -c dms ipc call settings toggle
 bind = SUPERALT, L, exec, qs -c dms ipc call lock lock
+bind = SUPER, X, exec, qs -c dms ipc call powermenu toggle
 
 # Audio controls (function keys)
 bindl = , XF86AudioRaiseVolume, exec, qs -c dms ipc call audio increment 3
@@ -378,6 +382,7 @@ qs -c dms ipc call audio mute
 ```bash
 qs -c dms ipc call spotlight toggle
 qs -c dms ipc call processlist toggle
+qs -c dms ipc call powermenu toggle
 ```
 # System control
 ```

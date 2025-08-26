@@ -361,6 +361,14 @@ System process list and performance modal control.
 - `close` - Hide process list modal
 - `toggle` - Toggle process list modal visibility
 
+### Target: `powermenu`
+Power menu modal control for system power actions.
+
+**Functions:**
+- `open` - Show power menu modal
+- `close` - Hide power menu modal
+- `toggle` - Toggle power menu modal visibility
+
 ### Modal Examples
 ```bash
 # Open application launcher
@@ -377,6 +385,9 @@ qs -c dms ipc call settings open
 
 # Show system monitor
 qs -c dms ipc call processlist toggle
+
+# Show power menu
+qs -c dms ipc call powermenu toggle
 ```
 
 ## Common Usage Patterns
@@ -389,6 +400,7 @@ These IPC commands are designed to be used with window manager keybindings. Exam
 binds {
     Mod+Space { spawn "qs" "-c" "dms" "ipc" "call" "spotlight" "toggle"; }
     Mod+V { spawn "qs" "-c" "dms" "ipc" "call" "clipboard" "toggle"; }
+    Mod+X { spawn "qs" "-c" "dms" "ipc" "call" "powermenu" "toggle"; }
     XF86AudioRaiseVolume { spawn "qs" "-c" "dms" "ipc" "call" "audio" "increment" "3"; }
     XF86MonBrightnessUp { spawn "qs" "-c" "dms" "ipc" "call" "brightness" "increment" "5" ""; }
 }
