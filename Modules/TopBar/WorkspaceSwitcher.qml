@@ -252,7 +252,13 @@ Rectangle {
                     anchors.centerIn: parent
                     text: {
                         if (CompositorService.isHyprland) {
+                            if (modelData && modelData.id === -1) {
+                                return index + 1
+                            }
                             return modelData && modelData.id ? modelData.id : ""
+                        }
+                        if (modelData === -1) {
+                            return index + 1
                         }
                         return modelData - 1
                     }

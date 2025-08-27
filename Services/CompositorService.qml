@@ -13,6 +13,7 @@ Singleton {
     // Compositor detection
     property bool isHyprland: false
     property bool isNiri: false
+    property bool uwsmActive: false
     property string compositor: "unknown"
 
     readonly property string hyprlandSignature: Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
@@ -21,7 +22,6 @@ Singleton {
     property bool useNiriSorting: isNiri && NiriService
     property bool useHyprlandSorting: false
 
-    // Unified sorted toplevels - automatically chooses sorting based on compositor
     property var sortedToplevels: {
         if (!ToplevelManager.toplevels || !ToplevelManager.toplevels.values) {
             return []
@@ -48,12 +48,25 @@ Singleton {
                     if (workspaceCompare !== 0) return workspaceCompare
                 }
                 
-                // Then by position on workspace (x first for columns, then y within column)
+                
                 if (a.lastIpcObject && b.lastIpcObject && a.lastIpcObject.at && b.lastIpcObject.at) {
-                    const xCompare = a.lastIpcObject.at[0] - b.lastIpcObject.at[0]
-                    if (xCompare !== 0) return xCompare
-                    return a.lastIpcObject.at[1] - b.lastIpcObject.at[1]
+                    const aX = a.lastIpcObject.at[0]
+                    const bX = b.lastIpcObject.at[0]
+                    const aY = a.lastIpcObject.at[1]
+                    const bY = b.lastIpcObject.at[1]
+                    
+                    const xCompare = aX - bX
+                    if (Math.abs(xCompare) > 10) return xCompare
+                    return aY - bY
                 }
+                
+                if (a.lastIpcObject && !b.lastIpcObject) return -1
+                if (!a.lastIpcObject && b.lastIpcObject) return 1
+                
+                if (a.title && b.title) {
+                    return a.title.localeCompare(b.title)
+                }
+                
                 
                 return 0
             })
@@ -68,6 +81,7 @@ Singleton {
 
     Component.onCompleted: {
         detectCompositor()
+        uwsmCheck.running = true
     }
 
     function filterCurrentWorkspace(toplevels, screen){
@@ -90,14 +104,31 @@ Singleton {
         
         for (var i = 0; i < hyprlandToplevels.length; i++) {
             var hyprToplevel = hyprlandToplevels[i]
-            if (hyprToplevel.activated && hyprToplevel.monitor && hyprToplevel.monitor.name === screenName) {
-                currentWorkspaceId = hyprToplevel.workspace ? hyprToplevel.workspace.id : null
-                break
+            if (hyprToplevel.monitor && hyprToplevel.monitor.name === screenName && hyprToplevel.workspace) {
+                if (hyprToplevel.activated) {
+                    currentWorkspaceId = hyprToplevel.workspace.id
+                    break
+                }
+                if (currentWorkspaceId === null) {
+                    currentWorkspaceId = hyprToplevel.workspace.id
+                }
             }
         }
 
-        if (currentWorkspaceId === null && Hyprland.focusedWorkspace) {
-            currentWorkspaceId = Hyprland.focusedWorkspace.id
+        if (currentWorkspaceId === null && Hyprland.workspaces) {
+            const workspaces = Array.from(Hyprland.workspaces.values)
+            for (var k = 0; k < workspaces.length; k++) {
+                var workspace = workspaces[k]
+                if (workspace.monitor && workspace.monitor === screenName) {
+                    if (Hyprland.focusedWorkspace && workspace.id === Hyprland.focusedWorkspace.id) {
+                        currentWorkspaceId = workspace.id
+                        break
+                    }
+                    if (currentWorkspaceId === null) {
+                        currentWorkspaceId = workspace.id
+                    }
+                }
+            }
         }
 
         if (currentWorkspaceId === null) {
@@ -158,10 +189,27 @@ Singleton {
     }
 
     function logout() {
+        if (uwsmActive) {
+            Quickshell.execDetached(["uwsm", "stop"])
+            return
+        }
+
         if (isNiri) {
             NiriService.quit()
             return
         }
+
+        // Hyprland fallback
         Hyprland.dispatch("exit")
+    }
+
+    Process {
+        id: uwsmCheck
+        // `uwsm check is-active` returns 0 if in uwsm-managed session, 1 otherwise
+        command: ["uwsm", "check", "is-active"]
+        running: false
+        onExited: function(exitCode) {
+            uwsmActive = exitCode === 0
+        }
     }
 }

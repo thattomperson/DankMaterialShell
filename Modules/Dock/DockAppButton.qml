@@ -277,7 +277,11 @@ Item {
 
         anchors.centerIn: parent
         implicitSize: 40
-        source: Quickshell.iconPath(DesktopEntries.byId(Paths.moddedAppId(appData.appId)).icon, true)
+        source: {
+            if (appData.appId === "__SEPARATOR__") return ""
+            var desktopEntry = DesktopEntries.byId(Paths.moddedAppId(appData.appId))
+            return desktopEntry && desktopEntry.icon ? Quickshell.iconPath(desktopEntry.icon, true) : ""
+        }
         mipmap: true
         smooth: true
         asynchronous: true
