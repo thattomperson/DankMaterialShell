@@ -155,9 +155,10 @@ build_once() {
 
   PRIMARY=$(echo "$SECTION" | sed -n 's/.*"primary_container":"\(#[0-9a-fA-F]\{6\}\)".*/\1/p')
   HONOR=$(echo "$SECTION"  | sed -n 's/.*"primary":"\(#[0-9a-fA-F]\{6\}\)".*/\1/p')
+  SURFACE=$(echo "$SECTION" | sed -n 's/.*"surface":"\(#[0-9a-fA-F]\{6\}\)".*/\1/p')
 
   if command -v ghostty >/dev/null 2>&1 && [[ -f "$CONFIG_DIR/ghostty/config-dankcolors" ]]; then
-    OUT=$("$SHELL_DIR/matugen/dank16.py" "$PRIMARY" $([[ "$mode" == "light" ]] && echo --light) ${HONOR:+--honor-primary "$HONOR"} 2>/dev/null || true)
+    OUT=$("$SHELL_DIR/matugen/dank16.py" "$PRIMARY" $([[ "$mode" == "light" ]] && echo --light) ${HONOR:+--honor-primary "$HONOR"} ${SURFACE:+--background "$SURFACE"} 2>/dev/null || true)
     if [[ -n "${OUT:-}" ]]; then
       TMP="$(mktemp)"
       printf "%s\n\n" "$OUT" > "$TMP"
@@ -167,7 +168,7 @@ build_once() {
   fi
 
   if command -v kitty >/dev/null 2>&1 && [[ -f "$CONFIG_DIR/kitty/dank-theme.conf" ]]; then
-    OUT=$("$SHELL_DIR/matugen/dank16.py" "$PRIMARY" $([[ "$mode" == "light" ]] && echo --light) ${HONOR:+--honor-primary "$HONOR"} --kitty 2>/dev/null || true)
+    OUT=$("$SHELL_DIR/matugen/dank16.py" "$PRIMARY" $([[ "$mode" == "light" ]] && echo --light) ${HONOR:+--honor-primary "$HONOR"} ${SURFACE:+--background "$SURFACE"} --kitty 2>/dev/null || true)
     if [[ -n "${OUT:-}" ]]; then
       TMP="$(mktemp)"
       printf "%s\n\n" "$OUT" > "$TMP"
