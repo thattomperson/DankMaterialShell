@@ -31,13 +31,13 @@ def generate_palette(base_color, is_light=False, honor_primary=None):
     
     green_h = 0.33
     if is_light:
-        palette.append(rgb_to_hex(*colorsys.hsv_to_rgb(green_h, max(s * 0.8, 0.65), v * 0.9)))
+        palette.append(rgb_to_hex(*colorsys.hsv_to_rgb(green_h, max(s * 0.9, 0.75), v * 0.6)))
     else:
         palette.append(rgb_to_hex(*colorsys.hsv_to_rgb(green_h, max(s * 0.65, 0.5), v * 0.9)))
     
-    yellow_h = 0.16
+    yellow_h = 0.08
     if is_light:
-        palette.append(rgb_to_hex(*colorsys.hsv_to_rgb(yellow_h, max(s * 0.7, 0.55), v * 1.2)))
+        palette.append(rgb_to_hex(*colorsys.hsv_to_rgb(yellow_h, max(s * 0.85, 0.7), v * 0.7)))
     else:
         palette.append(rgb_to_hex(*colorsys.hsv_to_rgb(yellow_h, max(s * 0.5, 0.45), v * 1.4)))
     
@@ -79,8 +79,8 @@ def generate_palette(base_color, is_light=False, honor_primary=None):
     
     if is_light:
         palette.append(rgb_to_hex(*colorsys.hsv_to_rgb(red_h, 0.6, 0.9)))
-        palette.append(rgb_to_hex(*colorsys.hsv_to_rgb(green_h, max(s * 0.7, 0.6), v * 1.25)))
-        palette.append(rgb_to_hex(*colorsys.hsv_to_rgb(yellow_h, max(s * 0.6, 0.5), v * 1.35)))
+        palette.append(rgb_to_hex(*colorsys.hsv_to_rgb(green_h, max(s * 0.8, 0.7), v * 0.65)))
+        palette.append(rgb_to_hex(*colorsys.hsv_to_rgb(yellow_h, max(s * 0.75, 0.65), v * 0.75)))
         if honor_primary:
             hr, hg, hb = hex_to_rgb(honor_primary)
             hh, hs, hv = colorsys.rgb_to_hsv(hr, hg, hb)

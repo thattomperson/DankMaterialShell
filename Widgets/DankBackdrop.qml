@@ -5,8 +5,8 @@ import qs.Common
 Item {
     id: root
 
-    property int screenWidth: 1920
-    property int screenHeight: 1080
+    property int screenWidth: parent.width
+    property int screenHeight: parent.height
 
     anchors.fill: parent
 
