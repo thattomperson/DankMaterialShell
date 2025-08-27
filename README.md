@@ -1,4 +1,4 @@
-# DankMaterialShell (dms)
+# DankMaterialShell (DMS)
 
 <div align=center>
 
@@ -227,7 +227,7 @@ rm /tmp/FiraCode.zip && fc-cache -f
 # Install dgop on any distro (requires go 1.23+):
 ```bash
 git clone https://github.com/AvengeMedia/dgop.git && cd dgop
-make && sudo make install
+sudo make install
 ```
 
 # Arch Linux
