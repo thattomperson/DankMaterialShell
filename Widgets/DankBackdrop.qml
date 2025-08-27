@@ -12,7 +12,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: Qt.darker(Theme.surface, 1.3)
+        color: Theme.background
     }
 
     Rectangle {
@@ -20,7 +20,7 @@ Item {
         y: -parent.height * 0.3
         width: parent.width * 0.8
         height: parent.height * 1.5
-        color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.025)
+        color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.15)
         rotation: 35
     }
 
@@ -29,7 +29,7 @@ Item {
         y: -parent.height * 0.2
         width: parent.width * 0.4
         height: parent.height * 1.2
-        color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.04)
+        color: Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.12)
         rotation: 35
     }
 
@@ -46,7 +46,7 @@ Item {
         readonly property real availableHeight: screenHeight - topBarExclusiveZone
         anchors.bottomMargin: Math.max(Theme.spacingXL * 3, (availableHeight - logoHeight) * 0.15)
         
-        opacity: 0.15
+        opacity: 0.25
         
         StyledText {
             text: `
