@@ -6,7 +6,7 @@ import qs.Common
 import qs.Widgets
 
 LazyLoader {
-    active: SessionData.wallpaperPath !== ""
+    active: true
 
     Variants {
         model: SettingsData.getFilteredScreens("wallpaper")
@@ -49,38 +49,9 @@ LazyLoader {
                     active: !root.source
                     asynchronous: true
 
-                    sourceComponent: Rectangle {
-                        color: Theme.surface
-
-                        Row {
-                            anchors.centerIn: parent
-                            spacing: Theme.spacingL
-
-                            DankIcon {
-                                name: "sentiment_stressed"
-                                color: Theme.surfaceVariantText
-                                size: Theme.iconSize * 5
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-
-                            Column {
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: Theme.spacingS
-
-                                StyledText {
-                                    text: "Wallpaper missing?"
-                                    color: Theme.surfaceVariantText
-                                    font.pixelSize: Theme.fontSizeXLarge * 2
-                                    font.weight: Font.Bold
-                                }
-
-                                StyledText {
-                                    text: "Set wallpaper in Settings"
-                                    color: Theme.primary
-                                    font.pixelSize: Theme.fontSizeLarge
-                                }
-                            }
-                        }
+                    sourceComponent: DankBackdrop {
+                        screenWidth: wallpaperWindow.modelData.width
+                        screenHeight: wallpaperWindow.modelData.height
                     }
                 }
 

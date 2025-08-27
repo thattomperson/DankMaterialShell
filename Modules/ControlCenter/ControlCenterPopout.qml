@@ -39,8 +39,8 @@ DankPopout {
     signal powerActionRequested(string action, string title, string message)
     signal lockRequested
 
-    popupWidth: 600
-    popupHeight: contentLoader.item ? contentLoader.item.implicitHeight : (powerOptionsExpanded ? 570 : 500)
+    popupWidth: 550
+    popupHeight: contentLoader.item ? contentLoader.item.implicitHeight : 600
     triggerX: Screen.width - 600 - Theme.spacingL
     triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingXS
     triggerWidth: 80
@@ -72,7 +72,11 @@ DankPopout {
                 baseHeight += 90 // user header
                 baseHeight += (powerOptionsExpanded ? 60 : 0) + Theme.spacingL // power options
                 baseHeight += 52 + Theme.spacingL // tab bar
-                baseHeight += 280 // tab content area
+                
+                // Use actual tab content height without adding extra
+                let tabHeight = tabContentLoader.item ? tabContentLoader.item.implicitHeight + Theme.spacingS * 2 : 400
+                baseHeight += Math.min(Math.max(tabHeight, 300), 500)
+                
                 return baseHeight
             }
 
@@ -698,6 +702,7 @@ DankPopout {
                 }
 
                 Rectangle {
+                    id: tabContentContainer
                     width: parent.width
                     Layout.fillHeight: true
                     radius: Theme.cornerRadius
@@ -709,50 +714,64 @@ DankPopout {
                     border.width: 1
 
                     Loader {
+                        id: tabContentLoader
                         anchors.fill: parent
                         anchors.margins: Theme.spacingS
-                        active: root.currentTab === "network"
                         asynchronous: true
-                        sourceComponent: Component {
-                            NetworkTab {}
+                        sourceComponent: {
+                            switch (root.currentTab) {
+                            case "network":
+                                return networkTabComponent
+                            case "audio":
+                                return audioTabComponent
+                            case "bluetooth":
+                                return BluetoothService.available ? bluetoothTabComponent : null
+                            case "display":
+                                return displayTabComponent
+                            default:
+                                return networkTabComponent
+                            }
                         }
                     }
 
-                    Loader {
-                        anchors.fill: parent
-                        anchors.margins: Theme.spacingS
-                        active: root.currentTab === "audio"
-                        asynchronous: true
-                        sourceComponent: Component {
-                            AudioTab {}
+                    Component {
+                        id: networkTabComponent
+                        NetworkTab {
+                            implicitHeight: 550
                         }
                     }
 
-                    Loader {
-                        anchors.fill: parent
-                        anchors.margins: Theme.spacingS
-                        active: BluetoothService.available
-                                && root.currentTab === "bluetooth"
-                        asynchronous: true
-                        sourceComponent: Component {
-                            BluetoothTab {}
+                    Component {
+                        id: audioTabComponent
+                        AudioTab {
+                            implicitHeight: 350
                         }
                     }
 
-                    Loader {
-                        anchors.fill: parent
-                        anchors.margins: Theme.spacingS
-                        active: root.currentTab === "display"
-                        asynchronous: true
-                        sourceComponent: Component {
-                            DisplayTab {}
+                    Component {
+                        id: bluetoothTabComponent
+                        BluetoothTab {
+                            implicitHeight: 400
                         }
                     }
 
-                    Behavior on height {
-                        NumberAnimation {
-                            duration: Theme.shortDuration
-                            easing.type: Theme.standardEasing
+                    Component {
+                        id: displayTabComponent
+                        DisplayTab {
+                            implicitHeight: {
+                                let height = Theme.spacingL
+                                
+                                if (BrightnessService.brightnessAvailable) {
+                                    height += 80
+                                    if (BrightnessService.devices.length > 1) {
+                                        height += 40
+                                    }
+                                }
+                                
+                                height += 120
+                                
+                                return Math.max(height, 200)
+                            }
                         }
                     }
                 }
@@ -760,8 +779,8 @@ DankPopout {
 
             Behavior on implicitHeight {
                 NumberAnimation {
-                    duration: Theme.shortDuration
-                    easing.type: Theme.standardEasing
+                    duration: 75
+                    easing.type: Easing.OutQuad
                 }
             }
         }
