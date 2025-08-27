@@ -120,7 +120,7 @@ ShellRoot {
                     powerConfirmModalLoader.item.show(title, message, function() {
                         switch (action) {
                         case "logout":
-                            CompositorService.logout()
+                            SessionService.logout()
                             break
                         case "suspend":
                             SessionService.suspend()
@@ -192,7 +192,7 @@ ShellRoot {
                     powerConfirmModalLoader.item.show(title, message, function() {
                         switch (action) {
                         case "logout":
-                            CompositorService.logout()
+                            SessionService.logout()
                             break
                         case "suspend":
                             SessionService.suspend()
@@ -288,7 +288,7 @@ ShellRoot {
                     powerConfirmModalLoader.item.show(title, message, function() {
                         switch (action) {
                         case "logout":
-                            CompositorService.logout()
+                            SessionService.logout()
                             break
                         case "suspend":
                             SessionService.suspend()

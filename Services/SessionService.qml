@@ -29,6 +29,47 @@ Singleton {
         }
     }
 
+    // ! TODO - hacky because uwsm doesnt behave as expected
+    // uwsm idk, always passes the is-active check even if it's not a session
+    // It reutrns exit code 0 when uwsm stop fails
+    // They have flaws in their system, so we need to be hacky to just try it and
+    // detect random text
+    Process {
+        id: uwsmLogout
+        command: ["uwsm", "stop"]
+        running: false
+
+        stdout: SplitParser {
+            splitMarker: "\n"
+            onRead: (data) => {
+                if (data.trim().toLowerCase().includes("not running")) {
+                    _logout()
+                }
+            }
+        }
+
+        onExited: function(exitCode) {
+            if (exitCode === 0) {
+                return
+            }
+            _logout()
+        }
+    }
+
+    function logout() {
+        uwsmLogout.running = true
+    }
+
+    function _logout() {
+        if (CompositorService.isNiri) {
+            NiriService.quit()
+            return
+        }
+
+        // Hyprland fallback
+        Hyprland.dispatch("exit")
+    }
+
     function suspend() {
         Quickshell.execDetached([isElogind ? "loginctl" : "systemctl", "suspend"])
     }
