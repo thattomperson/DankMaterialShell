@@ -16,9 +16,12 @@ DankModal {
     height: 700
     visible: false
     onBackgroundClicked: hide()
-    onDialogClosed: {
-        notificationModalOpen = false
-        modalKeyboardController.reset()
+    onShouldBeVisibleChanged: (shouldBeVisible) => {
+        if (!shouldBeVisible) {
+            notificationModalOpen = false
+            modalKeyboardController.reset()
+            NotificationService.onOverlayClose()
+        }
     }
 
     modalFocusScope.Keys.onPressed: function (event) {
