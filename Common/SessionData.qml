@@ -294,27 +294,4 @@ Singleton {
             }
         }
     }
-
-    IpcHandler {
-        target: "theme"
-
-        function toggle(): string {
-            root.setLightMode(!root.isLightMode)
-            return root.isLightMode ? "light" : "dark"
-        }
-
-        function light(): string {
-            root.setLightMode(true)
-            return "light"
-        }
-
-        function dark(): string {
-            root.setLightMode(false)
-            return "dark"
-        }
-
-        function getMode(): string {
-            return root.isLightMode ? "light" : "dark"
-        }
-    }
 }

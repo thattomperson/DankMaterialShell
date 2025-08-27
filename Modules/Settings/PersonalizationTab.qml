@@ -677,10 +677,8 @@ Item {
                         description: "Use light theme instead of dark theme"
                         checked: SessionData.isLightMode
                         onToggled: checked => {
-                                       SessionData.setLightMode(checked)
-                                       Theme.isLightMode = checked
-                                       PortalService.setLightMode(checked)
-                                   }
+                            Theme.setLightMode(checked)
+                        }
                     }
                 }
             }

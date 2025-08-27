@@ -178,11 +178,16 @@ Singleton {
         generateSystemThemesFromCurrentTheme()
     }
 
-    function toggleLightMode(savePrefs = true) {
-        isLightMode = !isLightMode
+    function setLightMode(light, savePrefs = true) {
+        isLightMode = light
         if (savePrefs && typeof SessionData !== "undefined")
             SessionData.setLightMode(isLightMode)
+            PortalService.setLightMode(isLightMode)
         generateSystemThemesFromCurrentTheme()
+    }
+
+    function toggleLightMode(savePrefs = true) {
+        setLightMode(!isLightMode, savePrefs)
     }
     
     function forceGenerateSystemThemes() {
@@ -704,6 +709,29 @@ Singleton {
             if (typeof ToastService !== "undefined") {
                 ToastService.showError("Failed to read theme file: " + error)
             }
+        }
+    }
+
+    IpcHandler {
+        target: "theme"
+
+        function toggle(): string {
+            root.toggleLightMode()
+            return root.isLightMode ? "light" : "dark"
+        }
+
+        function light(): string {
+            root.setLightMode(true)
+            return "light"
+        }
+
+        function dark(): string {
+            root.setLightMode(false)
+            return "dark"
+        }
+
+        function getMode(): string {
+            return root.isLightMode ? "light" : "dark"
         }
     }
 }

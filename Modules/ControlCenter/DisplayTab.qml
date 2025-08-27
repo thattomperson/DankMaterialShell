@@ -253,10 +253,7 @@ Item {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            const newLightMode = !SessionData.isLightMode
-                            SessionData.setLightMode(newLightMode)
-                            Theme.isLightMode = newLightMode
-                            PortalService.setLightMode(newLightMode)
+                            Theme.toggleLightMode()
                         }
                     }
 
