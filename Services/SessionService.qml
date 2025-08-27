@@ -9,6 +9,7 @@ import qs.Common
 Singleton {
     id: root
 
+    property bool hasUwsm: false
     property bool isElogind: false
     property bool inhibitorAvailable: true
     property bool idleInhibited: false
@@ -16,6 +17,16 @@ Singleton {
 
     Component.onCompleted: {
         detectElogindProcess.running = true
+    }
+
+    Process {
+        id: detectUwsmProcess
+        running: false
+        command: ["which", "uwsm"]
+
+        onExited: function (exitCode) {
+            hasUwsm = (exitCode === 0)
+        }
     }
 
     Process {
@@ -57,7 +68,9 @@ Singleton {
     }
 
     function logout() {
-        uwsmLogout.running = true
+        if (hasUwsm)
+            uwsmLogout.running = true
+        _logout()
     }
 
     function _logout() {
