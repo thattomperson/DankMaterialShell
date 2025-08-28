@@ -1002,6 +1002,8 @@ Singleton {
         }
     }
 
+    property bool hasTriedDefaultSettings: false
+
     FileView {
         id: settingsFile
 
@@ -1012,10 +1014,15 @@ Singleton {
         watchChanges: true
         onLoaded: {
             parseSettings(settingsFile.text())
+            hasTriedDefaultSettings = false
         }
         onLoadFailed: error => {
-                          // Check if default-settings.json exists and copy it
-                          defaultSettingsCheckProcess.running = true
+                          if (!hasTriedDefaultSettings) {
+                              hasTriedDefaultSettings = true
+                              defaultSettingsCheckProcess.running = true
+                          } else {
+                              applyStoredTheme()
+                          }
                       }
     }
 
