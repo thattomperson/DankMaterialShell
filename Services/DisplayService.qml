@@ -5,6 +5,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.Common
+import qs.Services
 
 Singleton {
     id: root
@@ -245,6 +246,12 @@ Singleton {
     }
 
     function toggleNightMode() {
+        // Check if automation is active - show warning if trying to manually toggle
+        if (SessionData.nightModeAutoEnabled) {
+            ToastService.showWarning("Night mode is in automatic mode. Disable automation in settings to control manually.")
+            return
+        }
+        
         if (nightModeActive) {
             disableNightMode()
         } else {
@@ -271,10 +278,10 @@ Singleton {
         onExited: function (exitCode) {
             ddcAvailable = (exitCode === 0)
             if (ddcAvailable) {
-                console.log("BrightnessService: ddcutil detected")
+                console.log("DisplayService: ddcutil detected")
                 ddcDisplayDetectionProcess.running = true
             } else {
-                console.log("BrightnessService: ddcutil not available")
+                console.log("DisplayService: ddcutil not available")
             }
         }
     }
@@ -288,7 +295,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 if (!text.trim()) {
-                    console.log("BrightnessService: No DDC displays found")
+                    console.log("DisplayService: No DDC displays found")
                     ddcDevices = []
                     return
                 }
@@ -311,7 +318,7 @@ Singleton {
                     }
 
                     ddcDevices = newDdcDevices
-                    console.log("BrightnessService: Found", ddcDevices.length,
+                    console.log("DisplayService: Found", ddcDevices.length,
                                 "DDC displays")
 
                     // Queue initial brightness readings for DDC devices
@@ -339,7 +346,7 @@ Singleton {
                         }
                     }
                 } catch (error) {
-                    console.warn("BrightnessService: Failed to parse DDC devices:",
+                    console.warn("DisplayService: Failed to parse DDC devices:",
                                  error)
                     ddcDevices = []
                 }
@@ -348,7 +355,7 @@ Singleton {
 
         onExited: function (exitCode) {
             if (exitCode !== 0) {
-                console.warn("BrightnessService: Failed to detect DDC displays:",
+                console.warn("DisplayService: Failed to detect DDC displays:",
                              exitCode)
                 ddcDevices = []
             }
@@ -361,7 +368,7 @@ Singleton {
         command: ["brightnessctl", "-m", "-l"]
         onExited: function (exitCode) {
             if (exitCode !== 0) {
-                console.warn("BrightnessService: Failed to list devices:",
+                console.warn("DisplayService: Failed to list devices:",
                              exitCode)
                 brightnessAvailable = false
             }
@@ -370,7 +377,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 if (!text.trim()) {
-                    console.warn("BrightnessService: No devices found")
+                    console.warn("DisplayService: No devices found")
                     return
                 }
                 const lines = text.trim().split("\n")
@@ -417,7 +424,7 @@ Singleton {
         running: false
         onExited: function (exitCode) {
             if (exitCode !== 0)
-                console.warn("BrightnessService: Failed to set brightness:",
+                console.warn("DisplayService: Failed to set brightness:",
                              exitCode)
         }
     }
@@ -429,7 +436,7 @@ Singleton {
         onExited: function (exitCode) {
             if (exitCode !== 0)
                 console.warn(
-                            "BrightnessService: Failed to set DDC brightness:",
+                            "DisplayService: Failed to set DDC brightness:",
                             exitCode)
         }
     }
@@ -440,7 +447,7 @@ Singleton {
         running: false
         onExited: function (exitCode) {
             if (exitCode !== 0)
-                console.warn("BrightnessService: Failed to get initial DDC brightness:",
+                console.warn("DisplayService: Failed to get initial DDC brightness:",
                              exitCode)
 
             processNextDdcInit()
@@ -470,7 +477,7 @@ Singleton {
                         delete newPending[deviceName]
                         ddcPendingInit = newPending
 
-                        console.log("BrightnessService: Initial DDC Device",
+                        console.log("DisplayService: Initial DDC Device",
                                     deviceName, "brightness:", brightness + "%")
                     }
                 }
@@ -484,7 +491,7 @@ Singleton {
         running: false
         onExited: function (exitCode) {
             if (exitCode !== 0)
-                console.warn("BrightnessService: Failed to get brightness:",
+                console.warn("DisplayService: Failed to get brightness:",
                              exitCode)
         }
 
@@ -508,7 +515,7 @@ Singleton {
                     }
 
                     brightnessInitialized = true
-                    console.log("BrightnessService: Device", currentDevice,
+                    console.log("DisplayService: Device", currentDevice,
                                 "brightness:", brightness + "%")
                     brightnessChanged()
                 }
@@ -523,7 +530,7 @@ Singleton {
         onExited: function (exitCode) {
             if (exitCode !== 0)
                 console.warn(
-                            "BrightnessService: Failed to get DDC brightness:",
+                            "DisplayService: Failed to get DDC brightness:",
                             exitCode)
         }
 
@@ -548,7 +555,7 @@ Singleton {
                     }
 
                     brightnessInitialized = true
-                    console.log("BrightnessService: DDC Device", currentDevice,
+                    console.log("DisplayService: DDC Device", currentDevice,
                                 "brightness:", brightness + "%")
                     brightnessChanged()
                 }
@@ -569,7 +576,7 @@ Singleton {
                 SessionData.setNightModeEnabled(true)
             } else {
                 // gammastep not found
-                console.warn("BrightnessService: gammastep not found")
+                console.warn("DisplayService: gammastep not found")
                 ToastService.showWarning(
                             "Night mode failed: gammastep not found")
             }
@@ -588,7 +595,7 @@ Singleton {
         onExited: function (exitCode) {
             // If process exits with non-zero code while we think it should be running
             if (nightModeActive && exitCode !== 0) {
-                console.warn("BrightnessService: Night mode process crashed with exit code:",
+                console.warn("DisplayService: Night mode process crashed with exit code:",
                              exitCode)
                 nightModeActive = false
                 SessionData.setNightModeEnabled(false)

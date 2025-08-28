@@ -17,75 +17,56 @@ Item {
     property bool fontsEnumerated: false
 
     function enumerateFonts() {
-        var fonts = ["Default"]
-        var availableFonts = Qt.fontFamilies()
-        var rootFamilies = []
-        var seenFamilies = new Set()
+        var fonts = ["Default"];
+        var availableFonts = Qt.fontFamilies();
+        var rootFamilies = [];
+        var seenFamilies = new Set();
         for (var i = 0; i < availableFonts.length; i++) {
-            var fontName = availableFonts[i]
+            var fontName = availableFonts[i];
             if (fontName.startsWith("."))
-                continue
+                continue;
 
             if (fontName === SettingsData.defaultFontFamily)
-                continue
+                continue;
 
-            var rootName = fontName.replace(
-                        / (Thin|Extra Light|Light|Regular|Medium|Semi Bold|Demi Bold|Bold|Extra Bold|Black|Heavy)$/i,
-                        "").replace(
-                        / (Italic|Oblique|Condensed|Extended|Narrow|Wide)$/i,
-                        "").replace(/ (UI|Display|Text|Mono|Sans|Serif)$/i,
-                                    function (match, suffix) {
-                                        return match
-                                    }).trim()
+            var rootName = fontName.replace(/ (Thin|Extra Light|Light|Regular|Medium|Semi Bold|Demi Bold|Bold|Extra Bold|Black|Heavy)$/i, "").replace(/ (Italic|Oblique|Condensed|Extended|Narrow|Wide)$/i, "").replace(/ (UI|Display|Text|Mono|Sans|Serif)$/i, function(match, suffix) {
+                return match;
+            }).trim();
             if (!seenFamilies.has(rootName) && rootName !== "") {
-                seenFamilies.add(rootName)
-                rootFamilies.push(rootName)
+                seenFamilies.add(rootName);
+                rootFamilies.push(rootName);
             }
         }
-        cachedFontFamilies = fonts.concat(rootFamilies.sort())
-        var monoFonts = ["Default"]
-        var monoFamilies = []
-        var seenMonoFamilies = new Set()
+        cachedFontFamilies = fonts.concat(rootFamilies.sort());
+        var monoFonts = ["Default"];
+        var monoFamilies = [];
+        var seenMonoFamilies = new Set();
         for (var j = 0; j < availableFonts.length; j++) {
-            var fontName2 = availableFonts[j]
+            var fontName2 = availableFonts[j];
             if (fontName2.startsWith("."))
-                continue
+                continue;
 
             if (fontName2 === SettingsData.defaultMonoFontFamily)
-                continue
+                continue;
 
-            var lowerName = fontName2.toLowerCase()
-            if (lowerName.includes("mono") || lowerName.includes(
-                        "code") || lowerName.includes(
-                        "console") || lowerName.includes(
-                        "terminal") || lowerName.includes(
-                        "courier") || lowerName.includes(
-                        "dejavu sans mono") || lowerName.includes(
-                        "jetbrains") || lowerName.includes(
-                        "fira") || lowerName.includes(
-                        "hack") || lowerName.includes(
-                        "source code") || lowerName.includes(
-                        "ubuntu mono") || lowerName.includes("cascadia")) {
-                var rootName2 = fontName2.replace(
-                            / (Thin|Extra Light|Light|Regular|Medium|Semi Bold|Demi Bold|Bold|Extra Bold|Black|Heavy)$/i,
-                            "").replace(
-                            / (Italic|Oblique|Condensed|Extended|Narrow|Wide)$/i,
-                            "").trim()
+            var lowerName = fontName2.toLowerCase();
+            if (lowerName.includes("mono") || lowerName.includes("code") || lowerName.includes("console") || lowerName.includes("terminal") || lowerName.includes("courier") || lowerName.includes("dejavu sans mono") || lowerName.includes("jetbrains") || lowerName.includes("fira") || lowerName.includes("hack") || lowerName.includes("source code") || lowerName.includes("ubuntu mono") || lowerName.includes("cascadia")) {
+                var rootName2 = fontName2.replace(/ (Thin|Extra Light|Light|Regular|Medium|Semi Bold|Demi Bold|Bold|Extra Bold|Black|Heavy)$/i, "").replace(/ (Italic|Oblique|Condensed|Extended|Narrow|Wide)$/i, "").trim();
                 if (!seenMonoFamilies.has(rootName2) && rootName2 !== "") {
-                    seenMonoFamilies.add(rootName2)
-                    monoFamilies.push(rootName2)
+                    seenMonoFamilies.add(rootName2);
+                    monoFamilies.push(rootName2);
                 }
             }
         }
-        cachedMonoFamilies = monoFonts.concat(monoFamilies.sort())
+        cachedMonoFamilies = monoFonts.concat(monoFamilies.sort());
     }
 
     Component.onCompleted: {
         // Access WallpaperCyclingService to ensure it's initialized
-        WallpaperCyclingService.cyclingActive
+        WallpaperCyclingService.cyclingActive;
         if (!fontsEnumerated) {
-            enumerateFonts()
-            fontsEnumerated = true
+            enumerateFonts();
+            fontsEnumerated = true;
         }
     }
 
@@ -107,10 +88,8 @@ Item {
                 width: parent.width
                 height: wallpaperSection.implicitHeight + Theme.spacingL * 2
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
-                               Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                      Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                 border.width: 1
 
                 Column {
@@ -138,6 +117,7 @@ Item {
                             color: Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
+
                     }
 
                     Row {
@@ -167,6 +147,7 @@ Item {
                                     maskThresholdMin: 0.5
                                     maskSpreadAtMin: 1
                                 }
+
                             }
 
                             Rectangle {
@@ -217,12 +198,13 @@ Item {
                                             cursorShape: Qt.PointingHandCursor
                                             onClicked: {
                                                 if (parentModal) {
-                                                    parentModal.allowFocusOverride = true
-                                                    parentModal.shouldHaveFocus = false
+                                                    parentModal.allowFocusOverride = true;
+                                                    parentModal.shouldHaveFocus = false;
                                                 }
-                                                wallpaperBrowser.open()
+                                                wallpaperBrowser.open();
                                             }
                                         }
+
                                     }
 
                                     Rectangle {
@@ -243,24 +225,29 @@ Item {
                                             anchors.fill: parent
                                             cursorShape: Qt.PointingHandCursor
                                             onClicked: {
-                                                if (Theme.currentTheme === Theme.dynamic) {
-                                                    Theme.switchTheme("blue")
-                                                }
-                                                SessionData.setWallpaper("")
+                                                if (Theme.currentTheme === Theme.dynamic)
+                                                    Theme.switchTheme("blue");
+
+                                                SessionData.setWallpaper("");
                                             }
                                         }
+
                                     }
+
                                 }
+
                             }
 
                             MouseArea {
                                 id: wallpaperMouseArea
+
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 propagateComposedEvents: true
                                 acceptedButtons: Qt.NoButton
                             }
+
                         }
 
                         Column {
@@ -269,9 +256,7 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
 
                             StyledText {
-                                text: SessionData.wallpaperPath ? SessionData.wallpaperPath.split(
-                                                                      '/').pop(
-                                                                      ) : "No wallpaper selected"
+                                text: SessionData.wallpaperPath ? SessionData.wallpaperPath.split('/').pop() : "No wallpaper selected"
                                 font.pixelSize: Theme.fontSizeLarge
                                 color: Theme.surfaceText
                                 elide: Text.ElideMiddle
@@ -299,15 +284,11 @@ Item {
                                     iconSize: Theme.iconSizeSmall
                                     enabled: SessionData.wallpaperPath
                                     opacity: SessionData.wallpaperPath ? 1 : 0.5
-                                    backgroundColor: Qt.rgba(Theme.surfaceVariant.r,
-                                                            Theme.surfaceVariant.g,
-                                                            Theme.surfaceVariant.b, 0.5)
-                                    hoverColor: Qt.rgba(Theme.primary.r,
-                                                       Theme.primary.g,
-                                                       Theme.primary.b, 0.12)
+                                    backgroundColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
+                                    hoverColor: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
                                     iconColor: Theme.surfaceText
                                     onClicked: {
-                                        WallpaperCyclingService.cyclePrevManually()
+                                        WallpaperCyclingService.cyclePrevManually();
                                     }
                                 }
 
@@ -317,19 +298,18 @@ Item {
                                     iconSize: Theme.iconSizeSmall
                                     enabled: SessionData.wallpaperPath
                                     opacity: SessionData.wallpaperPath ? 1 : 0.5
-                                    backgroundColor: Qt.rgba(Theme.surfaceVariant.r,
-                                                            Theme.surfaceVariant.g,
-                                                            Theme.surfaceVariant.b, 0.5)
-                                    hoverColor: Qt.rgba(Theme.primary.r,
-                                                       Theme.primary.g,
-                                                       Theme.primary.b, 0.12)
+                                    backgroundColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
+                                    hoverColor: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
                                     iconColor: Theme.surfaceText
                                     onClicked: {
-                                        WallpaperCyclingService.cycleNextManually()
+                                        WallpaperCyclingService.cycleNextManually();
                                     }
                                 }
+
                             }
+
                         }
+
                     }
 
                     // Wallpaper Cycling Section - Full Width
@@ -375,6 +355,7 @@ Item {
                                     color: Theme.surfaceVariantText
                                     width: parent.width
                                 }
+
                             }
 
                             DankToggle {
@@ -382,11 +363,11 @@ Item {
 
                                 anchors.verticalCenter: parent.verticalCenter
                                 checked: SessionData.wallpaperCyclingEnabled
-                                onToggled: toggled => {
-                                               return SessionData.setWallpaperCyclingEnabled(
-                                                   toggled)
-                                           }
+                                onToggled: (toggled) => {
+                                    return SessionData.setWallpaperCyclingEnabled(toggled);
+                                }
                             }
+
                         }
 
                         // Cycling mode and settings
@@ -413,17 +394,16 @@ Item {
                                     width: 200
                                     height: 32
                                     model: [{
-                                            "text": "Interval"
-                                        }, {
-                                            "text": "Time"
-                                        }]
-                                    currentIndex: SessionData.wallpaperCyclingMode
-                                                  === "time" ? 1 : 0
-                                    onTabClicked: index => {
-                                                      SessionData.setWallpaperCyclingMode(
-                                                          index === 1 ? "time" : "interval")
-                                                  }
+                                        "text": "Interval"
+                                    }, {
+                                        "text": "Time"
+                                    }]
+                                    currentIndex: SessionData.wallpaperCyclingMode === "time" ? 1 : 0
+                                    onTabClicked: (index) => {
+                                        SessionData.setWallpaperCyclingMode(index === 1 ? "time" : "interval");
+                                    }
                                 }
+
                             }
 
                             // Interval settings
@@ -437,18 +417,16 @@ Item {
                                 description: "How often to change wallpaper"
                                 options: intervalOptions
                                 currentValue: {
-                                    const currentSeconds = SessionData.wallpaperCyclingInterval
-                                    const index = intervalValues.indexOf(
-                                                    currentSeconds)
-                                    return index >= 0 ? intervalOptions[index] : "5 minutes"
+                                    const currentSeconds = SessionData.wallpaperCyclingInterval;
+                                    const index = intervalValues.indexOf(currentSeconds);
+                                    return index >= 0 ? intervalOptions[index] : "5 minutes";
                                 }
-                                onValueChanged: value => {
-                                                    const index = intervalOptions.indexOf(
-                                                        value)
-                                                    if (index >= 0)
-                                                    SessionData.setWallpaperCyclingInterval(
-                                                        intervalValues[index])
-                                                }
+                                onValueChanged: (value) => {
+                                    const index = intervalOptions.indexOf(value);
+                                    if (index >= 0)
+                                        SessionData.setWallpaperCyclingInterval(intervalValues[index]);
+
+                                }
                             }
 
                             // Time settings
@@ -473,28 +451,25 @@ Item {
                                     topPadding: Theme.spacingS
                                     bottomPadding: Theme.spacingS
                                     onAccepted: {
-                                        var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(
-                                                    text)
+                                        var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
                                         if (isValid)
-                                            SessionData.setWallpaperCyclingTime(
-                                                        text)
+                                            SessionData.setWallpaperCyclingTime(text);
                                         else
-                                            text = SessionData.wallpaperCyclingTime
+                                            text = SessionData.wallpaperCyclingTime;
                                     }
                                     onEditingFinished: {
-                                        var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(
-                                                    text)
+                                        var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
                                         if (isValid)
-                                            SessionData.setWallpaperCyclingTime(
-                                                        text)
+                                            SessionData.setWallpaperCyclingTime(text);
                                         else
-                                            text = SessionData.wallpaperCyclingTime
+                                            text = SessionData.wallpaperCyclingTime;
                                     }
                                     anchors.verticalCenter: parent.verticalCenter
 
                                     validator: RegularExpressionValidator {
                                         regularExpression: /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
                                     }
+
                                 }
 
                                 StyledText {
@@ -503,10 +478,15 @@ Item {
                                     color: Theme.surfaceVariantText
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
 
             // Dynamic Theme Section
@@ -514,10 +494,8 @@ Item {
                 width: parent.width
                 height: dynamicThemeSection.implicitHeight + Theme.spacingL * 2
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
-                               Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                      Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                 border.width: 1
 
                 Column {
@@ -539,8 +517,7 @@ Item {
                         }
 
                         Column {
-                            width: parent.width - Theme.iconSize - Theme.spacingM
-                                   - toggle.width - Theme.spacingM
+                            width: parent.width - Theme.iconSize - Theme.spacingM - toggle.width - Theme.spacingM
                             spacing: Theme.spacingXS
                             anchors.verticalCenter: parent.verticalCenter
 
@@ -558,6 +535,7 @@ Item {
                                 wrapMode: Text.WordWrap
                                 width: parent.width
                             }
+
                         }
 
                         DankToggle {
@@ -566,13 +544,14 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             checked: Theme.wallpaperPath !== "" && Theme.currentTheme === Theme.dynamic
                             enabled: ToastService.wallpaperErrorStatus !== "matugen_missing" && Theme.wallpaperPath !== ""
-                            onToggled: toggled => {
-                                           if (toggled)
-                                           Theme.switchTheme(Theme.dynamic)
-                                           else
-                                           Theme.switchTheme("blue")
-                                       }
+                            onToggled: (toggled) => {
+                                if (toggled)
+                                    Theme.switchTheme(Theme.dynamic);
+                                else
+                                    Theme.switchTheme("blue");
+                            }
                         }
+
                     }
 
                     StyledText {
@@ -583,7 +562,9 @@ Item {
                         width: parent.width
                         leftPadding: Theme.iconSize + Theme.spacingM
                     }
+
                 }
+
             }
 
             // Display Settings
@@ -591,10 +572,8 @@ Item {
                 width: parent.width
                 height: displaySection.implicitHeight + Theme.spacingL * 2
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
-                               Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                      Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                 border.width: 1
 
                 Column {
@@ -622,53 +601,328 @@ Item {
                             color: Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
+
                     }
 
                     DankToggle {
                         id: nightModeToggle
 
                         width: parent.width
-                        text: "Night Mode"
-                        description: "Apply warm color temperature to reduce eye strain"
-                        checked: BrightnessService.nightModeActive
-                        onToggled: checked => {
-                                       if (checked !== BrightnessService.nightModeActive) {
-                                           if (checked)
-                                           BrightnessService.enableNightMode()
-                                           else
-                                           BrightnessService.disableNightMode()
-                                       }
-                                   }
+                        text: "Night Mode (Manual)"
+                        description: SessionData.nightModeAutoEnabled ? "Manual control - automation will override when scheduled" : "Apply warm color temperature to reduce eye strain"
+                        checked: DisplayService.nightModeActive
+                        opacity: SessionData.nightModeAutoEnabled ? 0.7 : 1
+                        onToggled: (checked) => {
+                            if (checked !== DisplayService.nightModeActive) {
+                                if (checked)
+                                    DisplayService.enableNightMode();
+                                else
+                                    DisplayService.disableNightMode();
+                            }
+                        }
 
                         Connections {
                             function onNightModeActiveChanged() {
-                                nightModeToggle.checked = BrightnessService.nightModeActive
+                                nightModeToggle.checked = DisplayService.nightModeActive;
                             }
 
-                            target: BrightnessService
+                            target: DisplayService
                         }
+
                     }
 
                     DankDropdown {
                         width: parent.width
                         text: "Night Mode Temperature"
-                        description: BrightnessService.nightModeActive ? "Disable night mode to adjust" : "Set temperature for night mode"
-                        enabled: !BrightnessService.nightModeActive
-                        opacity: !BrightnessService.nightModeActive ? 1 : 0.6
+                        description: DisplayService.nightModeActive ? "Disable night mode to adjust" : "Set temperature for night mode"
+                        enabled: !DisplayService.nightModeActive
+                        opacity: !DisplayService.nightModeActive ? 1 : 0.6
                         currentValue: SessionData.nightModeTemperature + "K"
                         options: {
-                            var temps = []
+                            var temps = [];
                             for (var i = 2500; i <= 6000; i += 500) {
-                                temps.push(i + "K")
+                                temps.push(i + "K");
                             }
-                            return temps
+                            return temps;
                         }
-                        onValueChanged: value => {
-                                            var temp = parseInt(
-                                                value.replace("K", ""))
-                                            SessionData.setNightModeTemperature(
-                                                temp)
-                                        }
+                        onValueChanged: (value) => {
+                            var temp = parseInt(value.replace("K", ""));
+                            SessionData.setNightModeTemperature(temp);
+                        }
+                    }
+
+                    Rectangle {
+                        width: parent.width
+                        height: 1
+                        color: Theme.outline
+                        opacity: 0.2
+                    }
+
+                    DankToggle {
+                        width: parent.width
+                        text: "Night Mode Automation"
+                        description: "Automatically enable/disable night mode based on time schedule or location. Works independently of manual toggle above."
+                        checked: SessionData.nightModeAutoEnabled
+                        onToggled: (checked) => {
+                            SessionData.setNightModeAutoEnabled(checked);
+                        }
+                    }
+
+                    Column {
+                        width: parent.width
+                        spacing: Theme.spacingS
+                        visible: SessionData.nightModeAutoEnabled
+                        leftPadding: Theme.spacingM
+
+                        Row {
+                            spacing: Theme.spacingL
+                            width: parent.width - parent.leftPadding
+
+                            StyledText {
+                                text: "Mode:"
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceText
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            DankTabBar {
+                                width: 200
+                                height: 32
+                                model: [{
+                                    "text": "Time"
+                                }, {
+                                    "text": "Location"
+                                }]
+                                currentIndex: SessionData.nightModeAutoMode === "location" ? 1 : 0
+                                onTabClicked: (index) => {
+                                    SessionData.setNightModeAutoMode(index === 1 ? "location" : "time");
+                                }
+                            }
+
+                        }
+
+                        StyledText {
+                            text: "Press Enter or click away to save time changes. Border turns green when valid (HH:MM format)."
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.primary
+                            visible: SessionData.nightModeAutoMode === "time"
+                            width: parent.width - parent.leftPadding
+                            wrapMode: Text.WordWrap
+                        }
+
+                        Row {
+                            spacing: Theme.spacingM
+                            visible: SessionData.nightModeAutoMode === "time"
+                            width: parent.width - parent.leftPadding
+
+                            StyledText {
+                                text: "Start:"
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceText
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            DankTextField {
+                                id: startTimeField
+                                width: 80
+                                height: 32
+                                text: SessionData.nightModeStartTime
+                                placeholderText: "20:00"
+                                maximumLength: 5
+                                topPadding: Theme.spacingXS
+                                bottomPadding: Theme.spacingXS
+                                normalBorderColor: {
+                                    if (text.length === 0) return Theme.outlineStrong;
+                                    var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
+                                    return isValid ? Theme.success : Theme.error;
+                                }
+                                onAccepted: {
+                                    var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
+                                    if (isValid) {
+                                        SessionData.setNightModeStartTime(text);
+                                    } else {
+                                        text = SessionData.nightModeStartTime;
+                                    }
+                                }
+                                onEditingFinished: {
+                                    var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
+                                    if (isValid) {
+                                        SessionData.setNightModeStartTime(text);
+                                    } else {
+                                        text = SessionData.nightModeStartTime;
+                                    }
+                                }
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                validator: RegularExpressionValidator {
+                                    regularExpression: /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
+                                }
+
+                            }
+
+                            StyledText {
+                                text: "End:"
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceText
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            DankTextField {
+                                id: endTimeField
+                                width: 80
+                                height: 32
+                                text: SessionData.nightModeEndTime
+                                placeholderText: "06:00"
+                                maximumLength: 5
+                                topPadding: Theme.spacingXS
+                                bottomPadding: Theme.spacingXS
+                                normalBorderColor: {
+                                    if (text.length === 0) return Theme.outlineStrong;
+                                    var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
+                                    return isValid ? Theme.success : Theme.error;
+                                }
+                                onAccepted: {
+                                    var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
+                                    if (isValid) {
+                                        SessionData.setNightModeEndTime(text);
+                                    } else {
+                                        text = SessionData.nightModeEndTime;
+                                    }
+                                }
+                                onEditingFinished: {
+                                    var isValid = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(text);
+                                    if (isValid) {
+                                        SessionData.setNightModeEndTime(text);
+                                    } else {
+                                        text = SessionData.nightModeEndTime;
+                                    }
+                                }
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                validator: RegularExpressionValidator {
+                                    regularExpression: /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
+                                }
+
+                            }
+
+                        }
+
+                        Column {
+                            width: parent.width - parent.leftPadding
+                            spacing: Theme.spacingXS
+                            visible: SessionData.nightModeAutoMode === "location"
+
+                            StyledText {
+                                text: "Uses automatic location detection for sunrise/sunset times. If automatic detection fails, enter your coordinates manually below (e.g., NYC: 40.7128, -74.0060)."
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.surfaceVariantText
+                                width: parent.width
+                                wrapMode: Text.WordWrap
+                            }
+
+                            StyledText {
+                                text: "Press Enter or click away to save changes. Border turns green when valid."
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.primary
+                                width: parent.width
+                                wrapMode: Text.WordWrap
+                            }
+                        }
+
+                        Row {
+                            spacing: Theme.spacingM
+                            visible: SessionData.nightModeAutoMode === "location"
+                            width: parent.width - parent.leftPadding
+
+                            StyledText {
+                                text: "Coordinates:"
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceText
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            DankTextField {
+                                id: latitudeField
+                                width: 90
+                                height: 32
+                                text: SessionData.latitude ? SessionData.latitude.toString() : ""
+                                placeholderText: "40.7128"
+                                maximumLength: 10
+                                topPadding: Theme.spacingXS
+                                bottomPadding: Theme.spacingXS
+                                normalBorderColor: {
+                                    if (text.length === 0) return Theme.outlineStrong;
+                                    var lat = parseFloat(text);
+                                    return (!isNaN(lat) && lat >= -90 && lat <= 90) ? Theme.success : Theme.error;
+                                }
+                                onAccepted: {
+                                    var lat = parseFloat(text);
+                                    if (!isNaN(lat) && lat >= -90 && lat <= 90) {
+                                        SessionData.setLatitude(lat);
+                                    } else {
+                                        text = SessionData.latitude ? SessionData.latitude.toString() : "";
+                                    }
+                                }
+                                onEditingFinished: {
+                                    var lat = parseFloat(text);
+                                    if (!isNaN(lat) && lat >= -90 && lat <= 90) {
+                                        SessionData.setLatitude(lat);
+                                    } else {
+                                        text = SessionData.latitude ? SessionData.latitude.toString() : "";
+                                    }
+                                }
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            StyledText {
+                                text: ","
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceText
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            DankTextField {
+                                id: longitudeField
+                                width: 90
+                                height: 32
+                                text: SessionData.longitude ? SessionData.longitude.toString() : ""
+                                placeholderText: "-74.0060"
+                                maximumLength: 11
+                                topPadding: Theme.spacingXS
+                                bottomPadding: Theme.spacingXS
+                                normalBorderColor: {
+                                    if (text.length === 0) return Theme.outlineStrong;
+                                    var lon = parseFloat(text);
+                                    return (!isNaN(lon) && lon >= -180 && lon <= 180) ? Theme.success : Theme.error;
+                                }
+                                onAccepted: {
+                                    var lon = parseFloat(text);
+                                    if (!isNaN(lon) && lon >= -180 && lon <= 180) {
+                                        SessionData.setLongitude(lon);
+                                    } else {
+                                        text = SessionData.longitude ? SessionData.longitude.toString() : "";
+                                    }
+                                }
+                                onEditingFinished: {
+                                    var lon = parseFloat(text);
+                                    if (!isNaN(lon) && lon >= -180 && lon <= 180) {
+                                        SessionData.setLongitude(lon);
+                                    } else {
+                                        text = SessionData.longitude ? SessionData.longitude.toString() : "";
+                                    }
+                                }
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            StyledText {
+                                text: "(lat, lng)"
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.surfaceVariantText
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                        }
+
                     }
 
                     DankToggle {
@@ -676,11 +930,13 @@ Item {
                         text: "Light Mode"
                         description: "Use light theme instead of dark theme"
                         checked: SessionData.isLightMode
-                        onToggled: checked => {
-                            Theme.setLightMode(checked)
+                        onToggled: (checked) => {
+                            Theme.setLightMode(checked);
                         }
                     }
+
                 }
+
             }
 
             // Font Settings
@@ -688,10 +944,8 @@ Item {
                 width: parent.width
                 height: fontSection.implicitHeight + Theme.spacingL * 2
                 radius: Theme.cornerRadius
-                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g,
-                               Theme.surfaceVariant.b, 0.3)
-                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                      Theme.outline.b, 0.2)
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                 border.width: 1
 
                 Column {
@@ -719,6 +973,7 @@ Item {
                             color: Theme.surfaceText
                             anchors.verticalCenter: parent.verticalCenter
                         }
+
                     }
 
                     DankDropdown {
@@ -727,21 +982,20 @@ Item {
                         description: "Select system font family"
                         currentValue: {
                             if (SettingsData.fontFamily === SettingsData.defaultFontFamily)
-                                return "Default"
+                                return "Default";
                             else
-                                return SettingsData.fontFamily || "Default"
+                                return SettingsData.fontFamily || "Default";
                         }
                         enableFuzzySearch: true
                         popupWidthOffset: 100
                         maxPopupHeight: 400
                         options: cachedFontFamilies
-                        onValueChanged: value => {
-                                            if (value.startsWith("Default"))
-                                            SettingsData.setFontFamily(
-                                                SettingsData.defaultFontFamily)
-                                            else
-                                            SettingsData.setFontFamily(value)
-                                        }
+                        onValueChanged: (value) => {
+                            if (value.startsWith("Default"))
+                                SettingsData.setFontFamily(SettingsData.defaultFontFamily);
+                            else
+                                SettingsData.setFontFamily(value);
+                        }
                     }
 
                     DankDropdown {
@@ -751,64 +1005,64 @@ Item {
                         currentValue: {
                             switch (SettingsData.fontWeight) {
                             case Font.Thin:
-                                return "Thin"
+                                return "Thin";
                             case Font.ExtraLight:
-                                return "Extra Light"
+                                return "Extra Light";
                             case Font.Light:
-                                return "Light"
+                                return "Light";
                             case Font.Normal:
-                                return "Regular"
+                                return "Regular";
                             case Font.Medium:
-                                return "Medium"
+                                return "Medium";
                             case Font.DemiBold:
-                                return "Demi Bold"
+                                return "Demi Bold";
                             case Font.Bold:
-                                return "Bold"
+                                return "Bold";
                             case Font.ExtraBold:
-                                return "Extra Bold"
+                                return "Extra Bold";
                             case Font.Black:
-                                return "Black"
+                                return "Black";
                             default:
-                                return "Regular"
+                                return "Regular";
                             }
                         }
                         options: ["Thin", "Extra Light", "Light", "Regular", "Medium", "Demi Bold", "Bold", "Extra Bold", "Black"]
-                        onValueChanged: value => {
-                                            var weight
-                                            switch (value) {
-                                                case "Thin":
-                                                weight = Font.Thin
-                                                break
-                                                case "Extra Light":
-                                                weight = Font.ExtraLight
-                                                break
-                                                case "Light":
-                                                weight = Font.Light
-                                                break
-                                                case "Regular":
-                                                weight = Font.Normal
-                                                break
-                                                case "Medium":
-                                                weight = Font.Medium
-                                                break
-                                                case "Demi Bold":
-                                                weight = Font.DemiBold
-                                                break
-                                                case "Bold":
-                                                weight = Font.Bold
-                                                break
-                                                case "Extra Bold":
-                                                weight = Font.ExtraBold
-                                                break
-                                                case "Black":
-                                                weight = Font.Black
-                                                break
-                                                default:
-                                                weight = Font.Normal
-                                                break
-                                            }
-                                            SettingsData.setFontWeight(weight)
-                                        }
+                        onValueChanged: (value) => {
+                            var weight;
+                            switch (value) {
+                            case "Thin":
+                                weight = Font.Thin;
+                                break;
+                            case "Extra Light":
+                                weight = Font.ExtraLight;
+                                break;
+                            case "Light":
+                                weight = Font.Light;
+                                break;
+                            case "Regular":
+                                weight = Font.Normal;
+                                break;
+                            case "Medium":
+                                weight = Font.Medium;
+                                break;
+                            case "Demi Bold":
+                                weight = Font.DemiBold;
+                                break;
+                            case "Bold":
+                                weight = Font.Bold;
+                                break;
+                            case "Extra Bold":
+                                weight = Font.ExtraBold;
+                                break;
+                            case "Black":
+                                weight = Font.Black;
+                                break;
+                            default:
+                                weight = Font.Normal;
+                                break;
+                            }
+                            SettingsData.setFontWeight(weight);
+                        }
                     }
 
                     DankDropdown {
@@ -817,27 +1071,28 @@ Item {
                         description: "Select monospace font for process list and technical displays"
                         currentValue: {
                             if (SettingsData.monoFontFamily === SettingsData.defaultMonoFontFamily)
-                                return "Default"
+                                return "Default";
 
-                            return SettingsData.monoFontFamily || "Default"
+                            return SettingsData.monoFontFamily || "Default";
                         }
                         enableFuzzySearch: true
                         popupWidthOffset: 100
                         maxPopupHeight: 400
                         options: cachedMonoFamilies
-                        onValueChanged: value => {
-                                            if (value === "Default")
-                                            SettingsData.setMonoFontFamily(
-                                                SettingsData.defaultMonoFontFamily)
-                                            else
-                                            SettingsData.setMonoFontFamily(
-                                                value)
-                                        }
+                        onValueChanged: (value) => {
+                            if (value === "Default")
+                                SettingsData.setMonoFontFamily(SettingsData.defaultMonoFontFamily);
+                            else
+                                SettingsData.setMonoFontFamily(value);
+                        }
                     }
+
                 }
+
             }
 
         }
+
     }
 
     FileBrowserModal {
@@ -847,17 +1102,18 @@ Item {
         browserIcon: "wallpaper"
         browserType: "wallpaper"
         fileExtensions: ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.webp"]
-        onFileSelected: path => {
-                            SessionData.setWallpaper(path)
-                            close()
-                        }
+        onFileSelected: (path) => {
+            SessionData.setWallpaper(path);
+            close();
+        }
         onDialogClosed: {
             if (parentModal) {
-                parentModal.allowFocusOverride = false
+                parentModal.allowFocusOverride = false;
                 parentModal.shouldHaveFocus = Qt.binding(() => {
-                                                             return parentModal.shouldBeVisible
-                                                         })
+                    return parentModal.shouldBeVisible;
+                });
             }
         }
     }
+
 }

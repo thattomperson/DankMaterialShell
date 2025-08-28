@@ -762,9 +762,9 @@ DankPopout {
                             implicitHeight: {
                                 let height = Theme.spacingL
                                 
-                                if (BrightnessService.brightnessAvailable) {
+                                if (DisplayService.brightnessAvailable) {
                                     height += 80
-                                    if (BrightnessService.devices.length > 1) {
+                                    if (DisplayService.devices.length > 1) {
                                         height += 40
                                     }
                                 }

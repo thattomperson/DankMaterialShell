@@ -18,6 +18,12 @@ Singleton {
     property bool doNotDisturb: false
     property bool nightModeEnabled: false
     property int nightModeTemperature: 4500
+    property bool nightModeAutoEnabled: false
+    property string nightModeAutoMode: "manual"
+    property string nightModeStartTime: "20:00"
+    property string nightModeEndTime: "06:00"
+    property real latitude: 0.0
+    property real longitude: 0.0
     property var pinnedApps: []
     property int selectedGpuIndex: 0
     property bool nvidiaGpuTempEnabled: false
@@ -52,6 +58,16 @@ Singleton {
                         !== undefined ? settings.nightModeEnabled : false
                 nightModeTemperature = settings.nightModeTemperature
                         !== undefined ? settings.nightModeTemperature : 4500
+                nightModeAutoEnabled = settings.nightModeAutoEnabled
+                        !== undefined ? settings.nightModeAutoEnabled : false
+                nightModeAutoMode = settings.nightModeAutoMode
+                        !== undefined ? settings.nightModeAutoMode : "manual"
+                nightModeStartTime = settings.nightModeStartTime
+                        !== undefined ? settings.nightModeStartTime : "20:00"
+                nightModeEndTime = settings.nightModeEndTime
+                        !== undefined ? settings.nightModeEndTime : "06:00"
+                latitude = settings.latitude !== undefined ? settings.latitude : 0.0
+                longitude = settings.longitude !== undefined ? settings.longitude : 0.0
                 pinnedApps = settings.pinnedApps !== undefined ? settings.pinnedApps : []
                 selectedGpuIndex = settings.selectedGpuIndex
                         !== undefined ? settings.selectedGpuIndex : 0
@@ -86,6 +102,12 @@ Singleton {
                                                 "doNotDisturb": doNotDisturb,
                                                 "nightModeEnabled": nightModeEnabled,
                                                 "nightModeTemperature": nightModeTemperature,
+                                                "nightModeAutoEnabled": nightModeAutoEnabled,
+                                                "nightModeAutoMode": nightModeAutoMode,
+                                                "nightModeStartTime": nightModeStartTime,
+                                                "nightModeEndTime": nightModeEndTime,
+                                                "latitude": latitude,
+                                                "longitude": longitude,
                                                 "pinnedApps": pinnedApps,
                                                 "selectedGpuIndex": selectedGpuIndex,
                                                 "nvidiaGpuTempEnabled": nvidiaGpuTempEnabled,
@@ -116,6 +138,39 @@ Singleton {
 
     function setNightModeTemperature(temperature) {
         nightModeTemperature = temperature
+        saveSettings()
+    }
+
+    function setNightModeAutoEnabled(enabled) {
+        console.log("SessionData: Setting nightModeAutoEnabled to", enabled)
+        nightModeAutoEnabled = enabled
+        saveSettings()
+    }
+
+    function setNightModeAutoMode(mode) {
+        nightModeAutoMode = mode
+        saveSettings()
+    }
+
+    function setNightModeStartTime(time) {
+        nightModeStartTime = time
+        saveSettings()
+    }
+
+    function setNightModeEndTime(time) {
+        nightModeEndTime = time
+        saveSettings()
+    }
+
+    function setLatitude(lat) {
+        console.log("SessionData: Setting latitude to", lat)
+        latitude = lat
+        saveSettings()
+    }
+
+    function setLongitude(lng) {
+        console.log("SessionData: Setting longitude to", lng)
+        longitude = lng
         saveSettings()
     }
 
