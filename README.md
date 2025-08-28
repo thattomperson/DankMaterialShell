@@ -233,7 +233,7 @@ sudo make install
 # Arch Linux
 ```bash
 sudo pacman -S cava wl-clipboard cliphist brightnessctl
-paru -S matugen dgop
+paru -S matugen-bin dgop
 ```
 # Fedora
 ```bash
