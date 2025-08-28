@@ -712,6 +712,7 @@ DankPopout {
                     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
                                           Theme.outline.b, 0.05)
                     border.width: 1
+                    clip: true
 
                     Loader {
                         id: tabContentLoader
@@ -751,7 +752,7 @@ DankPopout {
                     Component {
                         id: bluetoothTabComponent
                         BluetoothTab {
-                            implicitHeight: 400
+                            implicitHeight: Math.max(300, contentHeight + Theme.spacingL)
                         }
                     }
 

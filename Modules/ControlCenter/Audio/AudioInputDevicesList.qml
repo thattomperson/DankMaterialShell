@@ -47,10 +47,13 @@ Column {
             }
 
             StyledText {
+                width: parent.parent.width - parent.anchors.leftMargin - Theme.spacingS - Theme.iconSize
                 text: "Current: " + (root.currentSourceDisplayName || "None")
                 font.pixelSize: Theme.fontSizeMedium
                 color: Theme.primary
                 font.weight: Font.Medium
+                elide: Text.ElideRight
+                wrapMode: Text.NoWrap
             }
         }
     }
@@ -73,6 +76,8 @@ Column {
             Row {
                 anchors.left: parent.left
                 anchors.leftMargin: Theme.spacingM
+                anchors.right: parent.right
+                anchors.rightMargin: Theme.spacingM
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: Theme.spacingM
 
@@ -91,17 +96,22 @@ Column {
                 }
 
                 Column {
+                    width: parent.width - parent.spacing - Theme.iconSize
                     spacing: 2
                     anchors.verticalCenter: parent.verticalCenter
 
                     StyledText {
+                        width: parent.width
                         text: AudioService.displayName(modelData)
                         font.pixelSize: Theme.fontSizeMedium
                         color: modelData === AudioService.source ? Theme.primary : Theme.surfaceText
                         font.weight: modelData === AudioService.source ? Font.Medium : Font.Normal
+                        elide: Text.ElideRight
+                        wrapMode: Text.NoWrap
                     }
 
                     StyledText {
+                        width: parent.width
                         text: {
                             if (AudioService.subtitle(modelData.name)
                                     && AudioService.subtitle(
@@ -116,6 +126,8 @@ Column {
                                        Theme.surfaceText.g,
                                        Theme.surfaceText.b, 0.7)
                         visible: text !== ""
+                        elide: Text.ElideRight
+                        wrapMode: Text.NoWrap
                     }
                 }
             }

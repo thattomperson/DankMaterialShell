@@ -20,6 +20,7 @@ Column {
         spacing: Theme.spacingM
 
         StyledText {
+            id: availableDevicesText
             text: "Available Devices"
             font.pixelSize: Theme.fontSizeLarge
             color: Theme.surfaceText
@@ -28,15 +29,14 @@ Column {
         }
 
         Item {
-            width: parent.width - scanButton.width - parent.spacing
-                   - 150 // Spacer to push button right
+            width: parent.width - availableDevicesText.width - scanButton.width - parent.spacing * 2
             height: 1
         }
 
         Rectangle {
             id: scanButton
 
-            width: Math.max(100, scanText.contentWidth + Theme.spacingL * 2)
+            width: Math.min(Math.max(100, scanText.contentWidth + Theme.spacingL * 2), parent.width * 0.3)
             height: 32
             radius: Theme.cornerRadius
             color: scanArea.containsMouse ? Qt.rgba(Theme.primary.r,
