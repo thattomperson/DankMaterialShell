@@ -19,6 +19,7 @@
           installPhase = ''
             mkdir -p $out/etc/xdg/quickshell/DankMaterialShell
             cp -r . $out/etc/xdg/quickshell/DankMaterialShell
+            ln -s $out/etc/xdg/quickshell/DankMaterialShell $out/etc/xdg/quickshell/dms
           '';
         };
 
