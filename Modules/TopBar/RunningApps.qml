@@ -121,7 +121,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 18
                     height: 18
-                    source: Quickshell.iconPath(DesktopEntries.byId(Paths.moddedAppId(appId)).icon, true)
+                    source: Quickshell.iconPath(DesktopEntries.byId(Paths.moddedAppId(appId))?.icon, true)
                     smooth: true
                     mipmap: true
                     asynchronous: true
