@@ -140,6 +140,11 @@ Item {
             "icon": "network_check",
             "warning": !DgopService.dgopAvailable ? "Requires 'dgop' tool" : undefined,
             "enabled": DgopService.dgopAvailable
+        }, {
+            "id": "keyboard_layout_name",
+            "text": "Keyboard Layout Name",
+            "description": "Displays the active keyboard layout and allows switching",
+            "icon": "keyboard",
         }]
     property var defaultLeftWidgets: [{
             "id": "launcherButton",

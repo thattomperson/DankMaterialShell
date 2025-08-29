@@ -337,6 +337,8 @@ PanelWindow {
                             return true
                         case "network_speed_monitor":
                             return DgopService.dgopAvailable
+                        case "keyboard_layout_name":
+                            return true
                         default:
                             return false
                         }
@@ -386,6 +388,8 @@ PanelWindow {
                             return separatorComponent
                         case "network_speed_monitor":
                             return networkComponent
+                        case "keyboard_layout_name":
+                            return keyboardLayoutNameComponent
                         default:
                             return null
                         }
@@ -1108,6 +1112,12 @@ PanelWindow {
                             color: Theme.outline
                             opacity: 0.3
                         }
+                    }
+
+                    Component {
+                        id: keyboardLayoutNameComponent
+
+                        KeyboardLayoutName {}
                     }
                 }
             }
