@@ -921,6 +921,40 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                             }
 
+                            StyledRect {
+                                width: 60
+                                height: 32
+                                radius: Theme.cornerRadius
+                                color: Theme.surfaceVariant
+                                border.color: Theme.outline
+                                border.width: 1
+                                
+                                StyledText {
+                                    text: "Clear"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    color: Theme.surfaceVariantText
+                                    anchors.centerIn: parent
+                                }
+                                
+                                StateLayer {
+                                    stateColor: Theme.error
+                                    cornerRadius: parent.radius
+                                    onClicked: {
+                                        console.log("PersonalizationTab: Clearing location coordinates via UI")
+                                        SessionData.setLatitude(0.0);
+                                        SessionData.setLongitude(0.0);
+                                        latitudeField.text = "";
+                                        longitudeField.text = "";
+                                        // Also call the service clear function
+                                        if (typeof globalThis !== 'undefined' && globalThis.clearNightModeLocation) {
+                                            globalThis.clearNightModeLocation();
+                                        }
+                                    }
+                                }
+                                
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
                         }
 
                     }

@@ -25,6 +25,8 @@ ShellRoot {
 
     Component.onCompleted: {
         PortalService.init()
+        // Initialize NightModeAutomationService to trigger its Component.onCompleted
+        NightModeAutomationService.automationAvailable
     }
 
     WallpaperBackground {

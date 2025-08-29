@@ -89,7 +89,7 @@ https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
 - **Process List** A process list, with system metrics and information. More detailed modal available via IPC.
 - **Notification Center** A center for notifications that has support for grouping.
 - **Dock** A dock with pinned apps support, recent apps support, and currently running application support.
-- **Control Center** A full control center with user profile information, network, bluetooth, audio input/output, and display controls.
+- **Control Center** A full control center with user profile information, network, bluetooth, audio input/output, display controls, and night mode automation.
 - **Lock Screen** Using quickshell's WlSessionLock
 
 **Features:**
@@ -100,6 +100,7 @@ https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
 - Audio/media controls
 - Grouped notifications
 - Brightness control for internal and external displays
+- Automated night mode with time-based and location-based scheduling
 - Qt and GTK app theming synchronization, as well as [Ghostty](https://ghostty.org/) auto-theme support.
 
 ## Installation
@@ -323,6 +324,10 @@ binds {
    XF86MonBrightnessDown allow-when-locked=true {
       spawn "qs" "-c" "dms" "ipc" "call" "brightness" "decrement" "5" "";
    }
+   // Night mode toggle
+   Mod+Shift+N allow-when-locked=true {
+      spawn "qs" "-c" "dms" "ipc" "call" "night" "toggle";
+   }
 }
 ```
 
@@ -366,6 +371,9 @@ bindl = , XF86AudioMicMute, exec, qs -c dms ipc call audio micmute
 bindl = , XF86MonBrightnessUp, exec, qs -c dms ipc call brightness increment 5 ""
 # You can override the default device for e.g. keyboards by adding the device name to the last param
 bindl = , XF86MonBrightnessDown, exec, qs -c dms ipc call brightness decrement 5 ""
+
+# Night mode toggle
+bind = SUPERSHIFT, N, exec, qs -c dms ipc call night toggle
 ```
 
 ### IPC Commands
@@ -388,6 +396,7 @@ qs -c dms ipc call powermenu toggle
 ```
 qs -c dms ipc call wallpaper set /path/to/image.jpg
 qs -c dms ipc call theme toggle
+qs -c dms ipc call night toggle
 qs -c dms ipc call lock lock
 ```
 # Media control

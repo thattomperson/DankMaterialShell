@@ -119,10 +119,33 @@ Night mode (gamma/color temperature) control.
   - `value` - Optional temperature in Kelvin (2500-6000, steps of 500)
 - Returns: Current or newly set temperature
 
+**`automation [mode]`**
+- Get or set night mode automation mode
+- Parameters:
+  - `mode` - Optional automation mode: "manual", "time", or "location"
+- Returns: Current or newly set automation mode
+
+**`schedule <start> <end>`**
+- Set time-based automation schedule
+- Parameters:
+  - `start` - Start time in HH:MM format (e.g., "20:00")
+  - `end` - End time in HH:MM format (e.g., "06:00")
+- Returns: Confirmation of schedule update
+
+**`location <latitude> <longitude>`**
+- Set manual coordinates for location-based automation
+- Parameters:
+  - `latitude` - Latitude coordinate (e.g., 40.7128)
+  - `longitude` - Longitude coordinate (e.g., -74.0060)
+- Returns: Confirmation of coordinates update
+
 ### Examples
 ```bash
 qs -c dms ipc call night toggle
 qs -c dms ipc call night temperature 4000
+qs -c dms ipc call night automation time
+qs -c dms ipc call night schedule 20:00 06:00
+qs -c dms ipc call night location 40.7128 -74.0060
 ```
 
 ## Target: `mpris`
