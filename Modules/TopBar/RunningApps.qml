@@ -72,7 +72,7 @@ Rectangle {
                 property string tooltipText: {
                     var appName = "Unknown"
                     if (appId) {
-                        var desktopEntry = DesktopEntries.byId(appId)
+                        var desktopEntry = DesktopEntries.heuristicLookup(appId)
                         appName = desktopEntry
                                 && desktopEntry.name ? desktopEntry.name : appId
                     }
@@ -115,13 +115,12 @@ Rectangle {
                 // App icon
                 IconImage {
                     id: iconImg
-
                     anchors.left: parent.left
                     anchors.leftMargin: SettingsData.runningAppsCompactMode ? (parent.width - 18) / 2 : Theme.spacingXS
                     anchors.verticalCenter: parent.verticalCenter
                     width: 18
                     height: 18
-                    source: Quickshell.iconPath(DesktopEntries.byId(Paths.moddedAppId(appId))?.icon, true)
+                    source: Quickshell.iconPath(DesktopEntries.heuristicLookup(Paths.moddedAppId(appId))?.icon, true)
                     smooth: true
                     mipmap: true
                     asynchronous: true
@@ -136,7 +135,7 @@ Rectangle {
                         if (!appId)
                             return "?"
 
-                        var desktopEntry = DesktopEntries.byId(appId)
+                        var desktopEntry = DesktopEntries.heuristicLookup(appId)
                         if (desktopEntry && desktopEntry.name)
                             return desktopEntry.name.charAt(0).toUpperCase()
 
