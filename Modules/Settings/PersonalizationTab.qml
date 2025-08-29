@@ -605,6 +605,16 @@ Item {
                     }
 
                     DankToggle {
+                        width: parent.width
+                        text: "Light Mode"
+                        description: "Use light theme instead of dark theme"
+                        checked: SessionData.isLightMode
+                        onToggled: (checked) => {
+                            Theme.setLightMode(checked);
+                        }
+                    }
+
+                    DankToggle {
                         id: nightModeToggle
 
                         width: parent.width
@@ -923,15 +933,6 @@ Item {
 
                     }
 
-                    DankToggle {
-                        width: parent.width
-                        text: "Light Mode"
-                        description: "Use light theme instead of dark theme"
-                        checked: SessionData.isLightMode
-                        onToggled: (checked) => {
-                            Theme.setLightMode(checked);
-                        }
-                    }
 
                 }
 
