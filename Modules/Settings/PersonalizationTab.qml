@@ -661,7 +661,7 @@ Item {
                     DankToggle {
                         width: parent.width
                         text: "Night Mode Automation"
-                        description: "Automatically enable/disable night mode based on time schedule or location. Works independently of manual toggle above."
+                        description: "Automatically enable/disable night mode based on time or location, independent of the manual toggle."
                         checked: SessionData.nightModeAutoEnabled
                         onToggled: (checked) => {
                             SessionData.setNightModeAutoEnabled(checked);
@@ -670,7 +670,7 @@ Item {
 
                     Column {
                         width: parent.width
-                        spacing: Theme.spacingS
+                        spacing: Theme.spacingM
                         visible: SessionData.nightModeAutoEnabled
                         leftPadding: Theme.spacingM
 
@@ -701,19 +701,11 @@ Item {
 
                         }
 
-                        StyledText {
-                            text: "Press Enter or click away to save time changes. Border turns green when valid (HH:MM format)."
-                            font.pixelSize: Theme.fontSizeSmall
-                            color: Theme.primary
-                            visible: SessionData.nightModeAutoMode === "time"
-                            width: parent.width - parent.leftPadding
-                            wrapMode: Text.WordWrap
-                        }
-
                         Row {
                             spacing: Theme.spacingM
                             visible: SessionData.nightModeAutoMode === "time"
                             width: parent.width - parent.leftPadding
+                            topPadding: Theme.spacingL
 
                             StyledText {
                                 text: "Start:"
@@ -820,13 +812,6 @@ Item {
                                 wrapMode: Text.WordWrap
                             }
 
-                            StyledText {
-                                text: "Press Enter or click away to save changes. Border turns green when valid."
-                                font.pixelSize: Theme.fontSizeSmall
-                                color: Theme.primary
-                                width: parent.width
-                                wrapMode: Text.WordWrap
-                            }
                         }
 
                         Row {
@@ -956,6 +941,7 @@ Item {
                             }
 
                         }
+
 
                     }
 
