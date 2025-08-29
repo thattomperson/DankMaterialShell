@@ -33,7 +33,6 @@ Singleton {
     }
 
     Component.onCompleted: {
-        pkillProcess.running = true
         checkAvailability()
         updateFromSessionData()
         
@@ -115,25 +114,9 @@ Singleton {
         }
         
         if (currentProvider === "geoclue2") {
+            // Kill existing processes and start new one in the onExited callback
+            pkillProcess.pendingLocationBasedStart = true
             pkillProcess.running = true
-            
-            cleanupTimer.interval = 5000
-            cleanupTimer.repeat = false
-            cleanupTimer.triggered.connect(function() {
-                const temperature = SessionData.nightModeTemperature || 4500
-                const dayTemp = 6500
-                
-                gammaStepProcess.processType = "automation"
-                gammaStepProcess.command = [
-                    "gammastep", 
-                    "-m", "wayland",
-                    "-l", "geoclue2",
-                    "-t", `${dayTemp}:${temperature}`,
-                    "-v"
-                ]
-                gammaStepProcess.running = true
-            })
-            cleanupTimer.start()
             return
         } else {
             console.warn("NightModeAutomationService: No working location provider, falling back to time-based mode")
@@ -300,11 +283,28 @@ Singleton {
 
     Process {
         id: pkillProcess
-        command: ["pkill", "gammastep"]
+        command: ["killall", "-w", "gammastep"]
         running: false
         
+        property bool pendingLocationBasedStart: false
+        
         onExited: function(exitCode) {
-            // Cleanup completed
+            if (pendingLocationBasedStart) {
+                pendingLocationBasedStart = false
+                
+                const temperature = SessionData.nightModeTemperature || 4500
+                const dayTemp = 6500
+                
+                gammaStepProcess.processType = "automation"
+                gammaStepProcess.command = [
+                    "gammastep", 
+                    "-m", "wayland",
+                    "-l", "geoclue2",
+                    "-t", `${dayTemp}:${temperature}`,
+                    "-v"
+                ]
+                gammaStepProcess.running = true
+            }
         }
     }
 
@@ -482,13 +482,6 @@ Singleton {
                 feedbackMessage = ""
             }
         }
-    }
-
-    Timer {
-        id: cleanupTimer
-        interval: 1000
-        running: false
-        repeat: false
     }
 
     Connections {
