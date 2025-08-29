@@ -11,8 +11,8 @@ Row {
 
     property var defaultSink: AudioService.sink
 
-    height: 60
-    spacing: Theme.spacingM
+    height: 40
+    spacing: Theme.spacingS
 
     Rectangle {
         width: Theme.iconSize + Theme.spacingS * 2
@@ -58,10 +58,7 @@ Row {
 
     DankSlider {
         anchors.verticalCenter: parent.verticalCenter
-        width: {
-            if (parent.width <= 0) return 80
-            return Math.max(80, Math.min(400, parent.width - (Theme.iconSize + Theme.spacingS * 2) - Theme.spacingM))
-        }
+        width: parent.width - (Theme.iconSize + Theme.spacingS * 2) - Theme.spacingM
         enabled: defaultSink !== null
         minimum: 0
         maximum: 100

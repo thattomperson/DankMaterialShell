@@ -117,7 +117,7 @@ DankPopout {
                 width: parent.width - Theme.spacingL * 2
                 x: Theme.spacingL
                 y: Theme.spacingL
-                spacing: Theme.spacingL
+                spacing: Theme.spacingS
 
                 Rectangle {
                     width: parent.width
@@ -630,16 +630,30 @@ DankPopout {
 
                 }
 
-                Row {
+                Item {
                     width: parent.width
-                    spacing: Theme.spacingM
+                    height: audioSliderRow.implicitHeight
+                    
+                    Row {
+                        id: audioSliderRow
+                        x: -Theme.spacingS
+                        width: parent.width + Theme.spacingS * 2
+                        spacing: Theme.spacingM
 
-                    AudioSliderRow {
-                        width: (parent.width - Theme.spacingM) / 2
-                    }
+                        AudioSliderRow {
+                            width: (parent.width - Theme.spacingM) / 2
+                        }
 
-                    BrightnessSliderRow {
-                        width: (parent.width - Theme.spacingM) / 2
+                        Item {
+                            width: (parent.width - Theme.spacingM) / 2
+                            height: parent.height
+                            
+                            BrightnessSliderRow {
+                                width: parent.width
+                                height: parent.height
+                                x: -Theme.spacingS
+                            }
+                        }
                     }
                 }
 
@@ -776,11 +790,11 @@ DankPopout {
 
                     ToggleButton {
                         width: (parent.width - Theme.spacingM) / 2
-                        iconName: DisplayService.nightModeActive ? "nightlight" : "dark_mode"
+                        iconName: DisplayService.nightModeEnabled ? "nightlight" : "dark_mode"
                         text: "Night Mode"
-                        secondaryText: DisplayService.nightModeActive ? "On" : "Off"
-                        isActive: true
-                        enabled: DisplayService.brightnessAvailable
+                        secondaryText: DisplayService.nightModeEnabled ? "On" : "Off"
+                        isActive: DisplayService.nightModeEnabled
+                        enabled: DisplayService.automationAvailable
                         onClicked: DisplayService.toggleNightMode()
                     }
 

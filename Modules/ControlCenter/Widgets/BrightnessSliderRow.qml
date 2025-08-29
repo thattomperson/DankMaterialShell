@@ -8,15 +8,15 @@ import qs.Widgets
 Row {
     id: root
 
-    height: 60
-    spacing: Theme.spacingM
+    height: 40
+    spacing: Theme.spacingS
 
     Rectangle {
         width: Theme.iconSize + Theme.spacingS * 2
         height: Theme.iconSize + Theme.spacingS * 2
         anchors.verticalCenter: parent.verticalCenter
         radius: (Theme.iconSize + Theme.spacingS * 2) / 2
-        color: iconArea.containsMouse && DisplayService.devices.length > 1 
+        color: iconArea.containsMouse
                ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) 
                : "transparent"
         
@@ -27,8 +27,8 @@ Row {
         MouseArea {
             id: iconArea
             anchors.fill: parent
-            hoverEnabled: DisplayService.devices.length > 1
-            cursorShape: DisplayService.devices.length > 1 ? Qt.PointingHandCursor : Qt.ArrowCursor
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
             
             onClicked: function(event) {
                 if (DisplayService.devices.length > 1) {
@@ -57,55 +57,27 @@ Row {
         }
     }
 
-    Column {
+    DankSlider {
         anchors.verticalCenter: parent.verticalCenter
         width: parent.width - (Theme.iconSize + Theme.spacingS * 2) - Theme.spacingM
-        spacing: 0
-
-        DankSlider {
-            width: parent.width
-            enabled: DisplayService.brightnessAvailable
-            minimum: 1
-            maximum: 100
-            value: {
-                let level = DisplayService.brightnessLevel
-                if (level > 100) {
-                    let deviceInfo = DisplayService.getCurrentDeviceInfo()
-                    if (deviceInfo && deviceInfo.max > 0) {
-                        return Math.round((level / deviceInfo.max) * 100)
-                    }
-                    return 50
+        enabled: DisplayService.brightnessAvailable
+        minimum: 1
+        maximum: 100
+        value: {
+            let level = DisplayService.brightnessLevel
+            if (level > 100) {
+                let deviceInfo = DisplayService.getCurrentDeviceInfo()
+                if (deviceInfo && deviceInfo.max > 0) {
+                    return Math.round((level / deviceInfo.max) * 100)
                 }
-                return level
+                return 50
             }
-            onSliderValueChanged: function(newValue) {
-                if (DisplayService.brightnessAvailable) {
-                    DisplayService.setBrightness(newValue)
-                }
-            }
+            return level
         }
-        
-        StyledText {
-            visible: {
-                if (DisplayService.devices.length <= 1) return false
-                if (!DisplayService.currentDevice) return false
-                
-                let currentIndex = -1
-                for (let i = 0; i < DisplayService.devices.length; i++) {
-                    if (DisplayService.devices[i].name === DisplayService.currentDevice) {
-                        currentIndex = i
-                        break
-                    }
-                }
-                return currentIndex !== 0
+        onSliderValueChanged: function(newValue) {
+            if (DisplayService.brightnessAvailable) {
+                DisplayService.setBrightness(newValue)
             }
-            width: parent.width
-            text: DisplayService.currentDevice || ""
-            font.pixelSize: Theme.fontSizeSmall - 2
-            color: Theme.surfaceVariantText
-            elide: Text.ElideRight
-            horizontalAlignment: Text.AlignLeft
-            topPadding: 2
         }
     }
 

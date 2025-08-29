@@ -19,11 +19,14 @@ Singleton {
     property bool nightModeEnabled: false
     property int nightModeTemperature: 4500
     property bool nightModeAutoEnabled: false
-    property string nightModeAutoMode: "manual"
-    property string nightModeStartTime: "20:00"
-    property string nightModeEndTime: "06:00"
+    property string nightModeAutoMode: "time"
+    property int nightModeStartHour: 18
+    property int nightModeStartMinute: 0
+    property int nightModeEndHour: 6
+    property int nightModeEndMinute: 0
     property real latitude: 0.0
     property real longitude: 0.0
+    property string nightModeLocationProvider: ""
     property var pinnedApps: []
     property int selectedGpuIndex: 0
     property bool nvidiaGpuTempEnabled: false
@@ -61,13 +64,27 @@ Singleton {
                 nightModeAutoEnabled = settings.nightModeAutoEnabled
                         !== undefined ? settings.nightModeAutoEnabled : false
                 nightModeAutoMode = settings.nightModeAutoMode
-                        !== undefined ? settings.nightModeAutoMode : "manual"
-                nightModeStartTime = settings.nightModeStartTime
-                        !== undefined ? settings.nightModeStartTime : "20:00"
-                nightModeEndTime = settings.nightModeEndTime
-                        !== undefined ? settings.nightModeEndTime : "06:00"
+                        !== undefined ? settings.nightModeAutoMode : "time"
+                // Handle legacy time format
+                if (settings.nightModeStartTime !== undefined) {
+                    const parts = settings.nightModeStartTime.split(":")
+                    nightModeStartHour = parseInt(parts[0]) || 18
+                    nightModeStartMinute = parseInt(parts[1]) || 0
+                } else {
+                    nightModeStartHour = settings.nightModeStartHour !== undefined ? settings.nightModeStartHour : 18
+                    nightModeStartMinute = settings.nightModeStartMinute !== undefined ? settings.nightModeStartMinute : 0
+                }
+                if (settings.nightModeEndTime !== undefined) {
+                    const parts = settings.nightModeEndTime.split(":")
+                    nightModeEndHour = parseInt(parts[0]) || 6
+                    nightModeEndMinute = parseInt(parts[1]) || 0
+                } else {
+                    nightModeEndHour = settings.nightModeEndHour !== undefined ? settings.nightModeEndHour : 6
+                    nightModeEndMinute = settings.nightModeEndMinute !== undefined ? settings.nightModeEndMinute : 0
+                }
                 latitude = settings.latitude !== undefined ? settings.latitude : 0.0
                 longitude = settings.longitude !== undefined ? settings.longitude : 0.0
+                nightModeLocationProvider = settings.nightModeLocationProvider !== undefined ? settings.nightModeLocationProvider : ""
                 pinnedApps = settings.pinnedApps !== undefined ? settings.pinnedApps : []
                 selectedGpuIndex = settings.selectedGpuIndex
                         !== undefined ? settings.selectedGpuIndex : 0
@@ -104,10 +121,13 @@ Singleton {
                                                 "nightModeTemperature": nightModeTemperature,
                                                 "nightModeAutoEnabled": nightModeAutoEnabled,
                                                 "nightModeAutoMode": nightModeAutoMode,
-                                                "nightModeStartTime": nightModeStartTime,
-                                                "nightModeEndTime": nightModeEndTime,
+                                                "nightModeStartHour": nightModeStartHour,
+                                                "nightModeStartMinute": nightModeStartMinute,
+                                                "nightModeEndHour": nightModeEndHour,
+                                                "nightModeEndMinute": nightModeEndMinute,
                                                 "latitude": latitude,
                                                 "longitude": longitude,
+                                                "nightModeLocationProvider": nightModeLocationProvider,
                                                 "pinnedApps": pinnedApps,
                                                 "selectedGpuIndex": selectedGpuIndex,
                                                 "nvidiaGpuTempEnabled": nvidiaGpuTempEnabled,
@@ -152,13 +172,23 @@ Singleton {
         saveSettings()
     }
 
-    function setNightModeStartTime(time) {
-        nightModeStartTime = time
+    function setNightModeStartHour(hour) {
+        nightModeStartHour = hour
         saveSettings()
     }
 
-    function setNightModeEndTime(time) {
-        nightModeEndTime = time
+    function setNightModeStartMinute(minute) {
+        nightModeStartMinute = minute
+        saveSettings()
+    }
+
+    function setNightModeEndHour(hour) {
+        nightModeEndHour = hour
+        saveSettings()
+    }
+
+    function setNightModeEndMinute(minute) {
+        nightModeEndMinute = minute
         saveSettings()
     }
 
@@ -171,6 +201,11 @@ Singleton {
     function setLongitude(lng) {
         console.log("SessionData: Setting longitude to", lng)
         longitude = lng
+        saveSettings()
+    }
+
+    function setNightModeLocationProvider(provider) {
+        nightModeLocationProvider = provider
         saveSettings()
     }
 
