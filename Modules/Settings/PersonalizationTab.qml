@@ -614,6 +614,13 @@ Item {
                         }
                     }
 
+                    Rectangle {
+                        width: parent.width
+                        height: 1
+                        color: Theme.outline
+                        opacity: 0.2
+                    }
+
                     DankToggle {
                         id: nightModeToggle
 
@@ -652,18 +659,11 @@ Item {
                         }
                     }
 
-                    Rectangle {
-                        width: parent.width
-                        height: 1
-                        color: Theme.outline
-                        opacity: 0.2
-                    }
-
                     DankToggle {
                         id: automaticToggle
                         width: parent.width
                         text: "Automatic Control"
-                        description: "Let the system automatically turn night mode on and off"
+                        description: "Only adjust gamma based on time or location rules."
                         checked: SessionData.nightModeAutoEnabled
                         onToggled: (checked) => {
                             SessionData.setNightModeAutoEnabled(checked);

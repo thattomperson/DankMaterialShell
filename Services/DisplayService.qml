@@ -341,8 +341,7 @@ Singleton {
             return
         }
 
-        const now = new Date()
-        const currentTime = now.getHours() * 60 + now.getMinutes()
+        const currentTime = systemClock.hours * 60 + systemClock.minutes
 
         const startMinutes = SessionData.nightModeStartHour * 60 + SessionData.nightModeStartMinute
         const endMinutes = SessionData.nightModeEndHour * 60 + SessionData.nightModeEndMinute
@@ -371,13 +370,10 @@ Singleton {
     }
 
     function setNightModeAutomationMode(mode) {
-        console.log("DisplayService: Setting night mode automation mode to:", mode)
         SessionData.setNightModeAutoMode(mode)
     }
 
-    function evaluateNightMode() {
-        console.log("DisplayService: Evaluating night mode state - enabled:", nightModeEnabled, "auto:", SessionData.nightModeAutoEnabled)
-        
+    function evaluateNightMode() {        
         // Always stop all processes first to clean slate
         stopAutomation()
         
@@ -424,6 +420,7 @@ Singleton {
     }
 
     SystemClock {
+        id: systemClock
         precision: SystemClock.Minutes
         onDateChanged: {
             if (nightModeEnabled && SessionData.nightModeAutoEnabled && SessionData.nightModeAutoMode === "time") {
@@ -441,7 +438,6 @@ Singleton {
         onExited: function (exitCode) {
             ddcAvailable = (exitCode === 0)
             if (ddcAvailable) {
-                console.log("DisplayService: ddcutil detected")
                 ddcDisplayDetectionProcess.running = true
             } else {
                 console.log("DisplayService: ddcutil not available")
@@ -458,7 +454,6 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 if (!text.trim()) {
-                    console.log("DisplayService: No DDC displays found")
                     ddcDevices = []
                     return
                 }
@@ -718,7 +713,6 @@ Singleton {
         onExited: function(exitCode) {
             automationAvailable = (exitCode === 0)
             if (automationAvailable) {
-                console.log("DisplayService: gammastep available")
                 detectLocationProviders()
                 
                 // If night mode should be enabled on startup
