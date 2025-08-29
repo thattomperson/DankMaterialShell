@@ -651,15 +651,32 @@ DankPopout {
                         width: (parent.width - Theme.spacingM) / 2
                         expanded: root.expandedSection === "network"
                         onClicked: {
+                            if (NetworkService.wifiToggling) {
+                                return
+                            }
                             if (NetworkService.networkStatus === "ethernet") {
-                                if (NetworkService.ethernetConnected && NetworkService.wifiConnected) {
-                                    NetworkService.setNetworkPreference("wifi")
+                                if (NetworkService.ethernetConnected && !NetworkService.wifiEnabled) {
+                                    NetworkService.toggleWifiRadio()
                                     return
                                 }
                                 root.toggleSection("network")
                                 return
                             }
-                            NetworkService.disconnectWifi()                          
+                            if (NetworkService.networkStatus === "wifi") {
+                                if (NetworkService.ethernetConnected) {
+                                    NetworkService.toggleWifiRadio()
+                                    return
+                                }
+                                NetworkService.disconnectWifi()
+                                return
+                            }
+                            if (!NetworkService.wifiEnabled) {
+                                NetworkService.toggleWifiRadio()
+                                return
+                            }
+                            if (NetworkService.wifiEnabled && NetworkService.networkStatus === "disconnected") {
+                                root.toggleSection("network")
+                            }
                         }
                         onExpandClicked: root.toggleSection("network")
                     }

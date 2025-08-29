@@ -41,15 +41,27 @@ Rectangle {
         DankIcon {
             id: networkIcon
             name: {
+                if (NetworkService.wifiToggling)
+                    return "sync"
                 if (NetworkService.networkStatus === "ethernet")
                     return "lan"
                 return NetworkService.wifiSignalIcon
             }
             size: Theme.iconSize - 8
-            color: NetworkService.networkStatus
-                   !== "disconnected" ? Theme.primary : Theme.outlineButton
+            color: {
+                if (NetworkService.wifiToggling) return Theme.primary
+                return NetworkService.networkStatus !== "disconnected" ? Theme.primary : Theme.outlineButton
+            }
             anchors.verticalCenter: parent.verticalCenter
             visible: root.showNetworkIcon
+            
+            RotationAnimation on rotation {
+                running: NetworkService.wifiToggling
+                loops: Animation.Infinite
+                from: 0
+                to: 360
+                duration: 1000
+            }
         }
 
         DankIcon {

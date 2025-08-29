@@ -94,13 +94,12 @@ Singleton {
         gammaStepProcess.processType = "automation"
         
         if (latitude !== 0.0 && longitude !== 0.0) {
-            gammaStepProcess.command = [
-                "gammastep", 
+            gammaStepProcess.command = buildGammastepCommand([
                 "-m", "wayland",
                 "-l", `${latitude.toFixed(6)}:${longitude.toFixed(6)}`,
                 "-t", `${dayTemp}:${temperature}`,
                 "-v"
-            ]
+            ])
             gammaStepProcess.running = true
             return
         }
@@ -114,9 +113,17 @@ Singleton {
         }
         
         if (currentProvider === "geoclue2") {
-            // Kill existing processes and start new one in the onExited callback
-            pkillProcess.pendingLocationBasedStart = true
-            pkillProcess.running = true
+            const temperature = SessionData.nightModeTemperature || 4500
+            const dayTemp = 6500
+            
+            gammaStepProcess.processType = "automation"
+            gammaStepProcess.command = buildGammastepCommand([
+                "-m", "wayland",
+                "-l", "geoclue2",
+                "-t", `${dayTemp}:${temperature}`,
+                "-v"
+            ])
+            gammaStepProcess.running = true
             return
         } else {
             console.warn("NightModeAutomationService: No working location provider, falling back to time-based mode")
@@ -170,11 +177,10 @@ Singleton {
         gammaStepProcess.running = false
         gammaStepProcess.processType = "activate"
         
-        gammaStepProcess.command = [
-            "gammastep", 
+        gammaStepProcess.command = buildGammastepCommand([
             "-m", "wayland", 
             "-O", String(temperature)
-        ]
+        ])
         gammaStepProcess.running = true
         
         if (SessionData.nightModeAutoEnabled && SessionData.nightModeAutoMode !== "manual") {
@@ -186,11 +192,10 @@ Singleton {
         gammaStepProcess.running = false
         
         gammaStepProcess.processType = "reset"
-        gammaStepProcess.command = [
-            "gammastep", 
+        gammaStepProcess.command = buildGammastepCommand([
             "-m", "wayland", 
             "-O", "6500"
-        ]
+        ])
         gammaStepProcess.running = true
         
         if (SessionData.nightModeAutoEnabled && SessionData.nightModeAutoMode !== "manual") {
@@ -222,6 +227,11 @@ Singleton {
         }
     }
 
+    function buildGammastepCommand(gammastepArgs) {
+        const commandStr = "pkill gammastep; " + ["gammastep"].concat(gammastepArgs).join(" ")
+        return ["sh", "-c", commandStr]
+    }
+
 
     function updateFromSessionData() {
         if (SessionData.latitude !== 0.0 && SessionData.longitude !== 0.0) {
@@ -243,11 +253,10 @@ Singleton {
         
         gammaStepProcess.running = false
         gammaStepProcess.processType = "test"
-        gammaStepProcess.command = [
-            "gammastep", 
+        gammaStepProcess.command = buildGammastepCommand([
             "-m", "wayland", 
             "-O", String(temperature)
-        ]
+        ])
         gammaStepProcess.running = true
         
         testFeedbackTimer.interval = 2000
@@ -258,11 +267,10 @@ Singleton {
     function manualResetTest() {
         gammaStepProcess.running = false
         gammaStepProcess.processType = "test"
-        gammaStepProcess.command = [
-            "gammastep", 
+        gammaStepProcess.command = buildGammastepCommand([
             "-m", "wayland", 
             "-O", "6500"
-        ]
+        ])
         gammaStepProcess.running = true
         
         testFeedbackTimer.interval = 2000
@@ -276,34 +284,6 @@ Singleton {
         onDateChanged: {
             if (SessionData.nightModeAutoEnabled && SessionData.nightModeAutoMode === "time") {
                 checkTimeBasedMode()
-            }
-        }
-    }
-
-
-    Process {
-        id: pkillProcess
-        command: ["killall", "-w", "gammastep"]
-        running: false
-        
-        property bool pendingLocationBasedStart: false
-        
-        onExited: function(exitCode) {
-            if (pendingLocationBasedStart) {
-                pendingLocationBasedStart = false
-                
-                const temperature = SessionData.nightModeTemperature || 4500
-                const dayTemp = 6500
-                
-                gammaStepProcess.processType = "automation"
-                gammaStepProcess.command = [
-                    "gammastep", 
-                    "-m", "wayland",
-                    "-l", "geoclue2",
-                    "-t", `${dayTemp}:${temperature}`,
-                    "-v"
-                ]
-                gammaStepProcess.running = true
             }
         }
     }
@@ -374,13 +354,12 @@ Singleton {
                 const dayTemp = 6500
                 
                 gammaStepProcess.processType = "automation"
-                gammaStepProcess.command = [
-                    "gammastep", 
+                gammaStepProcess.command = buildGammastepCommand([
                     "-m", "wayland",
                     "-l", "geoclue2",
                     "-t", `${dayTemp}:${temperature}`,
                     "-v"
-                ]
+                ])
                 gammaStepProcess.running = true
             } else {
                 SessionData.setNightModeAutoMode("time")

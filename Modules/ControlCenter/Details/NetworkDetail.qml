@@ -7,7 +7,15 @@ import qs.Widgets
 import qs.Modals
 
 Rectangle {
-    implicitHeight: NetworkService.wifiEnabled ? headerRow.height + wifiContent.height + Theme.spacingM : headerRow.height
+    implicitHeight: {
+        if (NetworkService.wifiToggling) {
+            return headerRow.height + wifiToggleContent.height + Theme.spacingM
+        }
+        if (NetworkService.wifiEnabled) {
+            return headerRow.height + wifiContent.height + Theme.spacingM
+        }
+        return headerRow.height + wifiOffContent.height + Theme.spacingM
+    }
     radius: Theme.cornerRadius
     color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.6)
     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
@@ -129,6 +137,111 @@ Rectangle {
         }
     }
     
+    Item {
+        id: wifiToggleContent
+        anchors.top: headerRow.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: Theme.spacingM
+        anchors.topMargin: Theme.spacingM
+        visible: NetworkService.wifiToggling
+        height: visible ? 80 : 0
+        
+        Column {
+            anchors.centerIn: parent
+            spacing: Theme.spacingM
+            
+            DankIcon {
+                anchors.horizontalCenter: parent.horizontalCenter
+                name: "sync"
+                size: 32
+                color: Theme.primary
+                
+                RotationAnimation on rotation {
+                    running: NetworkService.wifiToggling
+                    loops: Animation.Infinite
+                    from: 0
+                    to: 360
+                    duration: 1000
+                }
+            }
+            
+            StyledText {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: NetworkService.wifiEnabled ? "Disabling WiFi..." : "Enabling WiFi..."
+                font.pixelSize: Theme.fontSizeMedium
+                color: Theme.surfaceText
+                horizontalAlignment: Text.AlignHCenter
+            }
+        }
+    }
+    
+    Item {
+        id: wifiOffContent
+        anchors.top: headerRow.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: Theme.spacingM
+        anchors.topMargin: Theme.spacingM
+        visible: !NetworkService.wifiEnabled && !NetworkService.wifiToggling
+        height: visible ? 120 : 0
+        
+        Column {
+            anchors.centerIn: parent
+            spacing: Theme.spacingL
+            width: parent.width
+            
+            DankIcon {
+                anchors.horizontalCenter: parent.horizontalCenter
+                name: "wifi_off"
+                size: 48
+                color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
+            }
+            
+            StyledText {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "WiFi is off"
+                font.pixelSize: Theme.fontSizeLarge
+                color: Theme.surfaceText
+                font.weight: Font.Medium
+                horizontalAlignment: Text.AlignHCenter
+            }
+            
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 120
+                height: 36
+                radius: 18
+                color: enableWifiButton.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08)
+                border.width: 1
+                border.color: Theme.primary
+                
+                StyledText {
+                    anchors.centerIn: parent
+                    text: "Enable WiFi"
+                    color: Theme.primary
+                    font.pixelSize: Theme.fontSizeMedium
+                    font.weight: Font.Medium
+                }
+                
+                MouseArea {
+                    id: enableWifiButton
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: NetworkService.toggleWifiRadio()
+                }
+                
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Theme.shortDuration
+                        easing.type: Theme.standardEasing
+                    }
+                }
+            }
+        }
+    }
+
     DankFlickable {
         id: wifiContent
         anchors.top: headerRow.bottom
@@ -137,7 +250,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.margins: Theme.spacingM
         anchors.topMargin: Theme.spacingM
-        visible: NetworkService.wifiInterface
+        visible: NetworkService.wifiInterface && NetworkService.wifiEnabled && !NetworkService.wifiToggling
         contentHeight: wifiColumn.height
         clip: true
         
@@ -149,7 +262,7 @@ Rectangle {
             Item {
                 width: parent.width
                 height: 200
-                visible: NetworkService.wifiInterface && NetworkService.wifiNetworks?.length < 1
+                visible: NetworkService.wifiInterface && NetworkService.wifiNetworks?.length < 1 && !NetworkService.wifiToggling
                 
                 DankIcon {
                     anchors.centerIn: parent

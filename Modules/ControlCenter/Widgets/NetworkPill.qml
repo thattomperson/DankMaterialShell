@@ -9,9 +9,23 @@ import qs.Modules.ControlCenter.Widgets
 BasePill {
     id: root
 
-    isActive: NetworkService.networkStatus !== "disconnected"
+    isActive: {
+        if (NetworkService.wifiToggling) {
+            return false
+        }
+        if (NetworkService.networkStatus === "ethernet") {
+            return true
+        }
+        if (NetworkService.networkStatus === "wifi") {
+            return true
+        }
+        return NetworkService.wifiEnabled
+    }
     
     iconName: {
+        if (NetworkService.wifiToggling) {
+            return "sync"
+        }
         if (NetworkService.networkStatus === "ethernet") {
             return "settings_ethernet"
         }
@@ -25,6 +39,9 @@ BasePill {
     }
 
     primaryText: {
+        if (NetworkService.wifiToggling) {
+            return NetworkService.wifiEnabled ? "Disabling WiFi..." : "Enabling WiFi..."
+        }
         if (NetworkService.networkStatus === "ethernet") {
             return "Ethernet"
         }
@@ -38,6 +55,9 @@ BasePill {
     }
 
     secondaryText: {
+        if (NetworkService.wifiToggling) {
+            return "Please wait..."
+        }
         if (NetworkService.networkStatus === "ethernet") {
             return "Connected"
         }
