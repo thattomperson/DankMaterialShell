@@ -20,7 +20,6 @@ Rectangle {
     readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 0 : Math.max(Theme.spacingXS, Theme.spacingS * (widgetHeight / 30))
 
     signal clicked
-    signal iconClicked(string tab)
 
     width: controlIndicators.implicitWidth + horizontalPadding * 2
     height: widgetHeight
@@ -150,46 +149,8 @@ Rectangle {
                             relativeX, barHeight + Theme.spacingXS,
                             width, section, currentScreen)
             }
-
-            // Calculate which zone was clicked based on mouse position relative to controlIndicators
-            var indicatorsX = controlIndicators.x
-            var relativeX = mouseX - indicatorsX
             
-            var iconSpacing = Theme.spacingXS
-            var iconSize = Theme.iconSize - 8
-            var networkWidth = networkIcon.visible ? iconSize : 0
-            var bluetoothWidth = bluetoothIcon.visible ? iconSize : 0
-            var audioWidth = audioIcon.parent.visible ? (iconSize + 4) : 0
-            
-            var currentX = 0
-            var clickedZone = ""
-            
-            // Network zone
-            if (networkIcon.visible && relativeX >= currentX && relativeX < currentX + networkWidth) {
-                clickedZone = "network"
-            }
-            if (networkIcon.visible) {
-                currentX += networkWidth + iconSpacing
-            }
-            
-            // Bluetooth zone  
-            if (bluetoothIcon.visible && relativeX >= currentX && relativeX < currentX + bluetoothWidth) {
-                clickedZone = "bluetooth"
-            }
-            if (bluetoothIcon.visible) {
-                currentX += bluetoothWidth + iconSpacing
-            }
-            
-            // Audio zone
-            if (audioIcon.parent.visible && relativeX >= currentX && relativeX < currentX + audioWidth) {
-                clickedZone = "audio"
-            }
-            
-            if (clickedZone !== "") {
-                root.iconClicked(clickedZone)
-            } else {
-                root.clicked()
-            }
+            root.clicked()
         }
     }
 

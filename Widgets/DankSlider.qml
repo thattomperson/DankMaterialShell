@@ -154,6 +154,24 @@ Item {
                     cursorShape: slider.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     enabled: slider.enabled
                     preventStealing: true
+                    acceptedButtons: Qt.LeftButton
+                    onWheel: function (wheelEvent) {
+                        if (!slider.enabled) return
+                        let delta = wheelEvent.angleDelta.y
+                        let currentValue = slider.value
+                        let step = Math.max(1, (slider.maximum - slider.minimum) / 20)
+                        let newValue
+                        if (delta > 0)
+                            newValue = Math.min(slider.maximum, currentValue + step)
+                        else
+                            newValue = Math.max(slider.minimum, currentValue - step)
+                        newValue = Math.round(newValue)
+                        if (newValue !== slider.value) {
+                            slider.value = newValue
+                            slider.sliderValueChanged(newValue)
+                        }
+                        wheelEvent.accepted = true
+                    }
                     onPressed: mouse => {
                                    if (slider.enabled) {
                                        slider.isDragging = true

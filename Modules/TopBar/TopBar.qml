@@ -1051,15 +1051,6 @@ PanelWindow {
                                     }
                                 }
                             }
-                            onIconClicked: (tab) => {
-                                controlCenterLoader.active = true
-                                if (controlCenterLoader.item) {
-                                    controlCenterLoader.item.triggerScreen = root.screen
-                                    controlCenterLoader.item.openWithTab(tab)
-                                    if (NetworkService.wifiEnabled)
-                                        NetworkService.scanWifi()
-                                }
-                            }
                         }
                     }
 

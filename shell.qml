@@ -9,7 +9,6 @@ import qs.Modules
 import qs.Modules.AppDrawer
 import qs.Modules.CentcomCenter
 import qs.Modules.ControlCenter
-import qs.Modules.ControlCenter.Network
 import qs.Modules.Dock
 import qs.Modules.Lock
 import qs.Modules.Notifications.Center

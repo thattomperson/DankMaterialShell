@@ -8,13 +8,15 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
 import qs.Modules.ControlCenter
+import qs.Modules.ControlCenter.Widgets
+import qs.Modules.ControlCenter.Details
 import qs.Services
 import qs.Widgets
 
 DankPopout {
     id: root
 
-    property string currentTab: "network"
+    property string expandedSection: ""
     property bool powerOptionsExpanded: false
     property string triggerSection: "right"
     property var triggerScreen: null
@@ -27,12 +29,20 @@ DankPopout {
         triggerScreen = screen
     }
 
-    function openWithTab(tab) {
+    function openWithSection(section) {
         if (shouldBeVisible) {
             close()
         } else {
-            currentTab = tab
+            expandedSection = section
             open()
+        }
+    }
+
+    function toggleSection(section) {
+        if (expandedSection === section) {
+            expandedSection = ""
+        } else {
+            expandedSection = section
         }
     }
 
@@ -40,7 +50,7 @@ DankPopout {
     signal lockRequested
 
     popupWidth: 550
-    popupHeight: contentLoader.item ? contentLoader.item.implicitHeight : 600
+    popupHeight: Math.min(Screen.height - 100, contentLoader.item && contentLoader.item.implicitHeight > 0 ? contentLoader.item.implicitHeight + 20 : 400)
     triggerX: Screen.width - 600 - Theme.spacingL
     triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingXS
     triggerWidth: 80
@@ -67,18 +77,7 @@ DankPopout {
         Rectangle {
             id: controlContent
 
-            implicitHeight: {
-                let baseHeight = Theme.spacingL * 2
-                baseHeight += 90 // user header
-                baseHeight += (powerOptionsExpanded ? 60 : 0) + Theme.spacingL // power options
-                baseHeight += 52 + Theme.spacingL // tab bar
-                
-                // Use actual tab content height without adding extra
-                let tabHeight = tabContentLoader.item ? tabContentLoader.item.implicitHeight + Theme.spacingS * 2 : 400
-                baseHeight += Math.min(Math.max(tabHeight, 300), 500)
-                
-                return baseHeight
-            }
+            implicitHeight: mainColumn.implicitHeight + Theme.spacingM
 
             color: Theme.popupBackground()
             radius: Theme.cornerRadius
@@ -113,677 +112,692 @@ DankPopout {
                 target: root
             }
 
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: Theme.spacingL
-                spacing: Theme.spacingM
+            Column {
+                id: mainColumn
+                width: parent.width - Theme.spacingL * 2
+                x: Theme.spacingL
+                y: Theme.spacingL
+                spacing: Theme.spacingL
 
-                Column {
+                Rectangle {
                     width: parent.width
-                    spacing: Theme.spacingL
+                    height: 90
+                    radius: Theme.cornerRadius
+                    color: Qt.rgba(Theme.surfaceVariant.r,
+                                   Theme.surfaceVariant.g,
+                                   Theme.surfaceVariant.b,
+                                   Theme.getContentBackgroundAlpha() * 0.4)
+                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                          Theme.outline.b, 0.08)
+                    border.width: 1
 
-                    Rectangle {
-                        width: parent.width
-                        height: 90
-                        radius: Theme.cornerRadius
-                        color: Qt.rgba(Theme.surfaceVariant.r,
-                                       Theme.surfaceVariant.g,
-                                       Theme.surfaceVariant.b,
-                                       Theme.getContentBackgroundAlpha() * 0.4)
-                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                              Theme.outline.b, 0.08)
-                        border.width: 1
+                    Row {
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.leftMargin: Theme.spacingL
+                        anchors.rightMargin: Theme.spacingL
+                        spacing: Theme.spacingL
 
-                        Row {
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.leftMargin: Theme.spacingL
-                            anchors.rightMargin: Theme.spacingL
-                            spacing: Theme.spacingL
+                        Item {
+                            id: avatarContainer
+
+                            property bool hasImage: profileImageLoader.status === Image.Ready
+
+                            width: 64
+                            height: 64
+
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: width / 2
+                                color: "transparent"
+                                border.color: Theme.primary
+                                border.width: 1
+                                visible: parent.hasImage
+                            }
+
+                            Image {
+                                id: profileImageLoader
+
+                                source: {
+                                    if (PortalService.profileImage === "")
+                                        return ""
+
+                                    if (PortalService.profileImage.startsWith(
+                                                "/"))
+                                        return "file://" + PortalService.profileImage
+
+                                    return PortalService.profileImage
+                                }
+                                smooth: true
+                                asynchronous: true
+                                mipmap: true
+                                cache: true
+                                visible: false
+                            }
+
+                            MultiEffect {
+                                anchors.fill: parent
+                                anchors.margins: 5
+                                source: profileImageLoader
+                                maskEnabled: true
+                                maskSource: circularMask
+                                visible: avatarContainer.hasImage
+                                maskThresholdMin: 0.5
+                                maskSpreadAtMin: 1
+                            }
 
                             Item {
-                                id: avatarContainer
+                                id: circularMask
 
-                                property bool hasImage: profileImageLoader.status === Image.Ready
-
-                                width: 64
-                                height: 64
-
-                                Rectangle {
-                                    anchors.fill: parent
-                                    radius: width / 2
-                                    color: "transparent"
-                                    border.color: Theme.primary
-                                    border.width: 1 // The ring is 1px thick.
-                                    visible: parent.hasImage
-                                }
-
-                                Image {
-                                    id: profileImageLoader
-
-                                    source: {
-                                        if (PortalService.profileImage === "")
-                                            return ""
-
-                                        if (PortalService.profileImage.startsWith(
-                                                    "/"))
-                                            return "file://" + PortalService.profileImage
-
-                                        return PortalService.profileImage
-                                    }
-                                    smooth: true
-                                    asynchronous: true
-                                    mipmap: true
-                                    cache: true
-                                    visible: false // This item is never shown directly.
-                                }
-
-                                MultiEffect {
-                                    anchors.fill: parent
-                                    anchors.margins: 5
-                                    source: profileImageLoader
-                                    maskEnabled: true
-                                    maskSource: circularMask
-                                    visible: avatarContainer.hasImage
-                                    maskThresholdMin: 0.5
-                                    maskSpreadAtMin: 1
-                                }
-
-                                Item {
-                                    id: circularMask
-
-                                    width: 64 - 10
-                                    height: 64 - 10
-                                    layer.enabled: true
-                                    layer.smooth: true
-                                    visible: false
-
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        radius: width / 2
-                                        color: "black"
-                                        antialiasing: true
-                                    }
-                                }
+                                width: 64 - 10
+                                height: 64 - 10
+                                layer.enabled: true
+                                layer.smooth: true
+                                visible: false
 
                                 Rectangle {
                                     anchors.fill: parent
                                     radius: width / 2
-                                    color: Theme.primary
-                                    visible: !parent.hasImage
-
-                                    DankIcon {
-                                        anchors.centerIn: parent
-                                        name: "person"
-                                        size: Theme.iconSize + 8
-                                        color: Theme.primaryText
-                                    }
-                                }
-
-                                DankIcon {
-                                    anchors.centerIn: parent
-                                    name: "warning"
-                                    size: Theme.iconSize + 8
-                                    color: Theme.primaryText
-                                    visible: PortalService.profileImage !== ""
-                                             && profileImageLoader.status === Image.Error
-                                }
-                            }
-
-                            Column {
-                                anchors.verticalCenter: parent.verticalCenter
-                                spacing: Theme.spacingXS
-
-                                StyledText {
-                                    text: UserInfoService.fullName
-                                          || UserInfoService.username || "User"
-                                    font.pixelSize: Theme.fontSizeLarge
-                                    color: Theme.surfaceText
-                                    font.weight: Font.Medium
-                                }
-
-                                StyledText {
-                                    text: "Uptime: " + (UserInfoService.uptime
-                                                        || "Unknown")
-                                    font.pixelSize: Theme.fontSizeSmall
-                                    color: Theme.surfaceVariantText
-                                    font.weight: Font.Normal
-                                }
-                            }
-                        }
-
-                        Row {
-                            anchors.right: parent.right
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.rightMargin: Theme.spacingL
-                            spacing: Theme.spacingS
-
-                            DankActionButton {
-                                buttonSize: 40
-                                iconName: "lock"
-                                iconSize: Theme.iconSize - 2
-                                iconColor: Theme.surfaceText
-                                backgroundColor: Qt.rgba(
-                                                     Theme.surfaceVariant.r,
-                                                     Theme.surfaceVariant.g,
-                                                     Theme.surfaceVariant.b,
-                                                     0.5)
-                                hoverColor: Qt.rgba(Theme.primary.r,
-                                                    Theme.primary.g,
-                                                    Theme.primary.b, 0.12)
-                                onClicked: {
-                                    root.close()
-                                    root.lockRequested()
+                                    color: "black"
+                                    antialiasing: true
                                 }
                             }
 
                             Rectangle {
-                                width: 40
-                                height: 40
-                                radius: 20
-                                color: powerButton.containsMouse
-                                       || root.powerOptionsExpanded ? Qt.rgba(
-                                                                          Theme.error.r,
-                                                                          Theme.error.g,
-                                                                          Theme.error.b,
-                                                                          0.12) : Qt.rgba(
-                                                                          Theme.surfaceVariant.r,
-                                                                          Theme.surfaceVariant.g,
-                                                                          Theme.surfaceVariant.b,
-                                                                          0.5)
+                                anchors.fill: parent
+                                radius: width / 2
+                                color: Theme.primary
+                                visible: !parent.hasImage
 
-                                Rectangle {
+                                DankIcon {
                                     anchors.centerIn: parent
-                                    width: parent.width
-                                    height: parent.height
-                                    radius: parent.radius
-                                    color: "transparent"
-                                    clip: true
+                                    name: "person"
+                                    size: Theme.iconSize + 8
+                                    color: Theme.primaryText
+                                }
+                            }
 
-                                    DankIcon {
-                                        id: dankIcon
+                            DankIcon {
+                                anchors.centerIn: parent
+                                name: "warning"
+                                size: Theme.iconSize + 8
+                                color: Theme.primaryText
+                                visible: PortalService.profileImage !== ""
+                                         && profileImageLoader.status === Image.Error
+                            }
+                        }
 
-                                        anchors.centerIn: parent
-                                        name: root.powerOptionsExpanded ? "expand_less" : "power_settings_new"
-                                        size: Theme.iconSize - 2
-                                        color: powerButton.containsMouse
-                                               || root.powerOptionsExpanded ? Theme.error : Theme.surfaceText
+                        Column {
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: Theme.spacingXS
 
-                                        Behavior on name {
-                                            SequentialAnimation {
-                                                NumberAnimation {
-                                                    target: dankIcon
-                                                    property: "opacity"
-                                                    to: 0
-                                                    duration: Theme.shortDuration / 2
-                                                    easing.type: Theme.standardEasing
-                                                }
+                            StyledText {
+                                text: UserInfoService.fullName
+                                      || UserInfoService.username || "User"
+                                font.pixelSize: Theme.fontSizeLarge
+                                color: Theme.surfaceText
+                                font.weight: Font.Medium
+                            }
 
-                                                PropertyAction {
-                                                    target: dankIcon
-                                                    property: "name"
-                                                }
+                            StyledText {
+                                text: "Uptime: " + (UserInfoService.uptime
+                                                    || "Unknown")
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.surfaceVariantText
+                                font.weight: Font.Normal
+                            }
+                        }
+                    }
 
-                                                NumberAnimation {
-                                                    target: dankIcon
-                                                    property: "opacity"
-                                                    to: 1
-                                                    duration: Theme.shortDuration / 2
-                                                    easing.type: Theme.standardEasing
-                                                }
+                    Row {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.rightMargin: Theme.spacingL
+                        spacing: Theme.spacingS
+
+                        DankActionButton {
+                            buttonSize: 40
+                            iconName: "lock"
+                            iconSize: Theme.iconSize - 2
+                            iconColor: Theme.surfaceText
+                            backgroundColor: Qt.rgba(
+                                                 Theme.surfaceVariant.r,
+                                                 Theme.surfaceVariant.g,
+                                                 Theme.surfaceVariant.b,
+                                                 0.5)
+                            hoverColor: Qt.rgba(Theme.primary.r,
+                                                Theme.primary.g,
+                                                Theme.primary.b, 0.12)
+                            onClicked: {
+                                root.close()
+                                root.lockRequested()
+                            }
+                        }
+
+                        Rectangle {
+                            width: 40
+                            height: 40
+                            radius: 20
+                            color: powerButton.containsMouse
+                                   || root.powerOptionsExpanded ? Qt.rgba(
+                                                                      Theme.error.r,
+                                                                      Theme.error.g,
+                                                                      Theme.error.b,
+                                                                      0.12) : Qt.rgba(
+                                                                      Theme.surfaceVariant.r,
+                                                                      Theme.surfaceVariant.g,
+                                                                      Theme.surfaceVariant.b,
+                                                                      0.5)
+
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: parent.width
+                                height: parent.height
+                                radius: parent.radius
+                                color: "transparent"
+                                clip: true
+
+                                DankIcon {
+                                    id: dankIcon
+
+                                    anchors.centerIn: parent
+                                    name: root.powerOptionsExpanded ? "expand_less" : "power_settings_new"
+                                    size: Theme.iconSize - 2
+                                    color: powerButton.containsMouse
+                                           || root.powerOptionsExpanded ? Theme.error : Theme.surfaceText
+
+                                    Behavior on name {
+                                        SequentialAnimation {
+                                            NumberAnimation {
+                                                target: dankIcon
+                                                property: "opacity"
+                                                to: 0
+                                                duration: Theme.shortDuration / 2
+                                                easing.type: Theme.standardEasing
+                                            }
+
+                                            PropertyAction {
+                                                target: dankIcon
+                                                property: "name"
+                                            }
+
+                                            NumberAnimation {
+                                                target: dankIcon
+                                                property: "opacity"
+                                                to: 1
+                                                duration: Theme.shortDuration / 2
+                                                easing.type: Theme.standardEasing
                                             }
                                         }
                                     }
                                 }
+                            }
 
-                                MouseArea {
-                                    id: powerButton
+                            MouseArea {
+                                id: powerButton
 
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onPressed: {
-                                        root.powerOptionsExpanded = !root.powerOptionsExpanded
-                                    }
-                                }
-
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Theme.shortDuration
-                                        easing.type: Theme.standardEasing
-                                    }
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onPressed: {
+                                    root.powerOptionsExpanded = !root.powerOptionsExpanded
                                 }
                             }
 
-                            DankActionButton {
-                                buttonSize: 40
-                                iconName: "settings"
-                                iconSize: Theme.iconSize - 2
-                                iconColor: Theme.surfaceText
-                                backgroundColor: Qt.rgba(
-                                                     Theme.surfaceVariant.r,
-                                                     Theme.surfaceVariant.g,
-                                                     Theme.surfaceVariant.b,
-                                                     0.5)
-                                hoverColor: Qt.rgba(Theme.primary.r,
-                                                    Theme.primary.g,
-                                                    Theme.primary.b, 0.12)
-                                onClicked: {
-                                    root.close()
-                                    settingsModal.show()
-                                }
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        width: parent.width
-                        height: root.powerOptionsExpanded ? 60 : 0
-                        radius: Theme.cornerRadius
-                        color: Qt.rgba(Theme.surfaceVariant.r,
-                                       Theme.surfaceVariant.g,
-                                       Theme.surfaceVariant.b,
-                                       Theme.getContentBackgroundAlpha() * 0.4)
-                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                              Theme.outline.b, 0.08)
-                        border.width: root.powerOptionsExpanded ? 1 : 0
-                        opacity: root.powerOptionsExpanded ? 1 : 0
-                        clip: true
-
-                        Row {
-                            anchors.centerIn: parent
-                            spacing: Theme.spacingL
-                            visible: root.powerOptionsExpanded
-
-                            Rectangle {
-                                width: 100
-                                height: 34
-                                radius: Theme.cornerRadius
-                                color: logoutButton.containsMouse ? Qt.rgba(
-                                                                        Theme.warning.r,
-                                                                        Theme.warning.g,
-                                                                        Theme.warning.b,
-                                                                        0.12) : Qt.rgba(
-                                                                        Theme.surfaceVariant.r,
-                                                                        Theme.surfaceVariant.g,
-                                                                        Theme.surfaceVariant.b,
-                                                                        0.5)
-
-                                Row {
-                                    anchors.centerIn: parent
-                                    spacing: Theme.spacingXS
-
-                                    DankIcon {
-                                        name: "logout"
-                                        size: Theme.fontSizeSmall
-                                        color: logoutButton.containsMouse ? Theme.warning : Theme.surfaceText
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-
-                                    StyledText {
-                                        text: "Logout"
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        color: logoutButton.containsMouse ? Theme.warning : Theme.surfaceText
-                                        font.weight: Font.Medium
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: logoutButton
-
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onPressed: {
-                                        root.powerOptionsExpanded = false
-                                        root.close()
-                                        root.powerActionRequested(
-                                                    "logout", "Logout",
-                                                    "Are you sure you want to logout?")
-                                    }
-                                }
-
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Theme.shortDuration
-                                        easing.type: Theme.standardEasing
-                                    }
-                                }
-                            }
-
-                            Rectangle {
-                                width: 100
-                                height: 34
-                                radius: Theme.cornerRadius
-                                color: rebootButton.containsMouse ? Qt.rgba(
-                                                                        Theme.warning.r,
-                                                                        Theme.warning.g,
-                                                                        Theme.warning.b,
-                                                                        0.12) : Qt.rgba(
-                                                                        Theme.surfaceVariant.r,
-                                                                        Theme.surfaceVariant.g,
-                                                                        Theme.surfaceVariant.b,
-                                                                        0.5)
-
-                                Row {
-                                    anchors.centerIn: parent
-                                    spacing: Theme.spacingXS
-
-                                    DankIcon {
-                                        name: "restart_alt"
-                                        size: Theme.fontSizeSmall
-                                        color: rebootButton.containsMouse ? Theme.warning : Theme.surfaceText
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-
-                                    StyledText {
-                                        text: "Restart"
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        color: rebootButton.containsMouse ? Theme.warning : Theme.surfaceText
-                                        font.weight: Font.Medium
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: rebootButton
-
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onPressed: {
-                                        root.powerOptionsExpanded = false
-                                        root.close()
-                                        root.powerActionRequested(
-                                                    "reboot", "Restart",
-                                                    "Are you sure you want to restart?")
-                                    }
-                                }
-
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Theme.shortDuration
-                                        easing.type: Theme.standardEasing
-                                    }
-                                }
-                            }
-
-                            Rectangle {
-                                width: 100
-                                height: 34
-                                radius: Theme.cornerRadius
-                                color: suspendButton.containsMouse ? Qt.rgba(
-                                                                         Theme.primary.r,
-                                                                         Theme.primary.g,
-                                                                         Theme.primary.b,
-                                                                         0.12) : Qt.rgba(
-                                                                         Theme.surfaceVariant.r,
-                                                                         Theme.surfaceVariant.g,
-                                                                         Theme.surfaceVariant.b,
-                                                                         0.5)
-
-                                Row {
-                                    anchors.centerIn: parent
-                                    spacing: Theme.spacingXS
-
-                                    DankIcon {
-                                        name: "bedtime"
-                                        size: Theme.fontSizeSmall
-                                        color: suspendButton.containsMouse ? Theme.primary : Theme.surfaceText
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-
-                                    StyledText {
-                                        text: "Suspend"
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        color: suspendButton.containsMouse ? Theme.primary : Theme.surfaceText
-                                        font.weight: Font.Medium
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: suspendButton
-
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onPressed: {
-                                        root.powerOptionsExpanded = false
-                                        root.close()
-                                        root.powerActionRequested(
-                                                    "suspend", "Suspend",
-                                                    "Are you sure you want to suspend?")
-                                    }
-                                }
-
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Theme.shortDuration
-                                        easing.type: Theme.standardEasing
-                                    }
-                                }
-                            }
-
-                            Rectangle {
-                                width: 100
-                                height: 34
-                                radius: Theme.cornerRadius
-                                color: shutdownButton.containsMouse ? Qt.rgba(
-                                                                          Theme.error.r,
-                                                                          Theme.error.g,
-                                                                          Theme.error.b,
-                                                                          0.12) : Qt.rgba(
-                                                                          Theme.surfaceVariant.r,
-                                                                          Theme.surfaceVariant.g,
-                                                                          Theme.surfaceVariant.b,
-                                                                          0.5)
-
-                                Row {
-                                    anchors.centerIn: parent
-                                    spacing: Theme.spacingXS
-
-                                    DankIcon {
-                                        name: "power_settings_new"
-                                        size: Theme.fontSizeSmall
-                                        color: shutdownButton.containsMouse ? Theme.error : Theme.surfaceText
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-
-                                    StyledText {
-                                        text: "Shutdown"
-                                        font.pixelSize: Theme.fontSizeSmall
-                                        color: shutdownButton.containsMouse ? Theme.error : Theme.surfaceText
-                                        font.weight: Font.Medium
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: shutdownButton
-
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onPressed: {
-                                        root.powerOptionsExpanded = false
-                                        root.close()
-                                        root.powerActionRequested(
-                                                    "poweroff", "Shutdown",
-                                                    "Are you sure you want to shutdown?")
-                                    }
-                                }
-
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Theme.shortDuration
-                                        easing.type: Theme.standardEasing
-                                    }
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Theme.shortDuration
+                                    easing.type: Theme.standardEasing
                                 }
                             }
                         }
 
-                        Behavior on height {
-                            NumberAnimation {
-                                duration: Theme.shortDuration
-                                easing.type: Theme.standardEasing
-                            }
-                        }
-
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: Theme.shortDuration
-                                easing.type: Theme.standardEasing
-                            }
-                        }
-                    }
-
-                    Rectangle {
-                        width: parent.width
-                        height: tabBar.height + Theme.spacingM * 2
-                        radius: Theme.cornerRadius
-                        color: Qt.rgba(Theme.surfaceVariant.r,
-                                       Theme.surfaceVariant.g,
-                                       Theme.surfaceVariant.b, 0.15)
-                        border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                              Theme.outline.b, 0.06)
-                        border.width: 1
-
-                        DankTabBar {
-                            id: tabBar
-
-                            anchors.centerIn: parent
-                            width: parent.width - Theme.spacingM * 2
-                            tabHeight: 40
-                            currentIndex: {
-                                let tabs = ["network", "audio"]
-                                if (BluetoothService.available)
-                                    tabs.push("bluetooth")
-
-                                tabs.push("display")
-                                return tabs.indexOf(root.currentTab)
-                            }
-                            model: {
-                                let tabs = [{
-                                                "text": "Network",
-                                                "icon": "wifi",
-                                                "id": "network"
-                                            }]
-                                tabs.push({
-                                              "text": "Audio",
-                                              "icon": "volume_up",
-                                              "id": "audio"
-                                          })
-                                if (BluetoothService.available)
-                                    tabs.push({
-                                                  "text": "Bluetooth",
-                                                  "icon": "bluetooth",
-                                                  "id": "bluetooth"
-                                              })
-
-                                tabs.push({
-                                              "text": "Display",
-                                              "icon": "brightness_6",
-                                              "id": "display"
-                                          })
-                                return tabs
-                            }
-                            onTabClicked: function (index) {
-                                let tabs = ["network", "audio"]
-                                if (BluetoothService.available)
-                                    tabs.push("bluetooth")
-
-                                tabs.push("display")
-                                root.currentTab = tabs[index]
+                        DankActionButton {
+                            buttonSize: 40
+                            iconName: "settings"
+                            iconSize: Theme.iconSize - 2
+                            iconColor: Theme.surfaceText
+                            backgroundColor: Qt.rgba(
+                                                 Theme.surfaceVariant.r,
+                                                 Theme.surfaceVariant.g,
+                                                 Theme.surfaceVariant.b,
+                                                 0.5)
+                            hoverColor: Qt.rgba(Theme.primary.r,
+                                                Theme.primary.g,
+                                                Theme.primary.b, 0.12)
+                            onClicked: {
+                                root.close()
+                                settingsModal.show()
                             }
                         }
                     }
                 }
 
-                Rectangle {
-                    id: tabContentContainer
+                Item {
                     width: parent.width
-                    Layout.fillHeight: true
+                    implicitHeight: root.powerOptionsExpanded ? 60 : 0
+                    height: implicitHeight
+                    clip: true
+
+                Rectangle {
+                    width: parent.width
+                    height: 60
                     radius: Theme.cornerRadius
                     color: Qt.rgba(Theme.surfaceVariant.r,
                                    Theme.surfaceVariant.g,
-                                   Theme.surfaceVariant.b, 0.1)
+                                   Theme.surfaceVariant.b,
+                                   Theme.getContentBackgroundAlpha() * 0.4)
                     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                          Theme.outline.b, 0.05)
-                    border.width: 1
+                                          Theme.outline.b, 0.08)
+                    border.width: root.powerOptionsExpanded ? 1 : 0
+                    opacity: root.powerOptionsExpanded ? 1 : 0
                     clip: true
 
-                    Loader {
-                        id: tabContentLoader
-                        anchors.fill: parent
-                        anchors.margins: Theme.spacingS
-                        asynchronous: true
-                        sourceComponent: {
-                            switch (root.currentTab) {
-                            case "network":
-                                return networkTabComponent
-                            case "audio":
-                                return audioTabComponent
-                            case "bluetooth":
-                                return BluetoothService.available ? bluetoothTabComponent : null
-                            case "display":
-                                return displayTabComponent
-                            default:
-                                return networkTabComponent
-                            }
-                        }
-                    }
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: Theme.spacingL
+                        visible: root.powerOptionsExpanded
 
-                    Component {
-                        id: networkTabComponent
-                        NetworkTab {
-                            implicitHeight: 550
-                        }
-                    }
+                        Rectangle {
+                            width: 100
+                            height: 34
+                            radius: Theme.cornerRadius
+                            color: logoutButton.containsMouse ? Qt.rgba(
+                                                                    Theme.warning.r,
+                                                                    Theme.warning.g,
+                                                                    Theme.warning.b,
+                                                                    0.12) : Qt.rgba(
+                                                                    Theme.surfaceVariant.r,
+                                                                    Theme.surfaceVariant.g,
+                                                                    Theme.surfaceVariant.b,
+                                                                    0.5)
 
-                    Component {
-                        id: audioTabComponent
-                        AudioTab {
-                            implicitHeight: 350
-                        }
-                    }
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: Theme.spacingXS
 
-                    Component {
-                        id: bluetoothTabComponent
-                        BluetoothTab {
-                            implicitHeight: Math.max(300, contentHeight + Theme.spacingL)
-                        }
-                    }
-
-                    Component {
-                        id: displayTabComponent
-                        DisplayTab {
-                            implicitHeight: {
-                                let height = Theme.spacingL
-                                
-                                if (DisplayService.brightnessAvailable) {
-                                    height += 80
-                                    if (DisplayService.devices.length > 1) {
-                                        height += 40
-                                    }
+                                DankIcon {
+                                    name: "logout"
+                                    size: Theme.fontSizeSmall
+                                    color: logoutButton.containsMouse ? Theme.warning : Theme.surfaceText
+                                    anchors.verticalCenter: parent.verticalCenter
                                 }
-                                
-                                height += 120
-                                
-                                return Math.max(height, 200)
+
+                                StyledText {
+                                    text: "Logout"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    color: logoutButton.containsMouse ? Theme.warning : Theme.surfaceText
+                                    font.weight: Font.Medium
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                id: logoutButton
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onPressed: {
+                                    root.powerOptionsExpanded = false
+                                    root.close()
+                                    root.powerActionRequested(
+                                                "logout", "Logout",
+                                                "Are you sure you want to logout?")
+                                }
+                            }
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Theme.shortDuration
+                                    easing.type: Theme.standardEasing
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: 100
+                            height: 34
+                            radius: Theme.cornerRadius
+                            color: rebootButton.containsMouse ? Qt.rgba(
+                                                                    Theme.warning.r,
+                                                                    Theme.warning.g,
+                                                                    Theme.warning.b,
+                                                                    0.12) : Qt.rgba(
+                                                                    Theme.surfaceVariant.r,
+                                                                    Theme.surfaceVariant.g,
+                                                                    Theme.surfaceVariant.b,
+                                                                    0.5)
+
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: Theme.spacingXS
+
+                                DankIcon {
+                                    name: "restart_alt"
+                                    size: Theme.fontSizeSmall
+                                    color: rebootButton.containsMouse ? Theme.warning : Theme.surfaceText
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                StyledText {
+                                    text: "Restart"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    color: rebootButton.containsMouse ? Theme.warning : Theme.surfaceText
+                                    font.weight: Font.Medium
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                id: rebootButton
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onPressed: {
+                                    root.powerOptionsExpanded = false
+                                    root.close()
+                                    root.powerActionRequested(
+                                                "reboot", "Restart",
+                                                "Are you sure you want to restart?")
+                                }
+                            }
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Theme.shortDuration
+                                    easing.type: Theme.standardEasing
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: 100
+                            height: 34
+                            radius: Theme.cornerRadius
+                            color: suspendButton.containsMouse ? Qt.rgba(
+                                                                     Theme.primary.r,
+                                                                     Theme.primary.g,
+                                                                     Theme.primary.b,
+                                                                     0.12) : Qt.rgba(
+                                                                     Theme.surfaceVariant.r,
+                                                                     Theme.surfaceVariant.g,
+                                                                     Theme.surfaceVariant.b,
+                                                                     0.5)
+
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: Theme.spacingXS
+
+                                DankIcon {
+                                    name: "bedtime"
+                                    size: Theme.fontSizeSmall
+                                    color: suspendButton.containsMouse ? Theme.primary : Theme.surfaceText
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                StyledText {
+                                    text: "Suspend"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    color: suspendButton.containsMouse ? Theme.primary : Theme.surfaceText
+                                    font.weight: Font.Medium
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                id: suspendButton
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onPressed: {
+                                    root.powerOptionsExpanded = false
+                                    root.close()
+                                    root.powerActionRequested(
+                                                "suspend", "Suspend",
+                                                "Are you sure you want to suspend?")
+                                }
+                            }
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Theme.shortDuration
+                                    easing.type: Theme.standardEasing
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: 100
+                            height: 34
+                            radius: Theme.cornerRadius
+                            color: shutdownButton.containsMouse ? Qt.rgba(
+                                                                      Theme.error.r,
+                                                                      Theme.error.g,
+                                                                      Theme.error.b,
+                                                                      0.12) : Qt.rgba(
+                                                                      Theme.surfaceVariant.r,
+                                                                      Theme.surfaceVariant.g,
+                                                                      Theme.surfaceVariant.b,
+                                                                      0.5)
+
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: Theme.spacingXS
+
+                                DankIcon {
+                                    name: "power_settings_new"
+                                    size: Theme.fontSizeSmall
+                                    color: shutdownButton.containsMouse ? Theme.error : Theme.surfaceText
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                StyledText {
+                                    text: "Shutdown"
+                                    font.pixelSize: Theme.fontSizeSmall
+                                    color: shutdownButton.containsMouse ? Theme.error : Theme.surfaceText
+                                    font.weight: Font.Medium
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                id: shutdownButton
+
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onPressed: {
+                                    root.powerOptionsExpanded = false
+                                    root.close()
+                                    root.powerActionRequested(
+                                                "poweroff", "Shutdown",
+                                                "Are you sure you want to shutdown?")
+                                }
+                            }
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Theme.shortDuration
+                                    easing.type: Theme.standardEasing
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            Behavior on implicitHeight {
-                NumberAnimation {
-                    duration: 75
-                    easing.type: Easing.OutQuad
+                }
+
+                Row {
+                    width: parent.width
+                    spacing: Theme.spacingM
+
+                    AudioSliderRow {
+                        width: (parent.width - Theme.spacingM) / 2
+                    }
+
+                    BrightnessSliderRow {
+                        width: (parent.width - Theme.spacingM) / 2
+                    }
+                }
+
+                Row {
+                    width: parent.width
+                    spacing: Theme.spacingM
+
+                    NetworkPill {
+                        width: (parent.width - Theme.spacingM) / 2
+                        expanded: root.expandedSection === "network"
+                        onClicked: {
+                            if (NetworkService.networkStatus === "ethernet") {
+                                if (NetworkService.ethernetConnected && NetworkService.wifiConnected) {
+                                    NetworkService.setNetworkPreference("wifi")
+                                    return
+                                }
+                                root.toggleSection("network")
+                                return
+                            }
+                            NetworkService.disconnectWifi()                          
+                        }
+                        onExpandClicked: root.toggleSection("network")
+                    }
+
+                    BluetoothPill {
+                        width: (parent.width - Theme.spacingM) / 2
+                        expanded: root.expandedSection === "bluetooth"
+                        onClicked: {
+                            if (BluetoothService.adapter)
+                                BluetoothService.adapter.enabled = !BluetoothService.adapter.enabled
+                        }
+                        onExpandClicked: root.toggleSection("bluetooth")
+                        visible: BluetoothService.available
+                    }
+                }
+
+                Loader {
+                    width: parent.width
+                    active: root.expandedSection === "network" || root.expandedSection === "bluetooth"
+                    visible: active
+                    sourceComponent: DetailView {
+                        width: parent.width
+                        isVisible: true
+                        title: {
+                            switch (root.expandedSection) {
+                            case "network": return "Network Settings"
+                            case "bluetooth": return "Bluetooth Settings"
+                            default: return ""
+                            }
+                        }
+                        content: {
+                            switch (root.expandedSection) {
+                            case "network": return networkDetailComponent
+                            case "bluetooth": return bluetoothDetailComponent
+                            default: return null
+                            }
+                        }
+                        contentHeight: 250
+                    }
+                }
+
+                Row {
+                    width: parent.width
+                    spacing: Theme.spacingM
+
+                    AudioOutputPill {
+                        width: (parent.width - Theme.spacingM) / 2
+                        expanded: root.expandedSection === "audio_output"
+                        onClicked: {
+                            if (AudioService.sink) {
+                                AudioService.sink.audio.muted = !AudioService.sink.audio.muted
+                            }
+                        }
+                        onExpandClicked: root.toggleSection("audio_output")
+                    }
+
+                    AudioInputPill {
+                        width: (parent.width - Theme.spacingM) / 2
+                        expanded: root.expandedSection === "audio_input"
+                        onClicked: {
+                            if (AudioService.source) {
+                                AudioService.source.audio.muted = !AudioService.source.audio.muted
+                            }
+                        }
+                        onExpandClicked: root.toggleSection("audio_input")
+                    }
+                }
+
+                Loader {
+                    width: parent.width
+                    active: root.expandedSection === "audio_output" || root.expandedSection === "audio_input"
+                    visible: active
+                    sourceComponent: DetailView {
+                        width: parent.width
+                        isVisible: true
+                        title: {
+                            switch (root.expandedSection) {
+                            case "audio_output": return "Audio Output"
+                            case "audio_input": return "Audio Input"
+                            default: return ""
+                            }
+                        }
+                        content: {
+                            switch (root.expandedSection) {
+                            case "audio_output": return audioOutputDetailComponent
+                            case "audio_input": return audioInputDetailComponent
+                            default: return null
+                            }
+                        }
+                        contentHeight: 250
+                    }
+                }
+
+                Row {
+                    width: parent.width
+                    spacing: Theme.spacingM
+
+                    ToggleButton {
+                        width: (parent.width - Theme.spacingM) / 2
+                        iconName: DisplayService.nightModeActive ? "nightlight" : "dark_mode"
+                        text: "Night Mode"
+                        secondaryText: DisplayService.nightModeActive ? "On" : "Off"
+                        isActive: true
+                        enabled: DisplayService.brightnessAvailable
+                        onClicked: DisplayService.toggleNightMode()
+                    }
+
+                    ToggleButton {
+                        width: (parent.width - Theme.spacingM) / 2
+                        iconName: SessionData.isLightMode ? "light_mode" : "palette"
+                        text: "Theme"
+                        secondaryText: SessionData.isLightMode ? "Light" : "Dark"
+                        isActive: true
+                        onClicked: Theme.toggleLightMode()
+                    }
                 }
             }
+
         }
+    }
+
+    Component {
+        id: networkDetailComponent
+        NetworkDetail {}
+    }
+
+    Component {
+        id: bluetoothDetailComponent
+        BluetoothDetail {}
+    }
+
+    Component {
+        id: audioOutputDetailComponent
+        AudioOutputDetail {}
+    }
+
+    Component {
+        id: audioInputDetailComponent
+        AudioInputDetail {}
     }
 }

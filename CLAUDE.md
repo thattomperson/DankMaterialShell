@@ -87,7 +87,7 @@ shell.qml           # Main entry point (minimal orchestration)
 │   ├── AudioService.qml
 │   ├── NetworkService.qml
 │   ├── BluetoothService.qml
-│   ├── BrightnessService.qml
+│   ├── DisplayService.qml
 │   ├── NotificationService.qml
 │   ├── WeatherService.qml
 │   └── [14 more services]
@@ -131,7 +131,7 @@ shell.qml           # Main entry point (minimal orchestration)
 3. **Services/** - System integration singletons
    - **Pattern**: All services use `Singleton` type with `id: root`
    - **Independence**: No cross-service dependencies
-   - **Examples**: AudioService, NetworkService, BluetoothService, BrightnessService, WeatherService, NotificationService, CalendarService, BatteryService, NiriService, MprisController
+   - **Examples**: AudioService, NetworkService, BluetoothService, DisplayService, WeatherService, NotificationService, CalendarService, BatteryService, NiriService, MprisController
    - Services handle system commands, state management, and hardware integration
 
 4. **Modules/** - UI components (93 files)
@@ -294,9 +294,9 @@ shell.qml           # Main entry point (minimal orchestration)
    
    // In modules - adapt UI accordingly
    DankSlider {
-       visible: BrightnessService.brightnessAvailable
-       enabled: BrightnessService.brightnessAvailable
-       value: BrightnessService.brightnessLevel
+       visible: DisplayService.brightnessAvailable
+       enabled: DisplayService.brightnessAvailable
+       value: DisplayService.brightnessLevel
    }
    ```
 
