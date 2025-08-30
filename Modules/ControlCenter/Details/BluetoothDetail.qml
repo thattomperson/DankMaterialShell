@@ -13,7 +13,19 @@ Rectangle {
     border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.08)
     border.width: 1
     
-    property var bluetoothCodecModalRef: bluetoothCodecModal
+    property var bluetoothCodecModalRef: null
+    
+    signal showCodecSelector(var device)
+    
+    function updateDeviceCodecDisplay(deviceAddress, codecName) {
+        for (let i = 0; i < pairedRepeater.count; i++) {
+            let item = pairedRepeater.itemAt(i)
+            if (item && item.modelData && item.modelData.address === deviceAddress) {
+                item.currentCodec = codecName
+                break
+            }
+        }
+    }
     
     Row {
         id: headerRow
@@ -131,9 +143,17 @@ Rectangle {
                     required property var modelData
                     required property int index
                     
+                    property string currentCodec: BluetoothService.deviceCodecs[modelData.address] || ""
+                    
                     width: parent.width
                     height: 50
                     radius: Theme.cornerRadius
+                    
+                    Component.onCompleted: {
+                        if (modelData.connected && BluetoothService.isAudioDevice(modelData)) {
+                            BluetoothService.refreshDeviceCodec(modelData)
+                        }
+                    }
                     color: {
                         if (modelData.state === BluetoothDeviceState.Connecting)
                             return Qt.rgba(Theme.warning.r, Theme.warning.g, Theme.warning.b, 0.12)
@@ -189,8 +209,13 @@ Rectangle {
                                     text: {
                                         if (modelData.state === BluetoothDeviceState.Connecting)
                                             return "Connecting..."
-                                        if (modelData.connected)
-                                            return "Connected"
+                                        if (modelData.connected) {
+                                            let status = "Connected"
+                                            if (currentCodec) {
+                                                status += " • " + currentCodec
+                                            }
+                                            return status
+                                        }
                                         return "Paired"
                                     }
                                     font.pixelSize: Theme.fontSizeSmall
@@ -484,8 +509,8 @@ Rectangle {
             }
             
             onTriggered: {
-                if (bluetoothCodecModalRef && bluetoothContextMenu.currentDevice) {
-                    bluetoothCodecModalRef.show(bluetoothContextMenu.currentDevice)
+                if (bluetoothContextMenu.currentDevice) {
+                    showCodecSelector(bluetoothContextMenu.currentDevice)
                 }
             }
         }
@@ -515,9 +540,4 @@ Rectangle {
         }
     }
     
-    BluetoothCodecSelector {
-        id: bluetoothCodecModal
-        anchors.fill: parent
-        z: 3000
-    }
 }

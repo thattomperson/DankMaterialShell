@@ -10,6 +10,7 @@ import qs.Common
 import qs.Modules.ControlCenter
 import qs.Modules.ControlCenter.Widgets
 import qs.Modules.ControlCenter.Details
+import qs.Modules.ControlCenter.Details 1.0 as Details
 import qs.Services
 import qs.Widgets
 
@@ -74,43 +75,48 @@ DankPopout {
     }
 
     content: Component {
-        Rectangle {
-            id: controlContent
+        Item {
+            implicitHeight: controlContent.implicitHeight
+            property alias bluetoothCodecSelector: bluetoothCodecSelector
+            
+            Rectangle {
+                id: controlContent
 
-            implicitHeight: mainColumn.implicitHeight + Theme.spacingM
+                anchors.fill: parent
+                implicitHeight: mainColumn.implicitHeight + Theme.spacingM
 
-            color: Theme.popupBackground()
-            radius: Theme.cornerRadius
-            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
-                                  Theme.outline.b, 0.08)
-            border.width: 1
-            antialiasing: true
-            smooth: true
-            focus: true
+                color: Theme.popupBackground()
+                radius: Theme.cornerRadius
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g,
+                                      Theme.outline.b, 0.08)
+                border.width: 1
+                antialiasing: true
+                smooth: true
+                focus: true
 
-            Component.onCompleted: {
-                if (root.shouldBeVisible)
-                    forceActiveFocus()
-            }
-
-            Keys.onPressed: function (event) {
-                if (event.key === Qt.Key_Escape) {
-                    root.close()
-                    event.accepted = true
-                } else {
-                    event.accepted = false
-                }
-            }
-
-            Connections {
-                function onShouldBeVisibleChanged() {
+                Component.onCompleted: {
                     if (root.shouldBeVisible)
-                        Qt.callLater(function () {
-                            controlContent.forceActiveFocus()
-                        })
+                        forceActiveFocus()
                 }
-                target: root
-            }
+
+                Keys.onPressed: function (event) {
+                    if (event.key === Qt.Key_Escape) {
+                        root.close()
+                        event.accepted = true
+                    } else {
+                        event.accepted = false
+                    }
+                }
+
+                Connections {
+                    function onShouldBeVisibleChanged() {
+                        if (root.shouldBeVisible)
+                            Qt.callLater(function () {
+                                controlContent.forceActiveFocus()
+                            })
+                    }
+                    target: root
+                }
 
             Column {
                 id: mainColumn
@@ -808,7 +814,13 @@ DankPopout {
                     }
                 }
             }
-
+            }
+            
+            Details.BluetoothCodecSelector {
+                id: bluetoothCodecSelector
+                anchors.fill: parent
+                z: 10000
+            }
         }
     }
 
@@ -819,7 +831,17 @@ DankPopout {
 
     Component {
         id: bluetoothDetailComponent
-        BluetoothDetail {}
+        BluetoothDetail {
+            id: bluetoothDetail
+            onShowCodecSelector: function(device) {
+                if (contentLoader.item && contentLoader.item.bluetoothCodecSelector) {
+                    contentLoader.item.bluetoothCodecSelector.show(device)
+                    contentLoader.item.bluetoothCodecSelector.codecSelected.connect(function(deviceAddress, codecName) {
+                        bluetoothDetail.updateDeviceCodecDisplay(deviceAddress, codecName)
+                    })
+                }
+            }
+        }
     }
 
     Component {
