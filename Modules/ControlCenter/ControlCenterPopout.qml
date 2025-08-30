@@ -792,10 +792,22 @@ DankPopout {
                         width: (parent.width - Theme.spacingM) / 2
                         iconName: DisplayService.nightModeEnabled ? "nightlight" : "dark_mode"
                         text: "Night Mode"
-                        secondaryText: DisplayService.nightModeEnabled ? "On" : "Off"
+                        secondaryText: SessionData.nightModeAutoEnabled ? "Auto" : (DisplayService.nightModeEnabled ? "On" : "Off")
                         isActive: DisplayService.nightModeEnabled
                         enabled: DisplayService.automationAvailable
                         onClicked: DisplayService.toggleNightMode()
+
+                        DankIcon {
+                            anchors.top: parent.top
+                            anchors.right: parent.right
+                            anchors.topMargin: Theme.spacingS
+                            anchors.rightMargin: Theme.spacingS
+                            name: "schedule"
+                            size: 12
+                            color: Theme.primary
+                            visible: SessionData.nightModeAutoEnabled
+                            opacity: 0.8
+                        }
                     }
 
                     ToggleButton {

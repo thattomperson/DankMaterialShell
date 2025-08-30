@@ -667,6 +667,9 @@ Item {
                         checked: SessionData.nightModeAutoEnabled
                         onToggled: (checked) => {
                             SessionData.setNightModeAutoEnabled(checked);
+                            if (checked && !DisplayService.nightModeEnabled) {
+                                DisplayService.toggleNightMode();
+                            }
                         }
 
                         Connections {
