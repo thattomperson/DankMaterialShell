@@ -1,11 +1,10 @@
 import QtQuick
-import QtQuick.Controls
 import Quickshell
 import qs.Common
 import qs.Services
 import qs.Widgets
 
-Item {
+Rectangle {
     id: root
 
     // Passed in by TopBar
@@ -17,20 +16,19 @@ Item {
 
     signal toggleVpnPopup()
 
-    width: Math.max(24, contentRow.implicitWidth + Theme.spacingXS * 2)
+    readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 0 : Math.max(Theme.spacingXS, Theme.spacingS * (widgetHeight / 30))
+
+    width: Theme.iconSize + horizontalPadding * 2
     height: widgetHeight
+    radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
+    color: {
+        if (SettingsData.topBarNoBackground) return "transparent"
+        const base = clickArea.containsMouse || (popupTarget && popupTarget.shouldBeVisible) ? Theme.primaryPressed : Theme.secondaryHover
+        return Qt.rgba(base.r, base.g, base.b, base.a * Theme.widgetTransparency)
+    }
 
-    Row {
-        id: contentRow
-        anchors.fill: parent
-        anchors.margins: 0
-        spacing: Theme.spacingXS
-
-        Rectangle {
-            anchors.fill: parent
-            radius: 6
-            color: "transparent"
-        }
+    Item {
+        anchors.centerIn: parent
 
         DankIcon {
             id: icon
@@ -46,17 +44,6 @@ Item {
                 to: 360
                 duration: 900
             }
-        }
-
-        Text {
-            id: label
-            text: VpnService.connected ? (VpnService.activeName || "VPN") : "VPN"
-            font.pixelSize: Theme.fontSizeSmall
-            font.weight: Font.Medium
-            color: VpnService.connected ? Theme.primary : Theme.surfaceText
-            anchors.verticalCenter: parent.verticalCenter
-            visible: true
-            elide: Text.ElideRight
         }
     }
 
