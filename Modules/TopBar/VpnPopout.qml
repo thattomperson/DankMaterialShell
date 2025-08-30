@@ -22,7 +22,7 @@ DankPopout {
         triggerScreen = screen
     }
 
-    popupWidth: 420
+    popupWidth: 360
     popupHeight: contentLoader.item ? contentLoader.item.implicitHeight : 260
     triggerX: Screen.width - 400 - Theme.spacingL
     triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingS
@@ -64,7 +64,7 @@ DankPopout {
                     width: parent.width
                     height: 28
                     StyledText {
-                        text: "VPN"
+                        text: "VPN Connections"
                         font.pixelSize: Theme.fontSizeLarge
                         color: Theme.surfaceText
                         font.weight: Font.Medium
