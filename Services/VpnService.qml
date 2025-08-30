@@ -18,12 +18,20 @@ Singleton {
     // [{ name, uuid, type }]
     property var profiles: []
 
-    // Active VPN connection (if any)
-    property string activeUuid: ""
-    property string activeName: ""
-    property string activeDevice: ""
-    property string activeState: "" // activating, activated, deactivating
-    property bool connected: activeUuid !== "" && activeState === "activated"
+    // Enforce single active VPN at a time
+    property bool singleActive: true
+
+    // Active VPN connections (may be multiple)
+    // Full list and convenience projections
+    property var activeConnections: [] // [{ name, uuid, device, state }]
+    property var activeUuids: []
+    property var activeNames: []
+    // Back-compat single values (first active if present)
+    property string activeUuid: activeUuids.length > 0 ? activeUuids[0] : ""
+    property string activeName: activeNames.length > 0 ? activeNames[0] : ""
+    property string activeDevice: activeConnections.length > 0 ? (activeConnections[0].device || "") : ""
+    property string activeState: activeConnections.length > 0 ? (activeConnections[0].state || "") : ""
+    property bool connected: activeUuids.length > 0
 
     // Use implicit property notify signals (profilesChanged, activeUuidChanged, etc.)
 
@@ -92,26 +100,22 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 const lines = text.trim().length ? text.trim().split('\n') : []
-                let found = false
+                let act = []
                 for (const line of lines) {
                     const parts = line.split(':')
                     if (parts.length >= 5 && (parts[2] === "vpn" || parts[2] === "wireguard")) {
-                        root.activeName = parts[0]
-                        root.activeUuid = parts[1]
-                        root.activeDevice = parts[3]
-                        root.activeState = parts[4]
-                        found = true
-                        break
+                        act.push({ name: parts[0], uuid: parts[1], device: parts[3], state: parts[4] })
                     }
                 }
-                if (!found) {
-                    root.activeName = ""
-                    root.activeUuid = ""
-                    root.activeDevice = ""
-                    root.activeState = ""
-                }
+                root.activeConnections = act
+                root.activeUuids = act.map(a => a.uuid).filter(u => !!u)
+                root.activeNames = act.map(a => a.name).filter(n => !!n)
             }
         }
+    }
+
+    function isActiveUuid(uuid) {
+        return root.activeUuids && root.activeUuids.indexOf(uuid) !== -1
     }
 
     function _looksLikeUuid(s) {
@@ -123,12 +127,24 @@ Singleton {
         if (root.isBusy) return
         root.isBusy = true
         root.errorMessage = ""
-        if (_looksLikeUuid(uuidOrName)) {
-            vpnUp.command = ["nmcli", "connection", "up", "uuid", uuidOrName]
+        if (root.singleActive) {
+            // Bring down all active VPNs, then bring up the requested one
+            const isUuid = _looksLikeUuid(uuidOrName)
+            const escaped = ('' + uuidOrName).replace(/'/g, "'\\''")
+            const upCmd = isUuid ? `nmcli connection up uuid '${escaped}'` : `nmcli connection up id '${escaped}'`
+            const script = `set -e\n` +
+                           `nmcli -t -f UUID,TYPE connection show --active | awk -F: '$2 ~ /^(vpn|wireguard)$/ {print $1}' | while read u; do [ -n \"$u\" ] && nmcli connection down uuid \"$u\" || true; done\n` +
+                           upCmd + `\n`
+            vpnSwitch.command = ["bash", "-lc", script]
+            vpnSwitch.running = true
         } else {
-            vpnUp.command = ["nmcli", "connection", "up", "id", uuidOrName]
+            if (_looksLikeUuid(uuidOrName)) {
+                vpnUp.command = ["nmcli", "connection", "up", "uuid", uuidOrName]
+            } else {
+                vpnUp.command = ["nmcli", "connection", "up", "id", uuidOrName]
+            }
+            vpnUp.running = true
         }
-        vpnUp.running = true
     }
 
     function disconnect(uuidOrName) {
@@ -189,6 +205,24 @@ Singleton {
             root.isBusy = false
             if (exitCode !== 0 && root.errorMessage === "") {
                 root.errorMessage = "Failed to disconnect VPN"
+            }
+        }
+    }
+
+    // Sequenced down/up using a single shell for exclusive switch
+    Process {
+        id: vpnSwitch
+        running: false
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.isBusy = false
+                refreshAll()
+            }
+        }
+        onExited: exitCode => {
+            root.isBusy = false
+            if (exitCode !== 0 && root.errorMessage === "") {
+                root.errorMessage = "Failed to switch VPN"
             }
         }
     }

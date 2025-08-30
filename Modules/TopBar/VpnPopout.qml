@@ -149,7 +149,12 @@ DankPopout {
                             width: parent.width
 
                             StyledText {
-                                text: VpnService.connected ? ("Active: " + (VpnService.activeName || "VPN")) : "Active: None"
+                                text: {
+                                    if (!VpnService.connected) return "Active: None"
+                                    const names = VpnService.activeNames || []
+                                    if (names.length <= 1) return "Active: " + (names[0] || "VPN")
+                                    return "Active: " + names[0] + " +" + (names.length - 1)
+                                }
                                 font.pixelSize: Theme.fontSizeMedium
                                 color: Theme.surfaceText
                                 font.weight: Font.Medium
@@ -218,9 +223,9 @@ DankPopout {
                                         width: parent ? parent.width : 300
                                         height: 50
                                         radius: Theme.cornerRadius
-                                        color: rowArea.containsMouse ? Theme.primaryHoverLight : (modelData.uuid === VpnService.activeUuid ? Theme.primaryPressed : Theme.surfaceLight)
-                                        border.width: modelData.uuid === VpnService.activeUuid ? 2 : 1
-                                        border.color: modelData.uuid === VpnService.activeUuid ? Theme.primary : Theme.outlineLight
+                                        color: rowArea.containsMouse ? Theme.primaryHoverLight : (VpnService.isActiveUuid(modelData.uuid) ? Theme.primaryPressed : Theme.surfaceLight)
+                                        border.width: VpnService.isActiveUuid(modelData.uuid) ? 2 : 1
+                                        border.color: VpnService.isActiveUuid(modelData.uuid) ? Theme.primary : Theme.outlineLight
 
                                         RowLayout {
                                             anchors.left: parent.left
@@ -232,7 +237,7 @@ DankPopout {
                                             DankIcon {
                                                 name: modelData.uuid === VpnService.activeUuid ? "vpn_lock" : "vpn_key_off"
                                                 size: Theme.iconSize - 4
-                                                color: modelData.uuid === VpnService.activeUuid ? Theme.primary : Theme.surfaceText
+                                                color: VpnService.isActiveUuid(modelData.uuid) ? Theme.primary : Theme.surfaceText
                                                 Layout.alignment: Qt.AlignVCenter
                                             }
 
