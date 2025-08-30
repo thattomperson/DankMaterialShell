@@ -162,12 +162,12 @@ DankPopout {
 
                             Item { Layout.fillWidth: true; height: 1 }
 
-                            // Quick connect
+                            // Quick connect (shown only when none active)
                             Rectangle {
                                 height: 28
                                 radius: 14
                                 color: quickBtnArea.containsMouse ? Theme.primaryHoverLight : Theme.surfaceLight
-                                visible: VpnService.profiles.length > 0
+                                visible: !VpnService.connected && VpnService.profiles.length > 0
                                 width: 120
                                 Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                                 border.width: 1
@@ -189,7 +189,7 @@ DankPopout {
                                 }
                             }
 
-                            // Disconnect all (visible when any active)
+                            // Disconnect all (shown only when any active)
                             Rectangle {
                                 height: 28
                                 radius: 14
@@ -204,7 +204,7 @@ DankPopout {
                                     anchors.centerIn: parent
                                     spacing: Theme.spacingXS
                                     DankIcon { name: "link_off"; size: Theme.fontSizeSmall; color: Theme.surfaceText }
-                                    StyledText { text: "Disconnect All"; font.pixelSize: Theme.fontSizeSmall; color: Theme.surfaceText; font.weight: Font.Medium }
+                                    StyledText { text: "Disconnect"; font.pixelSize: Theme.fontSizeSmall; color: Theme.surfaceText; font.weight: Font.Medium }
                                 }
 
                                 MouseArea {
