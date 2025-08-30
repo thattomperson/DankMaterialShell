@@ -27,23 +27,19 @@ Rectangle {
         return Qt.rgba(base.r, base.g, base.b, base.a * Theme.widgetTransparency)
     }
 
-    Item {
+    DankIcon {
+        id: icon
+        name: VpnService.isBusy ? "sync" : (VpnService.connected ? "vpn_lock" : "vpn_key_off")
+        size: Theme.iconSize - 6
+        color: VpnService.connected ? Theme.primary : Theme.surfaceText
         anchors.centerIn: parent
 
-        DankIcon {
-            id: icon
-            name: VpnService.isBusy ? "sync" : (VpnService.connected ? "vpn_lock" : "vpn_key_off")
-            size: Theme.iconSize - 6
-            color: VpnService.connected ? Theme.primary : Theme.surfaceText
-            anchors.verticalCenter: parent.verticalCenter
-
-            RotationAnimation on rotation {
-                running: VpnService.isBusy
-                loops: Animation.Infinite
-                from: 0
-                to: 360
-                duration: 900
-            }
+        RotationAnimation on rotation {
+            running: VpnService.isBusy
+            loops: Animation.Infinite
+            from: 0
+            to: 360
+            duration: 900
         }
     }
 
