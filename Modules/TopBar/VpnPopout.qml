@@ -23,9 +23,9 @@ DankPopout {
         triggerScreen = screen
     }
 
-    popupWidth: 400
+    popupWidth: 360
     popupHeight: contentLoader.item ? contentLoader.item.implicitHeight : 260
-    triggerX: Screen.width - 400 - Theme.spacingL
+    triggerX: Screen.width - 380 - Theme.spacingL
     triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingS
     triggerWidth: 70
     positioning: "center"
@@ -134,8 +134,8 @@ DankPopout {
                     width: parent.width
                     implicitHeight: detailsColumn.implicitHeight + Theme.spacingM * 2
                     radius: Theme.cornerRadius
-                    color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, Theme.getContentBackgroundAlpha() * 0.4)
-                    border.color: Theme.outlineMedium
+                    color: Qt.rgba(Theme.surfaceContainerHigh.r, Theme.surfaceContainerHigh.g, Theme.surfaceContainerHigh.b, Theme.getContentBackgroundAlpha() * 0.6)
+                    border.color: Theme.outlineStrong
                     border.width: 1
 
                     Column {
@@ -144,7 +144,7 @@ DankPopout {
                         anchors.margins: Theme.spacingM
                         spacing: Theme.spacingS
 
-                        Row {
+                        RowLayout {
                             spacing: Theme.spacingS
                             width: parent.width
 
@@ -155,31 +155,34 @@ DankPopout {
                                 font.weight: Font.Medium
                             }
 
-                            Item { width: 10; height: 1 }
+                            Item { Layout.fillWidth: true; height: 1 }
 
                             // Quick connect when not connected
-                            Rectangle {
-                                height: 28
-                                radius: 14
-                                color: quickBtnArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
-                                visible: !VpnService.connected && VpnService.profiles.length > 0
-                                width: 100
-
-                                Row {
-                                    anchors.centerIn: parent
-                                    spacing: Theme.spacingXS
-                                    DankIcon { name: "link"; size: Theme.fontSizeSmall; color: Theme.surfaceText }
-                                    StyledText { text: "Connect"; font.pixelSize: Theme.fontSizeSmall; color: Theme.surfaceText; font.weight: Font.Medium }
-                                }
-
-                                MouseArea {
-                                    id: quickBtnArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: VpnService.toggle()
-                                }
-                            }
+                            // Rectangle {
+                            //     height: 28
+                            //     radius: 14
+                            //     color: quickBtnArea.containsMouse ? Theme.primaryHoverLight : Theme.surfaceLight
+                            //     visible: !VpnService.connected && VpnService.profiles.length > 0
+                            //     width: 120
+                            //     Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                            //     border.width: 1
+                            //     border.color: Theme.outlineLight
+                            //
+                            //     Row {
+                            //         anchors.centerIn: parent
+                            //         spacing: Theme.spacingXS
+                            //         DankIcon { name: "link"; size: Theme.fontSizeSmall; color: Theme.surfaceText }
+                            //         StyledText { text: "Connect"; font.pixelSize: Theme.fontSizeSmall; color: Theme.surfaceText; font.weight: Font.Medium }
+                            //     }
+                            //
+                            //     MouseArea {
+                            //         id: quickBtnArea
+                            //         anchors.fill: parent
+                            //         hoverEnabled: true
+                            //         cursorShape: Qt.PointingHandCursor
+                            //         onClicked: VpnService.toggle()
+                            //     }
+                            // }
                         }
 
                         Rectangle { height: 1; width: parent.width; color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12) }
@@ -213,11 +216,11 @@ DankPopout {
                                     delegate: Rectangle {
                                         required property var modelData
                                         width: parent ? parent.width : 300
-                                        height: 40
+                                        height: 50
                                         radius: Theme.cornerRadius
-                                        color: rowMouse.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
-                                        border.width: 1
-                                        border.color: modelData.uuid === VpnService.activeUuid ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
+                                        color: rowArea.containsMouse ? Theme.primaryHoverLight : (modelData.uuid === VpnService.activeUuid ? Theme.primaryPressed : Theme.surfaceLight)
+                                        border.width: modelData.uuid === VpnService.activeUuid ? 2 : 1
+                                        border.color: modelData.uuid === VpnService.activeUuid ? Theme.primary : Theme.outlineLight
 
                                         RowLayout {
                                             anchors.left: parent.left
@@ -236,53 +239,24 @@ DankPopout {
                                             StyledText {
                                                 text: modelData.name
                                                 font.pixelSize: Theme.fontSizeMedium
-                                                color: Theme.surfaceText
+                                                color: modelData.uuid === VpnService.activeUuid ? Theme.primary : Theme.surfaceText
                                                 Layout.alignment: Qt.AlignVCenter
                                             }
                                             Item { Layout.fillWidth: true; height: 1 }
-
-                                            Rectangle {
-                                                height: 28
-                                                radius: 14
-                                                color: actMouse.containsMouse
-                                                       ? (modelData.uuid === VpnService.activeUuid
-                                                          ? Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, 0.12)
-                                                          : Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12))
-                                                       : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
-                                                width: 100
-                                                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                                                z: 10
-
-                                                StyledText {
-                                                    anchors.centerIn: parent
-                                                    text: modelData.uuid === VpnService.activeUuid ? "Disconnect" : "Connect"
-                                                    font.pixelSize: Theme.fontSizeSmall
-                                                    color: modelData.uuid === VpnService.activeUuid ? Theme.error : Theme.surfaceText
-                                                    font.weight: Font.Medium
-                                                }
-
-                                                MouseArea {
-                                                    id: actMouse
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    onClicked: {
-                                                        if (modelData.uuid === VpnService.activeUuid) {
-                                                            VpnService.disconnect(modelData.uuid)
-                                                        } else {
-                                                            VpnService.connect(modelData.uuid)
-                                                        }
-                                                    }
-                                                }
-                                            }
                                         }
 
                                         MouseArea {
-                                            id: rowMouse
+                                            id: rowArea
                                             anchors.fill: parent
                                             hoverEnabled: true
-                                            acceptedButtons: Qt.NoButton
-                                            z: -1
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                if (modelData.uuid === VpnService.activeUuid) {
+                                                    VpnService.disconnect(modelData.uuid)
+                                                } else {
+                                                    VpnService.connect(modelData.uuid)
+                                                }
+                                            }
                                         }
                                     }
                                 }
