@@ -18,8 +18,9 @@ Singleton {
     // [{ name, uuid, type }]
     property var profiles: []
 
-    // Enforce single active VPN at a time
-    property bool singleActive: true
+    // Allow multiple active VPNs (set true to allow concurrent connections)
+    // Default: allow multiple, to align with NetworkManager capability
+    property bool singleActive: false
 
     // Active VPN connections (may be multiple)
     // Full list and convenience projections
@@ -160,11 +161,12 @@ Singleton {
     }
 
     function toggle(uuid) {
-        if (root.activeUuid && (uuid === undefined || uuid === root.activeUuid)) {
-            disconnect(root.activeUuid)
-        } else if (uuid) {
-            connect(uuid)
-        } else if (root.profiles.length > 0) {
+        if (uuid) {
+            if (isActiveUuid(uuid)) disconnect(uuid)
+            else connect(uuid)
+            return
+        }
+        if (root.profiles.length > 0) {
             connect(root.profiles[0].uuid)
         }
     }
@@ -207,6 +209,14 @@ Singleton {
                 root.errorMessage = "Failed to disconnect VPN"
             }
         }
+    }
+
+    function disconnectAllActive() {
+        if (root.isBusy) return
+        root.isBusy = true
+        const script = `nmcli -t -f UUID,TYPE connection show --active | awk -F: '$2 ~ /^(vpn|wireguard)$/ {print $1}' | while read u; do [ -n \"$u\" ] && nmcli connection down uuid \"$u\" || true; done`
+        vpnSwitch.command = ["bash", "-lc", script]
+        vpnSwitch.running = true
     }
 
     // Sequenced down/up using a single shell for exclusive switch

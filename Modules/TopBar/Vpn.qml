@@ -77,7 +77,12 @@ Rectangle {
         Text {
             id: tooltipText
             anchors.centerIn: parent
-            text: VpnService.connected ? ("VPN Connected • " + (VpnService.activeName || "")) : "VPN Disconnected"
+            text: {
+                if (!VpnService.connected) return "VPN Disconnected"
+                const names = VpnService.activeNames || []
+                if (names.length <= 1) return "VPN Connected • " + (names[0] || "")
+                return "VPN Connected • " + names[0] + " +" + (names.length - 1)
+            }
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceText
         }

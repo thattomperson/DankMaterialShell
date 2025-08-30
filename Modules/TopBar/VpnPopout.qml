@@ -162,32 +162,59 @@ DankPopout {
 
                             Item { Layout.fillWidth: true; height: 1 }
 
-                            // Quick connect when not connected
-                            // Rectangle {
-                            //     height: 28
-                            //     radius: 14
-                            //     color: quickBtnArea.containsMouse ? Theme.primaryHoverLight : Theme.surfaceLight
-                            //     visible: !VpnService.connected && VpnService.profiles.length > 0
-                            //     width: 120
-                            //     Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                            //     border.width: 1
-                            //     border.color: Theme.outlineLight
-                            //
-                            //     Row {
-                            //         anchors.centerIn: parent
-                            //         spacing: Theme.spacingXS
-                            //         DankIcon { name: "link"; size: Theme.fontSizeSmall; color: Theme.surfaceText }
-                            //         StyledText { text: "Connect"; font.pixelSize: Theme.fontSizeSmall; color: Theme.surfaceText; font.weight: Font.Medium }
-                            //     }
-                            //
-                            //     MouseArea {
-                            //         id: quickBtnArea
-                            //         anchors.fill: parent
-                            //         hoverEnabled: true
-                            //         cursorShape: Qt.PointingHandCursor
-                            //         onClicked: VpnService.toggle()
-                            //     }
-                            // }
+                            // Quick connect
+                            Rectangle {
+                                height: 28
+                                radius: 14
+                                color: quickBtnArea.containsMouse ? Theme.primaryHoverLight : Theme.surfaceLight
+                                visible: VpnService.profiles.length > 0
+                                width: 120
+                                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                                border.width: 1
+                                border.color: Theme.outlineLight
+
+                                Row {
+                                    anchors.centerIn: parent
+                                    spacing: Theme.spacingXS
+                                    DankIcon { name: "link"; size: Theme.fontSizeSmall; color: Theme.surfaceText }
+                                    StyledText { text: "Connect"; font.pixelSize: Theme.fontSizeSmall; color: Theme.surfaceText; font.weight: Font.Medium }
+                                }
+
+                                MouseArea {
+                                    id: quickBtnArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: VpnService.toggle()
+                                }
+                            }
+
+                            // Disconnect all (visible when any active)
+                            Rectangle {
+                                height: 28
+                                radius: 14
+                                color: discAllArea.containsMouse ? Theme.errorHover : Theme.surfaceLight
+                                visible: VpnService.connected
+                                width: 130
+                                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                                border.width: 1
+                                border.color: Theme.outlineLight
+
+                                Row {
+                                    anchors.centerIn: parent
+                                    spacing: Theme.spacingXS
+                                    DankIcon { name: "link_off"; size: Theme.fontSizeSmall; color: Theme.surfaceText }
+                                    StyledText { text: "Disconnect All"; font.pixelSize: Theme.fontSizeSmall; color: Theme.surfaceText; font.weight: Font.Medium }
+                                }
+
+                                MouseArea {
+                                    id: discAllArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: VpnService.disconnectAllActive()
+                                }
+                            }
                         }
 
                         Rectangle { height: 1; width: parent.width; color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12) }
@@ -255,13 +282,7 @@ DankPopout {
                                             anchors.fill: parent
                                             hoverEnabled: true
                                             cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                if (modelData.uuid === VpnService.activeUuid) {
-                                                    VpnService.disconnect(modelData.uuid)
-                                                } else {
-                                                    VpnService.connect(modelData.uuid)
-                                                }
-                                            }
+                                            onClicked: VpnService.toggle(modelData.uuid)
                                         }
                                     }
                                 }
