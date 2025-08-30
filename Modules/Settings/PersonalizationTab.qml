@@ -666,10 +666,12 @@ Item {
                         description: "Only adjust gamma based on time or location rules."
                         checked: SessionData.nightModeAutoEnabled
                         onToggled: (checked) => {
-                            SessionData.setNightModeAutoEnabled(checked);
                             if (checked && !DisplayService.nightModeEnabled) {
                                 DisplayService.toggleNightMode();
+                            } else if (!checked && DisplayService.nightModeEnabled) {
+                                DisplayService.toggleNightMode();
                             }
+                            SessionData.setNightModeAutoEnabled(checked);
                         }
 
                         Connections {
