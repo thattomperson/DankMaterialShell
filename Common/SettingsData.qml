@@ -55,7 +55,7 @@ Singleton {
     property int mediaSize: 1
     property var topBarLeftWidgets: ["launcherButton", "workspaceSwitcher", "focusedWindow"]
     property var topBarCenterWidgets: ["music", "clock", "weather"]
-    property var topBarRightWidgets: ["systemTray", "clipboard", "cpuUsage", "memUsage", "notificationButton", "battery", "vpn", "controlCenterButton"]
+    property var topBarRightWidgets: ["systemTray", "clipboard", "cpuUsage", "memUsage", "notificationButton", "battery", "controlCenterButton"]
     property alias topBarLeftWidgetsModel: leftWidgetsModel
     property alias topBarCenterWidgetsModel: centerWidgetsModel
     property alias topBarRightWidgetsModel: rightWidgetsModel
