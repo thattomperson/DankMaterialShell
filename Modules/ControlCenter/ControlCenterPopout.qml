@@ -240,7 +240,7 @@ DankPopout {
                             }
 
                             StyledText {
-                                text: "Uptime: " + (UserInfoService.uptime
+                                text: (UserInfoService.uptime
                                                     || "Unknown")
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.surfaceVariantText
