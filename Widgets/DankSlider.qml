@@ -14,6 +14,7 @@ Item {
     property string unit: "%"
     property bool showValue: true
     property bool isDragging: false
+    property bool wheelEnabled: true
     readonly property bool containsMouse: sliderMouseArea.containsMouse
 
     signal sliderValueChanged(int newValue)
@@ -156,7 +157,7 @@ Item {
                     preventStealing: true
                     acceptedButtons: Qt.LeftButton
                     onWheel: function (wheelEvent) {
-                        if (!slider.enabled) return
+                        if (!slider.enabled || !slider.wheelEnabled) return
                         let delta = wheelEvent.angleDelta.y
                         let currentValue = slider.value
                         let step = Math.max(1, (slider.maximum - slider.minimum) / 20)

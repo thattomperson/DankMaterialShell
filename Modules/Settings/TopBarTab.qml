@@ -696,6 +696,7 @@ Item {
                             maximum: 32
                             unit: ""
                             showValue: true
+                            wheelEnabled: false
                             onSliderValueChanged: newValue => {
                                                       SettingsData.setTopBarSpacing(
                                                           newValue)
@@ -722,6 +723,7 @@ Item {
                             maximum: 100
                             unit: ""
                             showValue: true
+                            wheelEnabled: false
                             onSliderValueChanged: newValue => {
                                                       SettingsData.setTopBarBottomGap(
                                                           newValue)
@@ -748,6 +750,7 @@ Item {
                             maximum: 24
                             unit: ""
                             showValue: true
+                            wheelEnabled: false
                             onSliderValueChanged: newValue => {
                                                       SettingsData.setTopBarInnerPadding(
                                                           newValue)
@@ -774,6 +777,7 @@ Item {
                             maximum: 32
                             unit: ""
                             showValue: true
+                            wheelEnabled: false
                             onSliderValueChanged: newValue => {
                                                       SettingsData.setCornerRadius(
                                                           newValue)
