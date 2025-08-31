@@ -24,7 +24,7 @@ DankPopout {
     }
 
     popupWidth: 360
-    popupHeight: contentLoader.item ? contentLoader.item.implicitHeight : 260
+    popupHeight: Math.min(Screen.height - 100, contentLoader.item ? contentLoader.item.implicitHeight : 260)
     triggerX: Screen.width - 380 - Theme.spacingL
     triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingS
     triggerWidth: 70
@@ -137,6 +137,7 @@ DankPopout {
                     color: Qt.rgba(Theme.surfaceContainerHigh.r, Theme.surfaceContainerHigh.g, Theme.surfaceContainerHigh.b, Theme.getContentBackgroundAlpha() * 0.6)
                     border.color: Theme.outlineStrong
                     border.width: 1
+                    clip: true
 
                     Column {
                         id: detailsColumn
@@ -199,6 +200,7 @@ DankPopout {
                             width: parent.width
                             height: 160
                             contentHeight: listCol.height
+                            clip: true
 
                             Column {
                                 id: listCol
