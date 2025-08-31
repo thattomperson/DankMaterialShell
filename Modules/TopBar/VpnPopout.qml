@@ -240,7 +240,7 @@ DankPopout {
                                             spacing: Theme.spacingS
 
                                             DankIcon {
-                                                name: modelData.uuid === VpnService.activeUuid ? "vpn_lock" : "vpn_key_off"
+                                                name: VpnService.isActiveUuid(modelData.uuid) ? "vpn_lock" : "vpn_key_off"
                                                 size: Theme.iconSize - 4
                                                 color: VpnService.isActiveUuid(modelData.uuid) ? Theme.primary : Theme.surfaceText
                                                 Layout.alignment: Qt.AlignVCenter
@@ -250,17 +250,35 @@ DankPopout {
                                                 spacing: 2
                                                 Layout.alignment: Qt.AlignVCenter
                                                 
-                                                StyledText {
-                                                    text: modelData.name
-                                                    font.pixelSize: Theme.fontSizeMedium
-                                                    color: VpnService.isActiveUuid(modelData.uuid) ? Theme.primary : Theme.surfaceText
-                                                }
+                                            StyledText {
+                                                text: modelData.name
+                                                font.pixelSize: Theme.fontSizeMedium
+                                                color: VpnService.isActiveUuid(modelData.uuid) ? Theme.primary : Theme.surfaceText
+                                            }
 
-                                                StyledText {
-                                                    text: (modelData.type === "wireguard" ? "WireGuard" : (modelData.type ? modelData.type.toUpperCase() : "VPN"))
-                                                    font.pixelSize: Theme.fontSizeSmall
-                                                    color: Theme.surfaceTextMedium
+                                            StyledText {
+                                                text: {
+                                                    if (modelData.type === "wireguard") return "WireGuard"
+                                                    var svc = modelData.serviceType || ""
+                                                    if (svc.indexOf("openvpn") !== -1) return "OpenVPN"
+                                                    if (svc.indexOf("wireguard") !== -1) return "WireGuard (plugin)"
+                                                    if (svc.indexOf("openconnect") !== -1) return "OpenConnect"
+                                                    if (svc.indexOf("fortissl") !== -1 || svc.indexOf("forti") !== -1) return "Fortinet"
+                                                    if (svc.indexOf("strongswan") !== -1) return "IPsec (strongSwan)"
+                                                    if (svc.indexOf("libreswan") !== -1) return "IPsec (Libreswan)"
+                                                    if (svc.indexOf("l2tp") !== -1) return "L2TP/IPsec"
+                                                    if (svc.indexOf("pptp") !== -1) return "PPTP"
+                                                    if (svc.indexOf("vpnc") !== -1) return "Cisco (vpnc)"
+                                                    if (svc.indexOf("sstp") !== -1) return "SSTP"
+                                                    if (svc) {
+                                                        var parts = svc.split('.')
+                                                        return parts[parts.length-1]
+                                                    }
+                                                    return "VPN"
                                                 }
+                                                font.pixelSize: Theme.fontSizeSmall
+                                                color: Theme.surfaceTextMedium
+                                            }
                                             }
                                             Item { Layout.fillWidth: true; height: 1 }
                                         }

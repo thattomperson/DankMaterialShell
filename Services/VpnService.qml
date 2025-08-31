@@ -72,7 +72,7 @@ Singleton {
 
     Process {
         id: getProfiles
-        command: ["nmcli", "-t", "-f", "NAME,UUID,TYPE", "connection", "show"]
+        command: ["bash", "-lc", "nmcli -t -f NAME,UUID,TYPE connection show | while IFS=: read -r name uuid type; do case \"$type\" in vpn) svc=$(nmcli -g vpn.service-type connection show uuid \"$uuid\" 2>/dev/null); echo \"$name:$uuid:$type:$svc\" ;; wireguard) echo \"$name:$uuid:$type:\" ;; *) : ;; esac; done"]
         running: false
         stdout: StdioCollector {
             onStreamFinished: {
@@ -81,7 +81,8 @@ Singleton {
                 for (const line of lines) {
                     const parts = line.split(':')
                     if (parts.length >= 3 && (parts[2] === "vpn" || parts[2] === "wireguard")) {
-                        out.push({ name: parts[0], uuid: parts[1], type: parts[2] })
+                        const svc = parts.length >= 4 ? parts[3] : ""
+                        out.push({ name: parts[0], uuid: parts[1], type: parts[2], serviceType: svc })
                     }
                 }
                 root.profiles = out
