@@ -162,32 +162,8 @@ DankPopout {
 
                             Item { Layout.fillWidth: true; height: 1 }
 
-                            // Quick connect (shown only when none active)
-                            Rectangle {
-                                height: 28
-                                radius: 14
-                                color: quickBtnArea.containsMouse ? Theme.primaryHoverLight : Theme.surfaceLight
-                                visible: !VpnService.connected && VpnService.profiles.length > 0
-                                width: 120
-                                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                                border.width: 1
-                                border.color: Theme.outlineLight
-
-                                Row {
-                                    anchors.centerIn: parent
-                                    spacing: Theme.spacingXS
-                                    DankIcon { name: "link"; size: Theme.fontSizeSmall; color: Theme.surfaceText }
-                                    StyledText { text: "Connect"; font.pixelSize: Theme.fontSizeSmall; color: Theme.surfaceText; font.weight: Font.Medium }
-                                }
-
-                                MouseArea {
-                                    id: quickBtnArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: VpnService.toggle()
-                                }
-                            }
+                            // Removed Quick Connect for clarity
+                            Item { width: 1; height: 1 }
 
                             // Disconnect all (shown only when any active)
                             Rectangle {
@@ -268,11 +244,21 @@ DankPopout {
                                                 Layout.alignment: Qt.AlignVCenter
                                             }
 
-                                            StyledText {
-                                                text: modelData.name
-                                                font.pixelSize: Theme.fontSizeMedium
-                                                color: modelData.uuid === VpnService.activeUuid ? Theme.primary : Theme.surfaceText
+                                            Column {
+                                                spacing: 2
                                                 Layout.alignment: Qt.AlignVCenter
+                                                
+                                                StyledText {
+                                                    text: modelData.name
+                                                    font.pixelSize: Theme.fontSizeMedium
+                                                    color: VpnService.isActiveUuid(modelData.uuid) ? Theme.primary : Theme.surfaceText
+                                                }
+
+                                                StyledText {
+                                                    text: (modelData.type === "wireguard" ? "WireGuard" : (modelData.type ? modelData.type.toUpperCase() : "VPN"))
+                                                    font.pixelSize: Theme.fontSizeSmall
+                                                    color: Theme.surfaceTextMedium
+                                                }
                                             }
                                             Item { Layout.fillWidth: true; height: 1 }
                                         }
