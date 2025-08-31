@@ -177,6 +177,17 @@ ShellRoot {
     }
 
     LazyLoader {
+        id: vpnPopoutLoader
+
+        active: false
+
+        VpnPopout {
+            id: vpnPopout
+        }
+
+    }
+
+    LazyLoader {
         id: powerMenuLoader
 
         active: false

@@ -339,6 +339,8 @@ PanelWindow {
                             return DgopService.dgopAvailable
                         case "keyboard_layout_name":
                             return true
+                        case "vpn":
+                            return true
                         default:
                             return false
                         }
@@ -390,6 +392,8 @@ PanelWindow {
                             return networkComponent
                         case "keyboard_layout_name":
                             return keyboardLayoutNameComponent
+                        case "vpn":
+                            return vpnComponent
                         default:
                             return null
                         }
@@ -1017,6 +1021,35 @@ PanelWindow {
                                 batteryPopoutLoader.active = true
                                 if (batteryPopoutLoader.item) {
                                     batteryPopoutLoader.item.toggle()
+                                }
+                            }
+                        }
+                    }
+
+                    Component {
+                        id: vpnComponent
+
+                        Vpn {
+                            widgetHeight: root.widgetHeight
+                            barHeight: root.effectiveBarHeight
+                            section: {
+                                if (parent && parent.parent === leftSection)
+                                    return "left"
+                                if (parent && parent.parent === rightSection)
+                                    return "right"
+                                if (parent && parent.parent === centerSection)
+                                    return "center"
+                                return "right"
+                            }
+                            popupTarget: {
+                                vpnPopoutLoader.active = true
+                                return vpnPopoutLoader.item
+                            }
+                            parentScreen: root.screen
+                            onToggleVpnPopup: {
+                                vpnPopoutLoader.active = true
+                                if (vpnPopoutLoader.item) {
+                                    vpnPopoutLoader.item.toggle()
                                 }
                             }
                         }

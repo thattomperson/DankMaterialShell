@@ -115,6 +115,12 @@ Item {
             "icon": "battery_std",
             "enabled": true
         }, {
+            "id": "vpn",
+            "text": "VPN",
+            "description": "VPN status and quick connect",
+            "icon": "vpn_lock",
+            "enabled": true
+        }, {
             "id": "idleInhibitor",
             "text": "Idle Inhibitor",
             "description": "Prevent screen timeout",
