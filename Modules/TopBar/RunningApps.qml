@@ -55,39 +55,87 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         acceptedButtons: Qt.NoButton
-        onWheel: {
+        
+        property real scrollAccumulator: 0
+        property real touchpadThreshold: 500
+        
+        onWheel: (wheel) => {
+            const deltaY = wheel.angleDelta.y
+            const isMouseWheel = Math.abs(deltaY) >= 120
+                && (Math.abs(deltaY) % 120) === 0
+            
             var windows = root.sortedToplevels;
             if (windows.length < 2) {
                 return;
             }
-
-            var currentIndex = -1;
-            for (var i = 0; i < windows.length; i++) {
-                if (windows[i].activated) {
-                    currentIndex = i;
-                    break;
+            
+            if (isMouseWheel) {
+                // Direct mouse wheel action
+                var currentIndex = -1;
+                for (var i = 0; i < windows.length; i++) {
+                    if (windows[i].activated) {
+                        currentIndex = i;
+                        break;
+                    }
                 }
-            }
 
-            var nextIndex;
-            if (wheel.angleDelta.y < 0) {
-                if (currentIndex === -1) {
-                    nextIndex = 0;
+                var nextIndex;
+                if (deltaY < 0) {
+                    if (currentIndex === -1) {
+                        nextIndex = 0;
+                    } else {
+                        nextIndex = (currentIndex + 1) % windows.length;
+                    }
                 } else {
-                    nextIndex = (currentIndex + 1) % windows.length;
+                    if (currentIndex === -1) {
+                        nextIndex = windows.length - 1;
+                    } else {
+                        nextIndex = (currentIndex - 1 + windows.length) % windows.length;
+                    }
+                }
+
+                var nextWindow = windows[nextIndex];
+                if (nextWindow) {
+                    nextWindow.activate();
                 }
             } else {
-                if (currentIndex === -1) {
-                    nextIndex = windows.length - 1;
-                } else {
-                    nextIndex = (currentIndex - 1 + windows.length) % windows.length;
+                // Touchpad - accumulate small deltas
+                scrollAccumulator += deltaY
+                
+                if (Math.abs(scrollAccumulator) >= touchpadThreshold) {
+                    var currentIndex = -1;
+                    for (var i = 0; i < windows.length; i++) {
+                        if (windows[i].activated) {
+                            currentIndex = i;
+                            break;
+                        }
+                    }
+
+                    var nextIndex;
+                    if (scrollAccumulator < 0) {
+                        if (currentIndex === -1) {
+                            nextIndex = 0;
+                        } else {
+                            nextIndex = (currentIndex + 1) % windows.length;
+                        }
+                    } else {
+                        if (currentIndex === -1) {
+                            nextIndex = windows.length - 1;
+                        } else {
+                            nextIndex = (currentIndex - 1 + windows.length) % windows.length;
+                        }
+                    }
+
+                    var nextWindow = windows[nextIndex];
+                    if (nextWindow) {
+                        nextWindow.activate();
+                    }
+                    
+                    scrollAccumulator = 0
                 }
             }
-
-            var nextWindow = windows[nextIndex];
-            if (nextWindow) {
-                nextWindow.activate();
-            }
+            
+            wheel.accepted = true
         }
     }
 
