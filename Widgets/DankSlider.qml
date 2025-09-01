@@ -52,8 +52,9 @@ Item {
             StyledRect {
                 id: sliderFill
 
-                width: parent.width * ((slider.value - slider.minimum)
-                                       / (slider.maximum - slider.minimum))
+                width: (parent.width - sliderHandle.width) * (
+                    (slider.value - slider.minimum) / (slider.maximum - slider.minimum)
+                ) + sliderHandle.width
                 height: parent.height
                 radius: parent.radius
                 color: slider.enabled ? Theme.primary : Theme.surfaceVariantText
@@ -78,8 +79,7 @@ Item {
                                                    Theme.surfaceVariantText,
                                                    1.3)
                 border.width: 2
-                x: Math.max(0, Math.min(parent.width - width,
-                                        sliderFill.width - width / 2))
+                x: sliderFill.width - width
                 anchors.verticalCenter: parent.verticalCenter
                 scale: sliderMouseArea.containsMouse
                        || sliderMouseArea.pressed ? 1.2 : 1
@@ -181,7 +181,9 @@ Item {
                                        slider.isDragging = true
                                        sliderMouseArea.isDragging = true
                                        let ratio = Math.max(
-                                           0, Math.min(1, mouse.x / width))
+                                           0, Math.min(1, (
+                                               mouse.x - sliderHandle.width / 2) / (
+                                                   width - sliderHandle.width)))
                                        let newValue = Math.round(
                                            slider.minimum + ratio
                                            * (slider.maximum - slider.minimum))
@@ -200,8 +202,9 @@ Item {
                                            if (pressed && slider.isDragging
                                                && slider.enabled) {
                                                let ratio = Math.max(
-                                                   0, Math.min(1,
-                                                               mouse.x / width))
+                                                   0, Math.min(1, (
+                                                       mouse.x - sliderHandle.width / 2) / (
+                                                           width - sliderHandle.width)))
                                                let newValue = Math.round(
                                                    slider.minimum + ratio
                                                    * (slider.maximum - slider.minimum))
@@ -213,7 +216,9 @@ Item {
                     onClicked: mouse => {
                                    if (slider.enabled && !slider.isDragging) {
                                        let ratio = Math.max(
-                                           0, Math.min(1, mouse.x / width))
+                                           0, Math.min(1, (
+                                               mouse.x - sliderHandle.width / 2) / (
+                                                   width - sliderHandle.width)))
                                        let newValue = Math.round(
                                            slider.minimum + ratio
                                            * (slider.maximum - slider.minimum))
