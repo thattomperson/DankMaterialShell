@@ -180,7 +180,7 @@ mkdir -p ~/.config/quickshell
 git clone https://github.com/AvengeMedia/DankMaterialShell.git ~/.config/quickshell/dms
 ```
 ```bash
-qs -c DankMaterialShell
+qs -c dms
 ```
 
 ### Detailed Setup
