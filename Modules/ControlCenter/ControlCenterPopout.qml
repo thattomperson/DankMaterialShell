@@ -280,82 +280,23 @@ DankPopout {
                             }
                         }
 
-                        Rectangle {
-                            width: 40
-                            height: 40
-                            radius: 20
-                            color: powerButton.containsMouse
-                                   || root.powerOptionsExpanded ? Qt.rgba(
-                                                                      Theme.error.r,
-                                                                      Theme.error.g,
-                                                                      Theme.error.b,
-                                                                      0.12) : Qt.rgba(
-                                                                      Theme.surfaceVariant.r,
-                                                                      Theme.surfaceVariant.g,
-                                                                      Theme.surfaceVariant.b,
-                                                                      0.5)
-
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: parent.width
-                                height: parent.height
-                                radius: parent.radius
-                                color: "transparent"
-                                clip: true
-
-                                DankIcon {
-                                    id: dankIcon
-
-                                    anchors.centerIn: parent
-                                    name: root.powerOptionsExpanded ? "expand_less" : "power_settings_new"
-                                    size: Theme.iconSize - 2
-                                    color: powerButton.containsMouse
-                                           || root.powerOptionsExpanded ? Theme.error : Theme.surfaceText
-
-                                    Behavior on name {
-                                        SequentialAnimation {
-                                            NumberAnimation {
-                                                target: dankIcon
-                                                property: "opacity"
-                                                to: 0
-                                                duration: Theme.shortDuration / 2
-                                                easing.type: Theme.standardEasing
-                                            }
-
-                                            PropertyAction {
-                                                target: dankIcon
-                                                property: "name"
-                                            }
-
-                                            NumberAnimation {
-                                                target: dankIcon
-                                                property: "opacity"
-                                                to: 1
-                                                duration: Theme.shortDuration / 2
-                                                easing.type: Theme.standardEasing
-                                            }
-                                        }
-                                    }
-                                }
+                        DankActionButton {
+                            buttonSize: 40
+                            iconName: root.powerOptionsExpanded ? "expand_less" : "power_settings_new"
+                            iconSize: Theme.iconSize - 2
+                            iconColor: Theme.surfaceText
+                            backgroundColor: Qt.rgba(
+                                                 Theme.surfaceVariant.r,
+                                                 Theme.surfaceVariant.g,
+                                                 Theme.surfaceVariant.b,
+                                                 0.5)
+                            hoverColor: Qt.rgba(Theme.primary.r,
+                                                Theme.primary.g,
+                                                Theme.primary.b, 0.12)
+                            onClicked: {
+                                root.powerOptionsExpanded = !root.powerOptionsExpanded
                             }
 
-                            MouseArea {
-                                id: powerButton
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onPressed: {
-                                    root.powerOptionsExpanded = !root.powerOptionsExpanded
-                                }
-                            }
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.shortDuration
-                                    easing.type: Theme.standardEasing
-                                }
-                            }
                         }
 
                         DankActionButton {
@@ -409,9 +350,9 @@ DankPopout {
                             height: 34
                             radius: Theme.cornerRadius
                             color: logoutButton.containsMouse ? Qt.rgba(
-                                                                    Theme.warning.r,
-                                                                    Theme.warning.g,
-                                                                    Theme.warning.b,
+                                                                    Theme.primary.r,
+                                                                    Theme.primary.g,
+                                                                    Theme.primary.b,
                                                                     0.12) : Qt.rgba(
                                                                     Theme.surfaceVariant.r,
                                                                     Theme.surfaceVariant.g,
@@ -425,14 +366,14 @@ DankPopout {
                                 DankIcon {
                                     name: "logout"
                                     size: Theme.fontSizeSmall
-                                    color: logoutButton.containsMouse ? Theme.warning : Theme.surfaceText
+                                    color: logoutButton.containsMouse ? Theme.primary : Theme.surfaceText
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
 
                                 StyledText {
                                     text: "Logout"
                                     font.pixelSize: Theme.fontSizeSmall
-                                    color: logoutButton.containsMouse ? Theme.warning : Theme.surfaceText
+                                    color: logoutButton.containsMouse ? Theme.primary : Theme.surfaceText
                                     font.weight: Font.Medium
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -452,13 +393,6 @@ DankPopout {
                                                 "Are you sure you want to logout?")
                                 }
                             }
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.shortDuration
-                                    easing.type: Theme.standardEasing
-                                }
-                            }
                         }
 
                         Rectangle {
@@ -466,9 +400,9 @@ DankPopout {
                             height: 34
                             radius: Theme.cornerRadius
                             color: rebootButton.containsMouse ? Qt.rgba(
-                                                                    Theme.warning.r,
-                                                                    Theme.warning.g,
-                                                                    Theme.warning.b,
+                                                                    Theme.primary.r,
+                                                                    Theme.primary.g,
+                                                                    Theme.primary.b,
                                                                     0.12) : Qt.rgba(
                                                                     Theme.surfaceVariant.r,
                                                                     Theme.surfaceVariant.g,
@@ -482,14 +416,14 @@ DankPopout {
                                 DankIcon {
                                     name: "restart_alt"
                                     size: Theme.fontSizeSmall
-                                    color: rebootButton.containsMouse ? Theme.warning : Theme.surfaceText
+                                    color: rebootButton.containsMouse ? Theme.primary : Theme.surfaceText
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
 
                                 StyledText {
                                     text: "Restart"
                                     font.pixelSize: Theme.fontSizeSmall
-                                    color: rebootButton.containsMouse ? Theme.warning : Theme.surfaceText
+                                    color: rebootButton.containsMouse ? Theme.primary : Theme.surfaceText
                                     font.weight: Font.Medium
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -507,13 +441,6 @@ DankPopout {
                                     root.powerActionRequested(
                                                 "reboot", "Restart",
                                                 "Are you sure you want to restart?")
-                                }
-                            }
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.shortDuration
-                                    easing.type: Theme.standardEasing
                                 }
                             }
                         }
@@ -566,13 +493,6 @@ DankPopout {
                                                 "Are you sure you want to suspend?")
                                 }
                             }
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.shortDuration
-                                    easing.type: Theme.standardEasing
-                                }
-                            }
                         }
 
                         Rectangle {
@@ -580,9 +500,9 @@ DankPopout {
                             height: 34
                             radius: Theme.cornerRadius
                             color: shutdownButton.containsMouse ? Qt.rgba(
-                                                                      Theme.error.r,
-                                                                      Theme.error.g,
-                                                                      Theme.error.b,
+                                                                      Theme.primary.r,
+                                                                      Theme.primary.g,
+                                                                      Theme.primary.b,
                                                                       0.12) : Qt.rgba(
                                                                       Theme.surfaceVariant.r,
                                                                       Theme.surfaceVariant.g,
@@ -596,14 +516,14 @@ DankPopout {
                                 DankIcon {
                                     name: "power_settings_new"
                                     size: Theme.fontSizeSmall
-                                    color: shutdownButton.containsMouse ? Theme.error : Theme.surfaceText
+                                    color: shutdownButton.containsMouse ? Theme.primary : Theme.surfaceText
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
 
                                 StyledText {
                                     text: "Shutdown"
                                     font.pixelSize: Theme.fontSizeSmall
-                                    color: shutdownButton.containsMouse ? Theme.error : Theme.surfaceText
+                                    color: shutdownButton.containsMouse ? Theme.primary : Theme.surfaceText
                                     font.weight: Font.Medium
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -621,13 +541,6 @@ DankPopout {
                                     root.powerActionRequested(
                                                 "poweroff", "Shutdown",
                                                 "Are you sure you want to shutdown?")
-                                }
-                            }
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: Theme.shortDuration
-                                    easing.type: Theme.standardEasing
                                 }
                             }
                         }
