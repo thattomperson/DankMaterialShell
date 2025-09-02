@@ -170,7 +170,7 @@ fc-cache -f
 
 # Arch linux available via AUR
 ```bash
-paru -S dankmaterialshell-git
+paru -S dms-shell-git # Or dms-shell for latest tag
 ```
 
 # Manual install
