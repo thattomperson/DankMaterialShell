@@ -375,30 +375,28 @@ Rectangle {
                 
                 Rectangle {
                     anchors.fill: parent
-                    anchors.margins: Theme.spacingS
-                    height: 28
-                    radius: Theme.cornerRadius / 2
+                    radius: parent.radius
                     color: closeMouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
-                    
-                    StyledText {
-                        anchors.centerIn: parent
-                        text: "Close"
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceText
-                        font.weight: Font.Normal
-                    }
-                    
-                    MouseArea {
-                        id: closeMouseArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            if (contextMenuWindow.currentWindow) {
-                                contextMenuWindow.currentWindow.close()
-                            }
-                            contextMenuWindow.close()
+                }
+                
+                StyledText {
+                    anchors.centerIn: parent
+                    text: "Close"
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceText
+                    font.weight: Font.Normal
+                }
+                
+                MouseArea {
+                    id: closeMouseArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (contextMenuWindow.currentWindow) {
+                            contextMenuWindow.currentWindow.close()
                         }
+                        contextMenuWindow.close()
                     }
                 }
             }
