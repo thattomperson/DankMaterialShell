@@ -258,7 +258,7 @@ Item {
 
                         anchors.fill: parent
                         anchors.leftMargin: lockIcon.width + Theme.spacingM * 2
-                        anchors.rightMargin: (revealButton.visible ? revealButton.width + Theme.spacingM : 0) + (enterButton.visible ? enterButton.width + Theme.spacingM : 0) + (loadingSpinner.visible ? loadingSpinner.width + Theme.spacingM : Theme.spacingM)
+                        anchors.rightMargin: (revealButton.visible ? revealButton.width + Theme.spacingM : 0) + (enterButton.visible ? enterButton.width + Theme.spacingM : 0) + (virtualKeyboardButton.visible ? virtualKeyboardButton.width + Theme.spacingM : 0) + (loadingSpinner.visible ? loadingSpinner.width + Theme.spacingM : Theme.spacingM)
                         opacity: 0
                         focus: !demoMode
                         enabled: !demoMode
@@ -295,6 +295,12 @@ Item {
                         }
                     }
 
+		    KeyboardController {
+        	        id: keyboardController
+        		target: passwordField
+        		rootObject: root
+    		    }
+
                     StyledText {
                         id: placeholder
 
@@ -302,7 +308,7 @@ Item {
 
                         anchors.left: lockIcon.right
                         anchors.leftMargin: Theme.spacingM
-                        anchors.right: (revealButton.visible ? revealButton.left : (enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right)))
+                        anchors.right: (virtualKeyboardButton.visible ? virtualKeyboardButton.left : (revealButton.visible ? revealButton.left : (enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right))))
                         anchors.rightMargin: Theme.spacingS
                         anchors.verticalCenter: parent.verticalCenter
                         text: {
@@ -340,7 +346,7 @@ Item {
                     StyledText {
                         anchors.left: lockIcon.right
                         anchors.leftMargin: Theme.spacingM
-                        anchors.right: (revealButton.visible ? revealButton.left : (enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right)))
+                        anchors.right: (virtualKeyboardButton.visible ? virtualKeyboardButton.left : (revealButton.visible ? revealButton.left : (enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right))))
                         anchors.rightMargin: Theme.spacingS
                         anchors.verticalCenter: parent.verticalCenter
                         text: {
@@ -379,6 +385,27 @@ Item {
                                  && !pam.active && !LockScreenService.unlocking
                         enabled: visible
                         onClicked: parent.showPassword = !parent.showPassword
+                    }
+		    DankActionButton {
+                        id: virtualKeyboardButton
+
+                        anchors.right: revealButton.left
+                        anchors.rightMargin: Theme.spacingS
+                        anchors.verticalCenter: parent.verticalCenter
+                        iconName: "keyboard"
+                        buttonSize: 32
+                        visible: !demoMode && !pam.active && !LockScreenService.unlocking
+                        enabled: visible
+                        onClicked:
+                        {
+			    if(keyboardController.isKeyboardActive)
+			    {
+                                keyboardController.hide()
+		            } else				
+			    {
+			    	keyboardController.show()
+		            }
+                        }
                     }
 
                     Rectangle {
