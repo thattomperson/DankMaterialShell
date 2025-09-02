@@ -258,7 +258,7 @@ Item {
 
                         anchors.fill: parent
                         anchors.leftMargin: lockIcon.width + Theme.spacingM * 2
-                        anchors.rightMargin: (revealButton.visible ? revealButton.width + Theme.spacingM : 0) + (enterButton.visible ? enterButton.width + Theme.spacingM : 0) + (virtualKeyboardButton.visible ? virtualKeyboardButton.width + Theme.spacingM : 0) + (loadingSpinner.visible ? loadingSpinner.width + Theme.spacingM : Theme.spacingM)
+                        anchors.rightMargin: (revealButton.visible ? revealButton.width : 0) + (virtualKeyboardButton.visible ? virtualKeyboardButton.width : 0) + (enterButton.visible ? enterButton.width + 2 : 0) + (loadingSpinner.visible ? loadingSpinner.width + Theme.spacingM : Theme.spacingM)
                         opacity: 0
                         focus: !demoMode
                         enabled: !demoMode
@@ -308,8 +308,8 @@ Item {
 
                         anchors.left: lockIcon.right
                         anchors.leftMargin: Theme.spacingM
-                        anchors.right: (virtualKeyboardButton.visible ? virtualKeyboardButton.left : (revealButton.visible ? revealButton.left : (enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right))))
-                        anchors.rightMargin: Theme.spacingS
+                        anchors.right: (revealButton.visible ? revealButton.left : (virtualKeyboardButton.visible ? virtualKeyboardButton.left : (enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right))))
+                        anchors.rightMargin: 2
                         anchors.verticalCenter: parent.verticalCenter
                         text: {
                             if (demoMode)
@@ -346,8 +346,8 @@ Item {
                     StyledText {
                         anchors.left: lockIcon.right
                         anchors.leftMargin: Theme.spacingM
-                        anchors.right: (virtualKeyboardButton.visible ? virtualKeyboardButton.left : (revealButton.visible ? revealButton.left : (enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right))))
-                        anchors.rightMargin: Theme.spacingS
+                        anchors.right: (revealButton.visible ? revealButton.left : (virtualKeyboardButton.visible ? virtualKeyboardButton.left : (enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right))))
+                        anchors.rightMargin: 2
                         anchors.verticalCenter: parent.verticalCenter
                         text: {
                             if (demoMode)
@@ -376,8 +376,8 @@ Item {
                     DankActionButton {
                         id: revealButton
 
-                        anchors.right: enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right)
-                        anchors.rightMargin: Theme.spacingS
+                        anchors.right: virtualKeyboardButton.visible ? virtualKeyboardButton.left : (enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right))
+                        anchors.rightMargin: 0
                         anchors.verticalCenter: parent.verticalCenter
                         iconName: parent.showPassword ? "visibility_off" : "visibility"
                         buttonSize: 32
@@ -389,8 +389,8 @@ Item {
 		    DankActionButton {
                         id: virtualKeyboardButton
 
-                        anchors.right: revealButton.left
-                        anchors.rightMargin: Theme.spacingS
+                        anchors.right: enterButton.visible ? enterButton.left : (loadingSpinner.visible ? loadingSpinner.left : parent.right)
+                        anchors.rightMargin: enterButton.visible ? 0 : Theme.spacingS
                         anchors.verticalCenter: parent.verticalCenter
                         iconName: "keyboard"
                         buttonSize: 32
@@ -501,7 +501,7 @@ Item {
                         id: enterButton
 
                         anchors.right: parent.right
-                        anchors.rightMargin: Theme.spacingS
+                        anchors.rightMargin: 2
                         anchors.verticalCenter: parent.verticalCenter
                         iconName: "keyboard_return"
                         buttonSize: 36

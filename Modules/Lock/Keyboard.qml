@@ -183,7 +183,7 @@ Rectangle {
                 symbol: '.',
                 width: 1
             },
-            , {
+            {
                 text: strBackspace,
                 symbol: strBackspace,
                 width: 1.5
