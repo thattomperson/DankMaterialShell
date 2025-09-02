@@ -256,9 +256,27 @@ Rectangle {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (toplevelObject) {
-                            toplevelObject.activate()
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: (mouse) => {
+                        if (mouse.button === Qt.LeftButton) {
+                            if (toplevelObject) {
+                                toplevelObject.activate()
+                            }
+                        } else if (mouse.button === Qt.RightButton) {
+                            if (tooltipLoader.item)
+                                tooltipLoader.item.hideTooltip()
+                            tooltipLoader.active = false
+                            
+                            windowContextMenuLoader.active = true
+                            if (windowContextMenuLoader.item) {
+                                windowContextMenuLoader.item.currentWindow = toplevelObject
+                                var globalPos = delegateItem.mapToGlobal(delegateItem.width / 2, 0)
+                                var screenX = root.parentScreen ? root.parentScreen.x : 0
+                                var screenY = root.parentScreen ? root.parentScreen.y : 0
+                                var relativeX = globalPos.x - screenX
+                                var yPos = Theme.barHeight + SettingsData.topBarSpacing - 7
+                                windowContextMenuLoader.item.showAt(relativeX, yPos)
+                            }
                         }
                     }
                     onEntered: {
@@ -294,5 +312,96 @@ Rectangle {
         active: false
 
         sourceComponent: RunningAppsTooltip {}
+    }
+    
+    Loader {
+        id: windowContextMenuLoader
+        active: false
+        sourceComponent: PanelWindow {
+            id: contextMenuWindow
+            
+            property var currentWindow: null
+            property bool isVisible: false
+            property point anchorPos: Qt.point(0, 0)
+            
+            function showAt(x, y) {
+                screen = root.parentScreen
+                anchorPos = Qt.point(x, y)
+                isVisible = true
+                visible = true
+            }
+            
+            function close() {
+                isVisible = false
+                visible = false
+                windowContextMenuLoader.active = false
+            }
+            
+            implicitWidth: 100
+            implicitHeight: 40
+            visible: false
+            color: "transparent"
+            
+            WlrLayershell.layer: WlrLayershell.Overlay
+            WlrLayershell.exclusiveZone: -1
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            
+            anchors {
+                top: true
+                left: true
+                right: true
+                bottom: true
+            }
+            
+            MouseArea {
+                anchors.fill: parent
+                onClicked: contextMenuWindow.close()
+            }
+            
+            Rectangle {
+                x: {
+                    var left = 10
+                    var right = contextMenuWindow.width - width - 10
+                    var want = contextMenuWindow.anchorPos.x - width / 2
+                    return Math.max(left, Math.min(right, want))
+                }
+                y: contextMenuWindow.anchorPos.y
+                width: 100
+                height: 32
+                color: Theme.popupBackground()
+                radius: Theme.cornerRadius
+                border.width: 1
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.12)
+                
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: Theme.spacingS
+                    height: 28
+                    radius: Theme.cornerRadius / 2
+                    color: closeMouseArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.08) : "transparent"
+                    
+                    StyledText {
+                        anchors.centerIn: parent
+                        text: "Close"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceText
+                        font.weight: Font.Normal
+                    }
+                    
+                    MouseArea {
+                        id: closeMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (contextMenuWindow.currentWindow) {
+                                contextMenuWindow.currentWindow.close()
+                            }
+                            contextMenuWindow.close()
+                        }
+                    }
+                }
+            }
+        }
     }
 }
