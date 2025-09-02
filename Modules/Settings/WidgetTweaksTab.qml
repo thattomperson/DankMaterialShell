@@ -231,6 +231,17 @@ Item {
                                            checked)
                                    }
                     }
+
+                    DankToggle {
+                        width: parent.width
+                        text: "Show Workspace Apps"
+                        description: "Display application icons in workspace indicators"
+                        checked: SettingsData.showWorkspaceApps
+                        onToggled: checked => {
+                                       return SettingsData.setShowWorkspaceApps(
+                                           checked)
+                                   }
+                    }
                 }
             }
 

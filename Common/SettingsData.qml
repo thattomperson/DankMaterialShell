@@ -46,6 +46,7 @@ Singleton {
     property bool controlCenterShowAudioIcon: true
     property bool showWorkspaceIndex: false
     property bool showWorkspacePadding: false
+    property bool showWorkspaceApps: false
     property var workspaceNameIcons: ({})
     property bool clockCompactMode: false
     property bool focusedWindowCompactMode: false
@@ -232,6 +233,8 @@ Singleton {
                         !== undefined ? settings.showWorkspaceIndex : false
                 showWorkspacePadding = settings.showWorkspacePadding
                         !== undefined ? settings.showWorkspacePadding : false
+                showWorkspaceApps = settings.showWorkspaceApps
+                        !== undefined ? settings.showWorkspaceApps : false
                 workspaceNameIcons = settings.workspaceNameIcons
                         !== undefined ? settings.workspaceNameIcons : ({})
                 clockCompactMode = settings.clockCompactMode
@@ -373,6 +376,7 @@ Singleton {
                                                 "controlCenterShowAudioIcon": controlCenterShowAudioIcon,
                                                 "showWorkspaceIndex": showWorkspaceIndex,
                                                 "showWorkspacePadding": showWorkspacePadding,
+                                                "showWorkspaceApps": showWorkspaceApps,
                                                 "workspaceNameIcons": workspaceNameIcons,
                                                 "clockCompactMode": clockCompactMode,
                                                 "focusedWindowCompactMode": focusedWindowCompactMode,
@@ -423,6 +427,11 @@ Singleton {
 
     function setShowWorkspacePadding(enabled) {
         showWorkspacePadding = enabled
+        saveSettings()
+    }
+
+    function setShowWorkspaceApps(enabled) {
+        showWorkspaceApps = enabled
         saveSettings()
     }
 

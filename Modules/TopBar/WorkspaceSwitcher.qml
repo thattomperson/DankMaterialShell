@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Widgets
 import Quickshell.Hyprland
 import qs.Common
 import qs.Services
@@ -32,6 +33,92 @@ Rectangle {
             return SettingsData.showWorkspacePadding ? padWorkspaces(sorted) : sorted
         }
         return [1]
+    }
+
+    function getWorkspaceIcons(ws) {
+        if (!SettingsData.showWorkspaceApps) return []
+        
+        var chunks = []
+        if (!ws) return chunks
+
+        var targetWorkspaceId
+        if (CompositorService.isNiri) {
+            // For Niri, we need to find the workspace ID from allWorkspaces
+            var wsNumber = typeof ws === "number" ? ws : -1
+            if (wsNumber > 0) {
+                for (var j = 0; j < NiriService.allWorkspaces.length; j++) {
+                    var workspace = NiriService.allWorkspaces[j]
+                    if (workspace.idx + 1 === wsNumber && workspace.output === root.screenName) {
+                        targetWorkspaceId = workspace.id
+                        break
+                    }
+                }
+            }
+            if (targetWorkspaceId === undefined) return chunks
+        } else if (CompositorService.isHyprland) {
+            targetWorkspaceId = ws.id !== undefined ? ws.id : ws
+        } else {
+            return chunks
+        }
+
+        var wins = []
+        if (CompositorService.isNiri) {
+            wins = NiriService.windows || []
+        } else if (CompositorService.isHyprland) {
+            wins = Hyprland.clients ? Hyprland.clients.values : []
+        }
+
+        var byApp = {}
+        var isActiveWs = false
+        if (CompositorService.isNiri) {
+            for (var j = 0; j < NiriService.allWorkspaces.length; j++) {
+                var ws2 = NiriService.allWorkspaces[j]
+                if (ws2.id === targetWorkspaceId && ws2.is_active) {
+                    isActiveWs = true
+                    break
+                }
+            }
+        } else if (CompositorService.isHyprland) {
+            isActiveWs = targetWorkspaceId === root.currentWorkspace
+        }
+
+        for (var i = 0; i < wins.length; i++) {
+            var w = wins[i]
+            if (!w) continue
+
+            var winWs
+            if (CompositorService.isNiri) {
+                winWs = w.workspace_id
+            } else if (CompositorService.isHyprland) {
+                winWs = w.workspace && w.workspace.id !== undefined ? w.workspace.id : w.workspaceId
+            }
+            
+            if (winWs === undefined || winWs === null) continue
+            if (winWs !== targetWorkspaceId) continue
+
+            var keyBase = (w.app_id || w.appId || w.class || w.windowClass || w.exe || "unknown").toLowerCase()
+            var key = isActiveWs ? keyBase + "_" + i : keyBase
+
+            if (!byApp[key]) {
+                var icon = Quickshell.iconPath(DesktopEntries.heuristicLookup(Paths.moddedAppId(keyBase))?.icon, true)
+                byApp[key] = {
+                    type: "icon",
+                    icon: icon,
+                    active: !!w.is_focused || !!w.activated,
+                    count: 1,
+                    windowId: w.id || w.address,
+                    fallbackText: w.app_id || w.appId || w.class || w.title || ""
+                }
+            } else {
+                byApp[key].count++
+                if (w.is_focused || w.activated) byApp[key].active = true
+            }
+        }
+
+        for (var k in byApp)
+            chunks.push(byApp[k])
+
+        return chunks
     }
 
     function padWorkspaces(list) {
@@ -236,9 +323,19 @@ Rectangle {
                                        && workspaceData.name ? SettingsData.getWorkspaceNameIcon(
                                                                    workspaceData.name) : null
                 property bool hasIcon: iconData !== null
+                property var icons: SettingsData.showWorkspaceApps ? root.getWorkspaceIcons(CompositorService.isHyprland ? modelData : (modelData === -1 ? null : modelData)) : []
 
-                width: isActive ? widgetHeight * 1.2 + Theme.spacingXS : widgetHeight * 0.8
-                height: widgetHeight * 0.6
+                width: {
+                    if (SettingsData.showWorkspaceApps) {
+                        if (icons.length > 0) {
+                            return isActive ? widgetHeight * 1.0 + Theme.spacingXS + contentRow.implicitWidth : widgetHeight * 0.8 + contentRow.implicitWidth
+                        } else {
+                            return isActive ? widgetHeight * 1.0 + Theme.spacingXS : widgetHeight * 0.8
+                        }
+                    }
+                    return isActive ? widgetHeight * 1.2 + Theme.spacingXS : widgetHeight * 0.8
+                }
+                height: SettingsData.showWorkspaceApps ? widgetHeight * 0.8 : widgetHeight * 0.6
                 radius: height / 2
                 color: isActive ? Theme.primary : isPlaceholder ? Theme.surfaceTextLight : isHovered ? Theme.outlineButton : Theme.surfaceTextAlpha
 
@@ -262,8 +359,65 @@ Rectangle {
                     }
                 }
 
+                Row {
+                    id: contentRow
+                    anchors.centerIn: parent
+                    spacing: 4
+                    visible: SettingsData.showWorkspaceApps && icons.length > 0
+
+                    Repeater {
+                        model: icons.slice(0, 3)
+                        delegate: Item {
+                            width: 18
+                            height: 18
+
+                            IconImage {
+                                id: appIcon
+                                property var windowId: modelData.windowId
+                                anchors.fill: parent
+                                source: modelData.icon
+                                opacity: modelData.active ? 1.0 : appMouseArea.containsMouse ? 0.8 : 0.6
+                                MouseArea {
+                                    id: appMouseArea
+                                    hoverEnabled: true
+                                    anchors.fill: parent
+                                    enabled: isActive
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        if (CompositorService.isHyprland) {
+                                            Hyprland.dispatch(`focuswindow address:${appIcon.windowId}`)
+                                        } else if (CompositorService.isNiri) {
+                                            NiriService.focusWindow(appIcon.windowId)
+                                        }
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                visible: modelData.count > 1 && !isActive
+                                width: 12
+                                height: 12
+                                radius: 6
+                                color: "black"
+                                border.color: "white"
+                                border.width: 1
+                                anchors.right: parent.right
+                                anchors.bottom: parent.bottom
+                                z: 2
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: modelData.count
+                                    font.pixelSize: 8
+                                    color: "white"
+                                }
+                            }
+                        }
+                    }
+                }
+
                 DankIcon {
-                    visible: hasIcon && iconData.type === "icon"
+                    visible: hasIcon && iconData.type === "icon" && (!SettingsData.showWorkspaceApps || icons.length === 0)
                     anchors.centerIn: parent
                     name: hasIcon
                           && iconData.type === "icon" ? iconData.value : ""
@@ -276,7 +430,7 @@ Rectangle {
                 }
 
                 StyledText {
-                    visible: hasIcon && iconData.type === "text"
+                    visible: hasIcon && iconData.type === "text" && (!SettingsData.showWorkspaceApps || icons.length === 0)
                     anchors.centerIn: parent
                     text: hasIcon
                           && iconData.type === "text" ? iconData.value : ""
@@ -290,7 +444,7 @@ Rectangle {
                 }
 
                 StyledText {
-                    visible: SettingsData.showWorkspaceIndex && !hasIcon
+                    visible: (SettingsData.showWorkspaceIndex && !hasIcon && (!SettingsData.showWorkspaceApps || icons.length === 0))
                     anchors.centerIn: parent
                     text: {
                         if (CompositorService.isHyprland) {

@@ -340,8 +340,6 @@ PanelWindow {
                                 return true
                             case "workspaceSwitcher":
                                 return true
-                            case "advancedWorkspaceSwitcher":
-                                return true
                             case "focusedWindow":
                                 return true
                             case "runningApps":
@@ -397,8 +395,6 @@ PanelWindow {
                                 return launcherButtonComponent
                             case "workspaceSwitcher":
                                 return workspaceSwitcherComponent
-                            case "advancedWorkspaceSwitcher":
-                                return advancedWorkspaceSwitcherComponent
                             case "focusedWindow":
                                 return focusedWindowComponent
                             case "runningApps":
@@ -748,14 +744,6 @@ PanelWindow {
                             id: workspaceSwitcherComponent
 
                             WorkspaceSwitcher {
-                                screenName: root.screenName
-                                widgetHeight: root.widgetHeight
-                            }
-                        }
-		                    Component {
-                            id: advancedWorkspaceSwitcherComponent
-
-                            AdvancedWorkspaceSwitcher {
                                 screenName: root.screenName
                                 widgetHeight: root.widgetHeight
                             }
