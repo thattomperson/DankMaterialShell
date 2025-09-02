@@ -93,64 +93,6 @@ Rectangle {
     }
     visible: CompositorService.isNiri || CompositorService.isHyprland
 
-    Connections {
-        function onAllWorkspacesChanged() {
-            if (CompositorService.isNiri) {
-                root.workspaceList = SettingsData.showWorkspacePadding ? root.padWorkspaces(
-                                                                          root.getNiriWorkspaces()) : root.getNiriWorkspaces()
-            }
-        }
-
-        target: NiriService
-        enabled: CompositorService.isNiri
-    }
-
-    Connections {
-        function onValuesChanged() {
-            if (CompositorService.isHyprland) {
-                var workspaces = Hyprland.workspaces ? Hyprland.workspaces.values : []
-                if (workspaces.length === 0) {
-                    workspaces = [{id: 1, name: "1"}]
-                }
-                var sorted = workspaces.slice().sort((a, b) => a.id - b.id)
-                root.workspaceList = SettingsData.showWorkspacePadding ? root.padWorkspaces(sorted) : sorted
-            }
-        }
-
-        target: Hyprland.workspaces
-        enabled: CompositorService.isHyprland
-    }
-
-    Connections {
-        function onFocusedWorkspaceChanged() {
-            // Hyprland workspace changes handled automatically by currentWorkspace binding
-        }
-
-        function onFocusedMonitorChanged() {
-            // Hyprland monitor changes handled automatically by currentWorkspace binding
-        }
-
-        target: Hyprland
-        enabled: CompositorService.isHyprland
-    }
-
-    Connections {
-        function onShowWorkspacePaddingChanged() {
-            if (CompositorService.isHyprland) {
-                var workspaces = Hyprland.workspaces ? Hyprland.workspaces.values : []
-                if (workspaces.length === 0) {
-                    workspaces = [{id: 1, name: "1"}]
-                }
-                var sorted = workspaces.slice().sort((a, b) => a.id - b.id)
-                root.workspaceList = SettingsData.showWorkspacePadding ? root.padWorkspaces(sorted) : sorted
-            } else {
-                var baseList = root.getNiriWorkspaces()
-                root.workspaceList = SettingsData.showWorkspacePadding ? root.padWorkspaces(baseList) : baseList
-            }
-        }
-
-        target: SettingsData
-    }
 
     MouseArea {
         anchors.fill: parent
