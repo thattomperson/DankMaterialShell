@@ -71,8 +71,7 @@ https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
 
 - **TopBar**: fully customizable bar where widgets can be added, removed, and re-arranged.
   - **App Launcher** with fuzzy search, categories, and auto-sorting by most used apps.
-  - **Workspace Switcher** Dynamically resizing niri workspace switcher.
-  - **Advanced Workspace Switcher** Dynamically resizing niri workspace switcher, also showing opened apps on the workspace.
+  - **Workspace Switcher** Configurable workspace switcher.
   - **Focused Window** Displays the currently focused window app name and title.
   - **Running Apps** A view of all running apps, sorted by monitor, workspace, then position on workspace.
   - **Media Player** Short form media player with equalizer, song title, and controls.
