@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import qs.Common
+import qs.Modals.Common
 import qs.Services
 import qs.Widgets
 

@@ -7,6 +7,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Common
+import qs.Modals.Common
 import qs.Modules.ProcessList
 import qs.Services
 import qs.Widgets

@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
 import qs.Common
+import qs.Modals.Common
 import qs.Modules.AppDrawer
 import qs.Services
 import qs.Widgets

@@ -4,7 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import Quickshell.Io
 import qs.Common
-import qs.Modals
+import qs.Modals.Common
 import qs.Widgets
 
 DankModal {
