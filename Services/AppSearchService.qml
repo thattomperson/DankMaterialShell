@@ -1,10 +1,9 @@
 pragma Singleton
-pragma ComponentBehavior: Bound
+
+pragma ComponentBehavior
 
 import QtQuick
 import Quickshell
-import Quickshell.Io
-import Quickshell.Widgets
 import "../Common/fuzzysort.js" as Fuzzy
 
 Singleton {
@@ -13,60 +12,46 @@ Singleton {
     property var applications: DesktopEntries.applications.values.filter(app => !app.noDisplay && !app.runInTerminal)
 
     property var preppedApps: applications.map(app => ({
-                                                           "name": Fuzzy.prepare(
-                                                                       app.name
-                                                                       || ""),
-                                                           "comment": Fuzzy.prepare(
-                                                                          app.comment
-                                                                          || ""),
+                                                           "name": Fuzzy.prepare(app.name || ""),
+                                                           "comment": Fuzzy.prepare(app.comment || ""),
                                                            "entry": app
                                                        }))
 
     function searchApplications(query) {
-        if (!query || query.length === 0) {
+        if (!query || query.length === 0)
             return applications
-        }
-
-        if (preppedApps.length === 0) {
+        if (preppedApps.length === 0)
             return []
-        }
 
         var results = Fuzzy.go(query, preppedApps, {
                                    "all": false,
                                    "keys": ["name", "comment"],
                                    "scoreFn": r => {
-                                       var nameScore = r[0] ? r[0].score : 0
-                                       var commentScore = r[1] ? r[1].score : 0
-                                       var appName = r.obj.entry.name || ""
-                                       var finalScore = 0
+                                       const nameScore = r[0]?.score || 0
+                                       const commentScore = r[1]?.score || 0
+                                       const appName = r.obj.entry.name || ""
 
-                                       if (nameScore > 0) {
-                                           var queryLower = query.toLowerCase()
-                                           var nameLower = appName.toLowerCase()
-
-                                           if (nameLower === queryLower) {
-                                               finalScore = nameScore * 100
-                                           } else if (nameLower.startsWith(
-                                                          queryLower)) {
-                                               finalScore = nameScore * 50
-                                           } else if (nameLower.includes(
-                                                          " " + queryLower)
-                                                      || nameLower.includes(
-                                                          queryLower + " ")
-                                                      || nameLower.endsWith(
-                                                          " " + queryLower)) {
-                                               finalScore = nameScore * 25
-                                           } else if (nameLower.includes(
-                                                          queryLower)) {
-                                               finalScore = nameScore * 10
-                                           } else {
-                                               finalScore = nameScore * 2 + commentScore * 0.1
-                                           }
-                                       } else {
-                                           finalScore = commentScore * 0.1
+                                       if (nameScore === 0) {
+                                           return commentScore * 0.1
                                        }
 
-                                       return finalScore
+                                       const queryLower = query.toLowerCase()
+                                       const nameLower = appName.toLowerCase()
+
+                                       if (nameLower === queryLower) {
+                                           return nameScore * 100
+                                       }
+                                       if (nameLower.startsWith(queryLower)) {
+                                           return nameScore * 50
+                                       }
+                                       if (nameLower.includes(" " + queryLower) || nameLower.includes(queryLower + " ") || nameLower.endsWith(" " + queryLower)) {
+                                           return nameScore * 25
+                                       }
+                                       if (nameLower.includes(queryLower)) {
+                                           return nameScore * 10
+                                       }
+
+                                       return nameScore * 2 + commentScore * 0.1
                                    },
                                    "limit": 50
                                })
@@ -75,10 +60,10 @@ Singleton {
     }
 
     function getCategoriesForApp(app) {
-        if (!app || !app.categories)
+        if (!app?.categories)
             return []
 
-        var categoryMap = {
+        const categoryMap = {
             "AudioVideo": "Media",
             "Audio": "Media",
             "Video": "Media",
@@ -105,19 +90,16 @@ Singleton {
             "TerminalEmulator": "Utilities"
         }
 
-        var mappedCategories = new Set()
+        const mappedCategories = new Set()
 
-        for (var i = 0; i < app.categories.length; i++) {
-            var cat = app.categories[i]
-            if (categoryMap[cat]) {
+        for (const cat of app.categories) {
+            if (categoryMap[cat])
                 mappedCategories.add(categoryMap[cat])
-            }
         }
 
         return Array.from(mappedCategories)
     }
 
-    // Category icon mappings
     property var categoryIcons: ({
                                      "All": "apps",
                                      "Media": "music_video",
@@ -136,10 +118,10 @@ Singleton {
     }
 
     function getAllCategories() {
-        var categories = new Set(["All"])
+        const categories = new Set(["All"])
 
-        for (var i = 0; i < applications.length; i++) {
-            var appCategories = getCategoriesForApp(applications[i])
+        for (const app of applications) {
+            const appCategories = getCategoriesForApp(app)
             appCategories.forEach(cat => categories.add(cat))
         }
 
@@ -152,8 +134,7 @@ Singleton {
         }
 
         return applications.filter(app => {
-                                       var appCategories = getCategoriesForApp(
-                                           app)
+                                       const appCategories = getCategoriesForApp(app)
                                        return appCategories.includes(category)
                                    })
     }

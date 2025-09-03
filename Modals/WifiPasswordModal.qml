@@ -138,7 +138,7 @@ DankModal {
                             wifiPasswordInput = text
                         }
                         onAccepted: {
-                            NetworkService.connectToWifiWithPassword(
+                            NetworkService.connectToWifi(
                                         wifiPasswordSSID, passwordInput.text)
                             close()
                             wifiPasswordInput = ""
@@ -286,7 +286,7 @@ DankModal {
                                 cursorShape: Qt.PointingHandCursor
                                 enabled: parent.enabled
                                 onClicked: {
-                                    NetworkService.connectToWifiWithPassword(
+                                    NetworkService.connectToWifi(
                                                 wifiPasswordSSID,
                                                 passwordInput.text)
                                     close()

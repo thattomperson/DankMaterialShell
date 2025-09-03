@@ -1,5 +1,6 @@
 pragma Singleton
-pragma ComponentBehavior: Bound
+
+pragma ComponentBehavior
 
 import QtQuick
 import Quickshell
@@ -43,11 +44,9 @@ Singleton {
             onRead: data => {
                 if (root.refCount > 0 && data.trim()) {
                     let points = data.split(";").map(p => {
-                                                         return parseInt(
-                                                             p.trim(), 10)
+                                                         return parseInt(p.trim(), 10)
                                                      }).filter(p => {
-                                                                   return !isNaN(
-                                                                       p)
+                                                                   return !isNaN(p)
                                                                })
                     if (points.length >= 6) {
                         root.values = points.slice(0, 6)
