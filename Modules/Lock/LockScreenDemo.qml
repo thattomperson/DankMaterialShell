@@ -2,7 +2,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import qs.Common
-import qs.Modals.Common
 
 PanelWindow {
     id: root
@@ -34,16 +33,11 @@ PanelWindow {
         demoActive = false
     }
 
-    ConfirmModal {
-        id: powerModal
-    }
-
     Loader {
         anchors.fill: parent
         active: demoActive
         sourceComponent: LockScreenContent {
             demoMode: true
-            powerModal: powerModal
             onUnlockRequested: root.hideDemo()
         }
     }

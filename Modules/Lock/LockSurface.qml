@@ -1,8 +1,8 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
 import qs.Common
-import qs.Modals.Common
 
 WlSessionLockSurface {
     id: root
@@ -20,15 +20,10 @@ WlSessionLockSurface {
 
     color: "transparent"
 
-    ConfirmModal {
-        id: powerConfirmModal
-    }
-
     Loader {
         anchors.fill: parent
         sourceComponent: LockScreenContent {
             demoMode: false
-            powerModal: powerConfirmModal
             passwordBuffer: root.sharedPasswordBuffer
             onUnlockRequested: root.unlock()
             onPasswordBufferChanged: {
