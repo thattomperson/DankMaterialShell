@@ -122,7 +122,6 @@ Rectangle {
         iconName: "close"
         iconSize: Theme.iconSize - 6
         iconColor: Theme.surfaceText
-        hoverColor: Theme.surfaceHover
         onClicked: deleteRequested()
     }
 

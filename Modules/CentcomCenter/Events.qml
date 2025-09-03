@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Effects
 import qs.Common
 import qs.Services
@@ -154,11 +153,6 @@ Rectangle {
                          momentum *= 0.92 // Decay for smooth momentum
                          event.accepted = true
                      }
-        }
-
-        ScrollBar.vertical: ScrollBar {
-            policy: eventsList.contentHeight
-                    > eventsList.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
         }
 
         Behavior on opacity {

@@ -49,10 +49,7 @@ LazyLoader {
                     active: !root.source
                     asynchronous: true
 
-                    sourceComponent: DankBackdrop {
-                        screenWidth: wallpaperWindow.modelData.width
-                        screenHeight: wallpaperWindow.modelData.height
-                    }
+                    sourceComponent: DankBackdrop {}
                 }
 
                 Img {

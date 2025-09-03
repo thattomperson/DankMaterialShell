@@ -170,7 +170,6 @@ DankModal {
                         iconName: "close"
                         iconSize: Theme.iconSize - 4
                         iconColor: Theme.surfaceText
-                        hoverColor: Theme.errorHover
                         onClicked: () => {
                             return processListModal.hide();
                         }

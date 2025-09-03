@@ -246,9 +246,6 @@ DankPopout {
                                                  Theme.surfaceVariant.g,
                                                  Theme.surfaceVariant.b,
                                                  0.5)
-                            hoverColor: Qt.rgba(Theme.primary.r,
-                                                Theme.primary.g,
-                                                Theme.primary.b, 0.12)
                             onClicked: {
                                 root.close()
                                 root.lockRequested()
@@ -265,9 +262,6 @@ DankPopout {
                                                  Theme.surfaceVariant.g,
                                                  Theme.surfaceVariant.b,
                                                  0.5)
-                            hoverColor: Qt.rgba(Theme.primary.r,
-                                                Theme.primary.g,
-                                                Theme.primary.b, 0.12)
                             onClicked: {
                                 root.powerOptionsExpanded = !root.powerOptionsExpanded
                             }
@@ -284,9 +278,6 @@ DankPopout {
                                                  Theme.surfaceVariant.g,
                                                  Theme.surfaceVariant.b,
                                                  0.5)
-                            hoverColor: Qt.rgba(Theme.primary.r,
-                                                Theme.primary.g,
-                                                Theme.primary.b, 0.12)
                             onClicked: {
                                 root.close()
                                 settingsModal.show()

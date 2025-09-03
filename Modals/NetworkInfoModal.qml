@@ -76,7 +76,6 @@ DankModal {
                         iconName: "close"
                         iconSize: Theme.iconSize - 4
                         iconColor: Theme.surfaceText
-                        hoverColor: Theme.errorHover
                         onClicked: root.hideDialog()
                     }
 
@@ -93,23 +92,20 @@ DankModal {
                     border.width: 1
                     clip: true
 
-                    ScrollView {
+                    DankFlickable {
                         anchors.fill: parent
                         anchors.margins: Theme.spacingM
+                        contentHeight: detailsText.contentHeight
 
-                        TextArea {
+                        StyledText {
                             id: detailsText
 
+                            width: parent.width
                             text: NetworkService.networkInfoDetails && NetworkService.networkInfoDetails.replace(/\\n/g, '\n') || "No information available"
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceText
                             wrapMode: Text.WordWrap
-                            readOnly: true
-                            selectByMouse: true
-                            background: null
-                            padding: 0
                         }
-
                     }
 
                 }

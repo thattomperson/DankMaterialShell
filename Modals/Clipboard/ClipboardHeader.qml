@@ -45,7 +45,6 @@ Item {
             iconName: "info"
             iconSize: Theme.iconSize - 4
             iconColor: showKeyboardHints ? Theme.primary : Theme.surfaceText
-            hoverColor: Theme.primaryHover
             onClicked: keyboardHintsToggled()
         }
 
@@ -53,7 +52,6 @@ Item {
             iconName: "delete_sweep"
             iconSize: Theme.iconSize
             iconColor: Theme.surfaceText
-            hoverColor: Theme.surfaceHover
             onClicked: clearAllClicked()
         }
 
@@ -61,7 +59,6 @@ Item {
             iconName: "close"
             iconSize: Theme.iconSize - 4
             iconColor: Theme.surfaceText
-            hoverColor: Theme.surfaceHover
             onClicked: closeClicked()
         }
     }

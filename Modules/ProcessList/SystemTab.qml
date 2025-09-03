@@ -4,11 +4,9 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 
-ScrollView {
+DankFlickable {
     anchors.fill: parent
-    clip: true
-    ScrollBar.vertical.policy: ScrollBar.AsNeeded
-    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+    contentHeight: systemColumn.implicitHeight
     Component.onCompleted: {
         DgopService.addRef(["system", "hardware", "diskmounts"])
     }
@@ -17,6 +15,7 @@ ScrollView {
     }
 
     Column {
+        id: systemColumn
         width: parent.width
         spacing: Theme.spacingM
 

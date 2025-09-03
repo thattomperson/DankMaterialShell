@@ -4,59 +4,103 @@ pragma ComponentBehavior
 
 import QtQuick
 import Quickshell
-import "../Common/fuzzysort.js" as Fuzzy
+import "../Common/fzf.js" as Fzf
 
 Singleton {
     id: root
 
     property var applications: DesktopEntries.applications.values.filter(app => !app.noDisplay && !app.runInTerminal)
 
-    property var preppedApps: applications.map(app => ({
-                                                           "name": Fuzzy.prepare(app.name || ""),
-                                                           "comment": Fuzzy.prepare(app.comment || ""),
-                                                           "entry": app
-                                                       }))
-
     function searchApplications(query) {
         if (!query || query.length === 0)
             return applications
-        if (preppedApps.length === 0)
+        if (applications.length === 0)
             return []
 
-        var results = Fuzzy.go(query, preppedApps, {
-                                   "all": false,
-                                   "keys": ["name", "comment"],
-                                   "scoreFn": r => {
-                                       const nameScore = r[0]?.score || 0
-                                       const commentScore = r[1]?.score || 0
-                                       const appName = r.obj.entry.name || ""
-
-                                       if (nameScore === 0) {
-                                           return commentScore * 0.1
-                                       }
-
-                                       const queryLower = query.toLowerCase()
-                                       const nameLower = appName.toLowerCase()
-
-                                       if (nameLower === queryLower) {
-                                           return nameScore * 100
-                                       }
-                                       if (nameLower.startsWith(queryLower)) {
-                                           return nameScore * 50
-                                       }
-                                       if (nameLower.includes(" " + queryLower) || nameLower.includes(queryLower + " ") || nameLower.endsWith(" " + queryLower)) {
-                                           return nameScore * 25
-                                       }
-                                       if (nameLower.includes(queryLower)) {
-                                           return nameScore * 10
-                                       }
-
-                                       return nameScore * 2 + commentScore * 0.1
-                                   },
-                                   "limit": 50
-                               })
-
-        return results.map(r => r.obj.entry)
+        const queryLower = query.toLowerCase()
+        const scoredApps = []
+        
+        for (const app of applications) {
+            const name = (app.name || "").toLowerCase()
+            const genericName = (app.genericName || "").toLowerCase()
+            const comment = (app.comment || "").toLowerCase()
+            const keywords = app.keywords ? app.keywords.map(k => k.toLowerCase()) : []
+            
+            let score = 0
+            let matched = false
+            
+            // Exact name match - highest priority
+            if (name === queryLower) {
+                score = 1000
+                matched = true
+            }
+            // Name starts with query
+            else if (name.startsWith(queryLower)) {
+                score = 900 - name.length
+                matched = true
+            }
+            // Name contains query as a word
+            else if (name.includes(" " + queryLower) || name.includes(queryLower + " ")) {
+                score = 800 - name.length
+                matched = true
+            }
+            // Name contains query substring
+            else if (name.includes(queryLower)) {
+                score = 700 - name.length
+                matched = true
+            }
+            // Check individual keywords
+            else if (keywords.length > 0) {
+                for (const keyword of keywords) {
+                    if (keyword === queryLower) {
+                        score = 650  // Exact keyword match
+                        matched = true
+                        break
+                    } else if (keyword.startsWith(queryLower)) {
+                        score = 620  // Keyword starts with query
+                        matched = true
+                        break
+                    } else if (keyword.includes(queryLower)) {
+                        score = 600  // Keyword contains query
+                        matched = true
+                        break
+                    }
+                }
+            }
+            // Generic name matches
+            if (!matched && genericName.includes(queryLower)) {
+                score = 500
+                matched = true
+            }
+            // Comment contains query
+            else if (!matched && comment.includes(queryLower)) {
+                score = 400
+                matched = true
+            }
+            // Fuzzy match on name only (not on all fields)
+            else {
+                const nameFinder = new Fzf.Finder([app], {
+                    "selector": a => a.name || "",
+                    "casing": "case-insensitive",
+                    "fuzzy": "v2"
+                })
+                const fuzzyResults = nameFinder.find(query)
+                if (fuzzyResults.length > 0 && fuzzyResults[0].score > 0) {
+                    score = fuzzyResults[0].score
+                    matched = true
+                }
+            }
+            
+            if (matched) {
+                scoredApps.push({ app, score })
+            }
+        }
+        
+        // Sort by score descending
+        scoredApps.sort((a, b) => b.score - a.score)
+        
+        // Return top results
+        return scoredApps.slice(0, 50).map(item => item.app)
     }
 
     function getCategoriesForApp(app) {

@@ -12,7 +12,6 @@ DankActionButton {
     height: 40
     property bool isShift: false
     color: Theme.surface
-    hoverColor: Theme.surfacePressed
 
     StyledText {
         id: contentItem

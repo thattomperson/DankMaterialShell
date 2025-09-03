@@ -286,7 +286,6 @@ Item {
                                     enabled: SessionData.wallpaperPath
                                     opacity: SessionData.wallpaperPath ? 1 : 0.5
                                     backgroundColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
-                                    hoverColor: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
                                     iconColor: Theme.surfaceText
                                     onClicked: {
                                         WallpaperCyclingService.cyclePrevManually();
@@ -300,7 +299,6 @@ Item {
                                     enabled: SessionData.wallpaperPath
                                     opacity: SessionData.wallpaperPath ? 1 : 0.5
                                     backgroundColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.5)
-                                    hoverColor: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
                                     iconColor: Theme.surfaceText
                                     onClicked: {
                                         WallpaperCyclingService.cycleNextManually();
@@ -395,9 +393,11 @@ Item {
                                     width: 200
                                     height: 32
                                     model: [{
-                                        "text": "Interval"
+                                        "text": "Interval",
+                                        "icon": "schedule"
                                     }, {
-                                        "text": "Time"
+                                        "text": "Time",
+                                        "icon": "access_time"
                                     }]
                                     currentIndex: SessionData.wallpaperCyclingMode === "time" ? 1 : 0
                                     onTabClicked: (index) => {
@@ -702,9 +702,11 @@ Item {
                             width: 200
                             height: 32
                             model: [{
-                                "text": "Time"
+                                "text": "Time",
+                                "icon": "access_time"
                             }, {
-                                "text": "Location"
+                                "text": "Location", 
+                                "icon": "place"
                             }]
                             
                             Component.onCompleted: {

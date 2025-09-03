@@ -8,7 +8,7 @@ StyledText {
     property alias size: icon.font.pixelSize
     property alias color: icon.color
     property bool filled: false
-    property real fill: filled ? 1 : 0
+    property real fill: filled ? 1.0 : 0.0
     property int grade: Theme.isLightMode ? 0 : -25
     property int weight: filled ? 500 : 400
 
@@ -18,12 +18,12 @@ StyledText {
     color: Theme.surfaceText
     verticalAlignment: Text.AlignVCenter
     horizontalAlignment: Text.AlignHCenter
-    font.variableAxes: ({
-                            "FILL": fill.toFixed(1),
-                            "GRAD": grade,
-                            "opsz": 24,
-                            "wght": weight
-                        })
+    font.variableAxes: {
+        "FILL": fill.toFixed(1),
+        "GRAD": grade,
+        "opsz": 24,
+        "wght": weight
+    }
 
     Behavior on fill {
         NumberAnimation {

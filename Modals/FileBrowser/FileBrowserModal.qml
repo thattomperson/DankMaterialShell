@@ -349,7 +349,6 @@ DankModal {
                             iconName: "help"
                             iconSize: Theme.iconSize - 4
                             iconColor: Theme.surfaceText
-                            hoverColor: Theme.surfacePressed
                             onClicked: fileBrowserModal.showKeyboardHints = !fileBrowserModal.showKeyboardHints
                         }
 
@@ -358,7 +357,6 @@ DankModal {
                             iconName: "close"
                             iconSize: Theme.iconSize - 4
                             iconColor: Theme.surfaceText
-                            hoverColor: Theme.errorHover
                             onClicked: fileBrowserModal.close()
                         }
                     }

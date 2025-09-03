@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
@@ -271,16 +270,6 @@ DankPopout {
                                 iconSize: 20
                                 iconColor: appLauncher.viewMode
                                            === "list" ? Theme.primary : Theme.surfaceText
-                                hoverColor: appLauncher.viewMode
-                                            === "list" ? Qt.rgba(
-                                                             Theme.primary.r,
-                                                             Theme.primary.g,
-                                                             Theme.primary.b,
-                                                             0.12) : Qt.rgba(
-                                                             Theme.surfaceVariant.r,
-                                                             Theme.surfaceVariant.g,
-                                                             Theme.surfaceVariant.b,
-                                                             0.08)
                                 backgroundColor: appLauncher.viewMode
                                                  === "list" ? Qt.rgba(
                                                                   Theme.primary.r,
@@ -299,16 +288,6 @@ DankPopout {
                                 iconSize: 20
                                 iconColor: appLauncher.viewMode
                                            === "grid" ? Theme.primary : Theme.surfaceText
-                                hoverColor: appLauncher.viewMode
-                                            === "grid" ? Qt.rgba(
-                                                             Theme.primary.r,
-                                                             Theme.primary.g,
-                                                             Theme.primary.b,
-                                                             0.12) : Qt.rgba(
-                                                             Theme.surfaceVariant.r,
-                                                             Theme.surfaceVariant.g,
-                                                             Theme.surfaceVariant.b,
-                                                             0.08)
                                 backgroundColor: appLauncher.viewMode
                                                  === "grid" ? Qt.rgba(
                                                                   Theme.primary.r,
@@ -389,14 +368,6 @@ DankPopout {
                             }
                             onKeyboardNavigationReset: {
                                 appLauncher.keyboardNavigationActive = false
-                            }
-
-                            ScrollBar.vertical: ScrollBar {
-                                policy: ScrollBar.AlwaysOn
-                            }
-
-                            ScrollBar.horizontal: ScrollBar {
-                                policy: ScrollBar.AlwaysOff
                             }
 
                             delegate: Rectangle {
@@ -574,14 +545,6 @@ DankPopout {
                             }
                             onKeyboardNavigationReset: {
                                 appLauncher.keyboardNavigationActive = false
-                            }
-
-                            ScrollBar.vertical: ScrollBar {
-                                policy: ScrollBar.AsNeeded
-                            }
-
-                            ScrollBar.horizontal: ScrollBar {
-                                policy: ScrollBar.AlwaysOff
                             }
 
                             delegate: Rectangle {

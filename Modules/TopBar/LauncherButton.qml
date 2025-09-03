@@ -44,9 +44,12 @@ Item {
         id: launcherContent
         anchors.fill: parent
         radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
-        color: SettingsData.topBarNoBackground ? "transparent" : Qt.rgba(Theme.surfaceTextHover.r, Theme.surfaceTextHover.g,
-                       Theme.surfaceTextHover.b,
-                       Theme.surfaceTextHover.a * Theme.widgetTransparency)
+        color: {
+            if (SettingsData.topBarNoBackground) return "transparent"
+            const baseColor = launcherArea.containsMouse ? Theme.primaryPressed : (SessionService.idleInhibited ? Theme.primaryHover : Theme.secondaryHover)
+            return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
+                        baseColor.a * Theme.widgetTransparency)
+        }
 
         SystemLogo {
             visible: SettingsData.useOSLogo
@@ -64,6 +67,13 @@ Item {
             name: "apps"
             size: Theme.iconSize - 6
             color: Theme.surfaceText
+        }
+
+        Behavior on color {
+            ColorAnimation {
+                duration: Theme.shortDuration
+                easing.type: Theme.standardEasing
+            }
         }
     }
 }

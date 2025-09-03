@@ -92,14 +92,14 @@ Column {
                 }
             }
 
-            ScrollView {
+            DankFlickable {
+                clip: true
                 width: parent.width
                 height: parent.height - 40
-                clip: true
-                ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                contentHeight: coreUsageColumn.implicitHeight
 
                 Column {
+                    id: coreUsageColumn
                     width: parent.width
                     spacing: 6
 

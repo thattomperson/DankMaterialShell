@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import qs.Common
 import qs.Services
 import qs.Widgets
@@ -125,14 +124,6 @@ Item {
                     font.pixelSize: Theme.fontSizeMedium
                     color: Theme.surfaceVariantText
                     visible: filteredModel.count === 0
-                }
-                
-                ScrollBar.vertical: ScrollBar {
-                    policy: ScrollBar.AsNeeded
-                }
-                
-                ScrollBar.horizontal: ScrollBar {
-                    policy: ScrollBar.AlwaysOff
                 }
                 
                 delegate: ClipboardEntry {

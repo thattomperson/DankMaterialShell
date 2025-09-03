@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import Quickshell
 import Quickshell.Widgets
 import qs.Common
@@ -71,14 +70,6 @@ Rectangle {
                                        if (appLauncher)
                                        appLauncher.keyboardNavigationActive = false
                                    }
-
-        ScrollBar.vertical: ScrollBar {
-            policy: ScrollBar.AlwaysOn
-        }
-
-        ScrollBar.horizontal: ScrollBar {
-            policy: ScrollBar.AlwaysOff
-        }
 
         delegate: Rectangle {
             width: ListView.view.width
@@ -241,14 +232,6 @@ Rectangle {
                                        if (appLauncher)
                                        appLauncher.keyboardNavigationActive = false
                                    }
-
-        ScrollBar.vertical: ScrollBar {
-            policy: ScrollBar.AsNeeded
-        }
-
-        ScrollBar.horizontal: ScrollBar {
-            policy: ScrollBar.AlwaysOff
-        }
 
         delegate: Rectangle {
             width: resultsGrid.cellWidth - resultsGrid.cellPadding

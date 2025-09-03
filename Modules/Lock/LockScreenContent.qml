@@ -41,10 +41,7 @@ Item {
         active: !SessionData.wallpaperPath
         asynchronous: true
 
-        sourceComponent: DankBackdrop {
-            screenWidth: parent.width
-            screenHeight: parent.height
-        }
+        sourceComponent: DankBackdrop {}
     }
 
     Image {

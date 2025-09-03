@@ -181,7 +181,6 @@ DankModal {
                         iconName: "close"
                         iconSize: Theme.iconSize - 4
                         iconColor: Theme.surfaceText
-                        hoverColor: Theme.errorHover
                         onClicked: root.hide()
                     }
 
@@ -293,7 +292,6 @@ DankModal {
                             iconName: "save"
                             iconSize: Theme.iconSize - 2
                             iconColor: Theme.primary
-                            hoverColor: Theme.primaryHover
                             enabled: root.hasUnsavedChanges || SessionData.notepadContent.length > 0
                             onClicked: contentItem.saveToCurrentFile()
                         }
@@ -313,7 +311,6 @@ DankModal {
                             iconName: "folder_open"
                             iconSize: Theme.iconSize - 2
                             iconColor: Theme.secondary
-                            hoverColor: Theme.secondaryHover
                             onClicked: contentItem.openLoadDialog()
                         }
 
@@ -332,7 +329,6 @@ DankModal {
                             iconName: "note_add"
                             iconSize: Theme.iconSize - 2
                             iconColor: Theme.surfaceText
-                            hoverColor: Theme.primaryHover
                             onClicked: contentItem.newDocument()
                         }
 
