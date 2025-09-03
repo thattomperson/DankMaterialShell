@@ -23,7 +23,7 @@ Item {
     property string powerDialogMessage: ""
     property string powerDialogConfirmText: ""
     property color powerDialogConfirmColor: Theme.primary
-    property var powerDialogOnConfirm: function() {}
+    property var powerDialogOnConfirm: function () {}
 
     function showPowerDialog(title, message, confirmText, confirmColor, onConfirm) {
         powerDialogTitle = title
@@ -57,7 +57,7 @@ Item {
 
     Loader {
         anchors.fill: parent
-        active: !SessionData.wallpaperPath
+        active: !SessionData.wallpaperPath || (SessionData.wallpaperPath && SessionData.wallpaperPath.startsWith("#"))
         asynchronous: true
 
         sourceComponent: DankBackdrop {}
@@ -67,7 +67,7 @@ Item {
         id: wallpaperBackground
 
         anchors.fill: parent
-        source: SessionData.wallpaperPath || ""
+        source: (SessionData.wallpaperPath && !SessionData.wallpaperPath.startsWith("#")) ? SessionData.wallpaperPath : ""
         fillMode: Image.PreserveAspectCrop
         smooth: true
         asynchronous: false
@@ -802,7 +802,7 @@ Item {
                     if (demoMode) {
                         console.log("Demo: Power")
                     } else {
-                        showPowerDialog("Power Off", "Power off this computer?", "Power Off", Theme.error, function() {
+                        showPowerDialog("Power Off", "Power off this computer?", "Power Off", Theme.error, function () {
                             SessionService.poweroff()
                         })
                     }
@@ -816,7 +816,7 @@ Item {
                     if (demoMode) {
                         console.log("Demo: Reboot")
                     } else {
-                        showPowerDialog("Restart", "Restart this computer?", "Restart", Theme.primary, function() {
+                        showPowerDialog("Restart", "Restart this computer?", "Restart", Theme.primary, function () {
                             SessionService.reboot()
                         })
                     }
@@ -830,7 +830,7 @@ Item {
                     if (demoMode) {
                         console.log("Demo: Logout")
                     } else {
-                        showPowerDialog("Log Out", "End this session?", "Log Out", Theme.primary, function() {
+                        showPowerDialog("Log Out", "End this session?", "Log Out", Theme.primary, function () {
                             SessionService.logout()
                         })
                     }

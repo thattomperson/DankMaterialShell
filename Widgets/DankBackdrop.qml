@@ -6,9 +6,11 @@ Item {
 
     anchors.fill: parent
 
+    property bool isColorWallpaper: SessionData.wallpaperPath && SessionData.wallpaperPath.startsWith("#")
+
     Rectangle {
         anchors.fill: parent
-        color: Theme.background
+        color: isColorWallpaper ? SessionData.wallpaperPath : Theme.background
     }
 
     Rectangle {
@@ -18,6 +20,7 @@ Item {
         height: parent.height * 1.5
         color: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.15)
         rotation: 35
+        visible: !isColorWallpaper
     }
 
     Rectangle {
@@ -27,6 +30,7 @@ Item {
         height: parent.height * 1.2
         color: Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.12)
         rotation: 35
+        visible: !isColorWallpaper
     }
 
     Item {
@@ -35,16 +39,18 @@ Item {
         anchors.leftMargin: Theme.spacingXL * 2
         anchors.bottomMargin: Theme.spacingXL * 2
         opacity: 0.25
+        visible: !isColorWallpaper
 
         StyledText {
             anchors.left: parent.left
             anchors.bottom: parent.bottom
+            // ! TODO qmlfmt will brick this
             text: `██████╗  █████╗ ███╗   ██╗██╗  ██╗
-            ██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝
-            ██║  ██║███████║██╔██╗ ██║█████╔╝
-            ██║  ██║██╔══██║██║╚██╗██║██╔═██╗
-            ██████╔╝██║  ██║██║ ╚████║██║  ██╗
-            ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝`
+██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝
+██║  ██║███████║██╔██╗ ██║█████╔╝
+██║  ██║██╔══██║██║╚██╗██║██╔═██╗
+██████╔╝██║  ██║██║ ╚████║██║  ██╗
+╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝`
             isMonospace: true
             font.pixelSize: Theme.fontSizeLarge * 1.2
             color: Theme.primary

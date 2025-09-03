@@ -1,6 +1,6 @@
 pragma Singleton
 
-pragma ComponentBehavior
+pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
@@ -29,56 +29,56 @@ Singleton {
             let score = 0
             let matched = false
             
-            // Exact name match - highest priority
+            const nameWords = name.trim().split(/\s+/).filter(w => w.length > 0)
+            const containsAsWord = nameWords.includes(queryLower)
+            const startsWithAsWord = nameWords.some(word => word.startsWith(queryLower))
+            
             if (name === queryLower) {
-                score = 1000
+                score = 10000
                 matched = true
             }
-            // Name starts with query
+            else if (containsAsWord) {
+                score = 9500 + (100 - Math.min(name.length, 100))
+                matched = true
+            }
             else if (name.startsWith(queryLower)) {
-                score = 900 - name.length
+                score = 9000 + (100 - Math.min(name.length, 100))
                 matched = true
             }
-            // Name contains query as a word
-            else if (name.includes(" " + queryLower) || name.includes(queryLower + " ")) {
-                score = 800 - name.length
+            else if (startsWithAsWord) {
+                score = 8500 + (100 - Math.min(name.length, 100))
                 matched = true
             }
-            // Name contains query substring
             else if (name.includes(queryLower)) {
-                score = 700 - name.length
+                score = 8000 + (100 - Math.min(name.length, 100))
                 matched = true
             }
-            // Check individual keywords
             else if (keywords.length > 0) {
                 for (const keyword of keywords) {
                     if (keyword === queryLower) {
-                        score = 650  // Exact keyword match
+                        score = 6000
                         matched = true
                         break
                     } else if (keyword.startsWith(queryLower)) {
-                        score = 620  // Keyword starts with query
+                        score = 5500
                         matched = true
                         break
                     } else if (keyword.includes(queryLower)) {
-                        score = 600  // Keyword contains query
+                        score = 5000
                         matched = true
                         break
                     }
                 }
             }
-            // Generic name matches
             if (!matched && genericName.includes(queryLower)) {
-                score = 500
+                score = 4000
                 matched = true
             }
-            // Comment contains query
             else if (!matched && comment.includes(queryLower)) {
-                score = 400
+                score = 3000
                 matched = true
             }
-            // Fuzzy match on name only (not on all fields)
-            else {
+            else if (!matched) {
                 const nameFinder = new Fzf.Finder([app], {
                     "selector": a => a.name || "",
                     "casing": "case-insensitive",
@@ -86,7 +86,7 @@ Singleton {
                 })
                 const fuzzyResults = nameFinder.find(query)
                 if (fuzzyResults.length > 0 && fuzzyResults[0].score > 0) {
-                    score = fuzzyResults[0].score
+                    score = Math.min(fuzzyResults[0].score, 2000)
                     matched = true
                 }
             }
@@ -96,10 +96,7 @@ Singleton {
             }
         }
         
-        // Sort by score descending
         scoredApps.sort((a, b) => b.score - a.score)
-        
-        // Return top results
         return scoredApps.slice(0, 50).map(item => item.app)
     }
 
