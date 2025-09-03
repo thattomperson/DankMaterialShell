@@ -7,7 +7,7 @@ import Quickshell.Io
 import qs.Common
 import qs.Services
 import qs.Widgets
-import qs.Modals.Clipboard
+import qs.Modals
 
 DankModal {
     id: clipboardHistoryModal
@@ -170,6 +170,7 @@ DankModal {
 
     property alias filteredClipboardModel: filteredClipboardModel
     property alias clipboardModel: clipboardModel
+    property var confirmDialog: clearConfirmDialog
 
     ListModel {
         id: clipboardModel
@@ -209,7 +210,7 @@ DankModal {
         ClipboardContent {
             modal: clipboardHistoryModal
             filteredModel: filteredClipboardModel
-            clearConfirmDialog: clipboardHistoryModal.clearConfirmDialog
+            clearConfirmDialog: clipboardHistoryModal.confirmDialog
         }
     }
 }

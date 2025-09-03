@@ -34,8 +34,7 @@ Item {
                 clearConfirmDialog.show("Clear All History?", "This will permanently delete all clipboard history.", function () {
                     modal.clearAll()
                     modal.hide()
-                }, function () {} // No action on cancel
-                )
+                }, function () {})
             }
             onCloseClicked: modal.hide()
         }

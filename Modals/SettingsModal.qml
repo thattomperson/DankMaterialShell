@@ -4,6 +4,7 @@ import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import qs.Common
+import qs.Modals.FileBrowser
 import qs.Modules.Settings
 import qs.Services
 import qs.Widgets

@@ -13,7 +13,7 @@ StyledText {
     property int weight: filled ? 500 : 400
 
     font.family: "Material Symbols Rounded"
-    font.pixelSize: Appearance.fontSize.normal
+    font.pixelSize: Theme.fontSizeMedium
     font.weight: weight
     color: Theme.surfaceText
     verticalAlignment: Text.AlignVCenter
@@ -27,17 +27,15 @@ StyledText {
 
     Behavior on fill {
         NumberAnimation {
-            duration: Appearance.anim.durations.quick
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Appearance.anim.curves.standard
+            duration: Theme.shortDuration
+            easing.type: Theme.standardEasing
         }
     }
 
     Behavior on weight {
         NumberAnimation {
-            duration: Appearance.anim.durations.quick
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: Appearance.anim.curves.standard
+            duration: Theme.shortDuration
+            easing.type: Theme.standardEasing
         }
     }
 }

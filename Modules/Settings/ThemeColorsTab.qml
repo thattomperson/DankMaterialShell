@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import qs.Common
 import qs.Modals
+import qs.Modals.FileBrowser
 import qs.Services
 import qs.Widgets
 
