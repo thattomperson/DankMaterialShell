@@ -209,7 +209,7 @@ DankModal {
         ClipboardContent {
             modal: clipboardHistoryModal
             filteredModel: filteredClipboardModel
-            clearConfirmDialog: clearConfirmDialog
+            clearConfirmDialog: clipboardHistoryModal.clearConfirmDialog
         }
     }
 }

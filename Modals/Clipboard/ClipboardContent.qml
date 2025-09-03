@@ -84,14 +84,73 @@ Item {
             border.width: 1
             clip: true
 
-            ClipboardListView {
+            DankListView {
                 id: clipboardListView
                 anchors.fill: parent
                 anchors.margins: Theme.spacingS
                 model: filteredModel
-                clipboardModal: clipboardContent.modal
-                selectedIndex: clipboardContent.modal ? clipboardContent.modal.selectedIndex : 0
-                keyboardNavigationActive: clipboardContent.modal ? clipboardContent.modal.keyboardNavigationActive : false
+                
+                currentIndex: clipboardContent.modal ? clipboardContent.modal.selectedIndex : 0
+                spacing: Theme.spacingXS
+                interactive: true
+                flickDeceleration: 1500
+                maximumFlickVelocity: 2000
+                boundsBehavior: Flickable.DragAndOvershootBounds
+                boundsMovement: Flickable.FollowBoundsBehavior
+                pressDelay: 0
+                flickableDirection: Flickable.VerticalFlick
+                
+                function ensureVisible(index) {
+                    if (index < 0 || index >= count) {
+                        return
+                    }
+                    const itemHeight = ClipboardConstants.itemHeight + spacing
+                    const itemY = index * itemHeight
+                    const itemBottom = itemY + itemHeight
+                    if (itemY < contentY) {
+                        contentY = itemY
+                    } else if (itemBottom > contentY + height) {
+                        contentY = itemBottom - height
+                    }
+                }
+                
+                onCurrentIndexChanged: {
+                    if (clipboardContent.modal && clipboardContent.modal.keyboardNavigationActive && currentIndex >= 0) {
+                        ensureVisible(currentIndex)
+                    }
+                }
+                
+                StyledText {
+                    text: "No clipboard entries found"
+                    anchors.centerIn: parent
+                    font.pixelSize: Theme.fontSizeMedium
+                    color: Theme.surfaceVariantText
+                    visible: filteredModel.count === 0
+                }
+                
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AsNeeded
+                }
+                
+                ScrollBar.horizontal: ScrollBar {
+                    policy: ScrollBar.AlwaysOff
+                }
+                
+                delegate: ClipboardEntry {
+                    required property int index
+                    required property var model
+                    
+                    width: clipboardListView.width
+                    height: ClipboardConstants.itemHeight
+                    entryData: model.entry
+                    entryIndex: index + 1
+                    itemIndex: index
+                    isSelected: clipboardContent.modal && clipboardContent.modal.keyboardNavigationActive && index === clipboardContent.modal.selectedIndex
+                    modal: clipboardContent.modal
+                    listView: clipboardListView
+                    onCopyRequested: clipboardContent.modal.copyEntry(model.entry)
+                    onDeleteRequested: clipboardContent.modal.deleteEntry(model.entry)
+                }
             }
         }
 
