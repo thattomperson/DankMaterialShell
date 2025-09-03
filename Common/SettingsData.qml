@@ -469,8 +469,7 @@ Singleton {
         if (typeof NiriService === "undefined" || !CompositorService.isNiri)
             return namedWorkspaces
 
-        for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
-            var ws = NiriService.allWorkspaces[i]
+        for (const ws of NiriService.allWorkspaces) {
             if (ws.name && ws.name.trim() !== "") {
                 namedWorkspaces.push(ws.name)
             }

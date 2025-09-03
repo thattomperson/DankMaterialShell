@@ -160,7 +160,7 @@ Rectangle {
                 layer.enabled: true
                 layer.effect: MultiEffect {
                     shadowEnabled: true
-                    shadowColor: Theme.shadowDark
+                    shadowColor: Theme.shadowStrong
                     shadowBlur: 0.8
                     shadowHorizontalOffset: 0
                     shadowVerticalOffset: 4

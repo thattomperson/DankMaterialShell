@@ -311,7 +311,7 @@ Rectangle {
                     if (CompositorService.isNiri) {
                         for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
                             var ws = NiriService.allWorkspaces[i]
-                            if (ws.idx + 1 === modelData)
+                            if (ws.idx + 1 === modelData && ws.output === root.screenName)
                                 return ws
                         }
                     } else if (CompositorService.isHyprland) {
