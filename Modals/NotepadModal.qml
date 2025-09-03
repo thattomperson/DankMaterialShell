@@ -1,46 +1,54 @@
 import QtQuick
 import QtQuick.Controls
+import QtCore
 import Quickshell
 import Quickshell.Io
 import qs.Common
 import qs.Services
 import qs.Widgets
 
+pragma ComponentBehavior: Bound
+
 DankModal {
     id: root
 
     property bool notepadModalVisible: false
     property bool fileDialogOpen: false
-    property string currentFileName: ""  // Track the currently loaded file
+    property string currentFileName: ""
+    property bool hasUnsavedChanges: false
+    property url currentFileUrl
 
     function show() {
-        notepadModalVisible = true;
+        notepadModalVisible = true
         shouldHaveFocus = Qt.binding(() => {
-            return notepadModalVisible && !fileDialogOpen;
-        });
-        open();
+            return notepadModalVisible && !fileDialogOpen
+        })
+        open()
     }
 
     function hide() {
-        notepadModalVisible = false;
-        // Clear filename when closing (so it doesn't persist between sessions)
-        currentFileName = "";
-        close();
+        if (hasUnsavedChanges) {
+            // Could add unsaved changes dialog here
+        }
+        notepadModalVisible = false
+        currentFileName = ""
+        currentFileUrl = ""
+        hasUnsavedChanges = false
+        close()
     }
 
     function toggle() {
         if (notepadModalVisible)
-            hide();
+            hide()
         else
-            show();
+            show()
     }
 
     visible: notepadModalVisible
     width: 700
-    height: 500
+    height: 520
     enableShadow: true
     onShouldHaveFocusChanged: {
-        console.log("Notepad: shouldHaveFocus changed to", shouldHaveFocus, "modalVisible:", notepadModalVisible, "dialogOpen:", fileDialogOpen);
     }
     onBackgroundClicked: hide()
 
@@ -56,10 +64,58 @@ DankModal {
                 function onNotepadModalVisibleChanged() {
                     if (root.notepadModalVisible) {
                         Qt.callLater(() => {
-                            textArea.forceActiveFocus();
-                        });
+                            textArea.forceActiveFocus()
+                        })
                     }
                 }
+            }
+
+            function newDocument() {
+                if (root.hasUnsavedChanges) {
+                    // Could add confirmation dialog here
+                }
+                textArea.text = ""
+                SessionData.notepadContent = ""
+                root.currentFileName = ""
+                root.currentFileUrl = ""
+                root.hasUnsavedChanges = false
+            }
+            
+            function openSaveDialog() {
+                root.allowFocusOverride = true
+                root.shouldHaveFocus = false
+                root.fileDialogOpen = true
+                saveBrowser.open()
+            }
+            
+            function openLoadDialog() {
+                root.allowFocusOverride = true
+                root.shouldHaveFocus = false
+                root.fileDialogOpen = true
+                loadBrowser.open()
+            }
+            
+            function saveToCurrentFile() {
+                if (root.currentFileUrl.toString()) {
+                    saveToFile(root.currentFileUrl)
+                } else {
+                    openSaveDialog()
+                }
+            }
+            
+            function saveToFile(fileUrl) {
+                const content = textArea.text
+                const cleanPath = fileUrl.toString().replace(/^file:\/\//, '')
+                // Use printf to safely handle special characters and escape single quotes
+                const escapedContent = content.replace(/'/g, "'\\''")
+                fileWriter.command = ["sh", "-c", "printf '%s' '" + escapedContent + "' > '" + cleanPath + "'"]
+                fileWriter.running = true
+            }
+            
+            function loadFromFile(fileUrl) {
+                const cleanPath = fileUrl.toString().replace(/^file:\/\//, '')
+                fileReader.command = ["cat", cleanPath]
+                fileReader.running = true
             }
 
             Column {
@@ -80,28 +136,39 @@ DankModal {
                             anchors.verticalCenter: parent.verticalCenter
                             
                             StyledText {
-                                text: "Notepad"
+                                text: qsTr("Notepad")
                                 font.pixelSize: Theme.fontSizeLarge
                                 color: Theme.surfaceText
                                 font.weight: Font.Medium
                             }
                             
                             StyledText {
-                                text: currentFileName
+                                text: (root.hasUnsavedChanges ? "● " : "") + (root.currentFileName || qsTr("Untitled"))
                                 font.pixelSize: Theme.fontSizeSmall
-                                color: Theme.surfaceTextMedium
-                                visible: currentFileName !== ""
+                                color: root.hasUnsavedChanges ? Theme.primary : Theme.surfaceTextMedium
+                                visible: root.currentFileName !== "" || root.hasUnsavedChanges
                                 elide: Text.ElideMiddle
                                 maximumLineCount: 1
                                 width: 200
                             }
                         }
 
-                        StyledText {
-                            text: SessionData.notepadContent.length > 0 ? `${SessionData.notepadContent.length} characters` : "Empty"
-                            font.pixelSize: Theme.fontSizeSmall
-                            color: Theme.surfaceTextMedium
+                        Column {
                             anchors.verticalCenter: parent.verticalCenter
+                            spacing: 2
+                            
+                            StyledText {
+                                text: SessionData.notepadContent.length > 0 ? qsTr("%1 characters").arg(SessionData.notepadContent.length) : qsTr("Empty")
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.surfaceTextMedium
+                            }
+                            
+                            StyledText {
+                                text: qsTr("Lines: %1").arg(textArea.lineCount)
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.surfaceTextMedium
+                                visible: SessionData.notepadContent.length > 0
+                            }
                         }
 
                     }
@@ -120,7 +187,7 @@ DankModal {
 
                 StyledRect {
                     width: parent.width
-                    height: parent.height - 80
+                    height: parent.height - 90
                     color: Theme.surface
                     border.color: Theme.outlineMedium
                     border.width: 1
@@ -137,7 +204,7 @@ DankModal {
                             id: textArea
 
                             text: SessionData.notepadContent
-                            placeholderText: "Start typing your notes here..."
+                            placeholderText: qsTr("Start typing your notes here...")
                             font.family: SettingsData.monoFontFamily
                             font.pixelSize: Theme.fontSizeMedium
                             color: Theme.surfaceText
@@ -146,24 +213,59 @@ DankModal {
                             wrapMode: TextArea.Wrap
                             focus: root.notepadModalVisible
                             activeFocusOnTab: true
+                            textFormat: TextEdit.PlainText
+                            persistentSelection: true
+                            tabStopDistance: 40
+                            leftPadding: Theme.spacingM
+                            topPadding: Theme.spacingM
+                            rightPadding: Theme.spacingM
+                            bottomPadding: Theme.spacingM
                             
                             onTextChanged: {
                                 if (text !== SessionData.notepadContent) {
-                                    SessionData.notepadContent = text;
-                                    saveTimer.restart();
+                                    SessionData.notepadContent = text
+                                    root.hasUnsavedChanges = true
+                                    saveTimer.restart()
                                 }
                             }
                             
                             Keys.onEscapePressed: (event) => {
-                                root.hide();
-                                event.accepted = true;
+                                root.hide()
+                                event.accepted = true
+                            }
+                            
+                            Keys.onPressed: (event) => {
+                                if (event.modifiers & Qt.ControlModifier) {
+                                    switch (event.key) {
+                                    case Qt.Key_S:
+                                        event.accepted = true
+                                        if (root.currentFileUrl.toString()) {
+                                            contentItem.saveToCurrentFile()
+                                        } else {
+                                            contentItem.openSaveDialog()
+                                        }
+                                        break
+                                    case Qt.Key_O:
+                                        event.accepted = true
+                                        contentItem.openLoadDialog()
+                                        break
+                                    case Qt.Key_N:
+                                        event.accepted = true
+                                        contentItem.newDocument()
+                                        break
+                                    case Qt.Key_A:
+                                        event.accepted = true
+                                        selectAll()
+                                        break
+                                    }
+                                }
                             }
                             
                             Component.onCompleted: {
                                 if (root.notepadModalVisible) {
                                     Qt.callLater(() => {
-                                        forceActiveFocus();
-                                    });
+                                        forceActiveFocus()
+                                    })
                                 }
                             }
 
@@ -179,7 +281,7 @@ DankModal {
 
                 Row {
                     width: parent.width
-                    height: 32
+                    height: 40
                     spacing: Theme.spacingL
 
                     Row {
@@ -190,18 +292,13 @@ DankModal {
                             iconSize: Theme.iconSize - 2
                             iconColor: Theme.primary
                             hoverColor: Theme.primaryHover
-                            onClicked: {
-                                console.log("Notepad: Opening save dialog, releasing modal focus");
-                                root.allowFocusOverride = true;
-                                root.shouldHaveFocus = false;
-                                fileDialogOpen = true;
-                                saveBrowser.open();
-                            }
+                            enabled: root.hasUnsavedChanges || SessionData.notepadContent.length > 0
+                            onClicked: contentItem.saveToCurrentFile()
                         }
 
                         StyledText {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "Save to file"
+                            text: root.currentFileUrl.toString() ? qsTr("Save") : qsTr("Save as...")
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceTextMedium
                         }
@@ -215,18 +312,31 @@ DankModal {
                             iconSize: Theme.iconSize - 2
                             iconColor: Theme.secondary
                             hoverColor: Theme.secondaryHover
-                            onClicked: {
-                                console.log("Notepad: Opening load dialog, releasing modal focus");
-                                root.allowFocusOverride = true;
-                                root.shouldHaveFocus = false;
-                                fileDialogOpen = true;
-                                loadBrowser.open();
-                            }
+                            onClicked: contentItem.openLoadDialog()
                         }
 
                         StyledText {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "Load file"
+                            text: qsTr("Open file")
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceTextMedium
+                        }
+                    }
+
+                    Row {
+                        spacing: Theme.spacingS
+
+                        DankActionButton {
+                            iconName: "note_add"
+                            iconSize: Theme.iconSize - 2
+                            iconColor: Theme.surfaceText
+                            hoverColor: Theme.primaryHover
+                            onClicked: contentItem.newDocument()
+                        }
+
+                        StyledText {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: qsTr("New")
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceTextMedium
                         }
@@ -239,9 +349,9 @@ DankModal {
 
                     StyledText {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: saveTimer.running ? "Auto-saving..." : "Auto-saved"
+                        text: saveTimer.running ? qsTr("Auto-saving...") : (root.hasUnsavedChanges ? qsTr("Unsaved changes") : qsTr("Auto-saved"))
                         font.pixelSize: Theme.fontSizeSmall
-                        color: saveTimer.running ? Theme.primary : Theme.surfaceTextMedium
+                        color: root.hasUnsavedChanges ? Theme.warning : (saveTimer.running ? Theme.primary : Theme.surfaceTextMedium)
                         opacity: SessionData.notepadContent.length > 0 ? 1 : 0
 
                         Behavior on opacity {
@@ -260,135 +370,130 @@ DankModal {
 
                 interval: 1000
                 repeat: false
-                onTriggered: SessionData.saveSettings()
+                onTriggered: {
+                    SessionData.saveSettings()
+                    root.hasUnsavedChanges = false
+                }
+            }
+
+            // Improved file I/O using Quickshell Process with better safety
+            Process {
+                id: fileWriter
+                
+                onExited: (exitCode) => {
+                    if (exitCode === 0) {
+                        root.hasUnsavedChanges = false
+                    } else {
+                        console.warn("Notepad: Failed to save file, exit code:", exitCode)
+                    }
+                }
+            }
+
+            Process {
+                id: fileReader
+                
+                stdout: StdioCollector {
+                    onStreamFinished: {
+                        textArea.text = text
+                        SessionData.notepadContent = text
+                        root.hasUnsavedChanges = false
+                    }
+                }
+                
+                onExited: (exitCode) => {
+                    if (exitCode !== 0) {
+                        console.warn("Notepad: Failed to load file, exit code:", exitCode)
+                    }
+                }
             }
 
             FileBrowserModal {
                 id: saveBrowser
 
-                browserTitle: "Save Notepad File"
+                browserTitle: qsTr("Save Notepad File")
                 browserIcon: "save"
                 browserType: "notepad_save"
-                fileExtensions: ["*.txt", "*.*"]
+                fileExtensions: ["*.txt", "*.md", "*.*"]
                 allowStacking: true
                 saveMode: true
                 defaultFileName: "note.txt"
                 
                 onFileSelected: (path) => {
-                    fileDialogOpen = false;
-                    selectedFilePath = path;
-                    const content = textArea.text;
-                    if (content.length > 0) {
-                        writeFileProcess.command = ["sh", "-c", `echo '${content.replace(/'/g, "'\\''")}' > '${path}'`];
-                        writeFileProcess.running = true;
-                    }
-                    close();
+                    root.fileDialogOpen = false
+                    const cleanPath = path.toString().replace(/^file:\/\//, '')
+                    const fileName = cleanPath.split('/').pop()
+                    const fileUrl = "file://" + cleanPath
+                    
+                    root.currentFileName = fileName
+                    root.currentFileUrl = fileUrl
+                    
+                    contentItem.saveToFile(fileUrl)
+                    close()
+                    
                     // Restore modal focus
-                    root.allowFocusOverride = false;
+                    root.allowFocusOverride = false
                     root.shouldHaveFocus = Qt.binding(() => {
-                        return root.notepadModalVisible && !fileDialogOpen;
-                    });
-                    // Restore focus to TextArea after dialog closes
+                        return root.notepadModalVisible && !root.fileDialogOpen
+                    })
                     Qt.callLater(() => {
-                        textArea.forceActiveFocus();
-                    });
+                        textArea.forceActiveFocus()
+                    })
                 }
                 
                 onDialogClosed: {
-                    fileDialogOpen = false;
+                    root.fileDialogOpen = false
                     // Restore modal focus
-                    root.allowFocusOverride = false;
+                    root.allowFocusOverride = false
                     root.shouldHaveFocus = Qt.binding(() => {
-                        return root.notepadModalVisible && !fileDialogOpen;
-                    });
-                    // Restore focus to TextArea after dialog closes  
+                        return root.notepadModalVisible && !root.fileDialogOpen
+                    })
                     Qt.callLater(() => {
-                        textArea.forceActiveFocus();
-                    });
+                        textArea.forceActiveFocus()
+                    })
                 }
-                
-                property string selectedFilePath: ""
             }
 
             FileBrowserModal {
                 id: loadBrowser
 
-                browserTitle: "Load Notepad File"
+                browserTitle: qsTr("Open Notepad File")
                 browserIcon: "folder_open"
                 browserType: "notepad_load"
-                fileExtensions: ["*.txt", "*.*"]
+                fileExtensions: ["*.txt", "*.md", "*.*"]
                 allowStacking: true
                 
                 onFileSelected: (path) => {
-                    fileDialogOpen = false;
-                    // Clean the file path - remove file:// prefix if present
-                    var cleanPath = path.toString().replace(/^file:\/\//, '');
-                    // Extract filename from path
-                    var fileName = cleanPath.split('/').pop();
-                    currentFileName = fileName;
-                    console.log("Notepad: Loading file from path:", cleanPath);
-                    readFileProcess.command = ["cat", cleanPath];
-                    readFileProcess.running = true;
-                    close();
+                    root.fileDialogOpen = false
+                    const cleanPath = path.toString().replace(/^file:\/\//, '')
+                    const fileName = cleanPath.split('/').pop()
+                    const fileUrl = "file://" + cleanPath
+                    
+                    root.currentFileName = fileName
+                    root.currentFileUrl = fileUrl
+                    
+                    contentItem.loadFromFile(fileUrl)
+                    close()
+                    
                     // Restore modal focus
-                    root.allowFocusOverride = false;
+                    root.allowFocusOverride = false
                     root.shouldHaveFocus = Qt.binding(() => {
-                        return root.notepadModalVisible && !fileDialogOpen;
-                    });
-                    // Restore focus to TextArea after dialog closes
+                        return root.notepadModalVisible && !root.fileDialogOpen
+                    })
                     Qt.callLater(() => {
-                        textArea.forceActiveFocus();
-                    });
+                        textArea.forceActiveFocus()
+                    })
                 }
                 
                 onDialogClosed: {
-                    fileDialogOpen = false;
+                    root.fileDialogOpen = false
                     // Restore modal focus
-                    root.allowFocusOverride = false;
+                    root.allowFocusOverride = false
                     root.shouldHaveFocus = Qt.binding(() => {
-                        return root.notepadModalVisible && !fileDialogOpen;
-                    });
-                    // Restore focus to TextArea after dialog closes
+                        return root.notepadModalVisible && !root.fileDialogOpen
+                    })
                     Qt.callLater(() => {
-                        textArea.forceActiveFocus();
-                    });
-                }
-            }
-
-            Process {
-                id: writeFileProcess
-
-                command: []
-                running: false
-                onExited: (exitCode) => {
-                    if (exitCode === 0)
-                        console.log("Notepad: File saved successfully");
-                    else
-                        console.warn("Notepad: Failed to save file, exit code:", exitCode);
-                }
-            }
-
-            Process {
-                id: readFileProcess
-
-                command: []
-                running: false
-                
-                stdout: StdioCollector {
-                    onStreamFinished: {
-                        console.log("Notepad: File content loaded, length:", text.length);
-                        textArea.text = text;
-                        SessionData.notepadContent = text;
-                        SessionData.saveSettings();
-                        console.log("Notepad: File loaded and saved to session");
-                    }
-                }
-                
-                onExited: (exitCode) => {
-                    console.log("Notepad: File read process exited with code:", exitCode);
-                    if (exitCode !== 0) {
-                        console.warn("Notepad: Failed to load file, exit code:", exitCode);
-                    }
+                        textArea.forceActiveFocus()
+                    })
                 }
             }
 
