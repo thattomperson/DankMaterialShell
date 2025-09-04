@@ -22,3 +22,9 @@ You can configure it to format on save in vscode by configuring the "custom loca
     "editor.formatOnSave": true
   },
 ```
+
+Sometimes it just breaks code though. Like turning `"_\""` into `"_""`, so you may not want to do formatOnSave.
+
+## Pull request
+
+Include screenshots/video if applicable in your pull request if applicable, to visualize what your change is affecting.
