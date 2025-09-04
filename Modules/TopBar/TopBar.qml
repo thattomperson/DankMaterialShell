@@ -155,7 +155,7 @@ PanelWindow {
                                  "loader": clipboardHistoryModalPopup,
                                  "prop": "visible"
                              }]
-            return loaders.some(item => item.loader?.item[item.prop])
+            return loaders.some(item => item.loader?.item?.[item.prop])
         }
 
         Connections {
