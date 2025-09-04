@@ -5,8 +5,8 @@ import Quickshell.Io
 import Quickshell.Widgets
 import qs.Common
 import qs.Modals
-import qs.Modals.Common
 import qs.Modals.Clipboard
+import qs.Modals.Common
 import qs.Modals.Settings
 import qs.Modals.Spotlight
 import qs.Modules
@@ -32,8 +32,7 @@ ShellRoot {
         DisplayService.nightModeEnabled
     }
 
-    WallpaperBackground {
-    }
+    WallpaperBackground {}
 
     Lock {
         id: lock
@@ -47,7 +46,6 @@ ShellRoot {
         delegate: TopBar {
             modelData: item
         }
-
     }
 
     Variants {
@@ -60,7 +58,6 @@ ShellRoot {
                 dockContextMenuLoader.active = true
             }
         }
-
     }
 
     Loader {
@@ -72,9 +69,7 @@ ShellRoot {
             CentcomPopout {
                 id: centcomPopout
             }
-
         }
-
     }
 
     LazyLoader {
@@ -85,7 +80,6 @@ ShellRoot {
         DockContextMenu {
             id: dockContextMenu
         }
-
     }
 
     LazyLoader {
@@ -96,7 +90,6 @@ ShellRoot {
         NotificationCenterPopout {
             id: notificationCenter
         }
-
     }
 
     Variants {
@@ -105,7 +98,6 @@ ShellRoot {
         delegate: NotificationPopupManager {
             modelData: item
         }
-
     }
 
     LazyLoader {
@@ -117,34 +109,31 @@ ShellRoot {
             id: controlCenterPopout
 
             onPowerActionRequested: (action, title, message) => {
-                powerConfirmModalLoader.active = true
-                if (powerConfirmModalLoader.item) {
-                    powerConfirmModalLoader.item.confirmButtonColor = 
-                        action === "poweroff" ? Theme.error : 
-                        action === "reboot" ? Theme.warning : Theme.primary
-                    powerConfirmModalLoader.item.show(title, message, function() {
-                        switch (action) {
-                        case "logout":
-                            SessionService.logout()
-                            break
-                        case "suspend":
-                            SessionService.suspend()
-                            break
-                        case "reboot":
-                            SessionService.reboot()
-                            break
-                        case "poweroff":
-                            SessionService.poweroff()
-                            break
-                        }
-                    }, function() {})
-                }
-            }
+                                        powerConfirmModalLoader.active = true
+                                        if (powerConfirmModalLoader.item) {
+                                            powerConfirmModalLoader.item.confirmButtonColor = action === "poweroff" ? Theme.error : action === "reboot" ? Theme.warning : Theme.primary
+                                            powerConfirmModalLoader.item.show(title, message, function () {
+                                                switch (action) {
+                                                case "logout":
+                                                    SessionService.logout()
+                                                    break
+                                                case "suspend":
+                                                    SessionService.suspend()
+                                                    break
+                                                case "reboot":
+                                                    SessionService.reboot()
+                                                    break
+                                                case "poweroff":
+                                                    SessionService.poweroff()
+                                                    break
+                                                }
+                                            }, function () {})
+                                        }
+                                    }
             onLockRequested: {
                 lock.activate()
             }
         }
-
     }
 
     LazyLoader {
@@ -155,7 +144,6 @@ ShellRoot {
         WifiPasswordModal {
             id: wifiPasswordModal
         }
-
     }
 
     LazyLoader {
@@ -166,7 +154,6 @@ ShellRoot {
         NetworkInfoModal {
             id: networkInfoModal
         }
-
     }
 
     LazyLoader {
@@ -177,7 +164,6 @@ ShellRoot {
         BatteryPopout {
             id: batteryPopout
         }
-
     }
 
     LazyLoader {
@@ -188,7 +174,6 @@ ShellRoot {
         VpnPopout {
             id: vpnPopout
         }
-
     }
 
     LazyLoader {
@@ -200,31 +185,28 @@ ShellRoot {
             id: powerMenu
 
             onPowerActionRequested: (action, title, message) => {
-                powerConfirmModalLoader.active = true
-                if (powerConfirmModalLoader.item) {
-                    powerConfirmModalLoader.item.confirmButtonColor = 
-                        action === "poweroff" ? Theme.error : 
-                        action === "reboot" ? Theme.warning : Theme.primary
-                    powerConfirmModalLoader.item.show(title, message, function() {
-                        switch (action) {
-                        case "logout":
-                            SessionService.logout()
-                            break
-                        case "suspend":
-                            SessionService.suspend()
-                            break
-                        case "reboot":
-                            SessionService.reboot()
-                            break
-                        case "poweroff":
-                            SessionService.poweroff()
-                            break
-                        }
-                    }, function() {})
-                }
-            }
+                                        powerConfirmModalLoader.active = true
+                                        if (powerConfirmModalLoader.item) {
+                                            powerConfirmModalLoader.item.confirmButtonColor = action === "poweroff" ? Theme.error : action === "reboot" ? Theme.warning : Theme.primary
+                                            powerConfirmModalLoader.item.show(title, message, function () {
+                                                switch (action) {
+                                                case "logout":
+                                                    SessionService.logout()
+                                                    break
+                                                case "suspend":
+                                                    SessionService.suspend()
+                                                    break
+                                                case "reboot":
+                                                    SessionService.reboot()
+                                                    break
+                                                case "poweroff":
+                                                    SessionService.poweroff()
+                                                    break
+                                                }
+                                            }, function () {})
+                                        }
+                                    }
         }
-
     }
 
     LazyLoader {
@@ -235,7 +217,6 @@ ShellRoot {
         ConfirmModal {
             id: powerConfirmModal
         }
-
     }
 
     LazyLoader {
@@ -246,7 +227,6 @@ ShellRoot {
         ProcessListPopout {
             id: processListPopout
         }
-
     }
 
     SettingsModal {
@@ -261,7 +241,6 @@ ShellRoot {
         AppDrawerPopout {
             id: appDrawerPopout
         }
-
     }
 
     SpotlightModal {
@@ -284,16 +263,17 @@ ShellRoot {
         ProcessListModal {
             id: processListModal
         }
-
     }
 
     LazyLoader {
-        id: notepadModalLoader
+        id: notepadSlideoutLoader
 
         active: false
 
-        NotepadModal {
-            id: notepadModal
+        NotepadSlideout {
+            id: notepadSlideout
+
+            modelData: Quickshell.screens.length > 0 ? Quickshell.screens[0] : null
         }
     }
 
@@ -306,31 +286,28 @@ ShellRoot {
             id: powerMenuModal
 
             onPowerActionRequested: (action, title, message) => {
-                powerConfirmModalLoader.active = true
-                if (powerConfirmModalLoader.item) {
-                    powerConfirmModalLoader.item.confirmButtonColor = 
-                        action === "poweroff" ? Theme.error : 
-                        action === "reboot" ? Theme.warning : Theme.primary
-                    powerConfirmModalLoader.item.show(title, message, function() {
-                        switch (action) {
-                        case "logout":
-                            SessionService.logout()
-                            break
-                        case "suspend":
-                            SessionService.suspend()
-                            break
-                        case "reboot":
-                            SessionService.reboot()
-                            break
-                        case "poweroff":
-                            SessionService.poweroff()
-                            break
-                        }
-                    }, function() {})
-                }
-            }
+                                        powerConfirmModalLoader.active = true
+                                        if (powerConfirmModalLoader.item) {
+                                            powerConfirmModalLoader.item.confirmButtonColor = action === "poweroff" ? Theme.error : action === "reboot" ? Theme.warning : Theme.primary
+                                            powerConfirmModalLoader.item.show(title, message, function () {
+                                                switch (action) {
+                                                case "logout":
+                                                    SessionService.logout()
+                                                    break
+                                                case "suspend":
+                                                    SessionService.suspend()
+                                                    break
+                                                case "reboot":
+                                                    SessionService.reboot()
+                                                    break
+                                                case "poweroff":
+                                                    SessionService.poweroff()
+                                                    break
+                                                }
+                                            }, function () {})
+                                        }
+                                    }
         }
-
     }
 
     IpcHandler {
@@ -389,26 +366,29 @@ ShellRoot {
 
     IpcHandler {
         function open() {
-            notepadModalLoader.active = true
-            if (notepadModalLoader.item)
-                notepadModalLoader.item.show()
-
-            return "NOTEPAD_OPEN_SUCCESS"
+            notepadSlideoutLoader.active = true
+            if (notepadSlideoutLoader.item) {
+                notepadSlideoutLoader.item.show()
+                return "NOTEPAD_OPEN_SUCCESS"
+            }
+            return "NOTEPAD_OPEN_FAILED"
         }
 
         function close() {
-            if (notepadModalLoader.item)
-                notepadModalLoader.item.hide()
-
-            return "NOTEPAD_CLOSE_SUCCESS"
+            if (notepadSlideoutLoader.item) {
+                notepadSlideoutLoader.item.hide()
+                return "NOTEPAD_CLOSE_SUCCESS"
+            }
+            return "NOTEPAD_CLOSE_FAILED"
         }
 
         function toggle() {
-            notepadModalLoader.active = true
-            if (notepadModalLoader.item)
-                notepadModalLoader.item.toggle()
-
-            return "NOTEPAD_TOGGLE_SUCCESS"
+            notepadSlideoutLoader.active = true
+            if (notepadSlideoutLoader.item) {
+                notepadSlideoutLoader.item.toggle()
+                return "NOTEPAD_TOGGLE_SUCCESS"
+            }
+            return "NOTEPAD_TOGGLE_FAILED"
         }
 
         target: "notepad"
@@ -421,7 +401,6 @@ ShellRoot {
             modelData: item
             visible: ToastService.toastVisible
         }
-
     }
 
     Variants {
@@ -430,7 +409,6 @@ ShellRoot {
         delegate: VolumeOSD {
             modelData: item
         }
-
     }
 
     Variants {
@@ -439,7 +417,6 @@ ShellRoot {
         delegate: MicMuteOSD {
             modelData: item
         }
-
     }
 
     Variants {
@@ -448,7 +425,6 @@ ShellRoot {
         delegate: BrightnessOSD {
             modelData: item
         }
-
     }
 
     Variants {
@@ -457,7 +433,5 @@ ShellRoot {
         delegate: IdleInhibitorOSD {
             modelData: item
         }
-
     }
-
 }

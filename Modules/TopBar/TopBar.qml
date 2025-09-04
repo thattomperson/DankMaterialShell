@@ -186,8 +186,8 @@ PanelWindow {
                 result = result || vpnPopoutLoader.item.shouldBeVisible
             if (typeof controlCenterLoader !== "undefined" && controlCenterLoader.item)
                 result = result || controlCenterLoader.item.shouldBeVisible
-            if (typeof notepadModalLoader !== "undefined" && notepadModalLoader.item)
-                result = result || notepadModalLoader.item.visible
+            if (typeof notepadSlideoutLoader !== "undefined" && notepadSlideoutLoader.item)
+                result = result || notepadSlideoutLoader.item.notepadVisible
             if (typeof clipboardHistoryModalPopup !== "undefined" && clipboardHistoryModalPopup.item)
                 result = result || clipboardHistoryModalPopup.item.visible
             return result
@@ -1237,7 +1237,7 @@ PanelWindow {
                             id: notepadButtonComponent
 
                             NotepadButton {
-                                isActive: notepadModalLoader.item ? notepadModalLoader.item.visible : false
+                                isActive: notepadSlideoutLoader.item ? notepadSlideoutLoader.item.notepadVisible : false
                                 widgetHeight: root.widgetHeight
                                 barHeight: root.effectiveBarHeight
                                 section: {
@@ -1252,14 +1252,14 @@ PanelWindow {
                                     return "right"
                                 }
                                 popupTarget: {
-                                    notepadModalLoader.active = true
-                                    return notepadModalLoader.item
+                                    notepadSlideoutLoader.active = true
+                                    return notepadSlideoutLoader.item
                                 }
                                 parentScreen: root.screen
                                 onClicked: {
-                                    notepadModalLoader.active = true
-                                    if (notepadModalLoader.item) {
-                                        notepadModalLoader.item.toggle()
+                                    notepadSlideoutLoader.active = true
+                                    if (notepadSlideoutLoader.item) {
+                                        notepadSlideoutLoader.item.toggle()
                                     }
                                 }
                             }
