@@ -28,7 +28,9 @@ Rectangle {
 
     onActivePlayerChanged: {
         if (activePlayer && activePlayer.positionSupported) {
-            currentPosition = Qt.binding(() => activePlayer?.position)
+            currentPosition = Qt.binding(() => activePlayer?.position || 0)
+        } else {
+            currentPosition = 0
         }
     }
 

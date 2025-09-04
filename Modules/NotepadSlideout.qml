@@ -146,7 +146,6 @@ PanelWindow {
 
                     TextArea {
                         id: textArea
-                        text: SessionData.notepadContent
                         placeholderText: qsTr("Start typing your notes here...")
                         font.family: SettingsData.monoFontFamily
                         font.pixelSize: Theme.fontSizeMedium
@@ -163,6 +162,19 @@ PanelWindow {
                         topPadding: Theme.spacingM
                         rightPadding: Theme.spacingM
                         bottomPadding: Theme.spacingM
+                        
+                        Component.onCompleted: {
+                            text = SessionData.notepadContent
+                        }
+                        
+                        Connections {
+                            target: SessionData
+                            function onNotepadContentChanged() {
+                                if (textArea.text !== SessionData.notepadContent) {
+                                    textArea.text = SessionData.notepadContent
+                                }
+                            }
+                        }
                         
                         onTextChanged: {
                             if (text !== SessionData.notepadContent) {
