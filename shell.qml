@@ -338,7 +338,7 @@ ShellRoot {
     }
 
     IpcHandler {
-        function open() {
+        function open(): string {
             processListModalLoader.active = true
             if (processListModalLoader.item)
                 processListModalLoader.item.show()
@@ -346,14 +346,14 @@ ShellRoot {
             return "PROCESSLIST_OPEN_SUCCESS"
         }
 
-        function close() {
+        function close(): string {
             if (processListModalLoader.item)
                 processListModalLoader.item.hide()
 
             return "PROCESSLIST_CLOSE_SUCCESS"
         }
 
-        function toggle() {
+        function toggle(): string {
             processListModalLoader.active = true
             if (processListModalLoader.item)
                 processListModalLoader.item.toggle()
@@ -365,7 +365,7 @@ ShellRoot {
     }
 
     IpcHandler {
-        function open() {
+        function open(): string {
             notepadSlideoutLoader.active = true
             if (notepadSlideoutLoader.item) {
                 notepadSlideoutLoader.item.show()
@@ -374,7 +374,7 @@ ShellRoot {
             return "NOTEPAD_OPEN_FAILED"
         }
 
-        function close() {
+        function close(): string {
             if (notepadSlideoutLoader.item) {
                 notepadSlideoutLoader.item.hide()
                 return "NOTEPAD_CLOSE_SUCCESS"
@@ -382,7 +382,7 @@ ShellRoot {
             return "NOTEPAD_CLOSE_FAILED"
         }
 
-        function toggle() {
+        function toggle(): string {
             notepadSlideoutLoader.active = true
             if (notepadSlideoutLoader.item) {
                 notepadSlideoutLoader.item.toggle()
