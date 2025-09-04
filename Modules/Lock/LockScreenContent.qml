@@ -120,7 +120,7 @@ Item {
                 anchors.top: parent.top
                 text: {
                     if (SettingsData.use24HourClock) {
-                        return systemClock.date.toLocaleTimeString(Qt.locale(), Locale.ShortFormat)
+                        return systemClock.date.toLocaleTimeString(Qt.locale(), "HH:mm")
                     } else {
                         return systemClock.date.toLocaleTimeString(Qt.locale(), "h:mm AP")
                     }

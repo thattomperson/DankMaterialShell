@@ -22,260 +22,190 @@ Rectangle {
     }
     property var workspaceList: {
         if (CompositorService.isNiri) {
-            var baseList = getNiriWorkspaces()
+            const baseList = getNiriWorkspaces()
             return SettingsData.showWorkspacePadding ? padWorkspaces(baseList) : baseList
-        } else if (CompositorService.isHyprland) {
-            var workspaces = Hyprland.workspaces ? Hyprland.workspaces.values : []
+        }
+        if (CompositorService.isHyprland) {
+            const workspaces = Hyprland.workspaces?.values || []
             if (workspaces.length === 0) {
-                return [{id: 1, name: "1"}]
+                return [{
+                            "id": 1,
+                            "name": "1"
+                        }]
             }
-            var sorted = workspaces.slice().sort((a, b) => a.id - b.id)
+            const sorted = workspaces.slice().sort((a, b) => a.id - b.id)
             return SettingsData.showWorkspacePadding ? padWorkspaces(sorted) : sorted
         }
         return [1]
     }
 
     function getWorkspaceIcons(ws) {
-        if (!SettingsData.showWorkspaceApps) return []
-        
-        var chunks = []
-        if (!ws) return chunks
+        if (!SettingsData.showWorkspaceApps || !ws) {
+            return []
+        }
 
-        var targetWorkspaceId
+        let targetWorkspaceId
         if (CompositorService.isNiri) {
-            // For Niri, we need to find the workspace ID from allWorkspaces
-            var wsNumber = typeof ws === "number" ? ws : -1
-            if (wsNumber > 0) {
-                for (var j = 0; j < NiriService.allWorkspaces.length; j++) {
-                    var workspace = NiriService.allWorkspaces[j]
-                    if (workspace.idx + 1 === wsNumber && workspace.output === root.screenName) {
-                        targetWorkspaceId = workspace.id
-                        break
-                    }
-                }
+            const wsNumber = typeof ws === "number" ? ws : -1
+            if (wsNumber <= 0) {
+                return []
             }
-            if (targetWorkspaceId === undefined) return chunks
+            const workspace = NiriService.allWorkspaces.find(w => w.idx + 1 === wsNumber && w.output === root.screenName)
+            if (!workspace) {
+                return []
+            }
+            targetWorkspaceId = workspace.id
         } else if (CompositorService.isHyprland) {
             targetWorkspaceId = ws.id !== undefined ? ws.id : ws
         } else {
-            return chunks
+            return []
         }
 
-        var wins = []
-        if (CompositorService.isNiri) {
-            wins = NiriService.windows || []
-        } else if (CompositorService.isHyprland) {
-            wins = Hyprland.clients ? Hyprland.clients.values : []
-        }
+        const wins = CompositorService.isNiri ? (NiriService.windows || []) : (Hyprland.clients?.values || [])
 
-        var byApp = {}
-        var isActiveWs = false
-        if (CompositorService.isNiri) {
-            for (var j = 0; j < NiriService.allWorkspaces.length; j++) {
-                var ws2 = NiriService.allWorkspaces[j]
-                if (ws2.id === targetWorkspaceId && ws2.is_active) {
-                    isActiveWs = true
-                    break
-                }
-            }
-        } else if (CompositorService.isHyprland) {
-            isActiveWs = targetWorkspaceId === root.currentWorkspace
-        }
+        const byApp = {}
+        const isActiveWs = CompositorService.isNiri ? NiriService.allWorkspaces.some(ws => ws.id === targetWorkspaceId && ws.is_active) : targetWorkspaceId === root.currentWorkspace
 
-        for (var i = 0; i < wins.length; i++) {
-            var w = wins[i]
-            if (!w) continue
+        wins.forEach((w, i) => {
+                         if (!w) {
+                             return
+                         }
 
-            var winWs
-            if (CompositorService.isNiri) {
-                winWs = w.workspace_id
-            } else if (CompositorService.isHyprland) {
-                winWs = w.workspace && w.workspace.id !== undefined ? w.workspace.id : w.workspaceId
-            }
-            
-            if (winWs === undefined || winWs === null) continue
-            if (winWs !== targetWorkspaceId) continue
+                         const winWs = CompositorService.isNiri ? w.workspace_id : (w.workspace?.id ?? w.workspaceId)
 
-            var keyBase = (w.app_id || w.appId || w.class || w.windowClass || w.exe || "unknown").toLowerCase()
-            var key = isActiveWs ? keyBase + "_" + i : keyBase
+                         if (winWs === undefined || winWs === null || winWs !== targetWorkspaceId) {
+                             return
+                         }
 
-            if (!byApp[key]) {
-                var icon = Quickshell.iconPath(DesktopEntries.heuristicLookup(Paths.moddedAppId(keyBase))?.icon, true)
-                byApp[key] = {
-                    type: "icon",
-                    icon: icon,
-                    active: !!w.is_focused || !!w.activated,
-                    count: 1,
-                    windowId: w.id || w.address,
-                    fallbackText: w.app_id || w.appId || w.class || w.title || ""
-                }
-            } else {
-                byApp[key].count++
-                if (w.is_focused || w.activated) byApp[key].active = true
-            }
-        }
+                         const keyBase = (w.app_id || w.appId || w.class || w.windowClass || w.exe || "unknown").toLowerCase()
+                         const key = isActiveWs ? `${keyBase}_${i}` : keyBase
 
-        for (var k in byApp)
-            chunks.push(byApp[k])
+                         if (!byApp[key]) {
+                             const icon = Quickshell.iconPath(DesktopEntries.heuristicLookup(Paths.moddedAppId(keyBase))?.icon, true)
+                             byApp[key] = {
+                                 "type": "icon",
+                                 "icon": icon,
+                                 "active": !!(w.is_focused || w.activated),
+                                 "count": 1,
+                                 "windowId": w.id || w.address,
+                                 "fallbackText": w.app_id || w.appId || w.class || w.title || ""
+                             }
+                         } else {
+                             byApp[key].count++
+                             if (w.is_focused || w.activated) {
+                                 byApp[key].active = true
+                             }
+                         }
+                     })
 
-        return chunks
+        return Object.values(byApp)
     }
 
     function padWorkspaces(list) {
-        var padded = list.slice()
+        const padded = list.slice()
+        const placeholder = CompositorService.isHyprland ? {
+                                                               "id": -1,
+                                                               "name": ""
+                                                           } : -1
         while (padded.length < 3) {
-            if (CompositorService.isHyprland) {
-                padded.push({id: -1, name: ""})
-            } else {
-                padded.push(-1)
-            }
+            padded.push(placeholder)
         }
         return padded
     }
 
     function getNiriWorkspaces() {
-        if (NiriService.allWorkspaces.length === 0)
+        if (NiriService.allWorkspaces.length === 0) {
             return [1, 2]
-
-        if (!root.screenName)
-            return NiriService.getCurrentOutputWorkspaceNumbers()
-
-        var displayWorkspaces = []
-        for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
-            var ws = NiriService.allWorkspaces[i]
-            if (ws.output === root.screenName)
-                displayWorkspaces.push(ws.idx + 1)
         }
+
+        if (!root.screenName) {
+            return NiriService.getCurrentOutputWorkspaceNumbers()
+        }
+
+        const displayWorkspaces = NiriService.allWorkspaces.filter(ws => ws.output === root.screenName).map(ws => ws.idx + 1)
         return displayWorkspaces.length > 0 ? displayWorkspaces : [1, 2]
     }
 
     function getNiriActiveWorkspace() {
-        if (NiriService.allWorkspaces.length === 0)
+        if (NiriService.allWorkspaces.length === 0) {
             return 1
-
-        if (!root.screenName)
-            return NiriService.getCurrentWorkspaceNumber()
-
-        for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
-            var ws = NiriService.allWorkspaces[i]
-            if (ws.output === root.screenName && ws.is_active)
-                return ws.idx + 1
         }
-        return 1
+
+        if (!root.screenName) {
+            return NiriService.getCurrentWorkspaceNumber()
+        }
+
+        const activeWs = NiriService.allWorkspaces.find(ws => ws.output === root.screenName && ws.is_active)
+        return activeWs ? activeWs.idx + 1 : 1
     }
 
     readonly property real padding: (widgetHeight - workspaceRow.implicitHeight) / 2
-    
+
+    function getRealWorkspaces() {
+        return root.workspaceList.filter(ws => {
+                                             if (CompositorService.isHyprland) {
+                                                 return ws && ws.id !== -1
+                                             }
+                                             return ws !== -1
+                                         })
+    }
+
+    function switchWorkspace(direction) {
+        if (CompositorService.isNiri) {
+            const realWorkspaces = getRealWorkspaces()
+            if (realWorkspaces.length < 2) {
+                return
+            }
+
+            const currentIndex = realWorkspaces.findIndex(ws => ws === root.currentWorkspace)
+            const validIndex = currentIndex === -1 ? 0 : currentIndex
+            const nextIndex = direction > 0 ? (validIndex + 1) % realWorkspaces.length : (validIndex - 1 + realWorkspaces.length) % realWorkspaces.length
+
+            NiriService.switchToWorkspace(realWorkspaces[nextIndex] - 1)
+        } else if (CompositorService.isHyprland) {
+            const command = direction > 0 ? "workspace r+1" : "workspace r-1"
+            Hyprland.dispatch(command)
+        }
+    }
+
     width: workspaceRow.implicitWidth + padding * 2
     height: widgetHeight
     radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
     color: {
-        if (SettingsData.topBarNoBackground) return "transparent"
+        if (SettingsData.topBarNoBackground)
+            return "transparent"
         const baseColor = Theme.surfaceTextHover
-        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b,
-                       baseColor.a * Theme.widgetTransparency)
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency)
     }
     visible: CompositorService.isNiri || CompositorService.isHyprland
-
 
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
         acceptedButtons: Qt.NoButton
-        
+
         property real scrollAccumulator: 0
         property real touchpadThreshold: 500
-        
-        onWheel: (wheel) => {
-            const deltaY = wheel.angleDelta.y
-            const isMouseWheel = Math.abs(deltaY) >= 120
-                && (Math.abs(deltaY) % 120) === 0
-            
-            if (isMouseWheel) {
-                // Direct mouse wheel action
-                if (CompositorService.isNiri) {
-                    var realWorkspaces = [];
-                    for (var i = 0; i < root.workspaceList.length; i++) {
-                        if (root.workspaceList[i] !== -1) {
-                            realWorkspaces.push(root.workspaceList[i]);
-                        }
-                    }
 
-                    if (realWorkspaces.length < 2) return;
+        onWheel: wheel => {
+                     const deltaY = wheel.angleDelta.y
+                     const isMouseWheel = Math.abs(deltaY) >= 120 && (Math.abs(deltaY) % 120) === 0
+                     const direction = deltaY < 0 ? 1 : -1
 
-                    var currentIndex = -1;
-                    for (var i = 0; i < realWorkspaces.length; i++) {
-                        if (realWorkspaces[i] === root.currentWorkspace) {
-                            currentIndex = i;
-                            break;
-                        }
-                    }
-                    if (currentIndex === -1) currentIndex = 0;
+                     if (isMouseWheel) {
+                         switchWorkspace(direction)
+                     } else {
+                         scrollAccumulator += deltaY
 
-                    var nextIndex;
-                    if (deltaY < 0) {
-                        nextIndex = (currentIndex + 1) % realWorkspaces.length;
-                    } else {
-                        nextIndex = (currentIndex - 1 + realWorkspaces.length) % realWorkspaces.length;
-                    }
-                    NiriService.switchToWorkspace(realWorkspaces[nextIndex] - 1);
+                         if (Math.abs(scrollAccumulator) >= touchpadThreshold) {
+                             const touchDirection = scrollAccumulator < 0 ? 1 : -1
+                             switchWorkspace(touchDirection)
+                             scrollAccumulator = 0
+                         }
+                     }
 
-                } else if (CompositorService.isHyprland) {
-                    if (deltaY < 0) {
-                        Hyprland.dispatch("workspace r+1");
-                    } else {
-                        Hyprland.dispatch("workspace r-1");
-                    }
-                }
-            } else {
-                // Touchpad - accumulate small deltas
-                scrollAccumulator += deltaY
-                
-                if (Math.abs(scrollAccumulator) >= touchpadThreshold) {
-                    if (CompositorService.isNiri) {
-                        var realWorkspaces = [];
-                        for (var i = 0; i < root.workspaceList.length; i++) {
-                            if (root.workspaceList[i] !== -1) {
-                                realWorkspaces.push(root.workspaceList[i]);
-                            }
-                        }
-
-                        if (realWorkspaces.length < 2) {
-                            scrollAccumulator = 0;
-                            return;
-                        }
-
-                        var currentIndex = -1;
-                        for (var i = 0; i < realWorkspaces.length; i++) {
-                            if (realWorkspaces[i] === root.currentWorkspace) {
-                                currentIndex = i;
-                                break;
-                            }
-                        }
-                        if (currentIndex === -1) currentIndex = 0;
-
-                        var nextIndex;
-                        if (scrollAccumulator < 0) {
-                            nextIndex = (currentIndex + 1) % realWorkspaces.length;
-                        } else {
-                            nextIndex = (currentIndex - 1 + realWorkspaces.length) % realWorkspaces.length;
-                        }
-                        NiriService.switchToWorkspace(realWorkspaces[nextIndex] - 1);
-
-                    } else if (CompositorService.isHyprland) {
-                        if (scrollAccumulator < 0) {
-                            Hyprland.dispatch("workspace r+1");
-                        } else {
-                            Hyprland.dispatch("workspace r-1");
-                        }
-                    }
-                    
-                    scrollAccumulator = 0
-                }
-            }
-            
-            wheel.accepted = true
-        }
+                     wheel.accepted = true
+                 }
     }
 
     Row {
@@ -302,23 +232,16 @@ Rectangle {
                 }
                 property bool isHovered: mouseArea.containsMouse
                 property var workspaceData: {
-                    if (isPlaceholder)
+                    if (isPlaceholder) {
                         return null
-                    
-                    if (CompositorService.isNiri) {
-                        for (var i = 0; i < NiriService.allWorkspaces.length; i++) {
-                            var ws = NiriService.allWorkspaces[i]
-                            if (ws.idx + 1 === modelData && ws.output === root.screenName)
-                                return ws
-                        }
-                    } else if (CompositorService.isHyprland) {
-                        return modelData
                     }
-                    return null
+
+                    if (CompositorService.isNiri) {
+                        return NiriService.allWorkspaces.find(ws => ws.idx + 1 === modelData && ws.output === root.screenName) || null
+                    }
+                    return CompositorService.isHyprland ? modelData : null
                 }
-                property var iconData: workspaceData
-                                       && workspaceData.name ? SettingsData.getWorkspaceNameIcon(
-                                                                   workspaceData.name) : null
+                property var iconData: workspaceData?.name ? SettingsData.getWorkspaceNameIcon(workspaceData.name) : null
                 property bool hasIcon: iconData !== null
                 property var icons: SettingsData.showWorkspaceApps ? root.getWorkspaceIcons(CompositorService.isHyprland ? modelData : (modelData === -1 ? null : modelData)) : []
 
@@ -344,14 +267,14 @@ Rectangle {
                     cursorShape: isPlaceholder ? Qt.ArrowCursor : Qt.PointingHandCursor
                     enabled: !isPlaceholder
                     onClicked: {
-                        if (!isPlaceholder) {
-                            if (CompositorService.isNiri) {
-                                NiriService.switchToWorkspace(modelData - 1)
-                            } else if (CompositorService.isHyprland) {
-                                if (modelData && modelData.id) {
-                                    Hyprland.dispatch(`workspace ${modelData.id}`)
-                                }
-                            }
+                        if (isPlaceholder) {
+                            return
+                        }
+
+                        if (CompositorService.isNiri) {
+                            NiriService.switchToWorkspace(modelData - 1)
+                        } else if (CompositorService.isHyprland && modelData?.id) {
+                            Hyprland.dispatch(`workspace ${modelData.id}`)
                         }
                     }
                 }
@@ -416,53 +339,36 @@ Rectangle {
                 DankIcon {
                     visible: hasIcon && iconData.type === "icon" && (!SettingsData.showWorkspaceApps || icons.length === 0)
                     anchors.centerIn: parent
-                    name: hasIcon
-                          && iconData.type === "icon" ? iconData.value : ""
+                    name: (hasIcon && iconData.type === "icon") ? iconData.value : ""
                     size: Theme.fontSizeSmall
-                    color: isActive ? Qt.rgba(Theme.surfaceContainer.r,
-                                              Theme.surfaceContainer.g,
-                                              Theme.surfaceContainer.b,
-                                              0.95) : Theme.surfaceTextMedium
+                    color: isActive ? Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.95) : Theme.surfaceTextMedium
                     weight: isActive && !isPlaceholder ? 500 : 400
                 }
 
                 StyledText {
                     visible: hasIcon && iconData.type === "text" && (!SettingsData.showWorkspaceApps || icons.length === 0)
                     anchors.centerIn: parent
-                    text: hasIcon
-                          && iconData.type === "text" ? iconData.value : ""
-                    color: isActive ? Qt.rgba(Theme.surfaceContainer.r,
-                                              Theme.surfaceContainer.g,
-                                              Theme.surfaceContainer.b,
-                                              0.95) : Theme.surfaceTextMedium
+                    text: (hasIcon && iconData.type === "text") ? iconData.value : ""
+                    color: isActive ? Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.95) : Theme.surfaceTextMedium
                     font.pixelSize: Theme.fontSizeSmall
-                    font.weight: isActive
-                                 && !isPlaceholder ? Font.DemiBold : Font.Normal
+                    font.weight: (isActive && !isPlaceholder) ? Font.DemiBold : Font.Normal
                 }
 
                 StyledText {
                     visible: (SettingsData.showWorkspaceIndex && !hasIcon && (!SettingsData.showWorkspaceApps || icons.length === 0))
                     anchors.centerIn: parent
                     text: {
-                        if (CompositorService.isHyprland) {
-                            if (modelData && modelData.id === -1) {
-                                return index + 1
-                            }
-                            return modelData && modelData.id ? modelData.id : ""
-                        }
-                        if (modelData === -1) {
+                        const isPlaceholder = CompositorService.isHyprland ? (modelData?.id === -1) : (modelData === -1)
+
+                        if (isPlaceholder) {
                             return index + 1
                         }
-                        return modelData - 1
+
+                        return CompositorService.isHyprland ? (modelData?.id || "") : (modelData - 1)
                     }
-                    color: isActive ? Qt.rgba(
-                                          Theme.surfaceContainer.r,
-                                          Theme.surfaceContainer.g,
-                                          Theme.surfaceContainer.b,
-                                          0.95) : isPlaceholder ? Theme.surfaceTextAlpha : Theme.surfaceTextMedium
+                    color: isActive ? Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.95) : isPlaceholder ? Theme.surfaceTextAlpha : Theme.surfaceTextMedium
                     font.pixelSize: Theme.fontSizeSmall
-                    font.weight: isActive
-                                 && !isPlaceholder ? Font.DemiBold : Font.Normal
+                    font.weight: (isActive && !isPlaceholder) ? Font.DemiBold : Font.Normal
                 }
 
                 Behavior on width {

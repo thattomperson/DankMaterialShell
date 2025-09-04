@@ -20,88 +20,53 @@ PanelWindow {
     property var modelData
     property string screenName: modelData.name
     readonly property int notificationCount: NotificationService.notifications.length
-    readonly property real effectiveBarHeight: Math.max(
-                                                   root.widgetHeight
-                                                   + SettingsData.topBarInnerPadding + 4,
-                                                   Theme.barHeight - 4
-                                                   - (8 - SettingsData.topBarInnerPadding))
-    readonly property real widgetHeight: Math.max(
-                                             20,
-                                             26 + SettingsData.topBarInnerPadding * 0.6)
+    readonly property real effectiveBarHeight: Math.max(root.widgetHeight + SettingsData.topBarInnerPadding + 4, Theme.barHeight - 4 - (8 - SettingsData.topBarInnerPadding))
+    readonly property real widgetHeight: Math.max(20, 26 + SettingsData.topBarInnerPadding * 0.6)
 
     screen: modelData
     implicitHeight: effectiveBarHeight + SettingsData.topBarSpacing
     color: "transparent"
     Component.onCompleted: {
-        let fonts = Qt.fontFamilies()
-        if (fonts.indexOf("Material Symbols Rounded") === -1)
-            ToastService.showError(
-                        "Please install Material Symbols Rounded and Restart your Shell. See README.md for instructions")
+        const fonts = Qt.fontFamilies()
+        if (fonts.indexOf("Material Symbols Rounded") === -1) {
+            ToastService.showError("Please install Material Symbols Rounded and Restart your Shell. See README.md for instructions")
+        }
 
-        SettingsData.forceTopBarLayoutRefresh.connect(function () {
-            Qt.callLater(() => {
-                             leftSection.visible = false
-                             centerSection.visible = false
-                             rightSection.visible = false
-                             Qt.callLater(() => {
-                                              leftSection.visible = true
-                                              centerSection.visible = true
-                                              rightSection.visible = true
-                                          })
-                         })
-        })
+        SettingsData.forceTopBarLayoutRefresh.connect(() => {
+                                                          Qt.callLater(() => {
+                                                                           leftSection.visible = false
+                                                                           centerSection.visible = false
+                                                                           rightSection.visible = false
+                                                                           Qt.callLater(() => {
+                                                                                            leftSection.visible = true
+                                                                                            centerSection.visible = true
+                                                                                            rightSection.visible = true
+                                                                                        })
+                                                                       })
+                                                      })
 
-        // Configure GPU temperature monitoring based on widget configuration
         updateGpuTempConfig()
-
-        // Force widget initialization after brief delay to ensure services are loaded
-        Qt.callLater(() => {
-                         Qt.callLater(() => {
-                                          forceWidgetRefresh()
-                                      })
-                     })
+        Qt.callLater(() => Qt.callLater(forceWidgetRefresh))
     }
 
     function forceWidgetRefresh() {
-        // Force reload of all widget sections to handle race condition on desktop hardware
-        if (leftSection)
-            leftSection.visible = false
-        if (centerSection)
-            centerSection.visible = false
-        if (rightSection)
-            rightSection.visible = false
-
-        Qt.callLater(() => {
-                         if (leftSection)
-                         leftSection.visible = true
-                         if (centerSection)
-                         centerSection.visible = true
-                         if (rightSection)
-                         rightSection.visible = true
-                     })
+        const sections = [leftSection, centerSection, rightSection]
+        sections.forEach(section => section && (section.visible = false))
+        Qt.callLater(() => sections.forEach(section => section && (section.visible = true)))
     }
 
     function updateGpuTempConfig() {
-        const allWidgets = [...(SettingsData.topBarLeftWidgets
-                                || []), ...(SettingsData.topBarCenterWidgets
-                                            || []), ...(SettingsData.topBarRightWidgets
-                                                        || [])]
+        const allWidgets = [...(SettingsData.topBarLeftWidgets || []), ...(SettingsData.topBarCenterWidgets || []), ...(SettingsData.topBarRightWidgets || [])]
 
         const hasGpuTempWidget = allWidgets.some(widget => {
-                                                     const widgetId = typeof widget
-                                                     === "string" ? widget : widget.id
+                                                     const widgetId = typeof widget === "string" ? widget : widget.id
                                                      const widgetEnabled = typeof widget === "string" ? true : (widget.enabled !== false)
-                                                     return widgetId === "gpuTemp"
-                                                     && widgetEnabled
+                                                     return widgetId === "gpuTemp" && widgetEnabled
                                                  })
 
-        DgopService.gpuTempEnabled = hasGpuTempWidget
-                || SessionData.nvidiaGpuTempEnabled
-                || SessionData.nonNvidiaGpuTempEnabled
-        DgopService.nvidiaGpuTempEnabled = hasGpuTempWidget
-                || SessionData.nvidiaGpuTempEnabled
-        DgopService.nonNvidiaGpuTempEnabled = hasGpuTempWidget
-                || SessionData.nonNvidiaGpuTempEnabled
+        DgopService.gpuTempEnabled = hasGpuTempWidget || SessionData.nvidiaGpuTempEnabled || SessionData.nonNvidiaGpuTempEnabled
+        DgopService.nvidiaGpuTempEnabled = hasGpuTempWidget || SessionData.nvidiaGpuTempEnabled
+        DgopService.nonNvidiaGpuTempEnabled = hasGpuTempWidget || SessionData.nonNvidiaGpuTempEnabled
     }
 
     Connections {
@@ -135,17 +100,10 @@ PanelWindow {
     Connections {
         target: root.screen
         function onGeometryChanged() {
-            // Re-layout center widgets when screen geometry changes
-            if (centerSection && centerSection.width > 0) {
+            if (centerSection?.width > 0) {
                 Qt.callLater(centerSection.updateLayout)
             }
         }
-    }
-
-    QtObject {
-        id: notificationHistory
-
-        property int count: 0
     }
 
     anchors {
@@ -154,8 +112,7 @@ PanelWindow {
         right: true
     }
 
-    exclusiveZone: topBarCore.autoHide ? -1 : root.effectiveBarHeight + SettingsData.topBarSpacing
-                                        - 2 + SettingsData.topBarBottomGap
+    exclusiveZone: topBarCore.autoHide ? -1 : root.effectiveBarHeight + SettingsData.topBarSpacing - 2 + SettingsData.topBarBottomGap
 
     mask: Region {
         item: topBarMouseArea
@@ -167,30 +124,38 @@ PanelWindow {
 
         property real backgroundTransparency: SettingsData.topBarTransparency
         property bool autoHide: SettingsData.topBarAutoHide
-        property bool reveal: SettingsData.topBarVisible
-                              && (!autoHide || topBarMouseArea.containsMouse || hasActivePopout)
-        
+        property bool reveal: SettingsData.topBarVisible && (!autoHide || topBarMouseArea.containsMouse || hasActivePopout)
+
         readonly property bool hasActivePopout: {
-            var result = false
-            if (typeof appDrawerLoader !== "undefined" && appDrawerLoader.item)
-                result = result || appDrawerLoader.item.shouldBeVisible
-            if (typeof centcomPopoutLoader !== "undefined" && centcomPopoutLoader.item)
-                result = result || centcomPopoutLoader.item.shouldBeVisible
-            if (typeof processListPopoutLoader !== "undefined" && processListPopoutLoader.item)
-                result = result || processListPopoutLoader.item.shouldBeVisible
-            if (typeof notificationCenterLoader !== "undefined" && notificationCenterLoader.item)
-                result = result || notificationCenterLoader.item.shouldBeVisible
-            if (typeof batteryPopoutLoader !== "undefined" && batteryPopoutLoader.item)
-                result = result || batteryPopoutLoader.item.shouldBeVisible
-            if (typeof vpnPopoutLoader !== "undefined" && vpnPopoutLoader.item)
-                result = result || vpnPopoutLoader.item.shouldBeVisible
-            if (typeof controlCenterLoader !== "undefined" && controlCenterLoader.item)
-                result = result || controlCenterLoader.item.shouldBeVisible
-            if (typeof notepadSlideoutLoader !== "undefined" && notepadSlideoutLoader.item)
-                result = result || notepadSlideoutLoader.item.notepadVisible
-            if (typeof clipboardHistoryModalPopup !== "undefined" && clipboardHistoryModalPopup.item)
-                result = result || clipboardHistoryModalPopup.item.visible
-            return result
+            const loaders = [{
+                                 "loader": appDrawerLoader,
+                                 "prop": "shouldBeVisible"
+                             }, {
+                                 "loader": centcomPopoutLoader,
+                                 "prop": "shouldBeVisible"
+                             }, {
+                                 "loader": processListPopoutLoader,
+                                 "prop": "shouldBeVisible"
+                             }, {
+                                 "loader": notificationCenterLoader,
+                                 "prop": "shouldBeVisible"
+                             }, {
+                                 "loader": batteryPopoutLoader,
+                                 "prop": "shouldBeVisible"
+                             }, {
+                                 "loader": vpnPopoutLoader,
+                                 "prop": "shouldBeVisible"
+                             }, {
+                                 "loader": controlCenterLoader,
+                                 "prop": "shouldBeVisible"
+                             }, {
+                                 "loader": notepadSlideoutLoader,
+                                 "prop": "notepadVisible"
+                             }, {
+                                 "loader": clipboardHistoryModalPopup,
+                                 "prop": "visible"
+                             }]
+            return loaders.some(item => item.loader?.item[item.prop])
         }
 
         Connections {
@@ -244,10 +209,7 @@ PanelWindow {
                     Rectangle {
                         anchors.fill: parent
                         radius: SettingsData.topBarSquareCorners ? 0 : Theme.cornerRadius
-                        color: Qt.rgba(Theme.surfaceContainer.r,
-                                       Theme.surfaceContainer.g,
-                                       Theme.surfaceContainer.b,
-                                       topBarCore.backgroundTransparency)
+                        color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, topBarCore.backgroundTransparency)
                         layer.enabled: true
 
                         Rectangle {
@@ -260,9 +222,7 @@ PanelWindow {
 
                         Rectangle {
                             anchors.fill: parent
-                            color: Qt.rgba(Theme.surfaceTint.r,
-                                           Theme.surfaceTint.g,
-                                           Theme.surfaceTint.b, 0.04)
+                            color: Qt.rgba(Theme.surfaceTint.r, Theme.surfaceTint.g, Theme.surfaceTint.b, 0.04)
                             radius: parent.radius
 
                             SequentialAnimation on opacity {
@@ -305,152 +265,85 @@ PanelWindow {
                         readonly property int clockWidth: 120 // Approximate clock width
                         readonly property int mediaMaxWidth: 280 // Normal max width
                         readonly property int weatherWidth: 80 // Approximate weather width
-                        readonly property bool validLayout: availableWidth > 100
-                                                            && estimatedLeftSectionWidth > 0
-                                                            && rightSectionWidth > 0
+                        readonly property bool validLayout: availableWidth > 100 && estimatedLeftSectionWidth > 0 && rightSectionWidth > 0
                         readonly property int clockLeftEdge: (availableWidth - clockWidth) / 2
                         readonly property int clockRightEdge: clockLeftEdge + clockWidth
                         readonly property int leftSectionRightEdge: estimatedLeftSectionWidth
-                        readonly property int mediaLeftEdge: clockLeftEdge - mediaMaxWidth
-                                                             - Theme.spacingS
-                        readonly property int rightSectionLeftEdge: availableWidth
-                                                                    - rightSectionWidth
-                        readonly property int leftToClockGap: Math.max(
-                                                                  0,
-                                                                  clockLeftEdge
-                                                                  - leftSectionRightEdge)
+                        readonly property int mediaLeftEdge: clockLeftEdge - mediaMaxWidth - Theme.spacingS
+                        readonly property int rightSectionLeftEdge: availableWidth - rightSectionWidth
+                        readonly property int leftToClockGap: Math.max(0, clockLeftEdge - leftSectionRightEdge)
                         readonly property int leftToMediaGap: mediaMaxWidth > 0 ? Math.max(0, mediaLeftEdge - leftSectionRightEdge) : leftToClockGap
-                        readonly property int mediaToClockGap: mediaMaxWidth
-                                                               > 0 ? Theme.spacingS : 0
+                        readonly property int mediaToClockGap: mediaMaxWidth > 0 ? Theme.spacingS : 0
                         readonly property int clockToRightGap: validLayout ? Math.max(0, rightSectionLeftEdge - clockRightEdge) : 1000
-                        readonly property bool spacingTight: validLayout
-                                                             && (leftToMediaGap < 150
-                                                                 || clockToRightGap < 100)
-                        readonly property bool overlapping: validLayout
-                                                            && (leftToMediaGap < 100
-                                                                || clockToRightGap < 50)
+                        readonly property bool spacingTight: validLayout && (leftToMediaGap < 150 || clockToRightGap < 100)
+                        readonly property bool overlapping: validLayout && (leftToMediaGap < 100 || clockToRightGap < 50)
 
                         function getWidgetEnabled(enabled) {
-                            return enabled !== undefined ? enabled : true
+                            return enabled !== false
                         }
+
+                        function getWidgetSection(parentItem) {
+                            if (!parentItem?.parent) {
+                                return "left"
+                            }
+                            if (parentItem.parent === leftSection) {
+                                return "left"
+                            }
+                            if (parentItem.parent === rightSection) {
+                                return "right"
+                            }
+                            if (parentItem.parent === centerSection) {
+                                return "center"
+                            }
+                            return "left"
+                        }
+
+                        readonly property var widgetVisibility: ({
+                                                                     "cpuUsage": DgopService.dgopAvailable,
+                                                                     "memUsage": DgopService.dgopAvailable,
+                                                                     "cpuTemp": DgopService.dgopAvailable,
+                                                                     "gpuTemp": DgopService.dgopAvailable,
+                                                                     "network_speed_monitor": DgopService.dgopAvailable
+                                                                 })
 
                         function getWidgetVisible(widgetId) {
-                            switch (widgetId) {
-                            case "launcherButton":
-                                return true
-                            case "workspaceSwitcher":
-                                return true
-                            case "focusedWindow":
-                                return true
-                            case "runningApps":
-                                return true
-                            case "clock":
-                                return true
-                            case "music":
-                                return true
-                            case "weather":
-                                return true
-                            case "systemTray":
-                                return true
-                            case "privacyIndicator":
-                                return true
-                            case "clipboard":
-                                return true
-                            case "cpuUsage":
-                                return DgopService.dgopAvailable
-                            case "memUsage":
-                                return DgopService.dgopAvailable
-                            case "cpuTemp":
-                                return DgopService.dgopAvailable
-                            case "gpuTemp":
-                                return DgopService.dgopAvailable
-                            case "notificationButton":
-                                return true
-                            case "battery":
-                                return true
-                            case "controlCenterButton":
-                                return true
-                            case "idleInhibitor":
-                                return true
-                            case "spacer":
-                                return true
-                            case "separator":
-                                return true
-                            case "network_speed_monitor":
-                                return DgopService.dgopAvailable
-                            case "keyboard_layout_name":
-                                return true
-                            case "vpn":
-                                return true
-                            case "notepadButton":
-                                return true
-                            default:
-                                return false
-                            }
+                            return widgetVisibility[widgetId] ?? true
                         }
 
+                        readonly property var componentMap: ({
+                                                                 "launcherButton": launcherButtonComponent,
+                                                                 "workspaceSwitcher": workspaceSwitcherComponent,
+                                                                 "focusedWindow": focusedWindowComponent,
+                                                                 "runningApps": runningAppsComponent,
+                                                                 "clock": clockComponent,
+                                                                 "music": mediaComponent,
+                                                                 "weather": weatherComponent,
+                                                                 "systemTray": systemTrayComponent,
+                                                                 "privacyIndicator": privacyIndicatorComponent,
+                                                                 "clipboard": clipboardComponent,
+                                                                 "cpuUsage": cpuUsageComponent,
+                                                                 "memUsage": memUsageComponent,
+                                                                 "cpuTemp": cpuTempComponent,
+                                                                 "gpuTemp": gpuTempComponent,
+                                                                 "notificationButton": notificationButtonComponent,
+                                                                 "battery": batteryComponent,
+                                                                 "controlCenterButton": controlCenterButtonComponent,
+                                                                 "idleInhibitor": idleInhibitorComponent,
+                                                                 "spacer": spacerComponent,
+                                                                 "separator": separatorComponent,
+                                                                 "network_speed_monitor": networkComponent,
+                                                                 "keyboard_layout_name": keyboardLayoutNameComponent,
+                                                                 "vpn": vpnComponent,
+                                                                 "notepadButton": notepadButtonComponent
+                                                             })
+
                         function getWidgetComponent(widgetId) {
-                            switch (widgetId) {
-                            case "launcherButton":
-                                return launcherButtonComponent
-                            case "workspaceSwitcher":
-                                return workspaceSwitcherComponent
-                            case "focusedWindow":
-                                return focusedWindowComponent
-                            case "runningApps":
-                                return runningAppsComponent
-                            case "clock":
-                                return clockComponent
-                            case "music":
-                                return mediaComponent
-                            case "weather":
-                                return weatherComponent
-                            case "systemTray":
-                                return systemTrayComponent
-                            case "privacyIndicator":
-                                return privacyIndicatorComponent
-                            case "clipboard":
-                                return clipboardComponent
-                            case "cpuUsage":
-                                return cpuUsageComponent
-                            case "memUsage":
-                                return memUsageComponent
-                            case "cpuTemp":
-                                return cpuTempComponent
-                            case "gpuTemp":
-                                return gpuTempComponent
-                            case "notificationButton":
-                                return notificationButtonComponent
-                            case "battery":
-                                return batteryComponent
-                            case "controlCenterButton":
-                                return controlCenterButtonComponent
-                            case "idleInhibitor":
-                                return idleInhibitorComponent
-                            case "spacer":
-                                return spacerComponent
-                            case "separator":
-                                return separatorComponent
-                            case "network_speed_monitor":
-                                return networkComponent
-                            case "keyboard_layout_name":
-                                return keyboardLayoutNameComponent
-                            case "vpn":
-                                return vpnComponent
-                            case "notepadButton":
-                                return notepadButtonComponent
-                            default:
-                                return null
-                            }
+                            return componentMap[widgetId] || null
                         }
 
                         anchors.fill: parent
-                        anchors.leftMargin: Math.max(
-                                                Theme.spacingXS,
-                                                SettingsData.topBarInnerPadding * 0.8)
-                        anchors.rightMargin: Math.max(
-                                                 Theme.spacingXS,
-                                                 SettingsData.topBarInnerPadding * 0.8)
+                        anchors.leftMargin: Math.max(Theme.spacingXS, SettingsData.topBarInnerPadding * 0.8)
+                        anchors.rightMargin: Math.max(Theme.spacingXS, SettingsData.topBarInnerPadding * 0.8)
                         anchors.topMargin: SettingsData.topBarInnerPadding / 2
                         anchors.bottomMargin: SettingsData.topBarInnerPadding / 2
                         clip: true
@@ -472,12 +365,9 @@ PanelWindow {
                                     property int spacerSize: model.size || 20
 
                                     anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                                    active: topBarContent.getWidgetVisible(
-                                                model.widgetId)
-                                    sourceComponent: topBarContent.getWidgetComponent(
-                                                         model.widgetId)
-                                    opacity: topBarContent.getWidgetEnabled(
-                                                 model.enabled) ? 1 : 0
+                                    active: topBarContent.getWidgetVisible(model.widgetId)
+                                    sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
+                                    opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
                                     asynchronous: false
                                 }
                             }
@@ -492,7 +382,6 @@ PanelWindow {
                             property real spacing: SettingsData.topBarNoBackground ? 2 : Theme.spacingS
 
                             function updateLayout() {
-                                // Defer layout if dimensions are invalid
                                 if (width <= 0 || height <= 0 || !visible) {
                                     Qt.callLater(updateLayout)
                                     return
@@ -501,70 +390,67 @@ PanelWindow {
                                 centerWidgets = []
                                 totalWidgets = 0
                                 totalWidth = 0
+
                                 for (var i = 0; i < centerRepeater.count; i++) {
-                                    let item = centerRepeater.itemAt(i)
-                                    if (item && item.active && item.item) {
+                                    const item = centerRepeater.itemAt(i)
+                                    if (item?.active && item.item) {
                                         centerWidgets.push(item.item)
                                         totalWidgets++
                                         totalWidth += item.item.width
                                     }
                                 }
-                                if (totalWidgets > 1)
-                                    totalWidth += spacing * (totalWidgets - 1)
 
+                                if (totalWidgets > 1) {
+                                    totalWidth += spacing * (totalWidgets - 1)
+                                }
                                 positionWidgets()
                             }
 
                             function positionWidgets() {
-                                if (totalWidgets === 0 || width <= 0)
+                                if (totalWidgets === 0 || width <= 0) {
                                     return
+                                }
 
-                                let parentCenterX = width / 2
-                                if (totalWidgets % 2 === 1) {
-                                    let middleIndex = Math.floor(
-                                            totalWidgets / 2)
-                                    let currentX = parentCenterX
-                                        - (centerWidgets[middleIndex].width / 2)
-                                    centerWidgets[middleIndex].x = currentX
-                                    centerWidgets[middleIndex].anchors.horizontalCenter = undefined
-                                    currentX = centerWidgets[middleIndex].x
+                                const parentCenterX = width / 2
+                                const isOdd = totalWidgets % 2 === 1
+
+                                centerWidgets.forEach(widget => widget.anchors.horizontalCenter = undefined)
+
+                                if (isOdd) {
+                                    const middleIndex = Math.floor(totalWidgets / 2)
+                                    const middleWidget = centerWidgets[middleIndex]
+                                    middleWidget.x = parentCenterX - (middleWidget.width / 2)
+
+                                    let currentX = middleWidget.x
                                     for (var i = middleIndex - 1; i >= 0; i--) {
                                         currentX -= (spacing + centerWidgets[i].width)
                                         centerWidgets[i].x = currentX
-                                        centerWidgets[i].anchors.horizontalCenter = undefined
                                     }
-                                    currentX = centerWidgets[middleIndex].x
-                                            + centerWidgets[middleIndex].width
+
+                                    currentX = middleWidget.x + middleWidget.width
                                     for (var i = middleIndex + 1; i < totalWidgets; i++) {
                                         currentX += spacing
                                         centerWidgets[i].x = currentX
-                                        centerWidgets[i].anchors.horizontalCenter = undefined
                                         currentX += centerWidgets[i].width
                                     }
                                 } else {
-                                    let leftMiddleIndex = (totalWidgets / 2) - 1
-                                    let rightMiddleIndex = totalWidgets / 2
-                                    let gapCenter = parentCenterX
-                                    let halfSpacing = spacing / 2
-                                    centerWidgets[leftMiddleIndex].x = gapCenter
-                                            - halfSpacing - centerWidgets[leftMiddleIndex].width
-                                    centerWidgets[leftMiddleIndex].anchors.horizontalCenter
-                                            = undefined
-                                    centerWidgets[rightMiddleIndex].x = gapCenter + halfSpacing
-                                    centerWidgets[rightMiddleIndex].anchors.horizontalCenter
-                                            = undefined
-                                    let currentX = centerWidgets[leftMiddleIndex].x
-                                    for (var i = leftMiddleIndex - 1; i >= 0; i--) {
+                                    const leftIndex = (totalWidgets / 2) - 1
+                                    const rightIndex = totalWidgets / 2
+                                    const halfSpacing = spacing / 2
+
+                                    centerWidgets[leftIndex].x = parentCenterX - halfSpacing - centerWidgets[leftIndex].width
+                                    centerWidgets[rightIndex].x = parentCenterX + halfSpacing
+
+                                    let currentX = centerWidgets[leftIndex].x
+                                    for (var i = leftIndex - 1; i >= 0; i--) {
                                         currentX -= (spacing + centerWidgets[i].width)
                                         centerWidgets[i].x = currentX
-                                        centerWidgets[i].anchors.horizontalCenter = undefined
                                     }
-                                    currentX = centerWidgets[rightMiddleIndex].x
-                                            + centerWidgets[rightMiddleIndex].width
-                                    for (var i = rightMiddleIndex + 1; i < totalWidgets; i++) {
+
+                                    currentX = centerWidgets[rightIndex].x + centerWidgets[rightIndex].width
+                                    for (var i = rightIndex + 1; i < totalWidgets; i++) {
                                         currentX += spacing
                                         centerWidgets[i].x = currentX
-                                        centerWidgets[i].anchors.horizontalCenter = undefined
                                         currentX += centerWidgets[i].width
                                     }
                                 }
@@ -602,26 +488,20 @@ PanelWindow {
                                     property int spacerSize: model.size || 20
 
                                     anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                                    active: topBarContent.getWidgetVisible(
-                                                model.widgetId)
-                                    sourceComponent: topBarContent.getWidgetComponent(
-                                                         model.widgetId)
-                                    opacity: topBarContent.getWidgetEnabled(
-                                                 model.enabled) ? 1 : 0
+                                    active: topBarContent.getWidgetVisible(model.widgetId)
+                                    sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
+                                    opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
                                     asynchronous: false
 
                                     onLoaded: {
-                                        if (item) {
-                                            item.onWidthChanged.connect(
-                                                        centerSection.updateLayout)
-                                            if (model.widgetId === "spacer")
-                                                item.spacerSize = Qt.binding(
-                                                            () => {
-                                                                return model.size
-                                                                || 20
-                                                            })
-                                            Qt.callLater(centerSection.updateLayout)
+                                        if (!item) {
+                                            return
                                         }
+                                        item.onWidthChanged.connect(centerSection.updateLayout)
+                                        if (model.widgetId === "spacer") {
+                                            item.spacerSize = Qt.binding(() => model.size || 20)
+                                        }
+                                        Qt.callLater(centerSection.updateLayout)
                                     }
                                     onActiveChanged: {
                                         Qt.callLater(centerSection.updateLayout)
@@ -655,12 +535,9 @@ PanelWindow {
                                     property int spacerSize: model.size || 20
 
                                     anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                                    active: topBarContent.getWidgetVisible(
-                                                model.widgetId)
-                                    sourceComponent: topBarContent.getWidgetComponent(
-                                                         model.widgetId)
-                                    opacity: topBarContent.getWidgetEnabled(
-                                                 model.enabled) ? 1 : 0
+                                    active: topBarContent.getWidgetVisible(model.widgetId)
+                                    sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
+                                    opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
                                     asynchronous: false
                                 }
                             }
@@ -675,13 +552,11 @@ PanelWindow {
                                 height: root.widgetHeight
                                 radius: SettingsData.topBarNoBackground ? 0 : Theme.cornerRadius
                                 color: {
-                                    if (SettingsData.topBarNoBackground)
+                                    if (SettingsData.topBarNoBackground) {
                                         return "transparent"
+                                    }
                                     const baseColor = clipboardArea.containsMouse ? Theme.primaryHover : Theme.secondaryHover
-                                    return Qt.rgba(
-                                                baseColor.r, baseColor.g,
-                                                baseColor.b,
-                                                baseColor.a * Theme.widgetTransparency)
+                                    return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, baseColor.a * Theme.widgetTransparency)
                                 }
 
                                 DankIcon {
@@ -719,23 +594,12 @@ PanelWindow {
                                 isActive: false
                                 widgetHeight: root.widgetHeight
                                 barHeight: root.effectiveBarHeight
-                                section: {
-                                    if (parent && parent.parent) {
-                                        if (parent.parent === leftSection)
-                                            return "left"
-                                        if (parent.parent === rightSection)
-                                            return "right"
-                                        if (parent.parent === centerSection)
-                                            return "center"
-                                    }
-                                    return "left"
-                                }
+                                section: topBarContent.getWidgetSection(parent)
                                 popupTarget: appDrawerLoader.item
                                 parentScreen: root.screen
                                 onClicked: {
                                     appDrawerLoader.active = true
-                                    if (appDrawerLoader.item)
-                                        appDrawerLoader.item.toggle()
+                                    appDrawerLoader.item?.toggle()
                                 }
                             }
                         }
@@ -748,7 +612,7 @@ PanelWindow {
                                 widgetHeight: root.widgetHeight
                             }
                         }
-                            
+
                         Component {
                             id: focusedWindowComponent
 
@@ -763,17 +627,7 @@ PanelWindow {
 
                             RunningApps {
                                 widgetHeight: root.widgetHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "left"
-                                }
+                                section: topBarContent.getWidgetSection(parent)
                                 parentScreen: root.screen
                                 topBar: topBarContent
                             }
@@ -786,17 +640,7 @@ PanelWindow {
                                 compactMode: topBarContent.overlapping
                                 barHeight: root.effectiveBarHeight
                                 widgetHeight: root.widgetHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "center"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "center"
                                 popupTarget: {
                                     centcomPopoutLoader.active = true
                                     return centcomPopoutLoader.item
@@ -805,8 +649,7 @@ PanelWindow {
                                 onClockClicked: {
                                     centcomPopoutLoader.active = true
                                     if (centcomPopoutLoader.item) {
-                                        centcomPopoutLoader.item.calendarVisible
-                                                = !centcomPopoutLoader.item.calendarVisible
+                                        centcomPopoutLoader.item.calendarVisible = !centcomPopoutLoader.item.calendarVisible
                                     }
                                 }
                             }
@@ -816,21 +659,10 @@ PanelWindow {
                             id: mediaComponent
 
                             Media {
-                                compactMode: topBarContent.spacingTight
-                                             || topBarContent.overlapping
+                                compactMode: topBarContent.spacingTight || topBarContent.overlapping
                                 barHeight: root.effectiveBarHeight
                                 widgetHeight: root.widgetHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "center"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "center"
                                 popupTarget: {
                                     centcomPopoutLoader.active = true
                                     return centcomPopoutLoader.item
@@ -839,8 +671,7 @@ PanelWindow {
                                 onClicked: {
                                     centcomPopoutLoader.active = true
                                     if (centcomPopoutLoader.item) {
-                                        centcomPopoutLoader.item.calendarVisible
-                                                = !centcomPopoutLoader.item.calendarVisible
+                                        centcomPopoutLoader.item.calendarVisible = !centcomPopoutLoader.item.calendarVisible
                                     }
                                 }
                             }
@@ -852,17 +683,7 @@ PanelWindow {
                             Weather {
                                 barHeight: root.effectiveBarHeight
                                 widgetHeight: root.widgetHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "center"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "center"
                                 popupTarget: {
                                     centcomPopoutLoader.active = true
                                     return centcomPopoutLoader.item
@@ -871,8 +692,7 @@ PanelWindow {
                                 onClicked: {
                                     centcomPopoutLoader.active = true
                                     if (centcomPopoutLoader.item) {
-                                        centcomPopoutLoader.item.calendarVisible
-                                                = !centcomPopoutLoader.item.calendarVisible
+                                        centcomPopoutLoader.item.calendarVisible = !centcomPopoutLoader.item.calendarVisible
                                     }
                                 }
                             }
@@ -893,17 +713,7 @@ PanelWindow {
 
                             PrivacyIndicator {
                                 widgetHeight: root.widgetHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "right"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "right"
                                 parentScreen: root.screen
                             }
                         }
@@ -914,17 +724,7 @@ PanelWindow {
                             CpuMonitor {
                                 barHeight: root.effectiveBarHeight
                                 widgetHeight: root.widgetHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "right"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "right"
                                 popupTarget: {
                                     processListPopoutLoader.active = true
                                     return processListPopoutLoader.item
@@ -932,8 +732,7 @@ PanelWindow {
                                 parentScreen: root.screen
                                 toggleProcessList: () => {
                                                        processListPopoutLoader.active = true
-                                                       if (processListPopoutLoader.item)
-                                                       return processListPopoutLoader.item.toggle()
+                                                       return processListPopoutLoader.item?.toggle()
                                                    }
                             }
                         }
@@ -944,17 +743,7 @@ PanelWindow {
                             RamMonitor {
                                 barHeight: root.effectiveBarHeight
                                 widgetHeight: root.widgetHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "right"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "right"
                                 popupTarget: {
                                     processListPopoutLoader.active = true
                                     return processListPopoutLoader.item
@@ -962,8 +751,7 @@ PanelWindow {
                                 parentScreen: root.screen
                                 toggleProcessList: () => {
                                                        processListPopoutLoader.active = true
-                                                       if (processListPopoutLoader.item)
-                                                       return processListPopoutLoader.item.toggle()
+                                                       return processListPopoutLoader.item?.toggle()
                                                    }
                             }
                         }
@@ -974,17 +762,7 @@ PanelWindow {
                             CpuTemperature {
                                 barHeight: root.effectiveBarHeight
                                 widgetHeight: root.widgetHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "right"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "right"
                                 popupTarget: {
                                     processListPopoutLoader.active = true
                                     return processListPopoutLoader.item
@@ -992,8 +770,7 @@ PanelWindow {
                                 parentScreen: root.screen
                                 toggleProcessList: () => {
                                                        processListPopoutLoader.active = true
-                                                       if (processListPopoutLoader.item)
-                                                       return processListPopoutLoader.item.toggle()
+                                                       return processListPopoutLoader.item?.toggle()
                                                    }
                             }
                         }
@@ -1004,17 +781,7 @@ PanelWindow {
                             GpuTemperature {
                                 barHeight: root.effectiveBarHeight
                                 widgetHeight: root.widgetHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "right"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "right"
                                 popupTarget: {
                                     processListPopoutLoader.active = true
                                     return processListPopoutLoader.item
@@ -1023,8 +790,7 @@ PanelWindow {
                                 widgetData: parent.widgetData
                                 toggleProcessList: () => {
                                                        processListPopoutLoader.active = true
-                                                       if (processListPopoutLoader.item)
-                                                       return processListPopoutLoader.item.toggle()
+                                                       return processListPopoutLoader.item?.toggle()
                                                    }
                             }
                         }
@@ -1043,17 +809,7 @@ PanelWindow {
                                 isActive: notificationCenterLoader.item ? notificationCenterLoader.item.shouldBeVisible : false
                                 widgetHeight: root.widgetHeight
                                 barHeight: root.effectiveBarHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "right"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "right"
                                 popupTarget: {
                                     notificationCenterLoader.active = true
                                     return notificationCenterLoader.item
@@ -1061,9 +817,7 @@ PanelWindow {
                                 parentScreen: root.screen
                                 onClicked: {
                                     notificationCenterLoader.active = true
-                                    if (notificationCenterLoader.item) {
-                                        notificationCenterLoader.item.toggle()
-                                    }
+                                    notificationCenterLoader.item?.toggle()
                                 }
                             }
                         }
@@ -1075,17 +829,7 @@ PanelWindow {
                                 batteryPopupVisible: batteryPopoutLoader.item ? batteryPopoutLoader.item.shouldBeVisible : false
                                 widgetHeight: root.widgetHeight
                                 barHeight: root.effectiveBarHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "right"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "right"
                                 popupTarget: {
                                     batteryPopoutLoader.active = true
                                     return batteryPopoutLoader.item
@@ -1093,9 +837,7 @@ PanelWindow {
                                 parentScreen: root.screen
                                 onToggleBatteryPopup: {
                                     batteryPopoutLoader.active = true
-                                    if (batteryPopoutLoader.item) {
-                                        batteryPopoutLoader.item.toggle()
-                                    }
+                                    batteryPopoutLoader.item?.toggle()
                                 }
                             }
                         }
@@ -1106,17 +848,7 @@ PanelWindow {
                             Vpn {
                                 widgetHeight: root.widgetHeight
                                 barHeight: root.effectiveBarHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "right"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "right"
                                 popupTarget: {
                                     vpnPopoutLoader.active = true
                                     return vpnPopoutLoader.item
@@ -1124,9 +856,7 @@ PanelWindow {
                                 parentScreen: root.screen
                                 onToggleVpnPopup: {
                                     vpnPopoutLoader.active = true
-                                    if (vpnPopoutLoader.item) {
-                                        vpnPopoutLoader.item.toggle()
-                                    }
+                                    vpnPopoutLoader.item?.toggle()
                                 }
                             }
                         }
@@ -1138,17 +868,7 @@ PanelWindow {
                                 isActive: controlCenterLoader.item ? controlCenterLoader.item.shouldBeVisible : false
                                 widgetHeight: root.widgetHeight
                                 barHeight: root.effectiveBarHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "right"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "right"
                                 popupTarget: {
                                     controlCenterLoader.active = true
                                     return controlCenterLoader.item
@@ -1157,13 +877,13 @@ PanelWindow {
                                 widgetData: parent.widgetData
                                 onClicked: {
                                     controlCenterLoader.active = true
-                                    if (controlCenterLoader.item) {
-                                        controlCenterLoader.item.triggerScreen = root.screen
-                                        controlCenterLoader.item.toggle()
-                                        if (controlCenterLoader.item.shouldBeVisible) {
-                                            if (NetworkService.wifiEnabled)
-                                                NetworkService.scanWifi()
-                                        }
+                                    if (!controlCenterLoader.item) {
+                                        return
+                                    }
+                                    controlCenterLoader.item.triggerScreen = root.screen
+                                    controlCenterLoader.item.toggle()
+                                    if (controlCenterLoader.item.shouldBeVisible && NetworkService.wifiEnabled) {
+                                        NetworkService.scanWifi()
                                     }
                                 }
                             }
@@ -1174,17 +894,7 @@ PanelWindow {
 
                             IdleInhibitor {
                                 widgetHeight: root.widgetHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "right"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "right"
                                 parentScreen: root.screen
                             }
                         }
@@ -1199,9 +909,7 @@ PanelWindow {
                                 Rectangle {
                                     anchors.fill: parent
                                     color: "transparent"
-                                    border.color: Qt.rgba(Theme.outline.r,
-                                                          Theme.outline.g,
-                                                          Theme.outline.b, 0.1)
+                                    border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.1)
                                     border.width: 1
                                     radius: 2
                                     visible: false
@@ -1240,17 +948,7 @@ PanelWindow {
                                 isActive: notepadSlideoutLoader.item ? notepadSlideoutLoader.item.notepadVisible : false
                                 widgetHeight: root.widgetHeight
                                 barHeight: root.effectiveBarHeight
-                                section: {
-                                    if (parent && parent.parent === leftSection)
-                                        return "left"
-                                    if (parent
-                                            && parent.parent === rightSection)
-                                        return "right"
-                                    if (parent
-                                            && parent.parent === centerSection)
-                                        return "center"
-                                    return "right"
-                                }
+                                section: topBarContent.getWidgetSection(parent) || "right"
                                 popupTarget: {
                                     notepadSlideoutLoader.active = true
                                     return notepadSlideoutLoader.item
@@ -1258,9 +956,7 @@ PanelWindow {
                                 parentScreen: root.screen
                                 onClicked: {
                                     notepadSlideoutLoader.active = true
-                                    if (notepadSlideoutLoader.item) {
-                                        notepadSlideoutLoader.item.toggle()
-                                    }
+                                    notepadSlideoutLoader.item?.toggle()
                                 }
                             }
                         }

@@ -17,10 +17,6 @@ DankPopout {
 
     function show() {
         open()
-        appLauncher.searchQuery = ""
-        appLauncher.selectedIndex = 0
-        appLauncher.setCategory("All")
-        appLauncher.keyboardNavigationActive = false
     }
 
     function setTriggerPosition(x, y, width, section, screen) {
@@ -40,12 +36,18 @@ DankPopout {
     WlrLayershell.namespace: "quickshell-launcher"
     screen: triggerScreen
 
-    onOpened: {
-        Qt.callLater(() => {
-                         if (contentLoader.item && contentLoader.item.searchField) {
-                             contentLoader.item.searchField.forceActiveFocus()
-                         }
-                     })
+    onShouldBeVisibleChanged: {
+        if (shouldBeVisible) {
+            appLauncher.searchQuery = ""
+            appLauncher.selectedIndex = 0
+            appLauncher.setCategory("All")
+            Qt.callLater(() => {
+                             if (contentLoader.item && contentLoader.item.searchField) {
+                                 contentLoader.item.searchField.text = ""
+                                 contentLoader.item.searchField.forceActiveFocus()
+                             }
+                         })
+        }
     }
 
     AppLauncher {
