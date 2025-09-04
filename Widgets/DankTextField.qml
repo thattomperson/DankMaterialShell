@@ -95,17 +95,25 @@ StyledRect {
         onActiveFocusChanged: root.focusStateChanged(activeFocus)
         Keys.forwardTo: root.ignoreLeftRightKeys ? root.keyForwardTargets : []
         Keys.onLeftPressed: event => {
-                                if (root.ignoreLeftRightKeys)
-                                event.accepted = true
+                                if (root.ignoreLeftRightKeys) {
+                                    event.accepted = true
+                                } else {
+                                    // Allow normal TextInput cursor movement
+                                    event.accepted = false
+                                }
                             }
         Keys.onRightPressed: event => {
-                                 if (root.ignoreLeftRightKeys)
-                                 event.accepted = true
+                                 if (root.ignoreLeftRightKeys) {
+                                     event.accepted = true
+                                 } else {
+                                     // Allow normal TextInput cursor movement
+                                     event.accepted = false
+                                 }
                              }
 
         MouseArea {
             anchors.fill: parent
-            hoverEnabled: true
+            hoverEnabled: true 
             cursorShape: Qt.IBeamCursor
             acceptedButtons: Qt.NoButton
         }

@@ -346,7 +346,7 @@ DankModal {
 
                         DankActionButton {
                             circular: false
-                            iconName: "help"
+                            iconName: "info"
                             iconSize: Theme.iconSize - 4
                             iconColor: Theme.surfaceText
                             onClicked: fileBrowserModal.showKeyboardHints = !fileBrowserModal.showKeyboardHints
@@ -567,11 +567,13 @@ DankModal {
                     id: fileNameInput
 
                     width: parent.width - saveButton.width - Theme.spacingM
-                    height: 36
+                    height: 40
                     text: defaultFileName
                     placeholderText: "Enter filename..."
                     ignoreLeftRightKeys: false
                     focus: saveMode
+                    topPadding: Theme.spacingS
+                    bottomPadding: Theme.spacingS
                     Component.onCompleted: {
                         if (saveMode)
                             Qt.callLater(() => {
@@ -591,7 +593,7 @@ DankModal {
                     id: saveButton
 
                     width: 80
-                    height: 36
+                    height: 40
                     color: fileNameInput.text.trim() !== "" ? Theme.primary : Theme.surfaceVariant
                     radius: Theme.cornerRadius
 
