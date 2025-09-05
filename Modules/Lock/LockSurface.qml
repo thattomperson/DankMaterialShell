@@ -25,6 +25,7 @@ WlSessionLockSurface {
         sourceComponent: LockScreenContent {
             demoMode: false
             passwordBuffer: root.sharedPasswordBuffer
+            screenName: root.screen?.name ?? ""
             onUnlockRequested: root.unlock()
             onPasswordBufferChanged: {
                 if (root.sharedPasswordBuffer !== passwordBuffer) {

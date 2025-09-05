@@ -32,7 +32,7 @@ LazyLoader {
                 id: root
                 anchors.fill: parent
 
-                property string source: SessionData.wallpaperPath || ""
+                property string source: SessionData.getMonitorWallpaper(modelData.name) || ""
                 property bool isColorSource: source.startsWith("#")
                 property Image current: one
 
@@ -71,7 +71,9 @@ LazyLoader {
                     active: !root.source || root.isColorSource
                     asynchronous: true
 
-                    sourceComponent: DankBackdrop {}
+                    sourceComponent: DankBackdrop {
+                        screenName: modelData.name
+                    }
                 }
 
                 Img {

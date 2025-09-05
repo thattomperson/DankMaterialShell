@@ -27,7 +27,20 @@ Singleton {
         return url.startsWith("file://") ? url.substring(7) : url
     }
     readonly property string shellDir: Qt.resolvedUrl(".").toString().replace("file://", "").replace("/Common/", "")
-    readonly property string wallpaperPath: typeof SessionData !== "undefined" ? SessionData.wallpaperPath : ""
+    readonly property string wallpaperPath: {
+        if (typeof SessionData === "undefined") return ""
+        
+        if (SessionData.perMonitorWallpaper) {
+            // Use first monitor's wallpaper for dynamic theming
+            var screens = Quickshell.screens
+            if (screens.length > 0) {
+                var firstMonitorWallpaper = SessionData.getMonitorWallpaper(screens[0].name)
+                return firstMonitorWallpaper || SessionData.wallpaperPath
+            }
+        }
+        
+        return SessionData.wallpaperPath
+    }
 
     property bool matugenAvailable: false
     property bool gtkThemingEnabled: typeof SettingsData !== "undefined" ? SettingsData.gtkAvailable : false

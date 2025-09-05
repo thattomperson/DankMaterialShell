@@ -38,6 +38,7 @@ PanelWindow {
         active: demoActive
         sourceComponent: LockScreenContent {
             demoMode: true
+            screenName: root.screen?.name ?? ""
             onUnlockRequested: root.hideDemo()
         }
     }

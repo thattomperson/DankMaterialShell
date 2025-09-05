@@ -6,11 +6,15 @@ Item {
 
     anchors.fill: parent
 
-    property bool isColorWallpaper: SessionData.wallpaperPath && SessionData.wallpaperPath.startsWith("#")
+    property string screenName: ""
+    property bool isColorWallpaper: {
+        var currentWallpaper = SessionData.getMonitorWallpaper(screenName)
+        return currentWallpaper && currentWallpaper.startsWith("#")
+    }
 
     Rectangle {
         anchors.fill: parent
-        color: isColorWallpaper ? SessionData.wallpaperPath : Theme.background
+        color: isColorWallpaper ? SessionData.getMonitorWallpaper(screenName) : Theme.background
     }
 
     Rectangle {
