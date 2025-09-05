@@ -106,6 +106,13 @@ https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
 
 ## Installation
 
+### Quick Start
+
+```bash
+curl -fsSL https://install.danklinux.com | sh
+```
+*Installs the complete \"dotfiles\" along with dms, for a more fine-tuned manual setup - follow the steps below.*
+
 ### Compositor Setup
 
 DankMaterialShell supports both **niri** and **Hyprland** compositors:
@@ -138,11 +145,9 @@ sudo dnf copr enable solopasha/hyprland && sudo dnf install hyprland
 
 For detailed Hyprland installation instructions, see the [Hyprland wiki](https://wiki.hypr.land/Getting-Started/Installation/).
 
-### Quick Start
+### Dank Shell Installation
 
-We don't have a nice install setup yet to just isntall everything with some nice default dotfiles, but it's coming soon™ (it's pretty easy though, especially with niri)
-
-\*If you do not already have niri or Hyprland, see the Compositor Setup section below
+*feel free to contribute steps for other distributions*
 
 **Dependencies:**
 
@@ -155,6 +160,7 @@ paru -S quickshell-git ttf-material-symbols-variable-git inter-font ttf-fira-cod
 ```bash
 sudo dnf copr enable errornointernet/quickshell && sudo dnf install quickshell-git rsms-inter-fonts fira-code-fonts
 ```
+
 # Install icon fonts manually
 ```bash
 mkdir -p ~/.local/share/fonts
@@ -174,74 +180,40 @@ paru -S dms-shell-git # Or dms-shell for latest tag
 ```
 
 # Manual install
+
+## Install the shell & cli
+
+1. Clone latest master
 ```bash
-mkdir -p ~/.config/quickshell
-```
-```bash
-git clone https://github.com/AvengeMedia/DankMaterialShell.git ~/.config/quickshell/dms
-```
-```bash
-qs -c dms
+mkdir ~/.config/quickshell && git clone https://github.com/AvengeMedia/DankMaterialShell.git ~/.config/quickshell/dms
 ```
 
-### Detailed Setup
-
-<details><summary>Font Installation</summary>
-
-**Material Symbols (Required):**
-
-
-# Manual installation
+2. Install latest dms CLI
 ```bash
-mkdir -p ~/.local/share/fonts
-curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf
-fc-cache -f
+curl -L https://github.com/AvengeMedia/danklinux/releases/latest/download/dms-amd64.gz | gunzip | sudo tee /usr/local/bin/dms > /dev/null && sudo chmod +x /usr/local/bin/dms
 ```
 
-# Arch Linux
-```bash
-paru -S ttf-material-symbols-variable-git
-```
+## Enable System Monitor Widgets, Theming, & More
 
-**Typography (Recommended):**
-
-
-# Inter Variable Font
-```bash
-curl -L "https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip" -o /tmp/Inter.zip
-unzip -j /tmp/Inter.zip "InterVariable.ttf" "InterVariable-Italic.ttf" -d ~/.local/share/fonts/
-rm /tmp/Inter.zip && fc-cache -f
-```
-
-# Fira Code
-```bash
-curl -L "https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip" -o /tmp/FiraCode.zip
-unzip -j /tmp/FiraCode.zip "ttf/*.ttf" -d ~/.local/share/fonts/
-rm /tmp/FiraCode.zip && fc-cache -f
-```
-
-</details>
-
-<details><summary>Optional Features</summary>
-
-**Enhanced Functionality:**
-
-# Install dgop on any distro (requires go 1.23+):
-```bash
-git clone https://github.com/AvengeMedia/dgop.git && cd dgop
-sudo make install
-```
-
-# Arch Linux
+### Arch Linux
 ```bash
 sudo pacman -S cava wl-clipboard cliphist brightnessctl
 paru -S matugen-bin dgop
 ```
-# Fedora
+### Fedora
 ```bash
 sudo dnf install cava wl-clipboard brightnessctl
 sudo dnf copr enable wef/cliphist && sudo dnf install cliphist
 sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
+```
+
+### Other Distros
+
+`dgop` can be installed on any distro:
+
+```bash
+# Requires GO 1.23+
+curl -L https://github.com/AvengeMedia/danklinux/releases/latest/download/dms-amd64.gz | gunzip | sudo tee /usr/local/bin/dms > /dev/null && sudo chmod +x /usr/local/bin/dms
 ```
 
 **What you get:**
@@ -254,15 +226,13 @@ sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 - `cliphist`: Clipboard history
 - `gammastep`: Night mode support
 
-</details>
-
 ## Usage
 
 ### Niri Integration
 
 Add to your niri config
 
-```bash
+```kdl
 // Required for clipboard history integration
 spawn-at-startup "bash" "-c" "wl-paste --watch cliphist store &"
 
@@ -381,31 +351,30 @@ bindl = , XF86MonBrightnessDown, exec, qs -c dms ipc call brightness decrement 5
 bind = SUPERSHIFT, N, exec, qs -c dms ipc call night toggle
 ```
 
-### IPC Commands
+## IPC Commands
 
 Control everything from the command line, or via keybinds. For comprehensive documentation of all available IPC commands, see [docs/IPC.md](docs/IPC.md).
 
-
-# Audio control
+### Audio control
 ```bash
 qs -c dms ipc call audio setvolume 50
 qs -c dms ipc call audio mute
 ```
-# Launch applications
+### Launch applications
 ```bash
 qs -c dms ipc call spotlight toggle
 qs -c dms ipc call notepad toggle
 qs -c dms ipc call processlist toggle
 qs -c dms ipc call powermenu toggle
 ```
-# System control
+### System control
 ```
 qs -c dms ipc call wallpaper set /path/to/image.jpg
 qs -c dms ipc call theme toggle
 qs -c dms ipc call night toggle
 qs -c dms ipc call lock lock
 ```
-# Media control
+### Media control
 ```
 qs -c dms ipc call mpris playPause
 qs -c dms ipc call mpris next
