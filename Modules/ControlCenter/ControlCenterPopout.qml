@@ -92,6 +92,7 @@ DankPopout {
                     border.width: 1
                     antialiasing: true
                     smooth: true
+                    z: 0
 
             Column {
                 id: mainColumn

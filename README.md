@@ -1,4 +1,4 @@
-# DankMaterialShell (DMS)
+# DankMaterialShell (dms)
 
 <div align=center>
 
@@ -72,10 +72,11 @@ curl -fsSL https://install.danklinux.com | sh
 ```
 *Or skip to [Installation](https://github.com/AvengeMedia/DankMaterialShell?tab=readme-ov-file#installation)*
 
-## What's Inside
+<details><summary><strong>Features</strong></summary>
+
+**tl;dr** dms can serve as AIO replacement for lock screen, notification daemon, wallpaper service, app launchers, dock, and more.
 
 **Core Widgets:**
-
 - **TopBar**: fully customizable bar where widgets can be added, removed, and re-arranged.
   - **App Launcher** with fuzzy search, categories, and auto-sorting by most used apps.
   - **Workspace Switcher** Configurable workspace switcher.
@@ -100,7 +101,7 @@ curl -fsSL https://install.danklinux.com | sh
 - **Lock Screen** Using quickshell's WlSessionLock with embedded virtual keyboard for Niri (Niri doesn't support placing virtual keyboard above lockscreen natively: [issue](https://github.com/YaLTeR/niri/issues/2201))
 - **Notepad** A simple text notepad/scratchpad with auto-save to session data and file export/import functionality.
 
-**Features:**
+**Highlights:**
 
 - Dynamic wallpaper-based theming with matugen integration
 - Numerous IPCs to trigger actions and open various modals.
@@ -110,6 +111,8 @@ curl -fsSL https://install.danklinux.com | sh
 - Brightness control for internal and external displays
 - Automated night mode with time-based and location-based scheduling
 - Qt and GTK app theming synchronization, as well as [Ghostty](https://ghostty.org/) auto-theme support.
+
+</details>
 
 ## Installation
 
