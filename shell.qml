@@ -270,9 +270,30 @@ ShellRoot {
         id: notepadSlideoutVariants
         model: SettingsData.getFilteredScreens("notepad")
 
-        delegate: NotepadSlideout {
-            id: notepadSlideout
-            modelData: item
+        delegate: Loader {
+            id: notepadLoader
+            property var modelData: item
+            active: false
+            
+            sourceComponent: Component {
+                NotepadSlideout {
+                    id: notepadSlideout
+                    modelData: notepadLoader.modelData
+                    
+                    Component.onCompleted: {
+                        notepadLoader.loaded = true
+                    }
+                }
+            }
+            
+            property bool loaded: false
+            
+            function ensureLoaded() {
+                if (!active) {
+                    active = true
+                }
+                return item
+            }
         }
     }
 
@@ -364,23 +385,55 @@ ShellRoot {
     }
 
     IpcHandler {
+        function getFocusedScreenName() {
+            if (CompositorService.isHyprland && Hyprland.focusedWorkspace && Hyprland.focusedWorkspace.monitor) {
+                return Hyprland.focusedWorkspace.monitor.name
+            }
+            if (CompositorService.isNiri && NiriService.currentOutput) {
+                return NiriService.currentOutput
+            }
+            return ""
+        }
+
+        function getNotepadInstanceForScreen(screenName) {
+            if (!screenName || notepadSlideoutVariants.instances.length === 0) {
+                return null
+            }
+            
+            for (var i = 0; i < notepadSlideoutVariants.instances.length; i++) {
+                var loader = notepadSlideoutVariants.instances[i]
+                if (loader.modelData && loader.modelData.name === screenName) {
+                    return loader.ensureLoaded()
+                }
+            }
+            return null
+        }
+
         function getActiveNotepadInstance() {
             if (notepadSlideoutVariants.instances.length === 0) {
                 return null
             }
             
             if (notepadSlideoutVariants.instances.length === 1) {
-                return notepadSlideoutVariants.instances[0]
+                return notepadSlideoutVariants.instances[0].ensureLoaded()
             }
             
-            for (var i = 0; i < notepadSlideoutVariants.instances.length; i++) {
-                var instance = notepadSlideoutVariants.instances[i]
-                if (instance.notepadVisible) {
-                    return instance
+            var focusedScreen = getFocusedScreenName()
+            if (focusedScreen) {
+                var focusedInstance = getNotepadInstanceForScreen(focusedScreen)
+                if (focusedInstance) {
+                    return focusedInstance
                 }
             }
             
-            return notepadSlideoutVariants.instances[0]
+            for (var i = 0; i < notepadSlideoutVariants.instances.length; i++) {
+                var loader = notepadSlideoutVariants.instances[i]
+                if (loader.active && loader.item && loader.item.notepadVisible) {
+                    return loader.item
+                }
+            }
+            
+            return notepadSlideoutVariants.instances[0].ensureLoaded()
         }
 
         function open(): string {

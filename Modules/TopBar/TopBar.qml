@@ -26,9 +26,9 @@ PanelWindow {
         if (!notepadVariants || !notepadVariants.instances) return null
         
         for (var i = 0; i < notepadVariants.instances.length; i++) {
-            var instance = notepadVariants.instances[i]
-            if (instance.modelData && instance.modelData.name === root.screen?.name) {
-                return instance
+            var loader = notepadVariants.instances[i]
+            if (loader.modelData && loader.modelData.name === root.screen?.name) {
+                return loader.ensureLoaded()
             }
         }
         return null
