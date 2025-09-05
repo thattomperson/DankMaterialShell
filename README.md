@@ -65,6 +65,13 @@ https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
 
 </details>
 
+## Quick start (full dotfiles, most distros)
+
+```bash
+curl -fsSL https://install.danklinux.com | sh
+```
+*Or skip to [Installation](https://github.com/AvengeMedia/DankMaterialShell?tab=readme-ov-file#installation)*
+
 ## What's Inside
 
 **Core Widgets:**
@@ -106,13 +113,6 @@ https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
 
 ## Installation
 
-### Quick Start
-
-```bash
-curl -fsSL https://install.danklinux.com | sh
-```
-*Installs the complete \"dotfiles\" along with dms, for a more fine-tuned manual setup - follow the steps below.*
-
 ### Compositor Setup
 
 DankMaterialShell supports both **niri** and **Hyprland** compositors:
@@ -151,17 +151,17 @@ For detailed Hyprland installation instructions, see the [Hyprland wiki](https:/
 
 **Dependencies:**
 
-# Arch Linux
+#### Arch Linux
 ```bash
 paru -S quickshell-git ttf-material-symbols-variable-git inter-font ttf-fira-code
 ```
 
-# Fedora
+#### Fedora
 ```bash
 sudo dnf copr enable errornointernet/quickshell && sudo dnf install quickshell-git rsms-inter-fonts fira-code-fonts
 ```
 
-# Install icon fonts manually
+#### Install icon fonts manually
 ```bash
 mkdir -p ~/.local/share/fonts
 ```
@@ -174,14 +174,14 @@ fc-cache -f
 
 **Get the shell:**
 
-# Arch linux available via AUR
+#### Arch linux available via AUR
 ```bash
 paru -S dms-shell-git # Or dms-shell for latest tag
 ```
 
-# Manual install
+#### Manual install
 
-## Install the shell & cli
+### Install the shell & cli
 
 1. Clone latest master
 ```bash
@@ -193,14 +193,14 @@ mkdir ~/.config/quickshell && git clone https://github.com/AvengeMedia/DankMater
 curl -L https://github.com/AvengeMedia/danklinux/releases/latest/download/dms-amd64.gz | gunzip | sudo tee /usr/local/bin/dms > /dev/null && sudo chmod +x /usr/local/bin/dms
 ```
 
-## Enable System Monitor Widgets, Theming, & More
+### Enable System Monitor Widgets, Theming, & More
 
-### Arch Linux
+#### Arch Linux
 ```bash
 sudo pacman -S cava wl-clipboard cliphist brightnessctl
 paru -S matugen-bin dgop
 ```
-### Fedora
+#### Fedora
 ```bash
 sudo dnf install cava wl-clipboard brightnessctl
 sudo dnf copr enable wef/cliphist && sudo dnf install cliphist
@@ -439,17 +439,16 @@ environment {
 
 1. Install qt6ct and qt5ct
 
-
-## Arch
+#### Arch
 ```bash
 sudo pacman -S qt5ct qt6ct
 ```
-## Fedora
+#### Fedora
 ```bash
 sudo dnf install qt5ct qt6ct
 ```
 
-2. Configure Environment in niri
+2. **Configure Environment in niri**
 
 ```kdl
   // Add to existing environment block
@@ -459,7 +458,7 @@ sudo dnf install qt5ct qt6ct
 
 You'll have to restart your session for themes to take effect.
 
-## Terminal Integration
+### Terminal Integration
 
 The matugen integration will automatically generate new colors for certain apps only if they are installed.
 
@@ -477,7 +476,7 @@ echo "config-file = ./config-dankcolors" >> ~/.config/ghostty/config
 echo "include dank-theme.conf" >> ~/.config/kitty/kitty.conf
 ```
 
-## Calendar Setup
+### Calendar Setup
 
 Sync your caldev compatible calendar (Google, Office365, etc.) for dashboard integration:
 
@@ -485,13 +484,12 @@ Sync your caldev compatible calendar (Google, Office365, etc.) for dashboard int
 
 **Install dependencies:**
 
-
-# Arch
+#### Arch
 ```bash
 sudo pacman -S vdirsyncer khal python-aiohttp-oauthlib
 ```
 
-# Fedora
+#### Fedora
 ```bash
 sudo dnf install python3-vdirsyncer khal python3-aiohttp-oauthlib
 ```
@@ -528,7 +526,7 @@ vdirsyncer sync
 khal configure
 ```
 
-# Auto-sync every 5 minutes
+#### Auto-sync every 5 minutes
 ```bash
 crontab -e
 # Add: */5 * * * * /usr/bin/vdirsyncer sync
