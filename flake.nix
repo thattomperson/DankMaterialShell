@@ -9,10 +9,12 @@
 
   outputs = { self, nixpkgs, quickshell, ... }:
     let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      forEachSystem = fn:
+        nixpkgs.lib.genAttrs
+          nixpkgs.lib.platforms.linux
+          (system: fn system nixpkgs.legacyPackages.${system});
     in {
-      packages.${system} = {
+      packages = forEachSystem (system: pkgs: rec {
         dankMaterialShell = pkgs.stdenvNoCC.mkDerivation {
           name = "dankMaterialShell";
           src = ./.;
@@ -24,7 +26,7 @@
         };
 
         default = self.packages.${system}.dankMaterialShell;
-      };
+      });
 
       homeModules.dankMaterialShell = { config, pkgs, lib, ... }:
         let cfg = config.programs.dankMaterialShell;
@@ -43,9 +45,9 @@
           config = lib.mkIf cfg.enable {
             programs.quickshell = {
               enable = true;
-              package = quickshell.packages.${system}.quickshell;
+              package = quickshell.packages.${pkgs.system}.quickshell;
               configs.DankMaterialShell = "${
-                  self.packages.${system}.dankMaterialShell
+                  self.packages.${pkgs.system}.dankMaterialShell
                 }/etc/xdg/quickshell/DankMaterialShell";
               activeConfig = lib.mkIf cfg.enableSystemd "DankMaterialShell";
               systemd = lib.mkIf cfg.enableSystemd {
