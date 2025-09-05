@@ -561,6 +561,6 @@ Singleton {
     Timer {
         id: suppressToastTimer
         interval: 3000
-        onTriggered: suppressConfigToast = false
+        onTriggered: root.suppressConfigToast = false
     }
 }
