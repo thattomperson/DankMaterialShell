@@ -1,5 +1,25 @@
 {
   "nodes": {
+    "dms-cli": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1757112511,
+        "narHash": "sha256-WE1cUTr53VJG06YAkpYG+HvdXp4fFyqZwXqsABOXYFY=",
+        "owner": "AvengeMedia",
+        "repo": "danklinux",
+        "rev": "563c7fdcba0e8c6ac0f4b3292308e8bcbb553da6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "AvengeMedia",
+        "repo": "danklinux",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1754214453,
@@ -38,6 +58,7 @@
     },
     "root": {
       "inputs": {
+        "dms-cli": "dms-cli",
         "nixpkgs": "nixpkgs",
         "quickshell": "quickshell"
       }

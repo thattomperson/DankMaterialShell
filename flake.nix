@@ -5,9 +5,11 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     quickshell.url = "git+https://git.outfoxxed.me/quickshell/quickshell";
     quickshell.inputs.nixpkgs.follows = "nixpkgs";
+    dms-cli.url = "github:AvengeMedia/danklinux";
+    dms-cli.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, quickshell, ... }:
+  outputs = { self, nixpkgs, quickshell, dms-cli, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -171,6 +173,7 @@
               libsForQt5.qt5ct
               kdePackages.qt6ct
               matugen
+              dms-cli.packages.${system}.default
             ];
           };
         };
