@@ -395,7 +395,7 @@ ShellRoot {
             return ""
         }
 
-        function getNotepadInstanceForScreen(screenName) {
+        function getNotepadInstanceForScreen(screenName: string) {
             if (!screenName || notepadSlideoutVariants.instances.length === 0) {
                 return null
             }

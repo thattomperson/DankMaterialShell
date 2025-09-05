@@ -141,6 +141,9 @@ PanelWindow {
         property bool autoHide: SettingsData.topBarAutoHide
         property bool reveal: SettingsData.topBarVisible && (!autoHide || topBarMouseArea.containsMouse || hasActivePopout)
 
+        property var notepadInstance: null
+        property bool notepadInstanceVisible: notepadInstance?.notepadVisible ?? false
+        
         readonly property bool hasActivePopout: {
             const loaders = [{
                                  "loader": appDrawerLoader,
@@ -164,20 +167,19 @@ PanelWindow {
                                  "loader": controlCenterLoader,
                                  "prop": "shouldBeVisible"
                              }, {
-                                 "instance": root.getNotepadInstanceForScreen(),
-                                 "prop": "notepadVisible"
-                             }, {
                                  "loader": clipboardHistoryModalPopup,
                                  "prop": "visible"
                              }]
-            return loaders.some(item => {
+            return notepadInstanceVisible || loaders.some(item => {
                 if (item.loader) {
                     return item.loader?.item?.[item.prop]
-                } else if (item.instance) {
-                    return item.instance?.[item.prop]
                 }
                 return false
             })
+        }
+
+        Component.onCompleted: {
+            notepadInstance = root.getNotepadInstanceForScreen()
         }
 
         Connections {
@@ -967,7 +969,7 @@ PanelWindow {
                             id: notepadButtonComponent
 
                             NotepadButton {
-                                property var notepadInstance: root.getNotepadInstanceForScreen()
+                                property var notepadInstance: topBarCore.notepadInstance
                                 isActive: notepadInstance ? notepadInstance.notepadVisible : false
                                 widgetHeight: root.widgetHeight
                                 barHeight: root.effectiveBarHeight
