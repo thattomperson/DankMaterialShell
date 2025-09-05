@@ -17,6 +17,8 @@ import qs.Widgets
 PanelWindow {
     id: root
 
+    WlrLayershell.namespace: "quickshell:bar"
+
     property var modelData
     property string screenName: modelData.name
     readonly property int notificationCount: NotificationService.notifications.length
