@@ -39,6 +39,11 @@ Item {
         "name": "Toast Messages",
         "description": "System toast notifications",
         "icon": "campaign"
+    }, {
+        "id": "notepad",
+        "name": "Notepad Slideout",
+        "description": "Quick note-taking slideout panel",
+        "icon": "sticky_note_2"
     }]
 
     function getScreenPreferences(componentId) {

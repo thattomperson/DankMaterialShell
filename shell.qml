@@ -45,6 +45,7 @@ ShellRoot {
 
         delegate: TopBar {
             modelData: item
+            notepadVariants: notepadSlideoutVariants
         }
     }
 
@@ -265,15 +266,13 @@ ShellRoot {
         }
     }
 
-    LazyLoader {
-        id: notepadSlideoutLoader
+    Variants {
+        id: notepadSlideoutVariants
+        model: SettingsData.getFilteredScreens("notepad")
 
-        active: false
-
-        NotepadSlideout {
+        delegate: NotepadSlideout {
             id: notepadSlideout
-
-            modelData: Quickshell.screens.length > 0 ? Quickshell.screens[0] : null
+            modelData: item
         }
     }
 
@@ -365,27 +364,47 @@ ShellRoot {
     }
 
     IpcHandler {
+        function getActiveNotepadInstance() {
+            if (notepadSlideoutVariants.instances.length === 0) {
+                return null
+            }
+            
+            if (notepadSlideoutVariants.instances.length === 1) {
+                return notepadSlideoutVariants.instances[0]
+            }
+            
+            for (var i = 0; i < notepadSlideoutVariants.instances.length; i++) {
+                var instance = notepadSlideoutVariants.instances[i]
+                if (instance.notepadVisible) {
+                    return instance
+                }
+            }
+            
+            return notepadSlideoutVariants.instances[0]
+        }
+
         function open(): string {
-            notepadSlideoutLoader.active = true
-            if (notepadSlideoutLoader.item) {
-                notepadSlideoutLoader.item.show()
+            var instance = getActiveNotepadInstance()
+            if (instance) {
+                instance.show()
                 return "NOTEPAD_OPEN_SUCCESS"
             }
             return "NOTEPAD_OPEN_FAILED"
         }
 
         function close(): string {
-            if (notepadSlideoutLoader.item) {
-                notepadSlideoutLoader.item.hide()
+            var instance = getActiveNotepadInstance()
+            if (instance) {
+                instance.hide()
                 return "NOTEPAD_CLOSE_SUCCESS"
             }
             return "NOTEPAD_CLOSE_FAILED"
         }
 
         function toggle(): string {
-            notepadSlideoutLoader.active = true
-            if (notepadSlideoutLoader.item) {
-                notepadSlideoutLoader.item.toggle()
+            var instance = getActiveNotepadInstance()
+            if (instance) {
+                instance.toggle()
                 return "NOTEPAD_TOGGLE_SUCCESS"
             }
             return "NOTEPAD_TOGGLE_FAILED"

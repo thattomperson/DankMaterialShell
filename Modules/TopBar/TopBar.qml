@@ -20,6 +20,19 @@ PanelWindow {
     WlrLayershell.namespace: "quickshell:bar"
 
     property var modelData
+    property var notepadVariants: null
+    
+    function getNotepadInstanceForScreen() {
+        if (!notepadVariants || !notepadVariants.instances) return null
+        
+        for (var i = 0; i < notepadVariants.instances.length; i++) {
+            var instance = notepadVariants.instances[i]
+            if (instance.modelData && instance.modelData.name === root.screen?.name) {
+                return instance
+            }
+        }
+        return null
+    }
     property string screenName: modelData.name
     readonly property int notificationCount: NotificationService.notifications.length
     readonly property real effectiveBarHeight: Math.max(root.widgetHeight + SettingsData.topBarInnerPadding + 4, Theme.barHeight - 4 - (8 - SettingsData.topBarInnerPadding))
@@ -151,13 +164,20 @@ PanelWindow {
                                  "loader": controlCenterLoader,
                                  "prop": "shouldBeVisible"
                              }, {
-                                 "loader": notepadSlideoutLoader,
+                                 "instance": root.getNotepadInstanceForScreen(),
                                  "prop": "notepadVisible"
                              }, {
                                  "loader": clipboardHistoryModalPopup,
                                  "prop": "visible"
                              }]
-            return loaders.some(item => item.loader?.item?.[item.prop])
+            return loaders.some(item => {
+                if (item.loader) {
+                    return item.loader?.item?.[item.prop]
+                } else if (item.instance) {
+                    return item.instance?.[item.prop]
+                }
+                return false
+            })
         }
 
         Connections {
@@ -947,18 +967,17 @@ PanelWindow {
                             id: notepadButtonComponent
 
                             NotepadButton {
-                                isActive: notepadSlideoutLoader.item ? notepadSlideoutLoader.item.notepadVisible : false
+                                property var notepadInstance: root.getNotepadInstanceForScreen()
+                                isActive: notepadInstance ? notepadInstance.notepadVisible : false
                                 widgetHeight: root.widgetHeight
                                 barHeight: root.effectiveBarHeight
                                 section: topBarContent.getWidgetSection(parent) || "right"
-                                popupTarget: {
-                                    notepadSlideoutLoader.active = true
-                                    return notepadSlideoutLoader.item
-                                }
+                                popupTarget: notepadInstance
                                 parentScreen: root.screen
                                 onClicked: {
-                                    notepadSlideoutLoader.active = true
-                                    notepadSlideoutLoader.item?.toggle()
+                                    if (notepadInstance) {
+                                        notepadInstance.toggle()
+                                    }
                                 }
                             }
                         }
