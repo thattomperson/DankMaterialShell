@@ -36,6 +36,7 @@ PanelWindow {
 
     function show() {
         notepadVisible = true
+        Qt.callLater(() => textArea.forceActiveFocus())
     }
 
     function hide() {
@@ -381,9 +382,6 @@ PanelWindow {
         repeat: false
         onTriggered: {
             animatingOut = false
-            currentFileName = ""
-            currentFileUrl = ""
-            hasUnsavedChanges = false
         }
     }
 
