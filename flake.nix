@@ -65,11 +65,11 @@
               };
             };
 
-            programs.niri.settings = lib.mkMerge let
-              quickShellIpc = spawn "${cfg.quickshell.package}/bin/qs" "-c" "DankMaterialShell" "ipc" "call";
-              in [
+            programs.niri.settings = lib.mkMerge [
               (lib.mkIf cfg.enableKeybinds {
-                binds = {
+                binds = with config.lib.niri.actions; let
+                  quickShellIpc = spawn "${cfg.quickshell.package}/bin/qs" "-c" "DankMaterialShell" "ipc" "call";
+                in {
                   "Mod+Space".action = quickShellIpc "spotlight" "toggle";
                   "Mod+V".action = quickShellIpc "clipboard" "toggle";
                   "Mod+M".action = quickShellIpc "processlist" "toggle";
