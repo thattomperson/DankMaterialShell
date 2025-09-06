@@ -527,12 +527,13 @@ DankPopout {
                         spacing: Theme.spacingM
 
                         AudioSliderRow {
-                            width: (parent.width - Theme.spacingM) / 2
+                            width: SettingsData.hideBrightnessSlider ? parent.width - Theme.spacingM : (parent.width - Theme.spacingM) / 2
                         }
 
                         Item {
                             width: (parent.width - Theme.spacingM) / 2
                             height: parent.height
+                            visible: !SettingsData.hideBrightnessSlider
                             
                             BrightnessSliderRow {
                                 width: parent.width

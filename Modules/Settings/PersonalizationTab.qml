@@ -771,6 +771,16 @@ Item {
                                    }
                     }
 
+                    DankToggle {
+                        width: parent.width
+                        text: "Hide Brightness Slider"
+                        description: "Hide the brightness slider in Control Center and make audio slider full width"
+                        checked: SettingsData.hideBrightnessSlider
+                        onToggled: checked => {
+                                       SettingsData.setHideBrightnessSlider(checked)
+                                   }
+                    }
+
                     Rectangle {
                         width: parent.width
                         height: 1

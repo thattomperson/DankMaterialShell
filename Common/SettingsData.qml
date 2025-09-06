@@ -95,6 +95,7 @@ Singleton {
     property bool topBarSquareCorners: false
     property bool topBarNoBackground: false
     property bool lockScreenShowPowerActions: true
+    property bool hideBrightnessSlider: false
     property int notificationTimeoutLow: 5000
     property int notificationTimeoutNormal: 5000
     property int notificationTimeoutCritical: 0
@@ -259,6 +260,7 @@ Singleton {
                 topBarSquareCorners = settings.topBarSquareCorners !== undefined ? settings.topBarSquareCorners : false
                 topBarNoBackground = settings.topBarNoBackground !== undefined ? settings.topBarNoBackground : false
                 lockScreenShowPowerActions = settings.lockScreenShowPowerActions !== undefined ? settings.lockScreenShowPowerActions : true
+                hideBrightnessSlider = settings.hideBrightnessSlider !== undefined ? settings.hideBrightnessSlider : false
                 screenPreferences = settings.screenPreferences !== undefined ? settings.screenPreferences : ({})
                 applyStoredTheme()
                 detectAvailableIconThemes()
@@ -350,6 +352,7 @@ Singleton {
                                                 "topBarSquareCorners": topBarSquareCorners,
                                                 "topBarNoBackground": topBarNoBackground,
                                                 "lockScreenShowPowerActions": lockScreenShowPowerActions,
+                                                "hideBrightnessSlider": hideBrightnessSlider,
                                                 "notificationTimeoutLow": notificationTimeoutLow,
                                                 "notificationTimeoutNormal": notificationTimeoutNormal,
                                                 "notificationTimeoutCritical": notificationTimeoutCritical,
@@ -917,6 +920,11 @@ Singleton {
 
     function setLockScreenShowPowerActions(enabled) {
         lockScreenShowPowerActions = enabled
+        saveSettings()
+    }
+
+    function setHideBrightnessSlider(enabled) {
+        hideBrightnessSlider = enabled
         saveSettings()
     }
 
