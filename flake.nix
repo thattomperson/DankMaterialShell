@@ -3,13 +3,21 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    quickshell.url = "git+https://git.outfoxxed.me/quickshell/quickshell";
-    quickshell.inputs.nixpkgs.follows = "nixpkgs";
-    dms-cli.url = "github:AvengeMedia/danklinux";
-    dms-cli.inputs.nixpkgs.follows = "nixpkgs";
+    quickshell = {
+      url = "git+https://git.outfoxxed.me/quickshell/quickshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    dgop = {
+      url = "github:AvengeMedia/dgop";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    dms-cli = {
+      url = "github:AvengeMedia/danklinux";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, quickshell, dms-cli, ... }:
+  outputs = { self, nixpkgs, quickshell, dgop, dms-cli, ... }:
     let
       forEachSystem = fn:
         nixpkgs.lib.genAttrs
@@ -42,7 +50,46 @@
               lib.mkEnableOption "DankMaterialShell systemd startup";
             enableSpawn =
               lib.mkEnableOption "DankMaterialShell Niri spawn-at-startup";
-
+            enableSystemMonitoring = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Add needed dependencies to use system monitoring widgets";
+            };
+            enableClipboard = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Add needed dependencies to use the clipboard widget";
+            };
+            enableVPN = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Add needed dependencies to use the VPN widget";
+            };
+            enableBrigthnessControl = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Add needed dependencies to have brightness/backlight support";
+            };
+            enableNightMode = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Add needed dependencies to have night mode support";
+            };
+            enableDynamicTheming = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Add needed dependencies to have dynamic theming support";
+            };
+            enableAudioWavelenght = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Add needed dependencies to have audio wavelenght support";
+            };
+            enableCalendarEvents = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Add calendar events support via khal";
+            };
             quickshell = {
               package =  lib.mkPackageOption pkgs "quickshell" {
                 default = quickshell.packages.${pkgs.system}.quickshell;
@@ -99,19 +146,24 @@
               })
             ];
 
-            home.packages = with pkgs; [
-              material-symbols
-              inter
-              fira-code
-              cava
-              wl-clipboard
-              cliphist
-              ddcutil
-              libsForQt5.qt5ct
-              kdePackages.qt6ct
-              matugen
-              dms-cli.packages.${system}.default
-            ];
+            home.packages = [
+              pkgs.material-symbols
+              pkgs.inter
+              pkgs.fira-code
+
+              pkgs.ddcutil
+              pkgs.libsForQt5.qt5ct
+              pkgs.kdePackages.qt6ct
+              dms-cli.packages.${pkgs.system}.default
+            ]
+            ++ lib.optional cfg.enableSystemMonitoring dgop.packages.${pkgs.system}.dgop
+            ++ lib.optionals cfg.enableClipboard [pkgs.cliphist pkgs.wl-clipboard]
+            ++ lib.optionals cfg.enableVPN [pkgs.glib pkgs.networkmanager]
+            ++ lib.optional cfg.enableBrigthnessControl pkgs.brightnessctl
+            ++ lib.optional cfg.enableNightMode pkgs.gammastep
+            ++ lib.optional cfg.enableDynamicTheming pkgs.matugen
+            ++ lib.optional cfg.enableAudioWavelenght pkgs.cava
+            ++ lib.optional cfg.enableCalendarEvents pkgs.khal;
           };
         };
     };
