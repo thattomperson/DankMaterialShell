@@ -1097,6 +1097,54 @@ Item {
                 }
             }
 
+            // Lock Screen Settings
+            StyledRect {
+                width: parent.width
+                height: lockScreenSection.implicitHeight + Theme.spacingL * 2
+                radius: Theme.cornerRadius
+                color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
+                border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
+                border.width: 1
+
+                Column {
+                    id: lockScreenSection
+
+                    anchors.fill: parent
+                    anchors.margins: Theme.spacingL
+                    spacing: Theme.spacingM
+
+                    Row {
+                        width: parent.width
+                        spacing: Theme.spacingM
+
+                        DankIcon {
+                            name: "lock"
+                            size: Theme.iconSize
+                            color: Theme.primary
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        StyledText {
+                            text: "Lock Screen"
+                            font.pixelSize: Theme.fontSizeLarge
+                            font.weight: Font.Medium
+                            color: Theme.surfaceText
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+
+                    DankToggle {
+                        width: parent.width
+                        text: "Show Power Actions"
+                        description: "Show power, restart, and logout buttons on the lock screen"
+                        checked: SettingsData.lockScreenShowPowerActions
+                        onToggled: checked => {
+                                       SettingsData.setLockScreenShowPowerActions(checked)
+                                   }
+                    }
+                }
+            }
+
             // Font Settings
             StyledRect {
                 width: parent.width

@@ -799,6 +799,7 @@ Item {
             anchors.left: parent.left
             anchors.margins: Theme.spacingXL
             spacing: Theme.spacingL
+            visible: SettingsData.lockScreenShowPowerActions
 
             DankActionButton {
                 iconName: "power_settings_new"
