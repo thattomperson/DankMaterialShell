@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
 import qs.Common
+import qs.Modals.Common
 import qs.Modals.FileBrowser
 import qs.Services
 import qs.Widgets
@@ -22,6 +23,16 @@ PanelWindow {
     property var targetScreen: null
     property var modelData: null
     property bool animatingOut: false
+    property bool confirmationDialogOpen: false
+    property string pendingAction: ""
+    property string lastSavedFileContent: ""
+    
+    function hasFileChanges() {
+        if (!root.currentFileUrl.toString()) {
+            return root.hasUnsavedChanges || SessionData.notepadContent.length > 0
+        }
+        return SessionData.notepadContent !== root.lastSavedFileContent
+    }
 
     function show() {
         notepadVisible = true
@@ -111,10 +122,10 @@ PanelWindow {
                     }
                     
                     StyledText {
-                        text: (root.hasUnsavedChanges ? "● " : "") + (root.currentFileName || qsTr("Untitled"))
+                        text: (hasFileChanges() ? "● " : "") + (root.currentFileName || qsTr("Untitled"))
                         font.pixelSize: Theme.fontSizeSmall
-                        color: root.hasUnsavedChanges ? Theme.primary : Theme.surfaceTextMedium
-                        visible: root.currentFileName !== "" || root.hasUnsavedChanges
+                        color: hasFileChanges() ? Theme.primary : Theme.surfaceTextMedium
+                        visible: root.currentFileName !== "" || hasFileChanges()
                         elide: Text.ElideMiddle
                         maximumLineCount: 1
                         width: parent.width - Theme.spacingM
@@ -203,16 +214,29 @@ PanelWindow {
                                     break
                                 case Qt.Key_O:
                                     event.accepted = true
-                                    root.fileDialogOpen = true
-                                    loadBrowser.open()
+                                    if (hasFileChanges()) {
+                                        root.pendingAction = "open"
+                                        root.confirmationDialogOpen = true
+                                        confirmationDialog.open()
+                                    } else {
+                                        root.fileDialogOpen = true
+                                        loadBrowser.open()
+                                    }
                                     break
                                 case Qt.Key_N:
                                     event.accepted = true
-                                    textArea.text = ""
-                                    SessionData.notepadContent = ""
-                                    root.currentFileName = ""
-                                    root.currentFileUrl = ""
-                                    root.hasUnsavedChanges = false
+                                    if (hasFileChanges()) {
+                                        root.pendingAction = "new"
+                                        root.confirmationDialogOpen = true
+                                        confirmationDialog.open()
+                                    } else {
+                                        textArea.text = ""
+                                        SessionData.notepadContent = ""
+                                        root.currentFileName = ""
+                                        root.currentFileUrl = ""
+                                        root.hasUnsavedChanges = false
+                                        root.lastSavedFileContent = ""
+                                    }
                                     break
                                 case Qt.Key_A:
                                     event.accepted = true
@@ -244,7 +268,7 @@ PanelWindow {
                             iconName: "save"
                             iconSize: Theme.iconSize - 2
                             iconColor: Theme.primary
-                            enabled: root.hasUnsavedChanges || SessionData.notepadContent.length > 0
+                            enabled: hasFileChanges() || SessionData.notepadContent.length > 0
                             onClicked: {
                                 root.fileDialogOpen = true
                                 saveBrowser.open()
@@ -265,8 +289,14 @@ PanelWindow {
                             iconSize: Theme.iconSize - 2
                             iconColor: Theme.secondary
                             onClicked: {
-                                root.fileDialogOpen = true
-                                loadBrowser.open()
+                                if (hasFileChanges()) {
+                                    root.pendingAction = "open"
+                                    root.confirmationDialogOpen = true
+                                    confirmationDialog.open()
+                                } else {
+                                    root.fileDialogOpen = true
+                                    loadBrowser.open()
+                                }
                             }
                         }
                         StyledText {
@@ -284,11 +314,18 @@ PanelWindow {
                             iconSize: Theme.iconSize - 2
                             iconColor: Theme.surfaceText
                             onClicked: {
-                                textArea.text = ""
-                                SessionData.notepadContent = ""
-                                root.currentFileName = ""
-                                root.currentFileUrl = ""
-                                root.hasUnsavedChanges = false
+                                if (hasFileChanges()) {
+                                    root.pendingAction = "new"
+                                    root.confirmationDialogOpen = true
+                                    confirmationDialog.open()
+                                } else {
+                                    textArea.text = ""
+                                    SessionData.notepadContent = ""
+                                    root.currentFileName = ""
+                                    root.currentFileUrl = ""
+                                    root.hasUnsavedChanges = false
+                                    root.lastSavedFileContent = ""
+                                }
                             }
                         }
                         StyledText {
@@ -318,9 +355,9 @@ PanelWindow {
                     }
 
                     StyledText {
-                        text: saveTimer.running ? qsTr("Auto-saving...") : (root.hasUnsavedChanges ? qsTr("Unsaved changes") : qsTr("Auto-saved"))
+                        text: saveTimer.running ? qsTr("Auto-saving...") : (hasFileChanges() ? qsTr("Unsaved changes") : qsTr("Auto-saved"))
                         font.pixelSize: Theme.fontSizeSmall
-                        color: root.hasUnsavedChanges ? Theme.warning : (saveTimer.running ? Theme.primary : Theme.surfaceTextMedium)
+                        color: hasFileChanges() ? Theme.warning : (saveTimer.running ? Theme.primary : Theme.surfaceTextMedium)
                         opacity: SessionData.notepadContent.length > 0 ? 1 : 0
                     }
                 }
@@ -372,6 +409,7 @@ PanelWindow {
         onExited: (exitCode) => {
             if (exitCode === 0) {
                 root.hasUnsavedChanges = false
+                root.lastSavedFileContent = SessionData.notepadContent
             } else {
                 console.warn("Notepad: Failed to save file, exit code:", exitCode)
             }
@@ -385,6 +423,7 @@ PanelWindow {
             onStreamFinished: {
                 SessionData.notepadContent = text
                 root.hasUnsavedChanges = false
+                root.lastSavedFileContent = text
             }
         }
         
@@ -404,7 +443,9 @@ PanelWindow {
         fileExtensions: ["*.txt", "*.md", "*.*"]
         allowStacking: true
         saveMode: true
-        defaultFileName: "note.txt"
+        defaultFileName: root.currentFileName || "note.txt"
+        
+        WlrLayershell.layer: WlrLayershell.Overlay
         
         onFileSelected: (path) => {
             root.fileDialogOpen = false
@@ -416,6 +457,25 @@ PanelWindow {
             root.currentFileUrl = fileUrl
             
             saveToFile(fileUrl)
+            
+            // Handle pending action after save
+            if (root.pendingAction === "new") {
+                Qt.callLater(() => {
+                    textArea.text = ""
+                    SessionData.notepadContent = ""
+                    root.currentFileName = ""
+                    root.currentFileUrl = ""
+                    root.hasUnsavedChanges = false
+                    root.lastSavedFileContent = ""
+                })
+            } else if (root.pendingAction === "open") {
+                Qt.callLater(() => {
+                    root.fileDialogOpen = true
+                    loadBrowser.open()
+                })
+            }
+            root.pendingAction = ""
+            
             close()
         }
         
@@ -433,6 +493,8 @@ PanelWindow {
         fileExtensions: ["*.txt", "*.md", "*.*"]
         allowStacking: true
         
+        WlrLayershell.layer: WlrLayershell.Overlay
+        
         onFileSelected: (path) => {
             root.fileDialogOpen = false
             const cleanPath = path.toString().replace(/^file:\/\//, '')
@@ -448,6 +510,164 @@ PanelWindow {
         
         onDialogClosed: {
             root.fileDialogOpen = false
+        }
+    }
+
+    DankModal {
+        id: confirmationDialog
+
+        width: 400
+        height: 180
+        shouldBeVisible: false
+        allowStacking: true
+
+        onBackgroundClicked: {
+            close()
+            root.confirmationDialogOpen = false
+        }
+
+        content: Component {
+            FocusScope {
+                anchors.fill: parent
+                focus: true
+
+                Keys.onEscapePressed: event => {
+                    confirmationDialog.close()
+                    root.confirmationDialogOpen = false
+                    event.accepted = true
+                }
+
+                Column {
+                    anchors.centerIn: parent
+                    width: parent.width - Theme.spacingM * 2
+                    spacing: Theme.spacingM
+
+                    Row {
+                        width: parent.width
+
+                        Column {
+                            width: parent.width - 40
+                            spacing: Theme.spacingXS
+
+                            StyledText {
+                                text: qsTr("Unsaved Changes")
+                                font.pixelSize: Theme.fontSizeLarge
+                                color: Theme.surfaceText
+                                font.weight: Font.Medium
+                            }
+
+                            StyledText {
+                                text: root.pendingAction === "new" ? 
+                                      qsTr("You have unsaved changes. Save before creating a new file?") :
+                                      qsTr("You have unsaved changes. Save before opening a file?")
+                                font.pixelSize: Theme.fontSizeMedium
+                                color: Theme.surfaceTextMedium
+                                width: parent.width
+                                wrapMode: Text.Wrap
+                            }
+                        }
+
+                        DankActionButton {
+                            iconName: "close"
+                            iconSize: Theme.iconSize - 4
+                            iconColor: Theme.surfaceText
+                            onClicked: {
+                                confirmationDialog.close()
+                                root.confirmationDialogOpen = false
+                            }
+                        }
+                    }
+
+                    Item {
+                        width: parent.width
+                        height: 40
+
+                        Row {
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: Theme.spacingM
+
+                            Rectangle {
+                                width: Math.max(80, discardText.contentWidth + Theme.spacingM * 2)
+                                height: 36
+                                radius: Theme.cornerRadius
+                                color: discardArea.containsMouse ? Theme.surfaceTextHover : "transparent"
+                                border.color: Theme.surfaceVariantAlpha
+                                border.width: 1
+
+                                StyledText {
+                                    id: discardText
+                                    anchors.centerIn: parent
+                                    text: qsTr("Don't Save")
+                                    font.pixelSize: Theme.fontSizeMedium
+                                    color: Theme.surfaceText
+                                    font.weight: Font.Medium
+                                }
+
+                                MouseArea {
+                                    id: discardArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        confirmationDialog.close()
+                                        root.confirmationDialogOpen = false
+                                        if (root.pendingAction === "new") {
+                                            textArea.text = ""
+                                            SessionData.notepadContent = ""
+                                            root.currentFileName = ""
+                                            root.currentFileUrl = ""
+                                            root.hasUnsavedChanges = false
+                                            root.lastSavedFileContent = ""
+                                        } else if (root.pendingAction === "open") {
+                                            root.fileDialogOpen = true
+                                            loadBrowser.open()
+                                        }
+                                        root.pendingAction = ""
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                width: Math.max(70, saveAsText.contentWidth + Theme.spacingM * 2)
+                                height: 36
+                                radius: Theme.cornerRadius
+                                color: saveAsArea.containsMouse ? Qt.darker(Theme.primary, 1.1) : Theme.primary
+
+                                StyledText {
+                                    id: saveAsText
+                                    anchors.centerIn: parent
+                                    text: qsTr("Save")
+                                    font.pixelSize: Theme.fontSizeMedium
+                                    color: Theme.background
+                                    font.weight: Font.Medium
+                                }
+
+                                MouseArea {
+                                    id: saveAsArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        confirmationDialog.close()
+                                        root.confirmationDialogOpen = false
+                                        root.fileDialogOpen = true
+                                        saveBrowser.open()
+                                    }
+                                }
+
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: Theme.shortDuration
+                                        easing.type: Theme.standardEasing
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
         }
     }
 }
