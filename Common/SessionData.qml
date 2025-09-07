@@ -23,6 +23,10 @@ Singleton {
     property int nightModeTemperature: 4500
     property bool nightModeAutoEnabled: false
     property string nightModeAutoMode: "time"
+    
+    property bool hasTriedDefaultSession: false
+    readonly property string _stateUrl: StandardPaths.writableLocation(StandardPaths.GenericStateLocation)
+    readonly property string _stateDir: _stateUrl.startsWith("file://") ? _stateUrl.substring(7) : _stateUrl
     property int nightModeStartHour: 18
     property int nightModeStartMinute: 0
     property int nightModeEndHour: 6
@@ -96,6 +100,17 @@ Singleton {
                 wallpaperCyclingTime = settings.wallpaperCyclingTime !== undefined ? settings.wallpaperCyclingTime : "06:00"
                 lastBrightnessDevice = settings.lastBrightnessDevice !== undefined ? settings.lastBrightnessDevice : ""
                 notepadContent = settings.notepadContent !== undefined ? settings.notepadContent : ""
+                
+                // Apply dynamic theming if wallpaper exists and dynamic theming is enabled
+                if (wallpaperPath && wallpaperPath !== "") {
+                    if (typeof Theme !== "undefined") {
+                        if (typeof SettingsData !== "undefined" && SettingsData.wallpaperDynamicTheming) {
+                            Theme.switchTheme("dynamic")
+                            Theme.extractColors()
+                        }
+                        Theme.generateSystemThemesFromCurrentTheme()
+                    }
+                }
             }
         } catch (e) {
 
@@ -388,8 +403,28 @@ Singleton {
         watchChanges: true
         onLoaded: {
             parseSettings(settingsFile.text())
+            hasTriedDefaultSession = false
         }
-        onLoadFailed: error => {}
+        onLoadFailed: error => {
+            if (!hasTriedDefaultSession) {
+                hasTriedDefaultSession = true
+                defaultSessionCheckProcess.running = true
+            }
+        }
+    }
+
+    Process {
+        id: defaultSessionCheckProcess
+
+        command: ["sh", "-c", "CONFIG_DIR=\"" + _stateDir
+            + "/DankMaterialShell\"; if [ -f \"$CONFIG_DIR/default-session.json\" ] && [ ! -f \"$CONFIG_DIR/session.json\" ]; then cp \"$CONFIG_DIR/default-session.json\" \"$CONFIG_DIR/session.json\" && echo 'copied'; else echo 'not_found'; fi"]
+        running: false
+        onExited: exitCode => {
+            if (exitCode === 0) {
+                console.log("Copied default-session.json to session.json")
+                settingsFile.reload()
+            }
+        }
     }
 
     IpcHandler {
