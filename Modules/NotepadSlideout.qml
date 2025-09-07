@@ -177,6 +177,9 @@ PanelWindow {
                         
                         Component.onCompleted: {
                             text = SessionData.notepadContent
+                            root.currentFileName = SessionData.notepadCurrentFileName
+                            root.currentFileUrl = SessionData.notepadCurrentFileUrl
+                            root.lastSavedFileContent = SessionData.notepadLastSavedContent
                         }
                         
                         Connections {
@@ -237,6 +240,10 @@ PanelWindow {
                                         root.currentFileUrl = ""
                                         root.hasUnsavedChanges = false
                                         root.lastSavedFileContent = ""
+                                        SessionData.notepadCurrentFileName = ""
+                                        SessionData.notepadCurrentFileUrl = ""
+                                        SessionData.notepadLastSavedContent = ""
+                                        SessionData.saveSettings()
                                     }
                                     break
                                 case Qt.Key_A:
@@ -326,6 +333,10 @@ PanelWindow {
                                     root.currentFileUrl = ""
                                     root.hasUnsavedChanges = false
                                     root.lastSavedFileContent = ""
+                                    SessionData.notepadCurrentFileName = ""
+                                    SessionData.notepadCurrentFileUrl = ""
+                                    SessionData.notepadLastSavedContent = ""
+                                    SessionData.saveSettings()
                                 }
                             }
                         }
@@ -408,6 +419,10 @@ PanelWindow {
             if (exitCode === 0) {
                 root.hasUnsavedChanges = false
                 root.lastSavedFileContent = SessionData.notepadContent
+                SessionData.notepadCurrentFileName = root.currentFileName
+                SessionData.notepadCurrentFileUrl = root.currentFileUrl.toString()
+                SessionData.notepadLastSavedContent = root.lastSavedFileContent
+                SessionData.saveSettings()
             } else {
                 console.warn("Notepad: Failed to save file, exit code:", exitCode)
             }
@@ -422,6 +437,10 @@ PanelWindow {
                 SessionData.notepadContent = text
                 root.hasUnsavedChanges = false
                 root.lastSavedFileContent = text
+                SessionData.notepadCurrentFileName = root.currentFileName
+                SessionData.notepadCurrentFileUrl = root.currentFileUrl.toString()
+                SessionData.notepadLastSavedContent = text
+                SessionData.saveSettings()
             }
         }
         
@@ -465,6 +484,10 @@ PanelWindow {
                     root.currentFileUrl = ""
                     root.hasUnsavedChanges = false
                     root.lastSavedFileContent = ""
+                    SessionData.notepadCurrentFileName = ""
+                    SessionData.notepadCurrentFileUrl = ""
+                    SessionData.notepadLastSavedContent = ""
+                    SessionData.saveSettings()
                 })
             } else if (root.pendingAction === "open") {
                 Qt.callLater(() => {
@@ -617,6 +640,10 @@ PanelWindow {
                                             root.currentFileUrl = ""
                                             root.hasUnsavedChanges = false
                                             root.lastSavedFileContent = ""
+                                            SessionData.notepadCurrentFileName = ""
+                                            SessionData.notepadCurrentFileUrl = ""
+                                            SessionData.notepadLastSavedContent = ""
+                                            SessionData.saveSettings()
                                         } else if (root.pendingAction === "open") {
                                             root.fileDialogOpen = true
                                             loadBrowser.open()

@@ -41,6 +41,9 @@ Singleton {
     property string wallpaperCyclingTime: "06:00" // HH:mm format
     property string lastBrightnessDevice: ""
     property string notepadContent: ""
+    property string notepadCurrentFileName: ""
+    property string notepadCurrentFileUrl: ""
+    property string notepadLastSavedContent: ""
 
     Component.onCompleted: {
         loadSettings()
@@ -96,6 +99,9 @@ Singleton {
                 wallpaperCyclingTime = settings.wallpaperCyclingTime !== undefined ? settings.wallpaperCyclingTime : "06:00"
                 lastBrightnessDevice = settings.lastBrightnessDevice !== undefined ? settings.lastBrightnessDevice : ""
                 notepadContent = settings.notepadContent !== undefined ? settings.notepadContent : ""
+                notepadCurrentFileName = settings.notepadCurrentFileName !== undefined ? settings.notepadCurrentFileName : ""
+                notepadCurrentFileUrl = settings.notepadCurrentFileUrl !== undefined ? settings.notepadCurrentFileUrl : ""
+                notepadLastSavedContent = settings.notepadLastSavedContent !== undefined ? settings.notepadLastSavedContent : ""
             }
         } catch (e) {
 
@@ -132,7 +138,10 @@ Singleton {
                                                 "wallpaperCyclingInterval": wallpaperCyclingInterval,
                                                 "wallpaperCyclingTime": wallpaperCyclingTime,
                                                 "lastBrightnessDevice": lastBrightnessDevice,
-                                                "notepadContent": notepadContent
+                                                "notepadContent": notepadContent,
+                                                "notepadCurrentFileName": notepadCurrentFileName,
+                                                "notepadCurrentFileUrl": notepadCurrentFileUrl,
+                                                "notepadLastSavedContent": notepadLastSavedContent
                                             }, null, 2))
     }
 
