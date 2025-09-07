@@ -30,6 +30,8 @@ DankModal {
     property string selectedFilePath: ""
     property string selectedFileName: ""
     property bool selectedFileIsDir: false
+    property bool showOverwriteConfirmation: false
+    property string pendingFilePath: ""
 
     signal fileSelected(string path)
 
@@ -95,6 +97,33 @@ DankModal {
     function executeKeyboardSelection(index) {
         keyboardSelectionIndex = index
         keyboardSelectionRequested = true
+    }
+
+    function handleSaveFile(filePath) {
+        // Ensure the filePath has the correct file:// protocol format
+        var normalizedPath = filePath
+        if (!normalizedPath.startsWith("file://")) {
+            normalizedPath = "file://" + filePath
+        }
+        
+        // Check if file exists by looking through the folder model
+        var exists = false
+        var fileName = filePath.split('/').pop()
+        
+        for (var i = 0; i < folderModel.count; i++) {
+            if (folderModel.get(i, "fileName") === fileName && !folderModel.get(i, "fileIsDir")) {
+                exists = true
+                break
+            }
+        }
+        
+        if (exists) {
+            pendingFilePath = normalizedPath
+            showOverwriteConfirmation = true
+        } else {
+            fileSelected(normalizedPath)
+            fileBrowserModal.close()
+        }
     }
 
     objectName: "fileBrowserModal"
@@ -582,9 +611,12 @@ DankModal {
                     }
                     onAccepted: {
                         if (text.trim() !== "") {
-                            var fullPath = currentPath + "/" + text.trim()
-                            fileSelected(fullPath)
-                            fileBrowserModal.close()
+                            // Remove file:// protocol from currentPath if present for proper construction
+                            var basePath = currentPath.replace(/^file:\/\//, '')
+                            var fullPath = basePath + "/" + text.trim()
+                            // Ensure consistent path format - remove any double slashes and normalize
+                            fullPath = fullPath.replace(/\/+/g, '/')
+                            handleSaveFile(fullPath)
                         }
                     }
                 }
@@ -610,9 +642,12 @@ DankModal {
                         enabled: fileNameInput.text.trim() !== ""
                         onClicked: {
                             if (fileNameInput.text.trim() !== "") {
-                                var fullPath = currentPath + "/" + fileNameInput.text.trim()
-                                fileSelected(fullPath)
-                                fileBrowserModal.close()
+                                // Remove file:// protocol from currentPath if present for proper construction
+                                var basePath = currentPath.replace(/^file:\/\//, '')
+                                var fullPath = basePath + "/" + fileNameInput.text.trim()
+                                // Ensure consistent path format - remove any double slashes and normalize
+                                fullPath = fullPath.replace(/\/+/g, '/')
+                                handleSaveFile(fullPath)
                             }
                         }
                     }
@@ -648,6 +683,135 @@ DankModal {
 
                     var lastDot = fileBrowserModal.selectedFileName.lastIndexOf('.')
                     return lastDot > 0 ? fileBrowserModal.selectedFileName.substring(lastDot + 1).toLowerCase() : ""
+                }
+            }
+
+            // Overwrite confirmation dialog
+            Item {
+                id: overwriteDialog
+                anchors.fill: parent
+                visible: showOverwriteConfirmation
+                
+                Keys.onEscapePressed: {
+                    showOverwriteConfirmation = false
+                    pendingFilePath = ""
+                }
+                
+                Keys.onReturnPressed: {
+                    showOverwriteConfirmation = false
+                    fileSelected(pendingFilePath)
+                    pendingFilePath = ""
+                    Qt.callLater(() => fileBrowserModal.close())
+                }
+                
+                focus: showOverwriteConfirmation
+                
+                Rectangle {
+                    anchors.fill: parent
+                    color: Theme.shadowStrong
+                    opacity: 0.8
+                    
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            showOverwriteConfirmation = false
+                            pendingFilePath = ""
+                        }
+                    }
+                }
+                
+                StyledRect {
+                    anchors.centerIn: parent
+                    width: 400
+                    height: 160
+                    color: Theme.surfaceContainer
+                    radius: Theme.cornerRadius
+                    border.color: Theme.outlineMedium
+                    border.width: 1
+                    
+                    Column {
+                        anchors.centerIn: parent
+                        width: parent.width - Theme.spacingL * 2
+                        spacing: Theme.spacingM
+                        
+                        StyledText {
+                            text: qsTr("File Already Exists")
+                            font.pixelSize: Theme.fontSizeLarge
+                            font.weight: Font.Medium
+                            color: Theme.surfaceText
+                            anchors.horizontalCenter: parent.horizontalCenter
+                        }
+                        
+                        StyledText {
+                            text: qsTr("A file with this name already exists. Do you want to overwrite it?")
+                            font.pixelSize: Theme.fontSizeMedium
+                            color: Theme.surfaceTextMedium
+                            width: parent.width
+                            wrapMode: Text.WordWrap
+                            horizontalAlignment: Text.AlignHCenter
+                        }
+                        
+                        Row {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            spacing: Theme.spacingM
+                            
+                            StyledRect {
+                                width: 80
+                                height: 36
+                                radius: Theme.cornerRadius
+                                color: cancelArea.containsMouse ? Theme.surfaceVariantHover : Theme.surfaceVariant
+                                border.color: Theme.outline
+                                border.width: 1
+                                
+                                StyledText {
+                                    anchors.centerIn: parent
+                                    text: qsTr("Cancel")
+                                    font.pixelSize: Theme.fontSizeMedium
+                                    color: Theme.surfaceText
+                                    font.weight: Font.Medium
+                                }
+                                
+                                MouseArea {
+                                    id: cancelArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        showOverwriteConfirmation = false
+                                        pendingFilePath = ""
+                                    }
+                                }
+                            }
+                            
+                            StyledRect {
+                                width: 90
+                                height: 36
+                                radius: Theme.cornerRadius
+                                color: overwriteArea.containsMouse ? Qt.darker(Theme.primary, 1.1) : Theme.primary
+                                
+                                StyledText {
+                                    anchors.centerIn: parent
+                                    text: qsTr("Overwrite")
+                                    font.pixelSize: Theme.fontSizeMedium
+                                    color: Theme.background
+                                    font.weight: Font.Medium
+                                }
+                                
+                                MouseArea {
+                                    id: overwriteArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        showOverwriteConfirmation = false
+                                        fileSelected(pendingFilePath)
+                                        pendingFilePath = ""
+                                        Qt.callLater(() => fileBrowserModal.close())
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
