@@ -139,7 +139,7 @@ PanelWindow {
 
         property real backgroundTransparency: SettingsData.topBarTransparency
         property bool autoHide: SettingsData.topBarAutoHide
-        property bool reveal: SettingsData.topBarVisible && (!autoHide || topBarMouseArea.containsMouse || hasActivePopout)
+        property bool reveal: SettingsData.topBarVisible && (!autoHide || topBarMouseArea.containsMouse || hasActivePopout || (SettingsData.topBarOpenOnOverview && CompositorService.isNiri && NiriService.inOverview))
 
         property var notepadInstance: null
         property bool notepadInstanceVisible: notepadInstance?.notepadVisible ?? false

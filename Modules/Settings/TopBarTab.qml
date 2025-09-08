@@ -577,6 +577,52 @@ Item {
                                        }
                         }
                     }
+
+                    Row {
+                        width: parent.width
+                        spacing: Theme.spacingM
+                        visible: SettingsData.topBarAutoHide && CompositorService.isNiri
+
+                        DankIcon {
+                            name: "fullscreen"
+                            size: Theme.iconSize
+                            color: Theme.primary
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Column {
+                            width: parent.width - Theme.iconSize - Theme.spacingM
+                                   - overviewToggle.width - Theme.spacingM
+                            spacing: Theme.spacingXS
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            StyledText {
+                                text: "Open on Overview"
+                                font.pixelSize: Theme.fontSizeLarge
+                                font.weight: Font.Medium
+                                color: Theme.surfaceText
+                            }
+
+                            StyledText {
+                                text: "Always show the top bar when Niri's overview is open"
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.surfaceVariantText
+                                wrapMode: Text.WordWrap
+                                width: parent.width
+                            }
+                        }
+
+                        DankToggle {
+                            id: overviewToggle
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            checked: SettingsData.topBarOpenOnOverview
+                            onToggled: toggled => {
+                                           return SettingsData.setTopBarOpenOnOverview(
+                                               toggled)
+                                       }
+                        }
+                    }
                 }
             }
 

@@ -207,7 +207,7 @@ mkdir ~/.config/quickshell && git clone https://github.com/AvengeMedia/DankMater
 
 **3.2. Install latest dms CLI**
 ```bash
-ARCH=amd64 curl -L https://github.com/AvengeMedia/danklinux/releases/latest/download/dms-${ARCH}.gz | gunzip | sudo tee /usr/local/bin/dms > /dev/null && sudo chmod +x /usr/local/bin/dms
+sudo sh -c "curl -L https://github.com/AvengeMedia/danklinux/releases/latest/download/dms-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').gz | gunzip | tee /usr/local/bin/dms > /dev/null && chmod +x /usr/local/bin/dms"
 ```
 
 **4. Optional Features (system monitoring, clipboard history, brightness controls, etc.)**
@@ -231,7 +231,7 @@ sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 `dgop` is available via AUR and a nix flake, other distributions can install it manually.
 
 ```bash
-ARCH=amd64 curl -L https://github.com/AvengeMedia/dgop/releases/latest/download/dgop-linux-${ARCH}.gz | gunzip | sudo tee /usr/local/bin/dgop > /dev/null && sudo chmod +x /usr/local/bin/dgop
+sudo sh -c "curl -L https://github.com/AvengeMedia/dgop/releases/latest/download/dgop-linux-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').gz | gunzip | tee /usr/local/bin/dgop > /dev/null && chmod +x /usr/local/bin/dgop"
 ```
 
 **Optional Requirement Overview**
