@@ -604,7 +604,7 @@ Item {
                             }
 
                             StyledText {
-                                text: "Always show the top bar when Niri's overview is open"
+                                text: "Always show the top bar when niri's overview is open"
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.surfaceVariantText
                                 wrapMode: Text.WordWrap
