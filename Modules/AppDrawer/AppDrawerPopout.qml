@@ -36,7 +36,6 @@ DankPopout {
     triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingXS
     triggerWidth: 40
     positioning: "center"
-    WlrLayershell.namespace: "quickshell-launcher"
     screen: triggerScreen
 
     onShouldBeVisibleChanged: {
