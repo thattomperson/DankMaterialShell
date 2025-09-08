@@ -182,16 +182,19 @@ fc-cache -f
 paru -S dms-shell-git # Or dms-shell for latest tag
 ```
 
+#### nixOS available via flake
+```bash
+nix profile install github:AvengeMedia/DankMaterialShell
+```
+
 #### Manual install
 
-### Install the shell & cli
-
-1. Clone latest master
+**1. Clone latest master**
 ```bash
 mkdir ~/.config/quickshell && git clone https://github.com/AvengeMedia/DankMaterialShell.git ~/.config/quickshell/dms
 ```
 
-2. Install latest dms CLI
+**2. Install latest dms CLI**
 ```bash
 curl -L https://github.com/AvengeMedia/danklinux/releases/latest/download/dms-amd64.gz | gunzip | sudo tee /usr/local/bin/dms > /dev/null && sudo chmod +x /usr/local/bin/dms
 ```
