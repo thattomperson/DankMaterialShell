@@ -3,7 +3,7 @@
 DankMaterialShell provides comprehensive IPC (Inter-Process Communication) functionality that allows external control of the shell through command-line commands. All IPC commands follow the format:
 
 ```bash
-qs -c dms ipc call <target> <function> [parameters...]
+dms ipc call <target> <function> [parameters...]
 ```
 
 ## Target: `audio`
@@ -44,9 +44,9 @@ Audio system control and information.
 
 ### Examples
 ```bash
-qs -c dms ipc call audio setvolume 50
-qs -c dms ipc call audio increment 10
-qs -c dms ipc call audio mute
+dms ipc call audio setvolume 50
+dms ipc call audio increment 10
+dms ipc call audio mute
 ```
 
 ## Target: `brightness`
@@ -86,9 +86,9 @@ Display brightness control for internal and external displays.
 
 ### Examples
 ```bash
-qs -c dms ipc call brightness set 80
-qs -c dms ipc call brightness increment 10 ""
-qs -c dms ipc call brightness decrement 5 "intel_backlight"
+dms ipc call brightness set 80
+dms ipc call brightness increment 10 ""
+dms ipc call brightness decrement 5 "intel_backlight"
 ```
 
 ## Target: `night`
@@ -141,11 +141,11 @@ Night mode (gamma/color temperature) control.
 
 ### Examples
 ```bash
-qs -c dms ipc call night toggle
-qs -c dms ipc call night temperature 4000
-qs -c dms ipc call night automation time
-qs -c dms ipc call night schedule 20:00 06:00
-qs -c dms ipc call night location 40.7128 -74.0060
+dms ipc call night toggle
+dms ipc call night temperature 4000
+dms ipc call night automation time
+dms ipc call night schedule 20:00 06:00
+dms ipc call night location 40.7128 -74.0060
 ```
 
 ## Target: `mpris`
@@ -184,8 +184,8 @@ Media player control via MPRIS interface.
 
 ### Examples
 ```bash
-qs -c dms ipc call mpris playPause
-qs -c dms ipc call mpris next
+dms ipc call mpris playPause
+dms ipc call mpris next
 ```
 
 ## Target: `lock`
@@ -208,8 +208,8 @@ Screen lock control and status.
 
 ### Examples
 ```bash
-qs -c dms ipc call lock lock
-qs -c dms ipc call lock isLocked
+dms ipc call lock lock
+dms ipc call lock isLocked
 ```
 
 ## Target: `inhibit`
@@ -232,8 +232,8 @@ Idle inhibitor control to prevent automatic sleep/lock.
 
 ### Examples
 ```bash
-qs -c dms ipc call inhibit toggle
-qs -c dms ipc call inhibit enable
+dms ipc call inhibit toggle
+dms ipc call inhibit enable
 ```
 
 ## Target: `wallpaper`
@@ -291,36 +291,36 @@ Wallpaper management and retrieval with support for per-monitor configurations.
 
 **Global wallpaper mode:**
 ```bash
-qs -c dms ipc call wallpaper get
-qs -c dms ipc call wallpaper set /path/to/image.jpg
-qs -c dms ipc call wallpaper next
-qs -c dms ipc call wallpaper clear
+dms ipc call wallpaper get
+dms ipc call wallpaper set /path/to/image.jpg
+dms ipc call wallpaper next
+dms ipc call wallpaper clear
 ```
 
 **Per-monitor wallpaper mode:**
 ```bash
 # Set different wallpapers for each monitor
-qs -c dms ipc call wallpaper setFor DP-2 /path/to/image1.jpg
-qs -c dms ipc call wallpaper setFor eDP-1 /path/to/image2.jpg
+dms ipc call wallpaper setFor DP-2 /path/to/image1.jpg
+dms ipc call wallpaper setFor eDP-1 /path/to/image2.jpg
 
 # Get wallpaper for specific monitor
-qs -c dms ipc call wallpaper getFor DP-2
+dms ipc call wallpaper getFor DP-2
 
 # Cycle wallpapers for specific monitor
-qs -c dms ipc call wallpaper nextFor eDP-1
-qs -c dms ipc call wallpaper prevFor DP-2
+dms ipc call wallpaper nextFor eDP-1
+dms ipc call wallpaper prevFor DP-2
 
 # Clear all wallpapers and return to global mode
-qs -c dms ipc call wallpaper clear
+dms ipc call wallpaper clear
 ```
 
 **Error handling:**
 When per-monitor mode is enabled, legacy functions will return helpful error messages:
 ```bash
-qs -c dms ipc call wallpaper get
+dms ipc call wallpaper get
 # Returns: "ERROR: Per-monitor mode enabled. Use getFor(screenName) instead."
 
-qs -c dms ipc call wallpaper set /path/to/image.jpg
+dms ipc call wallpaper set /path/to/image.jpg
 # Returns: "ERROR: Per-monitor mode enabled. Use setFor(screenName, path) instead."
 ```
 
@@ -345,9 +345,9 @@ User profile image management.
 
 ### Examples
 ```bash
-qs -c dms ipc call profile getImage
-qs -c dms ipc call profile setImage /path/to/avatar.png
-qs -c dms ipc call profile clearImage
+dms ipc call profile getImage
+dms ipc call profile setImage /path/to/avatar.png
+dms ipc call profile clearImage
 ```
 
 ## Target: `theme`
@@ -374,8 +374,8 @@ Theme mode control (light/dark mode switching).
 
 ### Examples
 ```bash
-qs -c dms ipc call theme toggle
-qs -c dms ipc call theme dark
+dms ipc call theme toggle
+dms ipc call theme dark
 ```
 
 ## Target: `bar`
@@ -402,9 +402,9 @@ Top bar visibility control.
 
 ### Examples
 ```bash
-qs -c dms ipc call bar toggle
-qs -c dms ipc call bar hide
-qs -c dms ipc call bar status
+dms ipc call bar toggle
+dms ipc call bar hide
+dms ipc call bar status
 ```
 
 ## Modal Controls
@@ -480,29 +480,29 @@ File browser controls for selecting wallpapers and profile images.
 ### Modal Examples
 ```bash
 # Open application launcher
-qs -c dms ipc call spotlight toggle
+dms ipc call spotlight toggle
 
 # Show clipboard history
-qs -c dms ipc call clipboard open
+dms ipc call clipboard open
 
 # Toggle notification center
-qs -c dms ipc call notifications toggle
+dms ipc call notifications toggle
 
 # Show settings
-qs -c dms ipc call settings open
+dms ipc call settings open
 
 # Show system monitor
-qs -c dms ipc call processlist toggle
+dms ipc call processlist toggle
 
 # Show power menu
-qs -c dms ipc call powermenu toggle
+dms ipc call powermenu toggle
 
 # Open notepad
-qs -c dms ipc call notepad toggle
+dms ipc call notepad toggle
 
 # Open file browsers
-qs -c dms ipc call file browse wallpaper
-qs -c dms ipc call file browse profile
+dms ipc call file browse wallpaper
+dms ipc call file browse profile
 ```
 
 ## Common Usage Patterns
@@ -531,9 +531,9 @@ IPC commands can be used in scripts for automation:
 # Toggle night mode based on time of day
 hour=$(date +%H)
 if [ $hour -ge 20 ] || [ $hour -le 6 ]; then
-    qs -c dms ipc call night enable
+    dms ipc call night enable
 else
-    qs -c dms ipc call night disable
+    dms ipc call night disable
 fi
 ```
 
@@ -543,9 +543,9 @@ Many commands provide status information useful for scripts:
 
 ```bash
 # Check if screen is locked before performing action
-if qs -c dms ipc call lock isLocked | grep -q "false"; then
+if dms ipc call lock isLocked | grep -q "false"; then
     # Perform action only if unlocked
-    qs -c dms ipc call notifications open
+    dms ipc call notifications open
 fi
 ```
 
