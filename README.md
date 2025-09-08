@@ -423,7 +423,7 @@ No matter what when matugen is enabled the files will be created on wallpaper ch
 
 If you do not like our theme path, you can integrate this with other GTK themes, matugen themes, etc.
 
-**GTK Apps:**
+#### GTK Apps
 
 1. Install [Colloid](https://github.com/vinceliuice/Colloid-gtk-theme)
 
@@ -443,7 +443,7 @@ Configure in `~/.config/gtk-3.0/settings.ini` and `~/.config/gtk-4.0/settings.in
 gtk-theme-name=Colloid
 ```
 
-**QT: basic gtk3 based theme**
+#### QT: basic gtk3 based theme (Option 1)
 
 If you mostly use gtk apps, you'll probably be happy to just set the QT platform theme to gtk3.
 
@@ -455,7 +455,7 @@ environment {
 }
 ```
 
-**QT: better theming**
+#### QT: better theming (Option 2)
 
 1. Install qt6ct-kde
 
