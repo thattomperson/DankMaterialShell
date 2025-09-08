@@ -152,19 +152,19 @@ For detailed Hyprland installation instructions, see the [Hyprland wiki](https:/
 
 *feel free to contribute steps for other distributions*
 
-#### (Arch) Available via AUR
+#### Arch Linux - via AUR
 
 ```bash
 paru -S dms-shell-git
 ```
 
-#### (nixOS) Available via flake
+#### nixOS - via flake
 
 ```bash
 nix profile install github:AvengeMedia/DankMaterialShell
 ```
 
-#### (manual installation) - other distributions
+#### Other Distributions - via manual installation
 
 **1. Install Quickshell (Varies by Distribution)**
 ```bash
@@ -175,7 +175,8 @@ sudo dnf copr enable errornointernet/quickshell && sudo dnf install quickshell-g
 # ! TODO - document other distros
 ```
 
-**2. Install fonts (not  strictly required, but recommended)**
+**2. Install fonts**
+*Inter Variable* and *Fira Code* are not strictly required, but they are the default fonts of dms.
 
 **2.1 Install Material Symbols**
 ```bash
