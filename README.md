@@ -152,77 +152,88 @@ For detailed Hyprland installation instructions, see the [Hyprland wiki](https:/
 
 *feel free to contribute steps for other distributions*
 
-**Dependencies:**
+#### (Arch) Available via AUR
 
-#### Arch Linux
 ```bash
-paru -S quickshell-git ttf-material-symbols-variable-git inter-font ttf-fira-code
+paru -S dms-shell-git
 ```
 
-#### Fedora
-```bash
-sudo dnf copr enable errornointernet/quickshell && sudo dnf install quickshell-git rsms-inter-fonts fira-code-fonts
-```
+#### (nixOS) Available via flake
 
-#### Install icon fonts manually
-```bash
-mkdir -p ~/.local/share/fonts
-```
-```bash
-curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf
-```
-```bash
-fc-cache -f
-```
-
-**Get the shell:**
-
-#### Arch linux available via AUR
-```bash
-paru -S dms-shell-git # Or dms-shell for latest tag
-```
-
-#### nixOS available via flake
 ```bash
 nix profile install github:AvengeMedia/DankMaterialShell
 ```
 
-#### Manual install
+#### (manual installation) - other distributions
 
-**1. Clone latest master**
+**1. Install Quickshell (Varies by Distribution)**
+```bash
+# Arch
+paru -S quickshell-git
+# Fedora
+sudo dnf copr enable errornointernet/quickshell && sudo dnf install quickshell-git
+# ! TODO - document other distros
+```
+
+**2. Install fonts (not  strictly required, but recommended)**
+
+**2.1 Install Material Symbols**
+```bash
+mkdir -p ~/.local/share/fonts &&
+curl -L "https://github.com/google/material-design-icons/raw/master/variablefont/MaterialSymbolsRounded%5BFILL%2CGRAD%2Copsz%2Cwght%5D.ttf" -o ~/.local/share/fonts/MaterialSymbolsRounded.ttf
+```
+**2.2 Install Inter Variable**
+```bash
+curl -L "https://github.com/rsms/inter/raw/refs/tags/v4.1/docs/font-files/InterVariable.ttf" -o ~/.local/share/fonts/InterVariable.ttf
+```
+
+**2.3 Install Fira Code (monospace font)**
+```bash
+curl -L "https://github.com/tonsky/FiraCode/releases/latest/download/FiraCode-Regular.ttf" -o ~/.local/share/fonts/FiraCode-Regular.ttf
+```
+
+**2.4 Refresh font cache**
+```bash
+fc-cache -fv
+```
+
+**3. Install the shell**
+
+**3.1. Clone latest master**
 ```bash
 mkdir ~/.config/quickshell && git clone https://github.com/AvengeMedia/DankMaterialShell.git ~/.config/quickshell/dms
 ```
 
-**2. Install latest dms CLI**
+**3.2. Install latest dms CLI**
 ```bash
-curl -L https://github.com/AvengeMedia/danklinux/releases/latest/download/dms-amd64.gz | gunzip | sudo tee /usr/local/bin/dms > /dev/null && sudo chmod +x /usr/local/bin/dms
+ARCH=amd64 curl -L https://github.com/AvengeMedia/danklinux/releases/latest/download/dms-${ARCH}.gz | gunzip | sudo tee /usr/local/bin/dms > /dev/null && sudo chmod +x /usr/local/bin/dms
 ```
 
-### Enable System Monitor Widgets, Theming, & More
+**4. Optional Features (system monitoring, clipboard history, brightness controls, etc.)**
 
-#### Arch Linux
+**4.1 Core optional dependencies**
 ```bash
+# Arch Linux
 sudo pacman -S cava wl-clipboard cliphist brightnessctl
 paru -S matugen-bin dgop
-```
-#### Fedora
-```bash
+
+# Fedora
 sudo dnf install cava wl-clipboard brightnessctl
 sudo dnf copr enable wef/cliphist && sudo dnf install cliphist
 sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 ```
 
-### Other Distros
+*Other distros will just need to find sources for the above packages*
 
-`dgop` can be installed on any distro:
+**4.2 - dgop manual installation**
+
+`dgop` is available via AUR and a nix flake, other distributions can install it manually.
 
 ```bash
-# Requires GO 1.23+
-curl -L https://github.com/AvengeMedia/danklinux/releases/latest/download/dms-amd64.gz | gunzip | sudo tee /usr/local/bin/dms > /dev/null && sudo chmod +x /usr/local/bin/dms
+ARCH=amd64 curl -L https://github.com/AvengeMedia/dgop/releases/latest/download/dgop-linux-${ARCH}.gz | gunzip | sudo tee /usr/local/bin/dgop > /dev/null && sudo chmod +x /usr/local/bin/dgop
 ```
 
-**What you get:**
+**Optional Requirement Overview**
 
 - `dgop`: Ability to have system resource widgets, process list modal, and temperature monitoring.
 - `matugen`: Wallpaper-based dynamic theming
@@ -232,7 +243,9 @@ curl -L https://github.com/AvengeMedia/danklinux/releases/latest/download/dms-am
 - `cliphist`: Clipboard history
 - `gammastep`: Night mode support
 
-## Usage
+## Compositor Configuration
+
+A lot of options are subject to personal preference, but the below sets a good starting point for most features.
 
 ### Niri Integration
 
