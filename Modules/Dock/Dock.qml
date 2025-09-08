@@ -10,6 +10,8 @@ import qs.Widgets
 PanelWindow {
     id: dock
 
+    WlrLayershell.namespace: "quickshell:dock"
+
     WlrLayershell.layer: WlrLayershell.Top
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
@@ -98,7 +100,6 @@ PanelWindow {
 
             Rectangle {
                 id: dockBackground
-                WlrLayershell.namespace: "quickshell:dock"
                 objectName: "dockBackground"
                 anchors {
                     top: parent.top
