@@ -443,9 +443,9 @@ Configure in `~/.config/gtk-3.0/settings.ini` and `~/.config/gtk-4.0/settings.in
 gtk-theme-name=Colloid
 ```
 
-**Qt Apps:**
+**QT: basic gtk3 based theme**
 
-You have **two** paths for QT theming, first path is to use **gtk3**. To do that, add the following to your niri config.
+If you mostly use gtk apps, you'll probably be happy to just set the QT platform theme to gtk3.
 
 ```kdl
 environment {
@@ -455,28 +455,28 @@ environment {
 }
 ```
 
-**Done** - if you're not happy with this and wish to use Breeze or another QT theme then continue on.
+**QT: better theming**
 
-1. Install qt6ct and qt5ct
+1. Install qt6ct-kde
 
-#### Arch
 ```bash
-sudo pacman -S qt5ct qt6ct
+# Arch
+paru -S qt6ct-kde
 ```
-#### Fedora
-```bash
-sudo dnf install qt5ct qt6ct
-```
+
+*I'm not sure what it is on other distros, but you can manually install via instructions provides on [qt6ct-kde github](https://www.opencode.net/trialuser/qt6ct)
 
 2. **Configure Environment in niri**
 
 ```kdl
   // Add to existing environment block
-  QT_QPA_PLATFORMTHEME "qt5ct"
+  QT_QPA_PLATFORMTHEME "qt6ct"
   QT_QPA_PLATFORMTHEME_QT6 "qt6ct"
 ```
 
 You'll have to restart your session for themes to take effect.
+
+Nevigate to dms settings -> themes & colors -> and click "Apply QT Themes"
 
 ### Terminal Integration
 
