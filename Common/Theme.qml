@@ -759,6 +759,10 @@ Singleton {
         matugenCheck.running = true
         if (typeof SessionData !== "undefined")
         SessionData.isLightModeChanged.connect(root.onLightModeChanged)
+        
+        if (typeof SettingsData !== "undefined" && SettingsData.currentThemeName) {
+            switchTheme(SettingsData.currentThemeName, false)
+        }
     }
 
     FileView {
