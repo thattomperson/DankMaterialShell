@@ -139,7 +139,19 @@ PanelWindow {
 
         property real backgroundTransparency: SettingsData.topBarTransparency
         property bool autoHide: SettingsData.topBarAutoHide
-        property bool reveal: SettingsData.topBarVisible && (!autoHide || topBarMouseArea.containsMouse || hasActivePopout || (SettingsData.topBarOpenOnOverview && CompositorService.isNiri && NiriService.inOverview))
+        property bool reveal: {
+            // Handle Niri overview state first
+            if (CompositorService.isNiri && NiriService.inOverview) {
+                // If Show on Overview is enabled, show the bar
+                if (SettingsData.topBarOpenOnOverview) {
+                    return true
+                }
+                // If Show on Overview is disabled, hide the bar
+                return false
+            }
+            // Normal visibility logic when not in overview
+            return SettingsData.topBarVisible && (!autoHide || topBarMouseArea.containsMouse || hasActivePopout)
+        }
 
         property var notepadInstance: null
         property bool notepadInstanceVisible: notepadInstance?.notepadVisible ?? false
