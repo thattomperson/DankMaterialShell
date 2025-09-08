@@ -89,7 +89,7 @@ Singleton {
     property real cornerRadius: 12
     property bool notificationOverlayEnabled: false
     property bool topBarAutoHide: false
-    property bool topBarOpenOnOverview: true
+    property bool topBarOpenOnOverview: false
     property bool topBarVisible: true
     property real topBarSpacing: 4
     property real topBarBottomGap: 0
@@ -253,7 +253,7 @@ Singleton {
                 cornerRadius = settings.cornerRadius !== undefined ? settings.cornerRadius : 12
                 notificationOverlayEnabled = settings.notificationOverlayEnabled !== undefined ? settings.notificationOverlayEnabled : false
                 topBarAutoHide = settings.topBarAutoHide !== undefined ? settings.topBarAutoHide : false
-                topBarOpenOnOverview = settings.topBarOpenOnOverview !== undefined ? settings.topBarOpenOnOverview : true
+                topBarOpenOnOverview = settings.topBarOpenOnOverview !== undefined ? settings.topBarOpenOnOverview : false
                 topBarVisible = settings.topBarVisible !== undefined ? settings.topBarVisible : true
                 notificationTimeoutLow = settings.notificationTimeoutLow !== undefined ? settings.notificationTimeoutLow : 5000
                 notificationTimeoutNormal = settings.notificationTimeoutNormal !== undefined ? settings.notificationTimeoutNormal : 5000
