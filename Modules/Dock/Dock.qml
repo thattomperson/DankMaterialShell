@@ -13,7 +13,6 @@ PanelWindow {
     WlrLayershell.layer: WlrLayershell.Top
     WlrLayershell.exclusiveZone: -1
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-    WlrLayershell.namespace: "quickshell:dock"
 
     property var modelData
     property var contextMenu
@@ -99,6 +98,7 @@ PanelWindow {
 
             Rectangle {
                 id: dockBackground
+                WlrLayershell.namespace: "quickshell:dock"
                 objectName: "dockBackground"
                 anchors {
                     top: parent.top
