@@ -203,7 +203,7 @@ Item {
                             }
 
                             StyledText {
-                                text: "Allow wttr.in to determine location based on IP address"
+                                text: "Automatically determine your location using your IP address"
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.surfaceVariantText
                                 wrapMode: Text.WordWrap
