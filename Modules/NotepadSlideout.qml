@@ -91,7 +91,7 @@ PanelWindow {
         color: Theme.surfaceContainer
         border.color: Theme.outlineMedium
         border.width: 1
-        opacity: isVisible ? 1 : 0
+        opacity: isVisible ? SettingsData.popupTransparency : 0
         
         Behavior on opacity {
             NumberAnimation {
