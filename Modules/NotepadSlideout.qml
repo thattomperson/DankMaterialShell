@@ -636,61 +636,80 @@ PanelWindow {
         }
     }
 
-    // File save/load functionality
+    property string pendingSaveContent: ""
+    
     function saveToFile(fileUrl) {
         if (!currentTab) return
-        
+
         const content = currentTab.content
-        const cleanPath = fileUrl.toString().replace(/^file:\/\//, '')
-        const escapedContent = content.replace(/'/g, "'\\''")
-        saveProcess.command = ["sh", "-c", "printf '%s' '" + escapedContent + "' > '" + cleanPath + "'"]
-        saveProcess.running = true
-    }
-    
-    function loadFromFile(fileUrl) {
-        const cleanPath = fileUrl.toString().replace(/^file:\/\//, '')
-        
-        loadProcess.command = ["cat", cleanPath]
-        loadProcess.running = true
+        const filePath = fileUrl.toString().replace(/^file:\/\//, '')
+
+        saveFileView.path = ""
+        pendingSaveContent = content
+        saveFileView.path = filePath
+
+        // Use Qt.callLater to ensure path is set before calling setText
+        Qt.callLater(() => {
+            saveFileView.setText(pendingSaveContent)
+        })
+    }    function loadFromFile(fileUrl) {
+        const filePath = fileUrl.toString().replace(/^file:\/\//, '')
+
+        loadFileView.path = ""
+        loadFileView.path = filePath
+
+        // Wait for the file to be loaded before reading
+        if (loadFileView.waitForJob()) {
+            Qt.callLater(() => {
+                const content = loadFileView.text()
+                if (currentTab && content !== undefined && content !== null) {
+                    updateCurrentTab({
+                        content: content,
+                        hasUnsavedChanges: false,
+                        lastSavedContent: content
+                    }, true)
+                    textArea.text = content
+                    root.lastSavedFileContent = content
+                }
+            })
+        } else {
+            console.warn("Notepad: Failed to load file - waitForJob returned false")
+        }
     }
 
-    Process {
-        id: saveProcess
-        
-        onExited: (exitCode) => {
-            if (exitCode === 0 && currentTab) {
+    FileView {
+        id: saveFileView
+        blockWrites: true      
+        preload: false         
+        atomicWrites: true     
+        printErrors: true      
+
+        onSaved: {
+            if (currentTab && saveFileView.path && pendingSaveContent) {
                 updateCurrentTab({
                     hasUnsavedChanges: false,
-                    lastSavedContent: currentTab.content
+                    lastSavedContent: pendingSaveContent
                 }, true)
-                root.lastSavedFileContent = currentTab.content
-            } else {
-                console.warn("Notepad: Failed to save file, exit code:", exitCode)
+                root.lastSavedFileContent = pendingSaveContent
+                pendingSaveContent = ""
             }
+        }
+
+        onSaveFailed: (error) => {
+            console.warn("Notepad: Failed to save file:", error, "Path:", saveFileView.path)
+            pendingSaveContent = ""
         }
     }
 
-    Process {
-        id: loadProcess
-        
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (currentTab) {
-                    updateCurrentTab({
-                        content: text,
-                        hasUnsavedChanges: false,
-                        lastSavedContent: text
-                    }, true)
-                    textArea.text = text
-                    root.lastSavedFileContent = text
-                }
-            }
-        }
-        
-        onExited: (exitCode) => {
-            if (exitCode !== 0) {
-                console.warn("Notepad: Failed to load file, exit code:", exitCode)
-            }
+    FileView {
+        id: loadFileView
+        blockLoading: true     
+        preload: true          
+        atomicWrites: true     
+        printErrors: true      
+
+        onLoadFailed: (error) => {
+            console.warn("Notepad: Failed to load file:", error)
         }
     }
 
@@ -726,7 +745,6 @@ PanelWindow {
             
             saveToFile(fileUrl)
             
-            // Handle pending action after save
             if (root.pendingAction === "new") {
                 Qt.callLater(() => {
                     createNewTab()
