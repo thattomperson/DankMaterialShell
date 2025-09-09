@@ -983,7 +983,7 @@ PanelWindow {
 
                             NotepadButton {
                                 property var notepadInstance: topBarCore.notepadInstance
-                                isActive: notepadInstance ? notepadInstance.notepadVisible : false
+                                isActive: notepadInstance?.notepadVisible ?? false
                                 widgetHeight: root.widgetHeight
                                 barHeight: root.effectiveBarHeight
                                 section: topBarContent.getWidgetSection(parent) || "right"
