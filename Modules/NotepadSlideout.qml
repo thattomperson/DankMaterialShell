@@ -26,12 +26,128 @@ PanelWindow {
     property string pendingAction: ""
     property string lastSavedFileContent: ""
     property bool expandedWidth: false
+    property var currentTab: SessionData.notepadTabs.length > SessionData.notepadCurrentTabIndex ? SessionData.notepadTabs[SessionData.notepadCurrentTabIndex] : null
+    property int nextTabId: Date.now()
     
     function hasFileChanges() {
-        if (!root.currentFileUrl.toString()) {
-            return root.hasUnsavedChanges || SessionData.notepadContent.length > 0
+        if (!currentTab) return false
+        return currentTab.content !== currentTab.lastSavedContent
+    }
+    
+    function getCurrentTabData() {
+        return currentTab || {
+            id: 0,
+            title: "Untitled",
+            content: "",
+            fileName: "",
+            fileUrl: "",
+            lastSavedContent: "",
+            hasUnsavedChanges: false
         }
-        return SessionData.notepadContent !== root.lastSavedFileContent
+    }
+    
+    function updateCurrentTab(properties, saveImmediately = false) {
+        if (!currentTab) return
+        
+        var tabs = [...SessionData.notepadTabs]
+        var tabIndex = SessionData.notepadCurrentTabIndex
+        
+        if (tabIndex >= 0 && tabIndex < tabs.length) {
+            var updatedTab = Object.assign({}, tabs[tabIndex])
+            Object.assign(updatedTab, properties)
+            tabs[tabIndex] = updatedTab
+            SessionData.notepadTabs = tabs
+            
+            if (saveImmediately) {
+                SessionData.saveSettings()
+            }
+        }
+    }
+    
+    function createNewTab() {
+        var newTab = {
+            id: ++nextTabId,
+            title: "Untitled",
+            content: "",
+            fileName: "",
+            fileUrl: "",
+            lastSavedContent: "",
+            hasUnsavedChanges: false
+        }
+        
+        var tabs = [...SessionData.notepadTabs]
+        tabs.push(newTab)
+        SessionData.notepadTabs = tabs
+        SessionData.notepadCurrentTabIndex = tabs.length - 1
+        
+        textArea.text = ""
+        textArea.forceActiveFocus()
+        
+        deferredSaveTimer.restart()
+    }
+    
+    function closeTab(tabIndex) {
+        var tabToClose = SessionData.notepadTabs[tabIndex]
+        var hasChanges = tabToClose && tabToClose.content !== tabToClose.lastSavedContent
+        
+        if (hasChanges) {
+            root.pendingAction = "close_tab_" + tabIndex
+            root.confirmationDialogOpen = true
+            confirmationDialog.open()
+        } else {
+            performCloseTab(tabIndex)
+        }
+    }
+    
+    function performCloseTab(tabIndex) {
+        var tabs = [...SessionData.notepadTabs]
+        
+        if (tabs.length <= 1) {
+            tabs[0] = {
+                id: ++nextTabId,
+                title: "Untitled",
+                content: "",
+                fileName: "",
+                fileUrl: "",
+                lastSavedContent: "",
+                hasUnsavedChanges: false
+            }
+            SessionData.notepadCurrentTabIndex = 0
+        } else {
+            tabs.splice(tabIndex, 1)
+            if (SessionData.notepadCurrentTabIndex >= tabs.length) {
+                SessionData.notepadCurrentTabIndex = tabs.length - 1
+            } else if (SessionData.notepadCurrentTabIndex > tabIndex) {
+                SessionData.notepadCurrentTabIndex -= 1
+            }
+        }
+        
+        SessionData.notepadTabs = tabs
+        
+        Qt.callLater(() => {
+            if (currentTab) {
+                textArea.text = currentTab.content
+            }
+        })
+        
+        deferredSaveTimer.restart()
+    }
+    
+    function switchToTab(tabIndex) {
+        if (tabIndex < 0 || tabIndex >= SessionData.notepadTabs.length) return
+        
+        SessionData.notepadCurrentTabIndex = tabIndex
+        
+        Qt.callLater(() => {
+            if (currentTab) {
+                textArea.text = currentTab.content
+                root.currentFileName = currentTab.fileName
+                root.currentFileUrl = currentTab.fileUrl
+                root.lastSavedFileContent = currentTab.lastSavedContent
+            }
+        })
+        
+        deferredSaveTimer.restart()
     }
 
     function show() {
@@ -119,57 +235,165 @@ PanelWindow {
             spacing: Theme.spacingM
 
             // Header
-            Row {
+            Column {
                 width: parent.width
-                height: 40
+                spacing: Theme.spacingXS
+                
+                // Title row
+                Row {
+                    width: parent.width
+                    height: 32
 
-                Column {
-                    width: parent.width - buttonRow.width
-                    spacing: Theme.spacingXS
-                    anchors.verticalCenter: parent.verticalCenter
-                    
-                    StyledText {
-                        text: qsTr("Notepad")
-                        font.pixelSize: Theme.fontSizeLarge
-                        color: Theme.surfaceText
-                        font.weight: Font.Medium
+                    Column {
+                        width: parent.width - buttonRow.width
+                        spacing: Theme.spacingXS
+                        anchors.verticalCenter: parent.verticalCenter
+                        
+                        StyledText {
+                            text: qsTr("Notepad")
+                            font.pixelSize: Theme.fontSizeLarge
+                            color: Theme.surfaceText
+                            font.weight: Font.Medium
+                        }
                     }
-                    
-                    StyledText {
-                        text: (hasFileChanges() ? "● " : "") + (root.currentFileName || qsTr("Untitled"))
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: hasFileChanges() ? Theme.primary : Theme.surfaceTextMedium
-                        visible: root.currentFileName !== "" || hasFileChanges()
-                        elide: Text.ElideMiddle
-                        maximumLineCount: 1
-                        width: parent.width - Theme.spacingM
+
+                    Row {
+                        id: buttonRow
+                        spacing: Theme.spacingXS
+                        
+                        DankActionButton {
+                            id: expandButton
+                            iconName: root.expandedWidth ? "unfold_less" : "unfold_more"
+                            iconSize: Theme.iconSize - 4
+                            iconColor: Theme.surfaceText
+                            onClicked: root.expandedWidth = !root.expandedWidth
+                            
+                            transform: Rotation {
+                                angle: 90
+                                origin.x: expandButton.width / 2
+                                origin.y: expandButton.height / 2
+                            }
+                        }
+                        
+                        DankActionButton {
+                            id: closeButton
+                            iconName: "close"
+                            iconSize: Theme.iconSize - 4
+                            iconColor: Theme.surfaceText
+                            onClicked: root.hide()
+                        }
                     }
                 }
-
+                
+                // Tab bar
                 Row {
-                    id: buttonRow
+                    width: parent.width
+                    height: 36
                     spacing: Theme.spacingXS
                     
-                    DankActionButton {
-                        id: expandButton
-                        iconName: root.expandedWidth ? "unfold_less" : "unfold_more"
-                        iconSize: Theme.iconSize - 4
-                        iconColor: Theme.surfaceText
-                        onClicked: root.expandedWidth = !root.expandedWidth
+                    ScrollView {
+                        width: parent.width - newTabButton.width - Theme.spacingXS
+                        height: parent.height
+                        clip: true
                         
-                        transform: Rotation {
-                            angle: 90
-                            origin.x: expandButton.width / 2
-                            origin.y: expandButton.height / 2
+                        ScrollBar.horizontal.visible: false
+                        ScrollBar.vertical.visible: false
+                        
+                        Row {
+                            spacing: Theme.spacingXXS
+                            
+                            Repeater {
+                                model: SessionData.notepadTabs
+                                
+                                delegate: Rectangle {
+                                    required property int index
+                                    required property var modelData
+                                    
+                                    readonly property bool isActive: SessionData.notepadCurrentTabIndex === index
+                                    readonly property bool tabHasChanges: modelData.content !== modelData.lastSavedContent
+                                    readonly property bool isHovered: tabMouseArea.containsMouse && !closeMouseArea.containsMouse
+                                    
+                                    width: Math.max(120, Math.min(200, tabContent.implicitWidth + Theme.spacingM * 2))
+                                    height: 32
+                                    radius: Theme.cornerRadius
+                                    color: isActive ? Theme.primaryPressed : isHovered ? Theme.primaryHoverLight : "transparent"
+                                    border.width: isActive ? 0 : 1
+                                    border.color: Theme.outlineMedium
+                                    
+                                    MouseArea {
+                                        id: tabMouseArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        acceptedButtons: Qt.LeftButton
+                                        
+                                        onClicked: switchToTab(index)
+                                    }
+                                    
+                                    Row {
+                                        id: tabContent
+                                        anchors.centerIn: parent
+                                        spacing: Theme.spacingXS
+                                        
+                                        StyledText {
+                                            text: (tabHasChanges ? "● " : "") + (modelData.title || "Untitled")
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            color: isActive ? Theme.primary : Theme.surfaceText
+                                            font.weight: isActive ? Font.Medium : Font.Normal
+                                            elide: Text.ElideMiddle
+                                            maximumLineCount: 1
+                                            anchors.verticalCenter: parent.verticalCenter
+                                        }
+                                        
+                                        Rectangle {
+                                            id: tabCloseButton
+                                            width: 20
+                                            height: 20
+                                            radius: 10
+                                            color: closeMouseArea.containsMouse ? Theme.surfaceTextHover : "transparent"
+                                            visible: SessionData.notepadTabs.length > 1
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            
+                                            DankIcon {
+                                                name: "close"
+                                                size: 14
+                                                color: Theme.surfaceTextMedium
+                                                anchors.centerIn: parent
+                                            }
+                                            
+                                            MouseArea {
+                                                id: closeMouseArea
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                z: 100
+                                                
+                                                onClicked: {
+                                                    closeTab(index)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: Theme.shortDuration
+                                            easing.type: Theme.standardEasing
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     
                     DankActionButton {
-                        id: closeButton
-                        iconName: "close"
+                        id: newTabButton
+                        width: 32
+                        height: 32
+                        iconName: "add"
                         iconSize: Theme.iconSize - 4
                         iconColor: Theme.surfaceText
-                        onClicked: root.hide()
+                        onClicked: createNewTab()
                     }
                 }
             }
@@ -177,7 +401,7 @@ PanelWindow {
             // Text area
             StyledRect {
                 width: parent.width
-                height: parent.height - 140
+                height: parent.height - 180
                 color: Theme.surface
                 border.color: Theme.outlineMedium
                 border.width: 1
@@ -208,26 +432,33 @@ PanelWindow {
                         bottomPadding: Theme.spacingM
                         
                         Component.onCompleted: {
-                            text = SessionData.notepadContent
-                            root.currentFileName = SessionData.notepadCurrentFileName
-                            root.currentFileUrl = SessionData.notepadCurrentFileUrl
-                            root.lastSavedFileContent = SessionData.notepadLastSavedContent
+                            if (currentTab) {
+                                text = currentTab.content
+                                root.currentFileName = currentTab.fileName
+                                root.currentFileUrl = currentTab.fileUrl
+                                root.lastSavedFileContent = currentTab.lastSavedContent
+                            }
                         }
                         
                         Connections {
-                            target: SessionData
-                            function onNotepadContentChanged() {
-                                if (textArea.text !== SessionData.notepadContent) {
-                                    textArea.text = SessionData.notepadContent
+                            target: root
+                            function onCurrentTabChanged() {
+                                if (currentTab && textArea.text !== currentTab.content) {
+                                    textArea.text = currentTab.content
+                                    root.currentFileName = currentTab.fileName
+                                    root.currentFileUrl = currentTab.fileUrl
+                                    root.lastSavedFileContent = currentTab.lastSavedContent
                                 }
                             }
                         }
                         
                         onTextChanged: {
-                            if (text !== SessionData.notepadContent) {
-                                SessionData.notepadContent = text
-                                root.hasUnsavedChanges = true
-                                saveTimer.restart()
+                            if (currentTab && text !== currentTab.content) {
+                                updateCurrentTab({
+                                    content: text,
+                                    hasUnsavedChanges: true
+                                })
+                                autoSaveTimer.restart()
                             }
                         }
                         
@@ -241,8 +472,8 @@ PanelWindow {
                                 switch (event.key) {
                                 case Qt.Key_S:
                                     event.accepted = true
-                                    if (root.currentFileUrl.toString()) {
-                                        saveToFile(root.currentFileUrl)
+                                    if (currentTab && currentTab.fileUrl) {
+                                        saveToFile(currentTab.fileUrl)
                                     } else {
                                         root.fileDialogOpen = true
                                         saveBrowser.open()
@@ -266,16 +497,7 @@ PanelWindow {
                                         root.confirmationDialogOpen = true
                                         confirmationDialog.open()
                                     } else {
-                                        textArea.text = ""
-                                        SessionData.notepadContent = ""
-                                        root.currentFileName = ""
-                                        root.currentFileUrl = ""
-                                        root.hasUnsavedChanges = false
-                                        root.lastSavedFileContent = ""
-                                        SessionData.notepadCurrentFileName = ""
-                                        SessionData.notepadCurrentFileUrl = ""
-                                        SessionData.notepadLastSavedContent = ""
-                                        SessionData.saveSettings()
+                                        createNewTab()
                                     }
                                     break
                                 case Qt.Key_A:
@@ -308,7 +530,7 @@ PanelWindow {
                             iconName: "save"
                             iconSize: Theme.iconSize - 2
                             iconColor: Theme.primary
-                            enabled: hasFileChanges() || SessionData.notepadContent.length > 0
+                            enabled: currentTab && (hasFileChanges() || currentTab.content.length > 0)
                             onClicked: {
                                 root.fileDialogOpen = true
                                 saveBrowser.open()
@@ -353,24 +575,7 @@ PanelWindow {
                             iconName: "note_add"
                             iconSize: Theme.iconSize - 2
                             iconColor: Theme.surfaceText
-                            onClicked: {
-                                if (hasFileChanges()) {
-                                    root.pendingAction = "new"
-                                    root.confirmationDialogOpen = true
-                                    confirmationDialog.open()
-                                } else {
-                                    textArea.text = ""
-                                    SessionData.notepadContent = ""
-                                    root.currentFileName = ""
-                                    root.currentFileUrl = ""
-                                    root.hasUnsavedChanges = false
-                                    root.lastSavedFileContent = ""
-                                    SessionData.notepadCurrentFileName = ""
-                                    SessionData.notepadCurrentFileUrl = ""
-                                    SessionData.notepadLastSavedContent = ""
-                                    SessionData.saveSettings()
-                                }
-                            }
+                            onClicked: createNewTab()
                         }
                         StyledText {
                             anchors.verticalCenter: parent.verticalCenter
@@ -386,7 +591,7 @@ PanelWindow {
                     spacing: Theme.spacingL
 
                     StyledText {
-                        text: SessionData.notepadContent.length > 0 ? qsTr("%1 characters").arg(SessionData.notepadContent.length) : qsTr("Empty")
+                        text: currentTab && currentTab.content.length > 0 ? qsTr("%1 characters").arg(currentTab.content.length) : qsTr("Empty")
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceTextMedium
                     }
@@ -395,14 +600,14 @@ PanelWindow {
                         text: qsTr("Lines: %1").arg(textArea.lineCount)
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceTextMedium
-                        visible: SessionData.notepadContent.length > 0
+                        visible: currentTab && currentTab.content.length > 0
                     }
 
                     StyledText {
-                        text: saveTimer.running ? qsTr("Auto-saving...") : (hasFileChanges() ? qsTr("Unsaved changes") : qsTr("Auto-saved"))
+                        text: autoSaveTimer.running ? qsTr("Auto-saving...") : (hasFileChanges() ? qsTr("Unsaved changes") : qsTr("Auto-saved"))
                         font.pixelSize: Theme.fontSizeSmall
-                        color: hasFileChanges() ? Theme.warning : (saveTimer.running ? Theme.primary : Theme.surfaceTextMedium)
-                        opacity: SessionData.notepadContent.length > 0 ? 1 : 0
+                        color: hasFileChanges() ? Theme.warning : (autoSaveTimer.running ? Theme.primary : Theme.surfaceTextMedium)
+                        opacity: currentTab && currentTab.content.length > 0 ? 1 : 0
                     }
                 }
             }
@@ -410,19 +615,32 @@ PanelWindow {
     }
 
     Timer {
-        id: saveTimer
-        interval: 1000
+        id: autoSaveTimer
+        interval: 2000
+        repeat: false
+        onTriggered: {
+            if (currentTab) {
+                updateCurrentTab({
+                    hasUnsavedChanges: false
+                }, true)
+            }
+        }
+    }
+    
+    Timer {
+        id: deferredSaveTimer
+        interval: 500
         repeat: false
         onTriggered: {
             SessionData.saveSettings()
-            root.hasUnsavedChanges = false
         }
     }
 
-
     // File save/load functionality
     function saveToFile(fileUrl) {
-        const content = SessionData.notepadContent
+        if (!currentTab) return
+        
+        const content = currentTab.content
         const cleanPath = fileUrl.toString().replace(/^file:\/\//, '')
         const escapedContent = content.replace(/'/g, "'\\''")
         saveProcess.command = ["sh", "-c", "printf '%s' '" + escapedContent + "' > '" + cleanPath + "'"]
@@ -440,13 +658,12 @@ PanelWindow {
         id: saveProcess
         
         onExited: (exitCode) => {
-            if (exitCode === 0) {
-                root.hasUnsavedChanges = false
-                root.lastSavedFileContent = SessionData.notepadContent
-                SessionData.notepadCurrentFileName = root.currentFileName
-                SessionData.notepadCurrentFileUrl = root.currentFileUrl.toString()
-                SessionData.notepadLastSavedContent = root.lastSavedFileContent
-                SessionData.saveSettings()
+            if (exitCode === 0 && currentTab) {
+                updateCurrentTab({
+                    hasUnsavedChanges: false,
+                    lastSavedContent: currentTab.content
+                }, true)
+                root.lastSavedFileContent = currentTab.content
             } else {
                 console.warn("Notepad: Failed to save file, exit code:", exitCode)
             }
@@ -458,13 +675,15 @@ PanelWindow {
         
         stdout: StdioCollector {
             onStreamFinished: {
-                SessionData.notepadContent = text
-                root.hasUnsavedChanges = false
-                root.lastSavedFileContent = text
-                SessionData.notepadCurrentFileName = root.currentFileName
-                SessionData.notepadCurrentFileUrl = root.currentFileUrl.toString()
-                SessionData.notepadLastSavedContent = text
-                SessionData.saveSettings()
+                if (currentTab) {
+                    updateCurrentTab({
+                        content: text,
+                        hasUnsavedChanges: false,
+                        lastSavedContent: text
+                    }, true)
+                    textArea.text = text
+                    root.lastSavedFileContent = text
+                }
             }
         }
         
@@ -484,7 +703,7 @@ PanelWindow {
         fileExtensions: ["*.txt", "*.md", "*.*"]
         allowStacking: true
         saveMode: true
-        defaultFileName: root.currentFileName || "note.txt"
+        defaultFileName: (currentTab && currentTab.fileName) || "note.txt"
         
         WlrLayershell.layer: WlrLayershell.Overlay
         
@@ -497,26 +716,30 @@ PanelWindow {
             root.currentFileName = fileName
             root.currentFileUrl = fileUrl
             
+            if (currentTab) {
+                updateCurrentTab({
+                    title: fileName,
+                    fileName: fileName,
+                    fileUrl: fileUrl
+                })
+            }
+            
             saveToFile(fileUrl)
             
             // Handle pending action after save
             if (root.pendingAction === "new") {
                 Qt.callLater(() => {
-                    textArea.text = ""
-                    SessionData.notepadContent = ""
-                    root.currentFileName = ""
-                    root.currentFileUrl = ""
-                    root.hasUnsavedChanges = false
-                    root.lastSavedFileContent = ""
-                    SessionData.notepadCurrentFileName = ""
-                    SessionData.notepadCurrentFileUrl = ""
-                    SessionData.notepadLastSavedContent = ""
-                    SessionData.saveSettings()
+                    createNewTab()
                 })
             } else if (root.pendingAction === "open") {
                 Qt.callLater(() => {
                     root.fileDialogOpen = true
                     loadBrowser.open()
+                })
+            } else if (root.pendingAction.startsWith("close_tab_")) {
+                Qt.callLater(() => {
+                    var tabIndex = parseInt(root.pendingAction.split("_")[2])
+                    performCloseTab(tabIndex)
                 })
             }
             root.pendingAction = ""
@@ -548,6 +771,14 @@ PanelWindow {
             
             root.currentFileName = fileName
             root.currentFileUrl = fileUrl
+            
+            if (currentTab) {
+                updateCurrentTab({
+                    title: fileName,
+                    fileName: fileName,
+                    fileUrl: fileUrl
+                })
+            }
             
             loadFromFile(fileUrl)
             close()
@@ -604,6 +835,8 @@ PanelWindow {
                             StyledText {
                                 text: root.pendingAction === "new" ? 
                                       qsTr("You have unsaved changes. Save before creating a new file?") :
+                                      root.pendingAction.startsWith("close_tab_") ?
+                                      qsTr("You have unsaved changes. Save before closing this tab?") :
                                       qsTr("You have unsaved changes. Save before opening a file?")
                                 font.pixelSize: Theme.fontSizeMedium
                                 color: Theme.surfaceTextMedium
@@ -658,19 +891,13 @@ PanelWindow {
                                         confirmationDialog.close()
                                         root.confirmationDialogOpen = false
                                         if (root.pendingAction === "new") {
-                                            textArea.text = ""
-                                            SessionData.notepadContent = ""
-                                            root.currentFileName = ""
-                                            root.currentFileUrl = ""
-                                            root.hasUnsavedChanges = false
-                                            root.lastSavedFileContent = ""
-                                            SessionData.notepadCurrentFileName = ""
-                                            SessionData.notepadCurrentFileUrl = ""
-                                            SessionData.notepadLastSavedContent = ""
-                                            SessionData.saveSettings()
+                                            createNewTab()
                                         } else if (root.pendingAction === "open") {
                                             root.fileDialogOpen = true
                                             loadBrowser.open()
+                                        } else if (root.pendingAction.startsWith("close_tab_")) {
+                                            var tabIndex = parseInt(root.pendingAction.split("_")[2])
+                                            performCloseTab(tabIndex)
                                         }
                                         root.pendingAction = ""
                                     }

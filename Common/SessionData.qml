@@ -48,6 +48,8 @@ Singleton {
     property string notepadCurrentFileName: ""
     property string notepadCurrentFileUrl: ""
     property string notepadLastSavedContent: ""
+    property var notepadTabs: []
+    property int notepadCurrentTabIndex: 0
 
     Component.onCompleted: {
         loadSettings()
@@ -111,6 +113,36 @@ Singleton {
                 notepadCurrentFileName = settings.notepadCurrentFileName !== undefined ? settings.notepadCurrentFileName : ""
                 notepadCurrentFileUrl = settings.notepadCurrentFileUrl !== undefined ? settings.notepadCurrentFileUrl : ""
                 notepadLastSavedContent = settings.notepadLastSavedContent !== undefined ? settings.notepadLastSavedContent : ""
+                notepadTabs = settings.notepadTabs !== undefined ? settings.notepadTabs : []
+                notepadCurrentTabIndex = settings.notepadCurrentTabIndex !== undefined ? settings.notepadCurrentTabIndex : 0
+                
+                // Migrate legacy single notepad to tabs if needed
+                if (notepadTabs.length === 0 && (notepadContent || notepadCurrentFileName)) {
+                    notepadTabs = [{
+                        id: Date.now(),
+                        title: notepadCurrentFileName || "Untitled",
+                        content: notepadContent,
+                        fileName: notepadCurrentFileName,
+                        fileUrl: notepadCurrentFileUrl,
+                        lastSavedContent: notepadLastSavedContent,
+                        hasUnsavedChanges: false
+                    }]
+                    notepadCurrentTabIndex = 0
+                }
+                
+                // Ensure at least one tab exists
+                if (notepadTabs.length === 0) {
+                    notepadTabs = [{
+                        id: Date.now(),
+                        title: "Untitled",
+                        content: "",
+                        fileName: "",
+                        fileUrl: "",
+                        lastSavedContent: "",
+                        hasUnsavedChanges: false
+                    }]
+                    notepadCurrentTabIndex = 0
+                }
             }
         } catch (e) {
 
@@ -150,7 +182,9 @@ Singleton {
                                                 "notepadContent": notepadContent,
                                                 "notepadCurrentFileName": notepadCurrentFileName,
                                                 "notepadCurrentFileUrl": notepadCurrentFileUrl,
-                                                "notepadLastSavedContent": notepadLastSavedContent
+                                                "notepadLastSavedContent": notepadLastSavedContent,
+                                                "notepadTabs": notepadTabs,
+                                                "notepadCurrentTabIndex": notepadCurrentTabIndex
                                             }, null, 2))
     }
 
