@@ -15,17 +15,17 @@ pragma ComponentBehavior: Bound
 PanelWindow {
     id: root
 
-    property bool notepadVisible: false
+    property bool isVisible: false
     property bool fileDialogOpen: false
     property string currentFileName: ""
     property bool hasUnsavedChanges: false
     property url currentFileUrl
     property var targetScreen: null
     property var modelData: null
-    property bool animatingOut: false
     property bool confirmationDialogOpen: false
     property string pendingAction: ""
     property string lastSavedFileContent: ""
+    property bool expandedWidth: false
     
     function hasFileChanges() {
         if (!root.currentFileUrl.toString()) {
@@ -35,68 +35,81 @@ PanelWindow {
     }
 
     function show() {
-        notepadVisible = true
-        Qt.callLater(() => textArea.forceActiveFocus())
+        visible = true
+        isVisible = true
+        textArea.forceActiveFocus()
     }
 
     function hide() {
-        animatingOut = true
-        notepadVisible = false
-        hideTimer.start()
+        isVisible = false
     }
 
     function toggle() {
-        if (notepadVisible) {
+        if (isVisible) {
             hide()
         } else {
             show()
         }
     }
 
-    visible: notepadVisible || animatingOut
+    visible: isVisible
     screen: modelData
     
     anchors.top: true
     anchors.bottom: true
     anchors.right: true
     
-    implicitWidth: 480
+    implicitWidth: 960
     implicitHeight: modelData ? modelData.height : 800
     
     color: "transparent"
     
-    WlrLayershell.layer: WlrLayershell.Overlay
+    WlrLayershell.layer: WlrLayershell.Top
     WlrLayershell.exclusiveZone: 0
-    WlrLayershell.keyboardFocus: (notepadVisible && !animatingOut) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-
-    // Background click to close
-    MouseArea {
-        anchors.fill: parent
-        enabled: notepadVisible && !animatingOut
-        onClicked: mouse => {
-            var localPos = mapToItem(contentRect, mouse.x, mouse.y)
-            if (localPos.x < 0 || localPos.x > contentRect.width || localPos.y < 0 || localPos.y > contentRect.height) {
-                hide()
-            }
-        }
-    }
+    WlrLayershell.keyboardFocus: isVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     StyledRect {
         id: contentRect
         
-        anchors.fill: parent
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        width: expandedWidth ? 960 : 480
         color: Theme.surfaceContainer
         border.color: Theme.outlineMedium
         border.width: 1
+        opacity: isVisible ? SettingsData.popupTransparency : 0
+        
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 700
+                easing.type: Easing.OutCubic
+            }
+        }
         
         transform: Translate {
-            x: notepadVisible ? 0 : 480
+            id: slideTransform
+            x: isVisible ? 0 : contentRect.width
             
             Behavior on x {
                 NumberAnimation {
-                    duration: Theme.longDuration
-                    easing.type: Theme.emphasizedEasing
+                    id: slideAnimation
+                    duration: 450
+                    easing.type: Easing.OutCubic
+                    
+                    onRunningChanged: {
+                        if (!running && !isVisible) {
+                            root.visible = false
+                        }
+                    }
                 }
+            }
+        }
+        
+        Behavior on width {
+            NumberAnimation {
+                duration: 250
+                easing.type: Easing.OutCubic
             }
         }
 
@@ -111,7 +124,7 @@ PanelWindow {
                 height: 40
 
                 Column {
-                    width: parent.width - closeButton.width
+                    width: parent.width - buttonRow.width
                     spacing: Theme.spacingXS
                     anchors.verticalCenter: parent.verticalCenter
                     
@@ -133,12 +146,31 @@ PanelWindow {
                     }
                 }
 
-                DankActionButton {
-                    id: closeButton
-                    iconName: "close"
-                    iconSize: Theme.iconSize - 4
-                    iconColor: Theme.surfaceText
-                    onClicked: root.hide()
+                Row {
+                    id: buttonRow
+                    spacing: Theme.spacingXS
+                    
+                    DankActionButton {
+                        id: expandButton
+                        iconName: root.expandedWidth ? "unfold_less" : "unfold_more"
+                        iconSize: Theme.iconSize - 4
+                        iconColor: Theme.surfaceText
+                        onClicked: root.expandedWidth = !root.expandedWidth
+                        
+                        transform: Rotation {
+                            angle: 90
+                            origin.x: expandButton.width / 2
+                            origin.y: expandButton.height / 2
+                        }
+                    }
+                    
+                    DankActionButton {
+                        id: closeButton
+                        iconName: "close"
+                        iconSize: Theme.iconSize - 4
+                        iconColor: Theme.surfaceText
+                        onClicked: root.hide()
+                    }
                 }
             }
 
@@ -165,7 +197,7 @@ PanelWindow {
                         selectByMouse: true
                         selectByKeyboard: true
                         wrapMode: TextArea.Wrap
-                        focus: root.notepadVisible
+                        focus: root.isVisible
                         activeFocusOnTab: true
                         textFormat: TextEdit.PlainText
                         persistentSelection: true
@@ -387,14 +419,6 @@ PanelWindow {
         }
     }
 
-    Timer {
-        id: hideTimer
-        interval: Theme.longDuration
-        repeat: false
-        onTriggered: {
-            animatingOut = false
-        }
-    }
 
     // File save/load functionality
     function saveToFile(fileUrl) {
