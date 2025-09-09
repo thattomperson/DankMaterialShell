@@ -64,22 +64,9 @@ PanelWindow {
     
     color: "transparent"
     
-    WlrLayershell.layer: WlrLayershell.Overlay
+    WlrLayershell.layer: WlrLayershell.Top
     WlrLayershell.exclusiveZone: 0
     WlrLayershell.keyboardFocus: isVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-    
-
-    // Background click to close
-    MouseArea {
-        anchors.fill: parent
-        enabled: isVisible
-        onClicked: mouse => {
-            var localPos = mapToItem(contentRect, mouse.x, mouse.y)
-            if (localPos.x < 0 || localPos.x > contentRect.width || localPos.y < 0 || localPos.y > contentRect.height) {
-                hide()
-            }
-        }
-    }
 
     StyledRect {
         id: contentRect
