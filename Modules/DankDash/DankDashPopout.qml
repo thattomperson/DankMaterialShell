@@ -147,7 +147,7 @@ DankPopout {
                     onActionTriggered: function(index) {
                         let settingsIndex = SettingsData.weatherEnabled ? 3 : 2
                         if (index === settingsIndex) {
-                            root.close()
+                            dashVisible = false
                             settingsModal.show()
                         }
                     }
