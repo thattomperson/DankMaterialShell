@@ -685,7 +685,7 @@ PanelWindow {
                                 onClockClicked: {
                                     dankDashPopoutLoader.active = true
                                     if (dankDashPopoutLoader.item) {
-                                        dankDashPopoutLoader.item.calendarVisible = !dankDashPopoutLoader.item.calendarVisible
+                                        dankDashPopoutLoader.item.dashVisible = !dankDashPopoutLoader.item.dashVisible
                                         dankDashPopoutLoader.item.currentTabIndex = 0 // Overview tab
                                     }
                                 }
@@ -708,7 +708,7 @@ PanelWindow {
                                 onClicked: {
                                     dankDashPopoutLoader.active = true
                                     if (dankDashPopoutLoader.item) {
-                                        dankDashPopoutLoader.item.calendarVisible = !dankDashPopoutLoader.item.calendarVisible
+                                        dankDashPopoutLoader.item.dashVisible = !dankDashPopoutLoader.item.dashVisible
                                         dankDashPopoutLoader.item.currentTabIndex = 1 // Media tab
                                     }
                                 }
@@ -730,7 +730,7 @@ PanelWindow {
                                 onClicked: {
                                     dankDashPopoutLoader.active = true
                                     if (dankDashPopoutLoader.item) {
-                                        dankDashPopoutLoader.item.calendarVisible = !dankDashPopoutLoader.item.calendarVisible
+                                        dankDashPopoutLoader.item.dashVisible = !dankDashPopoutLoader.item.dashVisible
                                         dankDashPopoutLoader.item.currentTabIndex = 2 // Weather tab
                                     }
                                 }

@@ -12,7 +12,7 @@ import qs.Modules.DankDash
 DankPopout {
     id: root
 
-    property bool calendarVisible: false
+    property bool dashVisible: false
     property string triggerSection: "center"
     property var triggerScreen: null
     property int currentTabIndex: 0
@@ -38,11 +38,11 @@ DankPopout {
     triggerWidth: 80
     positioning: "center"
     screen: triggerScreen
-    shouldBeVisible: calendarVisible
+    shouldBeVisible: dashVisible
     visible: shouldBeVisible
 
-    onCalendarVisibleChanged: {
-        if (calendarVisible) {
+    onDashVisibleChanged: {
+        if (dashVisible) {
             open()
         } else {
             close()
@@ -50,7 +50,7 @@ DankPopout {
     }
 
     onBackgroundClicked: {
-        calendarVisible = false
+        dashVisible = false
     }
 
     content: Component {
@@ -70,7 +70,7 @@ DankPopout {
 
             Keys.onPressed: function(event) {
                 if (event.key === Qt.Key_Escape) {
-                    root.close()
+                    root.dashVisible = false
                     event.accepted = true
                 }
             }

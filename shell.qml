@@ -72,11 +72,6 @@ ShellRoot {
         sourceComponent: Component {
             DankDashPopout {
                 id: dankDashPopout
-                
-                // Ensure it starts invisible
-                Component.onCompleted: {
-                    calendarVisible = false
-                }
             }
         }
     }
@@ -408,7 +403,7 @@ ShellRoot {
                     break
                 }
                 dankDashPopoutLoader.item.setTriggerPosition(Screen.width / 2, Theme.barHeight + Theme.spacingS, 100, "center", Screen)
-                dankDashPopoutLoader.item.calendarVisible = true
+                dankDashPopoutLoader.item.dashVisible = true
                 return "DASH_OPEN_SUCCESS"
             }
             return "DASH_OPEN_FAILED"
@@ -416,7 +411,7 @@ ShellRoot {
 
         function close(): string {
             if (dankDashPopoutLoader.item) {
-                dankDashPopoutLoader.item.calendarVisible = false
+                dankDashPopoutLoader.item.dashVisible = false
                 return "DASH_CLOSE_SUCCESS"
             }
             return "DASH_CLOSE_FAILED"
@@ -425,8 +420,8 @@ ShellRoot {
         function toggle(tab: string): string {
             dankDashPopoutLoader.active = true
             if (dankDashPopoutLoader.item) {
-                if (dankDashPopoutLoader.item.calendarVisible) {
-                    dankDashPopoutLoader.item.calendarVisible = false
+                if (dankDashPopoutLoader.item.dashVisible) {
+                    dankDashPopoutLoader.item.dashVisible = false
                 } else {
                     switch (tab.toLowerCase()) {
                     case "media":
@@ -440,7 +435,7 @@ ShellRoot {
                         break
                     }
                     dankDashPopoutLoader.item.setTriggerPosition(Screen.width / 2, Theme.barHeight + Theme.spacingS, 100, "center", Screen)
-                    dankDashPopoutLoader.item.calendarVisible = true
+                    dankDashPopoutLoader.item.dashVisible = true
                 }
                 return "DASH_TOGGLE_SUCCESS"
             }
