@@ -59,6 +59,13 @@ Singleton {
 
     Component.onCompleted: {
         Quickshell.execDetached(["mkdir", "-p", stateDir])
+        matugenCheck.running = true
+        if (typeof SessionData !== "undefined")
+            SessionData.isLightModeChanged.connect(root.onLightModeChanged)
+        
+        if (typeof SettingsData !== "undefined" && SettingsData.currentThemeName) {
+            switchTheme(SettingsData.currentThemeName, false)
+        }
     }
 
     function getMatugenColor(path, fallback) {
@@ -756,16 +763,6 @@ Singleton {
                     ToastService.showError("Failed to apply Qt colors: " + qtStderr.text)
                 }
             }
-        }
-    }
-
-    Component.onCompleted: {
-        matugenCheck.running = true
-        if (typeof SessionData !== "undefined")
-        SessionData.isLightModeChanged.connect(root.onLightModeChanged)
-        
-        if (typeof SettingsData !== "undefined" && SettingsData.currentThemeName) {
-            switchTheme(SettingsData.currentThemeName, false)
         }
     }
 
