@@ -22,21 +22,21 @@ Item {
             height: 180
         }
 
-        // UserInfo - top middle (extend to weather)
-        UserInfoCard {
-            x: parent.width * 0.25 - Theme.spacingM
-            y: 0
-            width: SettingsData.weatherEnabled ? parent.width * 0.5 : parent.width * 0.75 + Theme.spacingM
-            height: 100
-        }
-
-        // Weather - top right (narrower)
+        // Weather - top middle-left (narrower)
         WeatherOverviewCard {
-            x: SettingsData.weatherEnabled ? parent.width * 0.75 : 0
+            x: SettingsData.weatherEnabled ? parent.width * 0.25 - Theme.spacingM : 0
             y: 0
             width: SettingsData.weatherEnabled ? parent.width * 0.25 : 0
             height: 100
             visible: SettingsData.weatherEnabled
+        }
+
+        // UserInfo - top middle-right (extend when weather disabled)
+        UserInfoCard {
+            x: SettingsData.weatherEnabled ? parent.width * 0.5 : parent.width * 0.25 - Theme.spacingM
+            y: 0
+            width: SettingsData.weatherEnabled ? parent.width * 0.5 : parent.width * 0.75
+            height: 100
         }
 
         // SystemMonitor - middle left (narrow and shorter)

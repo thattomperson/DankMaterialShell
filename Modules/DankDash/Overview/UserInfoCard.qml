@@ -8,7 +8,9 @@ Card {
     id: root
 
     Row {
-        anchors.centerIn: parent
+        anchors.left: parent.left
+        anchors.leftMargin: Theme.spacingL
+        anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.spacingL
 
         Item {
