@@ -57,6 +57,10 @@ Singleton {
         return path + "/dankshell"
     }
 
+    Component.onCompleted: {
+        Quickshell.execDetached(["mkdir", "-p", stateDir])
+    }
+
     function getMatugenColor(path, fallback) {
         colorUpdateTrigger
         const colorMode = (typeof SessionData !== "undefined" && SessionData.isLightMode) ? "light" : "dark"
