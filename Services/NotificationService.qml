@@ -341,9 +341,6 @@ Singleton {
         readonly property string summary: notification.summary
         readonly property string body: notification.body
         readonly property string htmlBody: {
-            if (!popup && !root.popupsDisabled) {
-                return ""
-            }
             if (body && (body.includes('<') && body.includes('>'))) {
                 return body
             }
