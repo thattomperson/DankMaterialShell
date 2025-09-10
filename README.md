@@ -18,7 +18,7 @@ A modern Wayland desktop shell built with [Quickshell](https://quickshell.org/) 
 <div align="center">
 <div style="max-width: 700px; margin: 0 auto;">
 
-https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
+https://github.com/user-attachments/assets/fd619c0e-6edc-457e-b3d6-5a5c3bae7173
 
 </div>
 </div>
@@ -33,9 +33,17 @@ https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
 
 <img src="https://github.com/user-attachments/assets/203a9678-c3b7-4720-bb97-853a511ac5c8" width="600" alt="DankMaterialShell Desktop" />
 
+### Dashboard
+
+<img width="600" alt="DankDash" src="https://github.com/user-attachments/assets/a937cf35-a43b-4558-8c39-5694ff5fcac4" />
+
 ### Application Launcher
 
 <img src="https://github.com/user-attachments/assets/2da00ea1-8921-4473-a2a9-44a44535a822" width="450" alt="Spotlight Launcher" />
+
+### Control Center
+
+<img width="600" alt="Control Center" src="https://github.com/user-attachments/assets/98889bd8-55d2-44c7-b278-75ca49c596fa" />
 
 ### System Monitor
 
@@ -51,7 +59,7 @@ https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
 
 ### Dynamic Theming
 
-<img src="https://github.com/user-attachments/assets/1994e616-f9d9-424a-9f60-6f06708bf12e" width="700" alt="Auto Theme" />
+<img src="https://github.com/user-attachments/assets/a81a68e3-4f7e-4246-8199-0fef1013d4cf" width="700" alt="Auto Theme" />
 
 ### Notification Center
 
