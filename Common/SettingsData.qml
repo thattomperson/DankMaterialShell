@@ -50,6 +50,7 @@ Singleton {
     property int maxWorkspaceIcons: 3
     property bool workspacesPerMonitor: true
     property var workspaceNameIcons: ({})
+    property bool waveProgressEnabled: true
     property bool clockCompactMode: false
     property bool focusedWindowCompactMode: false
     property bool runningAppsCompactMode: true
@@ -205,6 +206,7 @@ Singleton {
                 maxWorkspaceIcons = settings.maxWorkspaceIcons !== undefined ? settings.maxWorkspaceIcons : 3
                 workspaceNameIcons = settings.workspaceNameIcons !== undefined ? settings.workspaceNameIcons : ({})
                 workspacesPerMonitor = settings.workspacesPerMonitor !== undefined ? settings.workspacesPerMonitor : true
+                waveProgressEnabled = settings.waveProgressEnabled !== undefined ? settings.waveProgressEnabled : true
                 clockCompactMode = settings.clockCompactMode !== undefined ? settings.clockCompactMode : false
                 focusedWindowCompactMode = settings.focusedWindowCompactMode !== undefined ? settings.focusedWindowCompactMode : false
                 runningAppsCompactMode = settings.runningAppsCompactMode !== undefined ? settings.runningAppsCompactMode : true
@@ -320,6 +322,7 @@ Singleton {
                                                 "maxWorkspaceIcons": maxWorkspaceIcons,
                                                 "workspacesPerMonitor": workspacesPerMonitor,
                                                 "workspaceNameIcons": workspaceNameIcons,
+                                                "waveProgressEnabled": waveProgressEnabled,
                                                 "clockCompactMode": clockCompactMode,
                                                 "focusedWindowCompactMode": focusedWindowCompactMode,
                                                 "runningAppsCompactMode": runningAppsCompactMode,
@@ -388,6 +391,11 @@ Singleton {
 
     function setWorkspacesPerMonitor(enabled) {
         workspacesPerMonitor = enabled
+        saveSettings()
+    }
+
+    function setWaveProgressEnabled(enabled) {
+        waveProgressEnabled = enabled
         saveSettings()
     }
 

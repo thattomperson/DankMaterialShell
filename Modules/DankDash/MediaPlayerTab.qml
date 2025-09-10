@@ -42,10 +42,12 @@ Item {
     Timer {
         id: positionTimer
         interval: 300
-        running: activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing && !progressSliderArea.isSeeking
+        running: activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing && !isSeeking
         repeat: true
         onTriggered: activePlayer && activePlayer.positionSupported && activePlayer.positionChanged()
     }
+
+    property bool isSeeking: false
 
     Timer {
         id: cleanupTimer
@@ -369,106 +371,173 @@ Item {
                     }
                 }
 
-                // Progress Bar
-                Item {
-                    id: progressSlider
-                    width: parent.width
+                Loader {
+                    width: parent.width + 4
                     height: 20
+                    x: -2
                     visible: activePlayer?.length > 0
+                    sourceComponent: SettingsData.waveProgressEnabled ? waveProgressComponent : flatProgressComponent
 
-                    property real value: ratio
-                    property real lineWidth: 2.5
-                    property color trackColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.40)
-                    property color fillColor: Theme.primary
-                    property color playheadColor: Theme.primary
-                    readonly property real midY: height / 2
+                    Component {
+                        id: waveProgressComponent
 
-                    // Background track
-                    Rectangle {
-                        width: parent.width
-                        height: progressSlider.lineWidth
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: progressSlider.trackColor
-                        radius: height / 2
-                    }
+                        M3WaveProgress {
+                            value: ratio
+                            isPlaying: activePlayer?.playbackState === MprisPlaybackState.Playing
 
-                    // Filled portion
-                    Rectangle {
-                        width: Math.max(0, Math.min(parent.width, parent.width * progressSlider.value))
-                        height: progressSlider.lineWidth
-                        anchors.left: parent.left
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: progressSlider.fillColor
-                        radius: height / 2
-                        Behavior on width { NumberAnimation { duration: 80 } }
-                    }
+                            MouseArea {
+                                id: progressSliderArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                enabled: activePlayer ? (activePlayer.canSeek && activePlayer.length > 0) : false
 
-                    // Playhead
-                    Rectangle {
-                        id: playhead
-                        width: 2.5
-                        height: Math.max(progressSlider.lineWidth + 8, 12)
-                        radius: width / 2
-                        color: progressSlider.playheadColor
-                        x: Math.max(0, Math.min(progressSlider.width, progressSlider.width * progressSlider.value)) - width / 2
-                        y: progressSlider.midY - height / 2
-                        z: 3
-                        Behavior on x { NumberAnimation { duration: 80 } }
-                    }
+                                property real pendingSeekPosition: -1
 
-                    MouseArea {
-                        id: progressSliderArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        enabled: activePlayer ? (activePlayer.canSeek && activePlayer.length > 0) : false
+                                Timer {
+                                    id: seekDebounceTimer
+                                    interval: 150
+                                    onTriggered: {
+                                        if (progressSliderArea.pendingSeekPosition >= 0 && activePlayer?.canSeek && activePlayer?.length > 0) {
+                                            const clamped = Math.min(progressSliderArea.pendingSeekPosition, activePlayer.length * 0.99)
+                                            activePlayer.position = clamped
+                                            progressSliderArea.pendingSeekPosition = -1
+                                        }
+                                    }
+                                }
 
-                        property bool isSeeking: false
-                        property real pendingSeekPosition: -1
-
-                        Timer {
-                            id: seekDebounceTimer
-                            interval: 150
-                            onTriggered: {
-                                if (progressSliderArea.pendingSeekPosition >= 0 && activePlayer?.canSeek && activePlayer?.length > 0) {
-                                    const clamped = Math.min(progressSliderArea.pendingSeekPosition, activePlayer.length * 0.99)
-                                    activePlayer.position = clamped
-                                    progressSliderArea.pendingSeekPosition = -1
+                                onPressed: (mouse) => {
+                                    root.isSeeking = true
+                                    if (activePlayer?.length > 0 && activePlayer?.canSeek) {
+                                        const r = Math.max(0, Math.min(1, mouse.x / parent.width))
+                                        pendingSeekPosition = r * activePlayer.length
+                                        displayPosition = pendingSeekPosition
+                                        seekDebounceTimer.restart()
+                                    }
+                                }
+                                onReleased: {
+                                    root.isSeeking = false
+                                    seekDebounceTimer.stop()
+                                    if (pendingSeekPosition >= 0 && activePlayer?.canSeek && activePlayer?.length > 0) {
+                                        const clamped = Math.min(pendingSeekPosition, activePlayer.length * 0.99)
+                                        activePlayer.position = clamped
+                                        pendingSeekPosition = -1
+                                    }
+                                    displayPosition = Qt.binding(() => currentPosition)
+                                }
+                                onPositionChanged: (mouse) => {
+                                    if (pressed && root.isSeeking && activePlayer?.length > 0 && activePlayer?.canSeek) {
+                                        const r = Math.max(0, Math.min(1, mouse.x / parent.width))
+                                        pendingSeekPosition = r * activePlayer.length
+                                        displayPosition = pendingSeekPosition
+                                        seekDebounceTimer.restart()
+                                    }
+                                }
+                                onClicked: (mouse) => {
+                                    if (activePlayer?.length > 0 && activePlayer?.canSeek) {
+                                        const r = Math.max(0, Math.min(1, mouse.x / parent.width))
+                                        activePlayer.position = r * activePlayer.length
+                                    }
                                 }
                             }
                         }
+                    }
 
-                        onPressed: (mouse) => {
-                            isSeeking = true
-                            if (activePlayer?.length > 0 && activePlayer?.canSeek) {
-                                const r = Math.max(0, Math.min(1, mouse.x / progressSlider.width))
-                                pendingSeekPosition = r * activePlayer.length
-                                displayPosition = pendingSeekPosition
-                                seekDebounceTimer.restart()
+                    Component {
+                        id: flatProgressComponent
+
+                        Item {
+                            property real value: ratio
+                            property real lineWidth: 2.5
+                            property color trackColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.40)
+                            property color fillColor: Theme.primary
+                            property color playheadColor: Theme.primary
+                            readonly property real midY: height / 2
+
+                            Rectangle {
+                                width: parent.width
+                                height: parent.lineWidth
+                                anchors.verticalCenter: parent.verticalCenter
+                                color: parent.trackColor
+                                radius: height / 2
                             }
-                        }
-                        onReleased: {
-                            isSeeking = false
-                            seekDebounceTimer.stop()
-                            if (pendingSeekPosition >= 0 && activePlayer?.canSeek && activePlayer?.length > 0) {
-                                const clamped = Math.min(pendingSeekPosition, activePlayer.length * 0.99)
-                                activePlayer.position = clamped
-                                pendingSeekPosition = -1
+
+                            Rectangle {
+                                width: Math.max(0, Math.min(parent.width, parent.width * parent.value))
+                                height: parent.lineWidth
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                color: parent.fillColor
+                                radius: height / 2
+                                Behavior on width { NumberAnimation { duration: 80 } }
                             }
-                            displayPosition = Qt.binding(() => currentPosition)
-                        }
-                        onPositionChanged: (mouse) => {
-                            if (pressed && isSeeking && activePlayer?.length > 0 && activePlayer?.canSeek) {
-                                const r = Math.max(0, Math.min(1, mouse.x / progressSlider.width))
-                                pendingSeekPosition = r * activePlayer.length
-                                displayPosition = pendingSeekPosition
-                                seekDebounceTimer.restart()
+
+                            Rectangle {
+                                id: playhead
+                                width: 2.5
+                                height: Math.max(parent.lineWidth + 8, 12)
+                                radius: width / 2
+                                color: parent.playheadColor
+                                x: Math.max(0, Math.min(parent.width, parent.width * parent.value)) - width / 2
+                                y: parent.midY - height / 2
+                                z: 3
+                                Behavior on x { NumberAnimation { duration: 80 } }
                             }
-                        }
-                        onClicked: (mouse) => {
-                            if (activePlayer?.length > 0 && activePlayer?.canSeek) {
-                                const r = Math.max(0, Math.min(1, mouse.x / progressSlider.width))
-                                activePlayer.position = r * activePlayer.length
+
+                            MouseArea {
+                                id: progressSliderArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                enabled: activePlayer ? (activePlayer.canSeek && activePlayer.length > 0) : false
+
+                                property real pendingSeekPosition: -1
+
+                                Timer {
+                                    id: seekDebounceTimer
+                                    interval: 150
+                                    onTriggered: {
+                                        if (progressSliderArea.pendingSeekPosition >= 0 && activePlayer?.canSeek && activePlayer?.length > 0) {
+                                            const clamped = Math.min(progressSliderArea.pendingSeekPosition, activePlayer.length * 0.99)
+                                            activePlayer.position = clamped
+                                            progressSliderArea.pendingSeekPosition = -1
+                                        }
+                                    }
+                                }
+
+                                onPressed: (mouse) => {
+                                    root.isSeeking = true
+                                    if (activePlayer?.length > 0 && activePlayer?.canSeek) {
+                                        const r = Math.max(0, Math.min(1, mouse.x / parent.width))
+                                        pendingSeekPosition = r * activePlayer.length
+                                        displayPosition = pendingSeekPosition
+                                        seekDebounceTimer.restart()
+                                    }
+                                }
+                                onReleased: {
+                                    root.isSeeking = false
+                                    seekDebounceTimer.stop()
+                                    if (pendingSeekPosition >= 0 && activePlayer?.canSeek && activePlayer?.length > 0) {
+                                        const clamped = Math.min(pendingSeekPosition, activePlayer.length * 0.99)
+                                        activePlayer.position = clamped
+                                        pendingSeekPosition = -1
+                                    }
+                                    displayPosition = Qt.binding(() => currentPosition)
+                                }
+                                onPositionChanged: (mouse) => {
+                                    if (pressed && root.isSeeking && activePlayer?.length > 0 && activePlayer?.canSeek) {
+                                        const r = Math.max(0, Math.min(1, mouse.x / parent.width))
+                                        pendingSeekPosition = r * activePlayer.length
+                                        displayPosition = pendingSeekPosition
+                                        seekDebounceTimer.restart()
+                                    }
+                                }
+                                onClicked: (mouse) => {
+                                    if (activePlayer?.length > 0 && activePlayer?.canSeek) {
+                                        const r = Math.max(0, Math.min(1, mouse.x / parent.width))
+                                        activePlayer.position = r * activePlayer.length
+                                    }
+                                }
                             }
                         }
                     }
