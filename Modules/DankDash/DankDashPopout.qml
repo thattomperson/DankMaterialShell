@@ -19,9 +19,15 @@ DankPopout {
     property int currentTabIndex: 0
 
     function setTriggerPosition(x, y, width, section, screen) {
-        triggerX = x
+        if (section === "center") {
+            const screenWidth = screen ? screen.width : Screen.width
+            triggerX = (screenWidth - popupWidth) / 2
+            triggerWidth = popupWidth
+        } else {
+            triggerX = x
+            triggerWidth = width
+        }
         triggerY = y
-        triggerWidth = width
         triggerSection = section
         triggerScreen = screen
     }
