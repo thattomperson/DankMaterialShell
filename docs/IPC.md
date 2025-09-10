@@ -467,6 +467,19 @@ Notepad/scratchpad modal control for quick note-taking.
 - `close` - Hide notepad modal
 - `toggle` - Toggle notepad modal visibility
 
+### Target: `dash`
+Dashboard popup control with tab selection for overview, media, and weather information.
+
+**Functions:**
+- `open [tab]` - Show dashboard popup with optional tab selection
+  - Parameters: `tab` - Optional tab to open: "" (default), "overview", "media", or "weather"
+  - Returns: Success/failure message
+- `close` - Hide dashboard popup
+  - Returns: Success/failure message
+- `toggle [tab]` - Toggle dashboard popup visibility with optional tab selection
+  - Parameters: `tab` - Optional tab to open when showing: "" (default), "overview", "media", or "weather"
+  - Returns: Success/failure message
+
 ### Target: `file`
 File browser controls for selecting wallpapers and profile images.
 
@@ -499,6 +512,11 @@ dms ipc call powermenu toggle
 
 # Open notepad
 dms ipc call notepad toggle
+
+# Show dashboard with specific tabs
+dms ipc call dash open overview
+dms ipc call dash toggle media
+dms ipc call dash open weather
 
 # Open file browsers
 dms ipc call file browse wallpaper

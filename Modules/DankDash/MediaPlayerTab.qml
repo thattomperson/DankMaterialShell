@@ -74,16 +74,9 @@ Item {
         }
 
         StyledText {
-            text: "No Media Playing"
+            text: "No Active Players"
             font.pixelSize: Theme.fontSizeLarge
             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
-
-        StyledText {
-            text: "Start playing media to see detailed controls"
-            font.pixelSize: Theme.fontSizeMedium
-            color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.5)
             anchors.horizontalCenter: parent.horizontalCenter
         }
     }

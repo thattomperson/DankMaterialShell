@@ -6,7 +6,6 @@ import Quickshell
 import Quickshell.Services.Mpris
 import Quickshell.Wayland
 import qs.Common
-import qs.Services
 import qs.Widgets
 import qs.Modules.DankDash
 
@@ -181,7 +180,7 @@ DankPopout {
 
                     WeatherTab {
                         id: weatherTab
-                        visible: SettingsData.weatherEnabled
+                        visible: SettingsData.weatherEnabled && root.currentTabIndex === 2
                     }
                 }
             }
