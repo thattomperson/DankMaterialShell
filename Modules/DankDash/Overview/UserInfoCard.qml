@@ -9,9 +9,9 @@ Card {
 
     Row {
         anchors.left: parent.left
-        anchors.leftMargin: Theme.spacingL
+        anchors.leftMargin: Theme.spacingM
         anchors.verticalCenter: parent.verticalCenter
-        spacing: Theme.spacingL
+        spacing: Theme.spacingM
 
         Item {
             id: avatarContainer
@@ -101,6 +101,8 @@ Card {
                 font.pixelSize: Theme.fontSizeLarge
                 font.weight: Font.Medium
                 color: Theme.surfaceText
+                elide: Text.ElideRight
+                width: parent.parent.parent.width - avatarContainer.width - Theme.spacingM * 3
             }
             
             Row {
@@ -122,6 +124,8 @@ Card {
                     font.pixelSize: Theme.fontSizeSmall
                     color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.8)
                     anchors.verticalCenter: parent.verticalCenter
+                    elide: Text.ElideRight
+                    width: parent.parent.parent.parent.width - avatarContainer.width - Theme.spacingM * 3 - 16 - Theme.spacingS
                 }
             }
             
@@ -136,10 +140,26 @@ Card {
                 }
 
                 StyledText {
-                    text: UserInfoService.uptime || "up 1 hour, 23 minutes"
+                    id: uptimeText
+                    
+                    property real availableWidth: parent.parent.parent.parent.width - avatarContainer.width - Theme.spacingM * 3 - 16 - Theme.spacingS
+                    property real longTextWidth: {
+                        const testMetrics = Qt.createQmlObject('import QtQuick; TextMetrics { font.pixelSize: ' + Theme.fontSizeSmall + ' }', uptimeText)
+                        testMetrics.text = UserInfoService.uptime || "up 1 hour, 23 minutes"
+                        const result = testMetrics.width
+                        testMetrics.destroy()
+                        return result
+                    }
+                    // Just using truncated is always true initially idk
+                    property bool shouldUseShort: longTextWidth > availableWidth
+                    
+                    text: shouldUseShort ? UserInfoService.shortUptime : UserInfoService.uptime || "up 1h 23m"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
                     anchors.verticalCenter: parent.verticalCenter
+                    elide: Text.ElideRight
+                    width: availableWidth
+                    wrapMode: Text.NoWrap
                 }
             }
         }

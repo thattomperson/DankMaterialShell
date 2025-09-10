@@ -112,6 +112,40 @@ Singleton {
         return iconMap[String(code)] || "cloud"
     }
     
+    function getWeatherCondition(code) {
+        const conditions = {
+            "0": "Clear",
+            "1": "Clear", 
+            "2": "Partly cloudy",
+            "3": "Overcast",
+            "45": "Fog",
+            "48": "Fog",
+            "51": "Drizzle",
+            "53": "Drizzle", 
+            "55": "Drizzle",
+            "56": "Freezing drizzle",
+            "57": "Freezing drizzle",
+            "61": "Light rain",
+            "63": "Rain",
+            "65": "Heavy rain", 
+            "66": "Light rain",
+            "67": "Heavy rain",
+            "71": "Light snow",
+            "73": "Snow",
+            "75": "Heavy snow",
+            "77": "Snow",
+            "80": "Light rain",
+            "81": "Rain",
+            "82": "Heavy rain",
+            "85": "Light snow showers",
+            "86": "Heavy snow showers",
+            "95": "Thunderstorm",
+            "96": "Thunderstorm with hail",
+            "99": "Thunderstorm with hail"
+        }
+        return conditions[String(code)] || "Unknown"
+    }
+    
     function formatTime(isoString) {
         if (!isoString) return "--"
         
