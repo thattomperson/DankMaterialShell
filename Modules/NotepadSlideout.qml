@@ -300,7 +300,7 @@ PanelWindow {
                         ScrollBar.vertical.visible: false
                         
                         Row {
-                            spacing: Theme.spacingXXS
+                            spacing: Theme.spacingXS
                             
                             Repeater {
                                 model: SessionData.notepadTabs
@@ -312,8 +312,15 @@ PanelWindow {
                                     readonly property bool isActive: SessionData.notepadCurrentTabIndex === index
                                     readonly property bool tabHasChanges: modelData.content !== modelData.lastSavedContent
                                     readonly property bool isHovered: tabMouseArea.containsMouse && !closeMouseArea.containsMouse
+                                    readonly property real calculatedWidth: {
+                                        const textWidth = tabText.paintedWidth || 100
+                                        const closeButtonWidth = SessionData.notepadTabs.length > 1 ? 20 : 0
+                                        const spacing = Theme.spacingXS
+                                        const padding = Theme.spacingM * 2
+                                        return Math.max(120, Math.min(200, textWidth + closeButtonWidth + spacing + padding))
+                                    }
                                     
-                                    width: Math.max(120, Math.min(200, tabContent.implicitWidth + Theme.spacingM * 2))
+                                    width: calculatedWidth
                                     height: 32
                                     radius: Theme.cornerRadius
                                     color: isActive ? Theme.primaryPressed : isHovered ? Theme.primaryHoverLight : "transparent"
@@ -336,6 +343,7 @@ PanelWindow {
                                         spacing: Theme.spacingXS
                                         
                                         StyledText {
+                                            id: tabText
                                             text: (tabHasChanges ? "● " : "") + (modelData.title || "Untitled")
                                             font.pixelSize: Theme.fontSizeSmall
                                             color: isActive ? Theme.primary : Theme.surfaceText
