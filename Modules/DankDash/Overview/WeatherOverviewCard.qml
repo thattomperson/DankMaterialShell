@@ -8,6 +8,8 @@ import qs.Widgets
 Card {
     id: root
 
+    signal clicked()
+
     Component.onCompleted: WeatherService.addRef()
     Component.onDestruction: WeatherService.removeRef()
 
@@ -78,5 +80,12 @@ Card {
                 width: parent.parent.parent.width - 48 - Theme.spacingL * 2
             }
         }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.clicked()
     }
 }

@@ -37,9 +37,9 @@ DankPopout {
     triggerY: Theme.barHeight - 4 + SettingsData.topBarSpacing + Theme.spacingS
     triggerWidth: 80
     positioning: "center"
-    screen: triggerScreen
     shouldBeVisible: dashVisible
     visible: shouldBeVisible
+
 
     onDashVisibleChanged: {
         if (dashVisible) {
@@ -172,6 +172,13 @@ DankPopout {
 
                     OverviewTab {
                         id: overviewTab
+
+                        onSwitchToWeatherTab: {
+                            if (SettingsData.weatherEnabled) {
+                                tabBar.currentIndex = 2
+                                tabBar.tabClicked(2)
+                            }
+                        }
                     }
 
                     MediaPlayerTab {

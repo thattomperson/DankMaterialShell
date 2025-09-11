@@ -12,6 +12,8 @@ Item {
     implicitWidth: 700
     implicitHeight: 410
 
+    signal switchToWeatherTab()
+
     Item {
         anchors.fill: parent
         // Clock - top left (narrower and shorter)
@@ -29,6 +31,8 @@ Item {
             width: SettingsData.weatherEnabled ? parent.width * 0.3 : 0
             height: 100
             visible: SettingsData.weatherEnabled
+
+            onClicked: root.switchToWeatherTab()
         }
 
         // UserInfo - top middle-right (extend when weather disabled)
