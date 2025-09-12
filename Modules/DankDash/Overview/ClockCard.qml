@@ -79,12 +79,7 @@ Card {
         }
         
         StyledText {
-            text: {
-                if (SettingsData.clockDateFormat && SettingsData.clockDateFormat.length > 0) {
-                    return systemClock?.date?.toLocaleDateString(Qt.locale(), SettingsData.clockDateFormat)
-                }
-                return systemClock?.date?.toLocaleDateString(Qt.locale(), "MMM d")
-            }
+            text: systemClock?.date?.toLocaleDateString(Qt.locale(), "MMM dd")
             font.pixelSize: Theme.fontSizeSmall
             color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.7)
             anchors.horizontalCenter: parent.horizontalCenter
