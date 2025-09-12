@@ -34,7 +34,7 @@ Singleton {
                            })
 
     property var location: null
-    property int updateInterval: 300000 // 5 minutes
+    property int updateInterval: 900000 // 15 minutes
     property int retryAttempts: 0
     property int maxRetryAttempts: 3
     property int retryDelay: 30000
