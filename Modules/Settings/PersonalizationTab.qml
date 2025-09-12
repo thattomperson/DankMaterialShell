@@ -142,7 +142,7 @@ Item {
                             CachingImage {
                                 anchors.fill: parent
                                 anchors.margins: 1
-                                property var weExtensions: [".jpg", ".png", ".webp", ".gif", ".jpeg"]
+                                property var weExtensions: [".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tga"]
                                 property int weExtIndex: 0
                                 source: {
                                     var currentWallpaper = SessionData.perMonitorWallpaper ? SessionData.getMonitorWallpaper(selectedMonitorName) : SessionData.wallpaperPath
@@ -156,12 +156,16 @@ Item {
                                 }
                                 onStatusChanged: {
                                     var currentWallpaper = SessionData.perMonitorWallpaper ? SessionData.getMonitorWallpaper(selectedMonitorName) : SessionData.wallpaperPath
-                                    if (currentWallpaper.startsWith("we:") && status === Image.Error && weExtIndex < weExtensions.length - 1) {
-                                        weExtIndex++
-                                        source = StandardPaths.writableLocation(StandardPaths.HomeLocation)
-                                            + "/.local/share/Steam/steamapps/workshop/content/431960/"
-                                            + currentWallpaper.substring(3)
-                                            + "/preview" + weExtensions[weExtIndex]
+                                    if (currentWallpaper && currentWallpaper.startsWith("we:") && status === Image.Error) {
+                                        if (weExtIndex < weExtensions.length - 1) {
+                                            weExtIndex++
+                                            source = StandardPaths.writableLocation(StandardPaths.HomeLocation)
+                                                + "/.local/share/Steam/steamapps/workshop/content/431960/"
+                                                + currentWallpaper.substring(3)
+                                                + "/preview" + weExtensions[weExtIndex]
+                                        } else {
+                                            visible = false
+                                        }
                                     }
                                 }
                                 fillMode: Image.PreserveAspectCrop
@@ -253,29 +257,6 @@ Item {
                                         }
                                     }
 
-                                    Rectangle {
-                                        width: 32; height: 32; radius: 16
-                                        color: Qt.rgba(255, 255, 255, 0.9)
-
-                                        DankIcon {
-                                            anchors.centerIn: parent
-                                            name: "movie"   // 🎬 icon for WE
-                                            size: 18
-                                            color: "black"
-                                        }
-
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                if (parentModal) {
-                                                    parentModal.allowFocusOverride = true
-                                                    parentModal.shouldHaveFocus = false
-                                                }
-                                                weBrowser.open()
-                                            }
-                                        }
-                                    }
 
                                     Rectangle {
                                         width: 32
@@ -1466,37 +1447,6 @@ Item {
             }
         }
     }
-
-    FileBrowserModal {
-        id: weBrowser
-        browserTitle: "Select Wallpaper Engine Scene"
-        browserIcon: "movie"
-        browserType: "we"
-        fileExtensions: []   // only show dirs
-
-        // override homeDir to point to Steam workshop path
-        homeDir: StandardPaths.writableLocation(StandardPaths.HomeLocation)
-                + "/.local/share/Steam/steamapps/workshop/content/431960"
-
-        // ensure we start there
-        Component.onCompleted: currentPath = homeDir
-
-        function getLastPath() {
-            return homeDir
-        }
-
-        onFileSelected: folderPath => {
-            var sceneId = folderPath.split("/").pop()
-            var weSource = "we:" + sceneId
-            if (SessionData.perMonitorWallpaper) {
-                SessionData.setMonitorWallpaper(selectedMonitorName, weSource)
-            } else {
-                SessionData.setWallpaper(weSource)
-            }
-            close()
-        }
-    }
-
 
 
     DankColorPicker {

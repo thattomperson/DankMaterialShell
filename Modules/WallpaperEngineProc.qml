@@ -21,30 +21,23 @@ Item {
         command: []
         onExited: (code) => {
             if (pendingSceneId !== "") {
-                const cacheHome = StandardPaths.writableLocation(StandardPaths.CacheLocation).toString()
-                const baseDir = cacheHome.startsWith("file://") ? cacheHome.substring(7) : cacheHome
-                const outDir = baseDir + "/dankshell/we_screenshots" 
-                const outPath = outDir + "/" + pendingSceneId + ".jpg"
-
-                Quickshell.execDetached(["mkdir", "-p", outDir])
-
-                // only spawn after killer has done its job
                 weProcess.command = [
                     "linux-wallpaperengine",
                     "--screen-root", monitor,
-                    "--screenshot",
-                    outPath,
-                    pendingSceneId,
+                    "--bg", pendingSceneId,
                     "--silent"
                 ]
                 weProcess.running = true
+                sceneId = pendingSceneId
                 pendingSceneId = ""
             }
         }
     }
 
     function start(newSceneId) {
-        sceneId = newSceneId
+        if (sceneId === newSceneId && weProcess.running) {
+            return
+        }
         pendingSceneId = newSceneId
         stop()
     }
