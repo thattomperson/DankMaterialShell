@@ -24,8 +24,7 @@ Item {
                 const cacheHome = StandardPaths.writableLocation(StandardPaths.CacheLocation).toString()
                 const baseDir = cacheHome.startsWith("file://") ? cacheHome.substring(7) : cacheHome
                 const outDir = baseDir + "/dankshell/we_screenshots" 
-                const outPath = outDir + "/" + pendingSceneId + ".jpg"
-    console.log("SCREENSHOT PATH", outPath)
+                const outPath = outDir + "/" + pendingSceneId + ".jpeg"
 
                 Quickshell.execDetached(["mkdir", "-p", outDir])
                 weProcess.command = [
