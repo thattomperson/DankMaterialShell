@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Effects
+import Quickshell
 import qs.Common
 import qs.Services
 import qs.Widgets
@@ -8,7 +9,7 @@ Rectangle {
     id: root
 
     property bool showEventDetails: false
-    property date selectedDate: new Date()
+    property date selectedDate: systemClock.date
     property var selectedDateEvents: []
     property bool hasEvents: selectedDateEvents && selectedDateEvents.length > 0
 
@@ -222,8 +223,8 @@ Rectangle {
             id: calendarGrid
             visible: !showEventDetails
             
-            property date displayDate: new Date()
-            property date selectedDate: new Date()
+            property date displayDate: systemClock.date
+            property date selectedDate: systemClock.date
             
             readonly property date firstDay: {
                 const date = new Date(displayDate.getFullYear(), displayDate.getMonth(), 1)
@@ -419,5 +420,10 @@ Rectangle {
                 }
             }
         }
+    }
+
+    SystemClock {
+        id: systemClock
+        precision: SystemClock.Hours
     }
 }
