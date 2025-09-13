@@ -25,13 +25,6 @@ Item {
         }
     }
 
-    onAllPlayersChanged: {
-        if (allPlayers) {
-            for (let i = 0; i < allPlayers.length; i++) {
-            }
-        }
-    }
-
     property string lastValidTitle: ""
     property string lastValidArtist: ""
     property string lastValidAlbum: ""
@@ -54,6 +47,50 @@ Item {
     implicitWidth: 700
     implicitHeight: 410
 
+    function getAudioDeviceIcon(device) {
+        if (!device || !device.name) return "speaker"
+        
+        const name = device.name.toLowerCase()
+        
+        if (name.includes("bluez") || name.includes("bluetooth"))
+            return "headset"
+        if (name.includes("hdmi"))
+            return "tv"
+        if (name.includes("usb"))
+            return "headset"
+        if (name.includes("analog") || name.includes("built-in"))
+            return "speaker"
+        
+        return "speaker"
+    }
+    
+    function getVolumeIcon(sink) {
+        if (!sink || !sink.audio) return "volume_off"
+        
+        const volume = sink.audio.volume
+        const muted = sink.audio.muted
+        
+        if (muted || volume === 0.0) return "volume_off"
+        if (volume <= 0.33) return "volume_down"
+        if (volume <= 0.66) return "volume_up"
+        return "volume_up"
+    }
+    
+    function withAlpha(color, alpha) {
+        return Qt.rgba(color.r, color.g, color.b, alpha)
+    }
+    
+    readonly property var dropdownStyle: ({
+        backgroundColor: withAlpha(Theme.surfaceContainer, 0.98),
+        borderColor: withAlpha(Theme.outline, 0.6),
+        borderWidth: 2,
+        cornerRadius: Theme.cornerRadius * 2,
+        shadowOffset: 8,
+        shadowBlur: 1.0,
+        shadowColor: Qt.rgba(0, 0, 0, 0.4),
+        shadowOpacity: 0.7,
+        animationDuration: Theme.mediumDuration
+    })
 
     property bool isSeeking: false
 
@@ -73,106 +110,108 @@ Item {
         }
     }
 
-
     ColorQuantizer {
         id: colorQuantizer
-        source: {
-            const artUrl = (root.activePlayer && root.activePlayer.trackArtUrl) || root.lastValidArtUrl || ""
-            if (!artUrl) return ""
-
-            const urlString = String(artUrl)
-            if (!urlString || typeof urlString !== 'string') return ""
-
-            if (urlString.includes("scdn.co")) {
-                return urlString.replace(/640x640|300x300|64x64/, "640x640").replace("http://", "https://")
-            } else if (urlString.startsWith("file://")) {
-                return urlString
-            } else if (urlString.includes("googleusercontent.com") || urlString.includes("ytimg.com") || urlString.includes("youtube.com")) {
-                if (urlString.includes("=")) {
-                    return urlString.replace(/=w\d+-h\d+/, "=w640-h640").replace(/=s\d+/, "=s640")
-                } else {e
-                    return urlString + "=w640-h640"
-                }
-            } else if (urlString.includes("ggpht.com")) {
-                return urlString.includes("=") ? urlString.replace(/=s\d+/, "=s640") : urlString + "=s640"
-            } else if (urlString.includes("discordapp.com") || urlString.includes("discord.com")) {
-                return urlString
-            } else if (urlString.includes("soundcloud.com")) {
-                return urlString.replace("large.jpg", "t500x500.jpg")
-            } else if (urlString.includes("bandcamp.com")) {
-                return urlString.replace("_10.jpg", "_2.jpg").replace("_16.jpg", "_2.jpg")
-            } else if (urlString.includes("last.fm") || urlString.includes("lastfm.")) {
-                return urlString.replace("/174s/", "/300x300/").replace("/64s/", "/300x300/")
-            } else if (urlString.includes("tidal.com")) {
-                return urlString.replace(/\/\d+x\d+\//, "/640x640/")
-            }
-
-            return urlString
-        }
-        depth: 4
-        rescaleSize: 128
+        source: (root.activePlayer?.trackArtUrl) || root.lastValidArtUrl || ""
+        depth: 6
         
         onSourceChanged: {
             if (source) {
                 root.colorsExtracted = false
                 colorFallbackTimer.restart()
-                const playerName = root.activePlayer ? root.activePlayer.identity : "Unknown"
-                const sourceString = String(source)
-                let sourceDomain = "local"
-                if (sourceString.startsWith("file://")) {
-                    if (sourceString.includes(".com.google.Chrome")) {
-                        sourceDomain = "chrome-temp"
-                    } else if (sourceString.includes("/tmp/")) {
-                        sourceDomain = "temp-file"
-                    } else {
-                        sourceDomain = "local-file"
-                    }
-                } else if (sourceString.includes("//")) {
-                    const parts = sourceString.split("/")
-                    sourceDomain = parts.length > 2 ? parts[2] : "unknown-url"
-                }
-
             }
         }
 
         onColorsChanged: {
             if (colors.length > 0) {
+                let blackColorCount = 0
+                for (let i = 0; i < Math.min(colors.length, 10); i++) {
+                    const color = colors[i]
+                    const luminance = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b
+                    if (luminance < 0.02) {
+                        blackColorCount++
+                    }
+                }
+                
+                const blackRatio = blackColorCount / Math.min(colors.length, 10)
+                if (blackRatio > 0.8) {
+                    colorFallbackTimer.restart()
+                    return
+                }
+                
                 colorFallbackTimer.stop()
-                root.extractedDominantColor = colors[0]
-                root.extractedAccentColor = colors.length > 2 ? colors[2] : (colors.length > 1 ? colors[1] : colors[0])
+                
+                let dominantColor = colors[0]
+                let accentColor = colors.length > 2 ? colors[2] : (colors.length > 1 ? colors[1] : colors[0])
+                
+                if (isVeryDarkColor(dominantColor)) {
+                    dominantColor = enhanceColorForBackground(dominantColor)
+                }
+                if (isVeryDarkColor(accentColor)) {
+                    accentColor = enhanceColorForBackground(accentColor)
+                }
+                
+                if (getColorSaturation(dominantColor) < 0.15 && colors.length > 1) {
+                    for (let i = 1; i < Math.min(colors.length, 6); i++) {
+                        if (getColorSaturation(colors[i]) > getColorSaturation(dominantColor)) {
+                            dominantColor = enhanceColorForBackground(colors[i])
+                            break
+                        }
+                    }
+                }
+                
+                root.extractedDominantColor = dominantColor
+                root.extractedAccentColor = accentColor
                 root.colorsExtracted = true
             }
         }
-
+    }
+    
+    function isVeryDarkColor(color) {
+        const luminance = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b
+        return luminance < 0.15
+    }
+    
+    function getColorSaturation(color) {
+        const max = Math.max(color.r, color.g, color.b)
+        const min = Math.min(color.r, color.g, color.b)
+        if (max === 0) return 0
+        return (max - min) / max
+    }
+    
+    function enhanceColorForBackground(color) {
+        const luminance = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b
+        
+        if (luminance < 0.2) {
+            const boost = 0.4 / Math.max(luminance, 0.05)
+            return Qt.rgba(
+                Math.min(1.0, color.r * boost),
+                Math.min(1.0, color.g * boost), 
+                Math.min(1.0, color.b * boost),
+                color.a
+            )
+        }
+        
+        return color
     }
 
     Timer {
         id: colorFallbackTimer
-        interval: {
-            const source = String(colorQuantizer.source)
-            if (source.includes(".com.google.Chrome") && source.includes("/tmp/")) {
-                return 500 
-            } else if (source.includes("scdn.co") || source.includes("spotify.com")) {
-                return 2500 
-            }
-            return 3000 
-        }
+        interval: 3000
         onTriggered: {
             if (!root.colorsExtracted) {
-                const playerName = root.activePlayer ? root.activePlayer.identity : "Unknown"
-                const source = String(colorQuantizer.source)
-
-                if (source.includes("scdn.co") || source.includes("spotify.com")) {
-                    console.info(`Spotify CORS block expected for ${playerName} - using theme colors`)
-                } else if (source.includes(".com.google.Chrome") && source.includes("/tmp/")) {
-                    console.info(`Chrome temporary file inaccessible for ${playerName} - using theme colors`)
-                } else {
-                    console.warn(`ColorQuantizer timeout for ${playerName} image:`, source)
-                    console.warn("Using fallback colors - network or CORS issue likely")
-                }
-
-                root.extractedDominantColor = Theme.primary
-                root.extractedAccentColor = Theme.secondary
+                root.extractedDominantColor = Qt.rgba(
+                    Theme.primary.r * 0.7 + 0.3 * 0.5,
+                    Theme.primary.g * 0.7 + 0.3 * 0.5,
+                    Theme.primary.b * 0.7 + 0.3 * 0.5,
+                    Theme.primary.a
+                )
+                root.extractedAccentColor = Qt.rgba(
+                    Theme.secondary.r * 0.8 + 0.2 * 0.4,
+                    Theme.secondary.g * 0.8 + 0.2 * 0.4,
+                    Theme.secondary.b * 0.8 + 0.2 * 0.4,
+                    Theme.secondary.a
+                )
                 root.colorsExtracted = true
             }
         }
@@ -294,12 +333,10 @@ Item {
                 return node.audio && node.isSink && !node.isStream
             })
             
-
-            
-            color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.98)
-            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.6)
-            border.width: 2
-            radius: Theme.cornerRadius * 2
+            color: dropdownStyle.backgroundColor
+            border.color: dropdownStyle.borderColor
+            border.width: dropdownStyle.borderWidth
+            radius: dropdownStyle.cornerRadius
             
             opacity: audioDevicesButton.devicesExpanded ? 1 : 0
             
@@ -308,18 +345,18 @@ Item {
             layer.effect: MultiEffect {
                 shadowEnabled: true
                 shadowHorizontalOffset: 0
-                shadowVerticalOffset: 8
-                shadowBlur: 1.0
-                shadowColor: Qt.rgba(0, 0, 0, 0.4)
-                shadowOpacity: 0.7
+                shadowVerticalOffset: dropdownStyle.shadowOffset
+                shadowBlur: dropdownStyle.shadowBlur
+                shadowColor: dropdownStyle.shadowColor
+                shadowOpacity: dropdownStyle.shadowOpacity
             }
             
             Behavior on height {
-                NumberAnimation { duration: Theme.mediumDuration }
+                NumberAnimation { duration: dropdownStyle.animationDuration }
             }
             
             Behavior on opacity {
-                NumberAnimation { duration: Theme.mediumDuration }
+                NumberAnimation { duration: dropdownStyle.animationDuration }
             }
             
             Column {
@@ -356,7 +393,7 @@ Item {
                                 width: parent.width
                                 height: 48
                                 radius: Theme.cornerRadius
-                                color: deviceMouseAreaLeft.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, index % 2 === 0 ? 0.3 : 0.2)
+                                color: deviceMouseAreaLeft.containsMouse ? withAlpha(Theme.primary, 0.12) : withAlpha(Theme.surfaceVariant, index % 2 === 0 ? 0.3 : 0.2)
                                 border.color: modelData === AudioService.sink ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                                 border.width: modelData === AudioService.sink ? 2 : 1
                                 
@@ -368,16 +405,7 @@ Item {
                                     width: parent.width - Theme.spacingM * 2
                                     
                                     DankIcon {
-                                        name: {
-                                            if (modelData.name.includes("bluez") || modelData.name.includes("bluetooth"))
-                                                return "headset"
-                                            else if (modelData.name.includes("hdmi"))
-                                                return "tv"
-                                            else if (modelData.name.includes("usb"))
-                                                return "headset"
-                                            else
-                                                return "speaker"
-                                        }
+                                        name: getAudioDeviceIcon(modelData)
                                         size: 20
                                         color: modelData === AudioService.sink ? Theme.primary : Theme.surfaceText
                                         anchors.verticalCenter: parent.verticalCenter
@@ -446,10 +474,10 @@ Item {
             clip: true
             z: 150
 
-            color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.98)
-            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.6)
-            border.width: 2
-            radius: Theme.cornerRadius * 2
+            color: dropdownStyle.backgroundColor
+            border.color: dropdownStyle.borderColor
+            border.width: dropdownStyle.borderWidth
+            radius: dropdownStyle.cornerRadius
 
             opacity: playerSelectorButton.playersExpanded ? 1 : 0
 
@@ -457,18 +485,18 @@ Item {
             layer.effect: MultiEffect {
                 shadowEnabled: true
                 shadowHorizontalOffset: 0
-                shadowVerticalOffset: 8
-                shadowBlur: 1.0
-                shadowColor: Qt.rgba(0, 0, 0, 0.4)
-                shadowOpacity: 0.7
+                shadowVerticalOffset: dropdownStyle.shadowOffset
+                shadowBlur: dropdownStyle.shadowBlur
+                shadowColor: dropdownStyle.shadowColor
+                shadowOpacity: dropdownStyle.shadowOpacity
             }
 
             Behavior on height {
-                NumberAnimation { duration: Theme.mediumDuration }
+                NumberAnimation { duration: dropdownStyle.animationDuration }
             }
 
             Behavior on opacity {
-                NumberAnimation { duration: Theme.mediumDuration }
+                NumberAnimation { duration: dropdownStyle.animationDuration }
             }
 
             Column {
@@ -555,11 +583,7 @@ Item {
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
                                         if (modelData && modelData.identity) {
-                                            console.log("Switching to player:", modelData.identity)
-
-                                            // Pause the currently active player before switching
                                             if (activePlayer && activePlayer !== modelData && activePlayer.canPause) {
-                                                console.log("Pausing current player:", activePlayer.identity)
                                                 activePlayer.pause()
                                             }
 
@@ -581,15 +605,14 @@ Item {
                     }
                 }
             }
-        }
-
+        }      
         // Center Column: Main Media Content
         ColumnLayout {
-            x: 72  // 48 + 24 spacing
-            y: 20  // Adjusted top position for better centering
-            width: 484  // 700 - 72 (left) - 144 (right for floating buttons) = 484
-            height: 370  // Fixed height to fit within container (410 - 40 margin)
-            spacing: Theme.spacingXS  // More compact spacing
+            x: 72  
+            y: 20  
+            width: 484  
+            height: 370  
+            spacing: Theme.spacingXS  
 
             Item {
                 width: parent.width
@@ -806,7 +829,6 @@ Item {
                 width: parent.width
                 Layout.fillHeight: true
 
-                // Song Info
                 Column {
                     id: songInfo
                     width: parent.width
@@ -1307,8 +1329,8 @@ Item {
             radius: 20
             x: parent.width - 40 - Theme.spacingM
             y: 235  
-            color: volumeButtonArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.8)
-            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
+            color: volumeButtonArea.containsMouse ? withAlpha(Theme.primary, 0.2) : withAlpha(Theme.surfaceVariant, 0.8)
+            border.color: withAlpha(Theme.outline, 0.3)
             border.width: 1
             z: 100
 
@@ -1316,17 +1338,7 @@ Item {
 
             DankIcon {
                 anchors.centerIn: parent
-                name: {
-                    if (!defaultSink) return "volume_off"
-                    
-                    let volume = defaultSink.audio.volume
-                    let muted = defaultSink.audio.muted
-                    
-                    if (muted || volume === 0.0) return "volume_off"
-                    if (volume <= 0.33) return "volume_down"
-                    if (volume <= 0.66) return "volume_up"
-                    return "volume_up"
-                }
+                name: getVolumeIcon(defaultSink)
                 size: 18
                 color: defaultSink && !defaultSink.audio.muted && defaultSink.audio.volume > 0 ? Theme.primary : Theme.surfaceText
             }
@@ -1477,7 +1489,7 @@ Item {
             radius: 20
             x: parent.width - 40 - Theme.spacingM
             y: 290  
-            color: audioDevicesArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.8)
+            color: audioDevicesArea.containsMouse ? withAlpha(Theme.primary, 0.2) : withAlpha(Theme.surfaceVariant, 0.8)
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
             border.width: 1
             z: 100
