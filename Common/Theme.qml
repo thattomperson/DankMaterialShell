@@ -181,6 +181,7 @@ Singleton {
     property color outlineStrong: Qt.rgba(outline.r, outline.g, outline.b, 0.12)
 
     property color errorHover: Qt.rgba(error.r, error.g, error.b, 0.12)
+    property color errorPressed: Qt.rgba(error.r, error.g, error.b, 0.16)
 
     property color shadowMedium: Qt.rgba(0, 0, 0, 0.08)
     property color shadowStrong: Qt.rgba(0, 0, 0, 0.3)
