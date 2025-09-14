@@ -1406,12 +1406,12 @@ Item {
                     
                     Rectangle {
                         width: parent.width
-                        height: defaultSink ? (defaultSink.audio.volume * parent.height) : 0
+                        height: defaultSink ? (Math.min(1.0, defaultSink.audio.volume) * parent.height) : 0
                         anchors.bottom: parent.bottom
                         anchors.horizontalCenter: parent.horizontalCenter
                         color: Theme.primary
                         radius: width / 2
-                        
+
                         Behavior on height {
                             enabled: !parent.dragging
                             NumberAnimation { duration: 150 }
@@ -1447,8 +1447,8 @@ Item {
                         
                         onWheel: function(wheel) {
                             if (defaultSink) {
-                                const delta = wheel.angleDelta.y / 120  // Standard wheel step
-                                const increment = delta * 0.05  // 5% per scroll step
+                                const delta = wheel.angleDelta.y / 120
+                                const increment = delta * 0.05
                                 const newVolume = Math.max(0, Math.min(1, defaultSink.audio.volume + increment))
                                 defaultSink.audio.volume = newVolume
                                 if (newVolume > 0 && defaultSink.audio.muted) {
