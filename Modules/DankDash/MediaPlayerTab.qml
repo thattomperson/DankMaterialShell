@@ -36,6 +36,11 @@ Item {
     property color extractedAccentColor: Theme.primary
     property bool colorsExtracted: false
 
+    readonly property color primaryTransparent12: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
+    readonly property color primaryTransparent20: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
+    readonly property color surfaceVariantTransparent80: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.8)
+    readonly property color outlineTransparent30: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
+
     readonly property real ratio: {
         if (!activePlayer || activePlayer.length <= 0) {
             return 0
@@ -76,20 +81,17 @@ Item {
         return "volume_up"
     }
     
-    function withAlpha(color, alpha) {
-        return Qt.rgba(color.r, color.g, color.b, alpha)
-    }
     
     readonly property var dropdownStyle: ({
-        backgroundColor: withAlpha(Theme.surfaceContainer, 0.98),
-        borderColor: withAlpha(Theme.outline, 0.6),
+        backgroundColor: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.98),
+        borderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.6),
         borderWidth: 2,
         cornerRadius: Theme.cornerRadius * 2,
         shadowOffset: 8,
         shadowBlur: 1.0,
         shadowColor: Qt.rgba(0, 0, 0, 0.4),
         shadowOpacity: 0.7,
-        animationDuration: Theme.mediumDuration
+        animationDuration: Anims.durShort
     })
 
     property bool isSeeking: false
@@ -124,60 +126,14 @@ Item {
 
         onColorsChanged: {
             if (colors.length > 0) {
-                let blackColorCount = 0
-                for (let i = 0; i < Math.min(colors.length, 10); i++) {
-                    const color = colors[i]
-                    const luminance = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b
-                    if (luminance < 0.02) {
-                        blackColorCount++
-                    }
-                }
-                
-                const blackRatio = blackColorCount / Math.min(colors.length, 10)
-                if (blackRatio > 0.8) {
-                    colorFallbackTimer.restart()
-                    return
-                }
-                
                 colorFallbackTimer.stop()
-                
-                let dominantColor = colors[0]
-                let accentColor = colors.length > 2 ? colors[2] : (colors.length > 1 ? colors[1] : colors[0])
-                
-                if (isVeryDarkColor(dominantColor)) {
-                    dominantColor = enhanceColorForBackground(dominantColor)
-                }
-                if (isVeryDarkColor(accentColor)) {
-                    accentColor = enhanceColorForBackground(accentColor)
-                }
-                
-                if (getColorSaturation(dominantColor) < 0.15 && colors.length > 1) {
-                    for (let i = 1; i < Math.min(colors.length, 6); i++) {
-                        if (getColorSaturation(colors[i]) > getColorSaturation(dominantColor)) {
-                            dominantColor = enhanceColorForBackground(colors[i])
-                            break
-                        }
-                    }
-                }
-                
-                root.extractedDominantColor = dominantColor
-                root.extractedAccentColor = accentColor
+                root.extractedDominantColor = enhanceColorForBackground(colors[0])
+                root.extractedAccentColor = enhanceColorForBackground(colors.length > 2 ? colors[2] : colors[0])
                 root.colorsExtracted = true
             }
         }
     }
     
-    function isVeryDarkColor(color) {
-        const luminance = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b
-        return luminance < 0.15
-    }
-    
-    function getColorSaturation(color) {
-        const max = Math.max(color.r, color.g, color.b)
-        const min = Math.min(color.r, color.g, color.b)
-        if (max === 0) return 0
-        return (max - min) / max
-    }
     
     function enhanceColorForBackground(color) {
         const luminance = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b
@@ -250,7 +206,11 @@ Item {
         }
         
         Behavior on visible {
-            NumberAnimation { duration: Theme.mediumDuration }
+            NumberAnimation { 
+                duration: Anims.durShort
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.standard
+            }
         }
     }
 
@@ -290,7 +250,11 @@ Item {
         }
         
         Behavior on visible {
-            NumberAnimation { duration: Theme.mediumDuration }
+            NumberAnimation { 
+                duration: Anims.durShort
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.standard
+            }
         }
     }
 
@@ -318,6 +282,27 @@ Item {
         anchors.fill: parent
         clip: false
         visible: (activePlayer && activePlayer.trackTitle !== "") || lastValidTitle !== ""
+
+        MouseArea {
+            anchors.fill: parent
+            enabled: audioDevicesButton.devicesExpanded || volumeButton.volumeExpanded || playerSelectorButton.playersExpanded
+            onClicked: function(mouse) {
+                const clickOutside = (item) => {
+                    return mouse.x < item.x || mouse.x > item.x + item.width ||
+                           mouse.y < item.y || mouse.y > item.y + item.height
+                }
+                
+                if (playerSelectorButton.playersExpanded && clickOutside(playerSelectorDropdown)) {
+                    playerSelectorButton.playersExpanded = false
+                }
+                if (audioDevicesButton.devicesExpanded && clickOutside(audioDevicesDropdown)) {
+                    audioDevicesButton.devicesExpanded = false
+                }
+                if (volumeButton.volumeExpanded && clickOutside(volumeSliderPanel) && clickOutside(volumeButton)) {
+                    volumeButton.volumeExpanded = false
+                }
+            }
+        }
 
         Rectangle {
             id: audioDevicesDropdown
@@ -352,11 +337,19 @@ Item {
             }
             
             Behavior on height {
-                NumberAnimation { duration: dropdownStyle.animationDuration }
+                NumberAnimation { 
+                    duration: dropdownStyle.animationDuration
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Anims.emphasizedDecel
+                }
             }
             
             Behavior on opacity {
-                NumberAnimation { duration: dropdownStyle.animationDuration }
+                NumberAnimation { 
+                    duration: dropdownStyle.animationDuration
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Anims.standard
+                }
             }
             
             Column {
@@ -393,7 +386,7 @@ Item {
                                 width: parent.width
                                 height: 48
                                 radius: Theme.cornerRadius
-                                color: deviceMouseAreaLeft.containsMouse ? withAlpha(Theme.primary, 0.12) : withAlpha(Theme.surfaceVariant, index % 2 === 0 ? 0.3 : 0.2)
+                                color: deviceMouseAreaLeft.containsMouse ? primaryTransparent12 : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, index % 2 === 0 ? 0.3 : 0.2)
                                 border.color: modelData === AudioService.sink ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                                 border.width: modelData === AudioService.sink ? 2 : 1
                                 
@@ -451,11 +444,19 @@ Item {
                                 }
                                 
                                 Behavior on color {
-                                    ColorAnimation { duration: Theme.shortDuration }
+                                    ColorAnimation { 
+                                        duration: Anims.durShort
+                                        easing.type: Easing.BezierSpline
+                                        easing.bezierCurve: Anims.standard
+                                    }
                                 }
                                 
                                 Behavior on border.color {
-                                    ColorAnimation { duration: Theme.shortDuration }
+                                    ColorAnimation { 
+                                        duration: Anims.durShort
+                                        easing.type: Easing.BezierSpline
+                                        easing.bezierCurve: Anims.standard
+                                    }
                                 }
                             }
                         }
@@ -469,7 +470,7 @@ Item {
             width: 240
             height: playerSelectorButton.playersExpanded ? Math.max(180, Math.min(240, (root.allPlayers?.length || 0) * 50 + 80)) : 0
             x: parent.width + Theme.spacingS
-            y: 130
+            y: 180
             visible: playerSelectorButton.playersExpanded
             clip: true
             z: 150
@@ -492,11 +493,19 @@ Item {
             }
 
             Behavior on height {
-                NumberAnimation { duration: dropdownStyle.animationDuration }
+                NumberAnimation { 
+                    duration: dropdownStyle.animationDuration
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Anims.emphasizedDecel
+                }
             }
 
             Behavior on opacity {
-                NumberAnimation { duration: dropdownStyle.animationDuration }
+                NumberAnimation { 
+                    duration: dropdownStyle.animationDuration
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Anims.standard
+                }
             }
 
             Column {
@@ -594,11 +603,19 @@ Item {
                                 }
 
                                 Behavior on color {
-                                    ColorAnimation { duration: Theme.shortDuration }
+                                    ColorAnimation { 
+                                        duration: Anims.durShort
+                                        easing.type: Easing.BezierSpline
+                                        easing.bezierCurve: Anims.standard
+                                    }
                                 }
 
                                 Behavior on border.color {
-                                    ColorAnimation { duration: Theme.shortDuration }
+                                    ColorAnimation { 
+                                        duration: Anims.durShort
+                                        easing.type: Easing.BezierSpline
+                                        easing.bezierCurve: Anims.standard
+                                    }
                                 }
                             }
                         }
@@ -618,209 +635,13 @@ Item {
                 width: parent.width
                 height: 200
 
-                Item {
+                DankAlbumArt {
                     width: Math.min(parent.width * 0.8, parent.height * 0.9)
                     height: width
                     anchors.centerIn: parent
-
-                    Loader {
-                        active: activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing
-                        sourceComponent: Component {
-                            Ref {
-                                service: CavaService
-                            }
-                        }
-                    }
-
-                    Shape {
-                        id: morphingBlob
-                        width: parent.width * 1.1
-                        height: parent.height * 1.1
-                        anchors.centerIn: parent
-                        visible: activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing
-                        asynchronous: false
-                        antialiasing: true
-                        preferredRendererType: Shape.CurveRenderer
-                        z: 0
-                        
-                        layer.enabled: true
-                        layer.smooth: true
-                        layer.samples: 4
-                        
-                        readonly property real centerX: width / 2
-                        readonly property real centerY: height / 2
-                        readonly property real baseRadius: Math.min(width, height) * 0.41
-                        readonly property int segments: 24
-                        
-                        property var audioLevels: {
-                            if (!CavaService.cavaAvailable || CavaService.values.length === 0) {
-                                return [0.5, 0.3, 0.7, 0.4, 0.6, 0.5]
-                            }
-                            return CavaService.values
-                        }
-                        
-                        property var smoothedLevels: [0.5, 0.3, 0.7, 0.4, 0.6, 0.5]
-                        property var cubics: []
-
-                        onAudioLevelsChanged: updatePath()
-                        
-                        Timer {
-                            running: morphingBlob.visible
-                            interval: 16
-                            repeat: true
-                            onTriggered: morphingBlob.updatePath()
-                        }
-                        
-                        Component {
-                            id: cubicSegment
-                            PathCubic {}
-                        }
-                        
-                        Component.onCompleted: {
-                            shapePath.pathElements.push(Qt.createQmlObject(
-                                'import QtQuick; import QtQuick.Shapes; PathMove {}', shapePath
-                            ))
-                            
-                            for (let i = 0; i < segments; i++) {
-                                const seg = cubicSegment.createObject(shapePath)
-                                shapePath.pathElements.push(seg)
-                                cubics.push(seg)
-                            }
-                            
-                            updatePath()
-                        }
-                        
-                        function expSmooth(prev, next, alpha) {
-                            return prev + alpha * (next - prev)
-                        }
-                        
-                        function updatePath() {
-                            if (cubics.length === 0) return
-                            
-                            for (let i = 0; i < Math.min(smoothedLevels.length, audioLevels.length); i++) {
-                                smoothedLevels[i] = expSmooth(smoothedLevels[i], audioLevels[i], 0.2)
-                            }
-                            
-                            const points = []
-                            for (let i = 0; i < segments; i++) {
-                                const angle = (i / segments) * 2 * Math.PI
-                                const audioIndex = i % Math.min(smoothedLevels.length, 6)
-                                const audioLevel = Math.max(0.1, Math.min(1.5, (smoothedLevels[audioIndex] || 0) / 50))
-                                
-                                const radius = baseRadius * (1.0 + audioLevel * 0.3)
-                                const x = centerX + Math.cos(angle) * radius
-                                const y = centerY + Math.sin(angle) * radius
-                                points.push({x: x, y: y})
-                            }
-                            
-                            const startMove = shapePath.pathElements[0]
-                            startMove.x = points[0].x
-                            startMove.y = points[0].y
-                            
-                            const tension = 0.5
-                            for (let i = 0; i < segments; i++) {
-                                const p0 = points[(i - 1 + segments) % segments]
-                                const p1 = points[i]
-                                const p2 = points[(i + 1) % segments]
-                                const p3 = points[(i + 2) % segments]
-                                
-                                const c1x = p1.x + (p2.x - p0.x) * tension / 3
-                                const c1y = p1.y + (p2.y - p0.y) * tension / 3
-                                const c2x = p2.x - (p3.x - p1.x) * tension / 3
-                                const c2y = p2.y - (p3.y - p1.y) * tension / 3
-                                
-                                const seg = cubics[i]
-                                seg.control1X = c1x
-                                seg.control1Y = c1y
-                                seg.control2X = c2x
-                                seg.control2Y = c2y
-                                seg.x = p2.x
-                                seg.y = p2.y
-                            }
-                        }
-                        
-                        ShapePath {
-                            id: shapePath
-                            fillColor: Theme.primary
-                            strokeColor: "transparent"
-                            strokeWidth: 0
-                            joinStyle: ShapePath.RoundJoin
-                            fillRule: ShapePath.WindingFill
-                        }
-                    }
-
-                    Rectangle {
-                        width: parent.width * 0.88
-                        height: width
-                        radius: width / 2
-                        color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-                        border.color: Theme.surfaceContainer
-                        border.width: 1
-                        anchors.centerIn: parent
-                        z: 1
-
-                        Image {
-                            id: albumArt
-                            source: (activePlayer && activePlayer.trackArtUrl) || lastValidArtUrl || ""
-                            onSourceChanged: {
-                                if (activePlayer && activePlayer.trackArtUrl && albumArt.status !== Image.Error) {
-                                    lastValidArtUrl = activePlayer.trackArtUrl
-                                }
-                            }
-                            anchors.fill: parent
-                            anchors.margins: 2
-                            fillMode: Image.PreserveAspectCrop
-                            smooth: true
-                            mipmap: true
-                            cache: true
-                            asynchronous: true
-                            visible: false
-                            onStatusChanged: {
-                                if (status === Image.Error) {
-                                    console.warn("Failed to load album art:", source)
-                                    source = ""
-                                    if (activePlayer && activePlayer.trackArtUrl === source) {
-                                        lastValidArtUrl = ""
-                                    }
-                                }
-                            }
-                        }
-
-                        MultiEffect {
-                            anchors.fill: parent
-                            anchors.margins: 2
-                            source: albumArt
-                            maskEnabled: true
-                            maskSource: circularMask
-                            visible: albumArt.status === Image.Ready
-                            maskThresholdMin: 0.5
-                            maskSpreadAtMin: 1
-                        }
-
-                        Item {
-                            id: circularMask
-                            width: parent.width - 4
-                            height: parent.height - 4
-                            layer.enabled: true
-                            layer.smooth: true
-                            visible: false
-
-                            Rectangle {
-                                anchors.fill: parent
-                                radius: width / 2
-                                color: "black"
-                                antialiasing: true
-                            }
-                        }
-
-                        DankIcon {
-                            anchors.centerIn: parent
-                            name: "album"
-                            size: parent.width * 0.3
-                            color: Theme.surfaceVariantText
-                            visible: albumArt.status !== Image.Ready
-                        }
-                    }
+                    activePlayer: root.activePlayer
+                    lastValidArtUrl: root.lastValidArtUrl
+                    onLastValidArtUrlChanged: root.lastValidArtUrl = lastValidArtUrl
                 }
             }
 
@@ -898,172 +719,13 @@ Item {
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 0
 
-                    Item {
+                    DankSeekbar {
                         width: parent.width * 0.8
                         height: 20
                         anchors.horizontalCenter: parent.horizontalCenter
-
-                        Loader {
-                            anchors.fill: parent
-                            visible: activePlayer && activePlayer.length > 0
-                            sourceComponent: SettingsData.waveProgressEnabled ? seekBarWaveComponent : seekBarFlatComponent
-
-                            Component {
-                                id: seekBarWaveComponent
-
-                                M3WaveProgress {
-                                    value: ratio
-                                    isPlaying: activePlayer && activePlayer.playbackState === MprisPlaybackState.Playing
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        enabled: activePlayer ? (activePlayer.canSeek && activePlayer.length > 0) : false
-
-                                        property real pendingSeekPosition: -1
-
-                                        Timer {
-                                            id: mainSeekDebounceTimer
-                                            interval: 150
-                                            onTriggered: {
-                                                if (parent.pendingSeekPosition >= 0 && activePlayer && activePlayer.canSeek && activePlayer && activePlayer.length > 0) {
-                                                    const clamped = Math.min(parent.pendingSeekPosition, activePlayer.length * 0.99)
-                                                    activePlayer.position = clamped
-                                                    parent.pendingSeekPosition = -1
-                                                }
-                                            }
-                                        }
-
-                                        onPressed: (mouse) => {
-                                            root.isSeeking = true
-                                            if (activePlayer && activePlayer.length > 0 && activePlayer && activePlayer.canSeek) {
-                                                const r = Math.max(0, Math.min(1, mouse.x / parent.width))
-                                                pendingSeekPosition = r * activePlayer.length
-                                                mainSeekDebounceTimer.restart()
-                                            }
-                                        }
-                                        onReleased: {
-                                            root.isSeeking = false
-                                            mainSeekDebounceTimer.stop()
-                                            if (pendingSeekPosition >= 0 && activePlayer && activePlayer.canSeek && activePlayer && activePlayer.length > 0) {
-                                                const clamped = Math.min(pendingSeekPosition, activePlayer.length * 0.99)
-                                                activePlayer.position = clamped
-                                                pendingSeekPosition = -1
-                                            }
-                                        }
-                                        onPositionChanged: (mouse) => {
-                                            if (pressed && root.isSeeking && activePlayer && activePlayer.length > 0 && activePlayer && activePlayer.canSeek) {
-                                                const r = Math.max(0, Math.min(1, mouse.x / parent.width))
-                                                pendingSeekPosition = r * activePlayer.length
-                                                mainSeekDebounceTimer.restart()
-                                            }
-                                        }
-                                        onClicked: (mouse) => {
-                                            if (activePlayer && activePlayer.length > 0 && activePlayer && activePlayer.canSeek) {
-                                                const r = Math.max(0, Math.min(1, mouse.x / parent.width))
-                                                activePlayer.position = r * activePlayer.length
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            Component {
-                                id: seekBarFlatComponent
-
-                                Item {
-                                    property real value: ratio
-                                    property real lineWidth: 3
-                                    property color trackColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.40)
-                                    property color fillColor: Theme.primary
-                                    property color playheadColor: Theme.primary
-                                    readonly property real midY: height / 2
-
-                                    Rectangle {
-                                        width: parent.width
-                                        height: parent.lineWidth
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        color: parent.trackColor
-                                        radius: height / 2
-                                    }
-
-                                    Rectangle {
-                                        width: Math.max(0, Math.min(parent.width, parent.width * parent.value))
-                                        height: parent.lineWidth
-                                        anchors.left: parent.left
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        color: parent.fillColor
-                                        radius: height / 2
-                                        Behavior on width { NumberAnimation { duration: 80 } }
-                                    }
-
-                                    Rectangle {
-                                        id: playhead
-                                        width: 3
-                                        height: Math.max(parent.lineWidth + 8, 14)
-                                        radius: width / 2
-                                        color: parent.playheadColor
-                                        x: Math.max(0, Math.min(parent.width, parent.width * parent.value)) - width / 2
-                                        y: parent.midY - height / 2
-                                        z: 3
-                                        Behavior on x { NumberAnimation { duration: 80 } }
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        enabled: activePlayer ? (activePlayer.canSeek && activePlayer.length > 0) : false
-
-                                        property real pendingSeekPosition: -1
-
-                                        Timer {
-                                            id: mainFlatSeekDebounceTimer
-                                            interval: 150
-                                            onTriggered: {
-                                                if (parent.pendingSeekPosition >= 0 && activePlayer && activePlayer.canSeek && activePlayer && activePlayer.length > 0) {
-                                                    const clamped = Math.min(parent.pendingSeekPosition, activePlayer.length * 0.99)
-                                                    activePlayer.position = clamped
-                                                    parent.pendingSeekPosition = -1
-                                                }
-                                            }
-                                        }
-
-                                        onPressed: (mouse) => {
-                                            root.isSeeking = true
-                                            if (activePlayer && activePlayer.length > 0 && activePlayer && activePlayer.canSeek) {
-                                                const r = Math.max(0, Math.min(1, mouse.x / parent.width))
-                                                pendingSeekPosition = r * activePlayer.length
-                                                mainFlatSeekDebounceTimer.restart()
-                                            }
-                                        }
-                                        onReleased: {
-                                            root.isSeeking = false
-                                            mainFlatSeekDebounceTimer.stop()
-                                            if (pendingSeekPosition >= 0 && activePlayer && activePlayer.canSeek && activePlayer && activePlayer.length > 0) {
-                                                const clamped = Math.min(pendingSeekPosition, activePlayer.length * 0.99)
-                                                activePlayer.position = clamped
-                                                pendingSeekPosition = -1
-                                            }
-                                        }
-                                        onPositionChanged: (mouse) => {
-                                            if (pressed && root.isSeeking && activePlayer && activePlayer.length > 0 && activePlayer && activePlayer.canSeek) {
-                                                const r = Math.max(0, Math.min(1, mouse.x / parent.width))
-                                                pendingSeekPosition = r * activePlayer.length
-                                                mainFlatSeekDebounceTimer.restart()
-                                            }
-                                        }
-                                        onClicked: (mouse) => {
-                                            if (activePlayer && activePlayer.length > 0 && activePlayer && activePlayer.canSeek) {
-                                                const r = Math.max(0, Math.min(1, mouse.x / parent.width))
-                                                activePlayer.position = r * activePlayer.length
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        activePlayer: root.activePlayer
+                        isSeeking: root.isSeeking
+                        onIsSeekingChanged: root.isSeeking = isSeeking
                     }
 
                     Item {
@@ -1138,7 +800,11 @@ Item {
                             }
 
                             Behavior on color {
-                                ColorAnimation { duration: Theme.shortDuration }
+                                ColorAnimation { 
+                                    duration: Anims.durShort
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Anims.standard
+                                }
                             }
                         }
 
@@ -1276,7 +942,11 @@ Item {
                             }
 
                             Behavior on color {
-                                ColorAnimation { duration: Theme.shortDuration }
+                                ColorAnimation { 
+                                    duration: Anims.durShort
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Anims.standard
+                                }
                             }
                         }
                         }  
@@ -1291,9 +961,9 @@ Item {
             height: 40
             radius: 20
             x: parent.width - 40 - Theme.spacingM
-            y: 180  // Top button position
+            y: 235
             color: playerSelectorArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.8)
-            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
+            border.color: outlineTransparent30
             border.width: 1
             z: 100
             visible: (allPlayers?.length || 0) >= 1
@@ -1317,9 +987,6 @@ Item {
                 }
             }
 
-            Behavior on color {
-                ColorAnimation { duration: Theme.shortDuration }
-            }
         }
 
         Rectangle {
@@ -1328,13 +995,19 @@ Item {
             height: 40
             radius: 20
             x: parent.width - 40 - Theme.spacingM
-            y: 235  
-            color: volumeButtonArea.containsMouse ? withAlpha(Theme.primary, 0.2) : withAlpha(Theme.surfaceVariant, 0.8)
-            border.color: withAlpha(Theme.outline, 0.3)
+            y: 180  
+            color: volumeButtonArea.containsMouse ? primaryTransparent20 : surfaceVariantTransparent80
+            border.color: outlineTransparent30
             border.width: 1
             z: 100
 
             property bool volumeExpanded: false
+
+            Timer {
+                id: volumeHideTimer
+                interval: 500
+                onTriggered: volumeButton.volumeExpanded = false
+            }
 
             DankIcon {
                 anchors.centerIn: parent
@@ -1348,25 +1021,48 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
+                onEntered: {
+                    volumeButton.volumeExpanded = true
+                    volumeHideTimer.stop()
+                }
+                onExited: {
+                    volumeHideTimer.restart()
+                }
                 onClicked: {
-                    volumeButton.volumeExpanded = !volumeButton.volumeExpanded
+                    if (defaultSink?.audio) {
+                        defaultSink.audio.muted = !defaultSink.audio.muted
+                    }
+                }
+                onWheel: wheelEvent => {
+                    if (defaultSink?.audio) {
+                        const step = 3
+                        const currentVolume = Math.round(defaultSink.audio.volume * 100)
+                        const newVolume = wheelEvent.angleDelta.y > 0 ? 
+                            Math.min(100, currentVolume + step) : 
+                            Math.max(0, currentVolume - step)
+                        
+                        defaultSink.audio.volume = newVolume / 100
+                        if (newVolume > 0 && defaultSink.audio.muted) {
+                            defaultSink.audio.muted = false
+                        }
+                        
+                        volumeButton.volumeExpanded = true
+                        wheelEvent.accepted = true
+                    }
                 }
             }
 
-            Behavior on color {
-                ColorAnimation { duration: Theme.shortDuration }
-            }
         }
 
         Rectangle {
             id: volumeSliderPanel
             width: 60
-            height: volumeButton.volumeExpanded ? 180 : 0
+            height: 180
             radius: Theme.cornerRadius * 2
-            x: volumeButton.x - 10
-            y: volumeButton.y - height - Theme.spacingS
+            x: parent.width + Theme.spacingS
+            y: 130
             color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.95)
-            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
+            border.color: outlineTransparent30
             border.width: 1
             visible: volumeButton.volumeExpanded
             clip: true
@@ -1374,12 +1070,12 @@ Item {
 
             opacity: volumeButton.volumeExpanded ? 1 : 0
 
-            Behavior on height {
-                NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutCubic }
-            }
-
             Behavior on opacity {
-                NumberAnimation { duration: Theme.mediumDuration }
+                NumberAnimation { 
+                    duration: Anims.durShort
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Anims.standard
+                }
             }
 
             Item {
@@ -1412,10 +1108,6 @@ Item {
                         color: Theme.primary
                         radius: width / 2
 
-                        Behavior on height {
-                            enabled: !parent.dragging
-                            NumberAnimation { duration: 150 }
-                        }
                     }
                     
                     MouseArea {
@@ -1425,6 +1117,14 @@ Item {
                         enabled: defaultSink !== null
                         hoverEnabled: true
                         preventStealing: true
+                        
+                        onEntered: {
+                            volumeHideTimer.stop()
+                        }
+                        
+                        onExited: {
+                            volumeHideTimer.restart()
+                        }
                         
                         onPressed: function(mouse) {
                             parent.dragging = true
@@ -1447,10 +1147,13 @@ Item {
                         
                         onWheel: function(wheel) {
                             if (defaultSink) {
-                                const delta = wheel.angleDelta.y / 120
-                                const increment = delta * 0.05
-                                const newVolume = Math.max(0, Math.min(1, defaultSink.audio.volume + increment))
-                                defaultSink.audio.volume = newVolume
+                                const step = 3
+                                const currentVolume = Math.round(defaultSink.audio.volume * 100)
+                                const newVolume = wheel.angleDelta.y > 0 ? 
+                                    Math.min(100, currentVolume + step) : 
+                                    Math.max(0, currentVolume - step)
+                                
+                                defaultSink.audio.volume = newVolume / 100
                                 if (newVolume > 0 && defaultSink.audio.muted) {
                                     defaultSink.audio.muted = false
                                 }
@@ -1489,8 +1192,8 @@ Item {
             radius: 20
             x: parent.width - 40 - Theme.spacingM
             y: 290  
-            color: audioDevicesArea.containsMouse ? withAlpha(Theme.primary, 0.2) : withAlpha(Theme.surfaceVariant, 0.8)
-            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
+            color: audioDevicesArea.containsMouse ? primaryTransparent20 : surfaceVariantTransparent80
+            border.color: outlineTransparent30
             border.width: 1
             z: 100
 
@@ -1513,62 +1216,7 @@ Item {
                 }
             }
 
-            Behavior on color {
-                ColorAnimation { duration: Theme.shortDuration }
-            }
         }
 
-        MouseArea {
-            anchors.fill: parent
-            enabled: audioDevicesButton.devicesExpanded || volumeButton.volumeExpanded || playerSelectorButton.playersExpanded
-            z: 50
-            onClicked: function(mouse) {
-
-                if (playerSelectorButton.playersExpanded) {
-                    const playerDropdownX = playerSelectorDropdown.x
-                    const playerDropdownY = playerSelectorDropdown.y
-                    const playerDropdownWidth = playerSelectorDropdown.width
-                    const playerDropdownHeight = playerSelectorDropdown.height
-
-                    if (mouse.x < playerDropdownX || mouse.x > playerDropdownX + playerDropdownWidth ||
-                        mouse.y < playerDropdownY || mouse.y > playerDropdownY + playerDropdownHeight) {
-                        playerSelectorButton.playersExpanded = false
-                    }
-                }
-
-                if (audioDevicesButton.devicesExpanded) {
-                    const dropdownX = audioDevicesDropdown.x
-                    const dropdownY = audioDevicesDropdown.y
-                    const dropdownWidth = audioDevicesDropdown.width
-                    const dropdownHeight = audioDevicesDropdown.height
-
-                    if (mouse.x < dropdownX || mouse.x > dropdownX + dropdownWidth ||
-                        mouse.y < dropdownY || mouse.y > dropdownY + dropdownHeight) {
-                        audioDevicesButton.devicesExpanded = false
-                    }
-                }
-
-                if (volumeButton.volumeExpanded) {
-                    const volumeX = volumeSliderPanel.x
-                    const volumeY = volumeSliderPanel.y
-                    const volumeWidth = volumeSliderPanel.width
-                    const volumeHeight = volumeSliderPanel.height
-
-                    const buttonX = volumeButton.x
-                    const buttonY = volumeButton.y
-                    const buttonWidth = volumeButton.width
-                    const buttonHeight = volumeButton.height
-
-                    const clickInPanel = mouse.x >= volumeX && mouse.x <= volumeX + volumeWidth &&
-                                        mouse.y >= volumeY && mouse.y <= volumeY + volumeHeight
-                    const clickInButton = mouse.x >= buttonX && mouse.x <= buttonX + buttonWidth &&
-                                         mouse.y >= buttonY && mouse.y <= buttonY + buttonHeight
-
-                    if (!clickInPanel && !clickInButton) {
-                        volumeButton.volumeExpanded = false
-                    }
-                }
-            }
-        }
     }
 }
