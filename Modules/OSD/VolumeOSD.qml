@@ -58,7 +58,6 @@ DankOSD {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         AudioService.toggleMute()
-                        hideTimer.restart()
                     }
                     onContainsMouseChanged: {
                         setChildHovered(containsMouse || volumeSlider.containsMouse)
@@ -92,7 +91,6 @@ DankOSD {
                 onSliderValueChanged: newValue => {
                                           if (AudioService.sink && AudioService.sink.audio) {
                                               AudioService.sink.audio.volume = newValue / 100
-                                              hideTimer.restart()
                                           }
                                       }
 
