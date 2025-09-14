@@ -11,6 +11,7 @@ import qs.Modules.ControlCenter
 import qs.Modules.ControlCenter.Widgets
 import qs.Modules.ControlCenter.Details
 import qs.Modules.ControlCenter.Details 1.0 as Details
+import qs.Modules.TopBar
 import qs.Services
 import qs.Widgets
 
@@ -238,6 +239,24 @@ DankPopout {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.rightMargin: Theme.spacingL
                         spacing: Theme.spacingS
+
+                        Battery {
+                            widgetHeight: 40
+                            popupTarget: controlCenterBatteryPopout
+                            parentScreen: root.triggerScreen
+                            section: "right"
+                            barHeight: 123
+                            batteryPopupVisible: controlCenterBatteryPopout.shouldBeVisible
+                            visible: BatteryService.batteryAvailable
+
+                            onToggleBatteryPopup: {
+                                if (controlCenterBatteryPopout.shouldBeVisible) {
+                                    controlCenterBatteryPopout.close()
+                                } else {
+                                    controlCenterBatteryPopout.open()
+                                }
+                            }
+                        }
 
                         DankActionButton {
                             buttonSize: 40
@@ -716,6 +735,10 @@ DankPopout {
                 z: 10000
             }
         }
+    }
+
+    BatteryPopout {
+        id: controlCenterBatteryPopout
     }
 
     Component {
