@@ -21,7 +21,9 @@ PanelWindow {
 
     property var modelData
     property var notepadVariants: null
-    
+
+    signal colorPickerRequested()
+
     function getNotepadInstanceForScreen() {
         if (!notepadVariants || !notepadVariants.instances) return null
         
@@ -370,7 +372,8 @@ PanelWindow {
                                                                  "network_speed_monitor": networkComponent,
                                                                  "keyboard_layout_name": keyboardLayoutNameComponent,
                                                                  "vpn": vpnComponent,
-                                                                 "notepadButton": notepadButtonComponent
+                                                                 "notepadButton": notepadButtonComponent,
+                                                                 "colorPicker": colorPickerComponent
                                                              })
 
                         function getWidgetComponent(widgetId) {
@@ -999,9 +1002,24 @@ PanelWindow {
                                 }
                             }
                         }
+
+                        Component {
+                            id: colorPickerComponent
+
+                            ColorPicker {
+                                widgetHeight: root.widgetHeight
+                                barHeight: root.effectiveBarHeight
+                                section: topBarContent.getWidgetSection(parent) || "right"
+                                parentScreen: root.screen
+                                onColorPickerRequested: {
+                                    root.colorPickerRequested()
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
+
 }

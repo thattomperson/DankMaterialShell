@@ -157,6 +157,12 @@ Item {
             "description": "Quick access to notepad",
             "icon": "assignment",
             "enabled": true
+        }, {
+            "id": "colorPicker",
+            "text": "Color Picker",
+            "description": "Quick access to color picker",
+            "icon": "palette",
+            "enabled": true
         }]
     property var defaultLeftWidgets: [{
             "id": "launcherButton",

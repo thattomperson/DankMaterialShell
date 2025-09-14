@@ -48,6 +48,7 @@ ShellRoot {
         delegate: TopBar {
             modelData: item
             notepadVariants: notepadSlideoutVariants
+            onColorPickerRequested: colorPickerModal.show()
         }
     }
 
@@ -257,6 +258,9 @@ ShellRoot {
 
     NotificationModal {
         id: notificationModal
+    }
+    ColorPickerModal {
+        id: colorPickerModal
     }
 
     LazyLoader {
