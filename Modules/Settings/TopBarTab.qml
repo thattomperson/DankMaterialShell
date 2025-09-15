@@ -164,11 +164,11 @@ Item {
             "icon": "palette",
             "enabled": true
         }, {
-            "id": "archUpdater",
-            "text": "Arch Updater",
-            "description": "Check for updates in Arch-based systems",
+            "id": "systemUpdate",
+            "text": "System Update",
+            "description": "Check for system updates",
             "icon": "update",
-            "enabled": true
+            "enabled": SystemUpdateService.distributionSupported
         }]
     property var defaultLeftWidgets: [{
             "id": "launcherButton",

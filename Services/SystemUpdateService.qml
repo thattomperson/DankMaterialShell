@@ -14,23 +14,48 @@ Singleton {
     property bool isChecking: false
     property bool hasError: false
     property string errorMessage: ""
-    property string aurHelper: ""
+    property string pkgManager: ""
+    property string distribution: ""
+    property bool distributionSupported: false
 
+    readonly property list<string> supportedDistributions: ["arch", "cachyos", "manjaro", "endeavouros"]
     readonly property int updateCount: availableUpdates.length
-    readonly property bool helperAvailable: aurHelper !== ""
+    readonly property bool helperAvailable: pkgManager !== "" && distributionSupported
 
     Process {
-        id: helperDetection
-        command: ["sh", "-c", "which paru || which yay"]
+        id: distributionDetection
+        command: ["sh", "-c", "cat /etc/os-release | grep '^ID=' | cut -d'=' -f2 | tr -d '\"'"]
         running: true
 
         onExited: (exitCode) => {
             if (exitCode === 0) {
+                distribution = stdout.text.trim().toLowerCase()
+                distributionSupported = supportedDistributions.includes(distribution)
+
+                if (distributionSupported) {
+                    helperDetection.running = true
+                } else {
+                    console.warn("SystemUpdate: Unsupported distribution:", distribution)
+                }
+            } else {
+                console.warn("SystemUpdate: Failed to detect distribution")
+            }
+        }
+
+        stdout: StdioCollector {}
+    }
+
+    Process {
+        id: helperDetection
+        command: ["sh", "-c", "which paru || which yay"]
+
+        onExited: (exitCode) => {
+            if (exitCode === 0) {
                 const helperPath = stdout.text.trim()
-                aurHelper = helperPath.split('/').pop()
+                pkgManager = helperPath.split('/').pop()
                 checkForUpdates()
             } else {
-                console.warn("ArchUpdater: No AUR helper found")
+                console.warn("SystemUpdate: No package manager found")
             }
         }
 
@@ -50,7 +75,7 @@ Singleton {
             } else {
                 hasError = true
                 errorMessage = "Failed to check for updates"
-                console.warn("ArchUpdater: Update check failed with code:", exitCode)
+                console.warn("SystemUpdate: Update check failed with code:", exitCode)
             }
         }
 
@@ -65,11 +90,11 @@ Singleton {
     }
 
     function checkForUpdates() {
-        if (!helperAvailable || isChecking) return
+        if (!distributionSupported || !pkgManager || isChecking) return
 
         isChecking = true
         hasError = false
-        updateChecker.command = [aurHelper, "-Qu"]
+        updateChecker.command = [pkgManager, "-Qu"]
         updateChecker.running = true
     }
 
@@ -93,10 +118,10 @@ Singleton {
     }
 
     function runUpdates() {
-        if (!helperAvailable || updateCount === 0) return
+        if (!distributionSupported || !pkgManager || updateCount === 0) return
 
         const terminal = Quickshell.env("TERMINAL") || "xterm"
-        const updateCommand = `${aurHelper} -Syu && echo "Updates complete! Press Enter to close..." && read`
+        const updateCommand = `${pkgManager} -Syu && echo "Updates complete! Press Enter to close..." && read`
 
         updater.command = [terminal, "-e", "sh", "-c", updateCommand]
         updater.running = true
@@ -105,7 +130,7 @@ Singleton {
     Timer {
         interval: 30 * 60 * 1000
         repeat: true
-        running: helperAvailable
+        running: distributionSupported && pkgManager
         onTriggered: checkForUpdates()
     }
 }

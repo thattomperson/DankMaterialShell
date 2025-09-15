@@ -184,7 +184,7 @@ PanelWindow {
                                  "loader": clipboardHistoryModalPopup,
                                  "prop": "visible"
                              }, {
-                                 "loader": archUpdaterLoader,
+                                 "loader": systemUpdateLoader,
                                  "prop": "shouldBeVisible"
                              }]
             return notepadInstanceVisible || loaders.some(item => {
@@ -377,7 +377,7 @@ PanelWindow {
                                                                  "vpn": vpnComponent,
                                                                  "notepadButton": notepadButtonComponent,
                                                                  "colorPicker": colorPickerComponent,
-                                                                 "archUpdater": archUpdaterComponent
+                                                                 "systemUpdate": systemUpdateComponent
                                                              })
 
                         function getWidgetComponent(widgetId) {
@@ -1022,21 +1022,21 @@ PanelWindow {
                         }
 
                         Component {
-                            id: archUpdaterComponent
+                            id: systemUpdateComponent
 
-                            ArchUpdater {
-                                isActive: archUpdaterLoader.item ? archUpdaterLoader.item.shouldBeVisible : false
+                            SystemUpdate {
+                                isActive: systemUpdateLoader.item ? systemUpdateLoader.item.shouldBeVisible : false
                                 widgetHeight: root.widgetHeight
                                 barHeight: root.effectiveBarHeight
                                 section: topBarContent.getWidgetSection(parent) || "right"
                                 popupTarget: {
-                                    archUpdaterLoader.active = true
-                                    return archUpdaterLoader.item
+                                    systemUpdateLoader.active = true
+                                    return systemUpdateLoader.item
                                 }
                                 parentScreen: root.screen
                                 onClicked: {
-                                    archUpdaterLoader.active = true
-                                    archUpdaterLoader.item?.toggle()
+                                    systemUpdateLoader.active = true
+                                    systemUpdateLoader.item?.toggle()
                                 }
                             }
                         }

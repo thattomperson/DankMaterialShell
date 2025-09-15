@@ -274,12 +274,12 @@ ShellRoot {
     }
 
     LazyLoader {
-        id: archUpdaterLoader
+        id: systemUpdateLoader
 
         active: false
 
-        ArchUpdaterPopout {
-            id: archUpdaterPopout
+        SystemUpdatePopout {
+            id: systemUpdatePopout
         }
     }
 

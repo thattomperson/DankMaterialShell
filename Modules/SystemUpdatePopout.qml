@@ -9,7 +9,7 @@ import qs.Services
 import qs.Widgets
 
 DankPopout {
-    id: archUpdaterPopout
+    id: systemUpdatePopout
 
     property var parentWidget: null
     property string triggerSection: "right"
@@ -35,8 +35,8 @@ DankPopout {
 
     onShouldBeVisibleChanged: {
         if (shouldBeVisible) {
-            if (ArchUpdaterService.updateCount === 0 && !ArchUpdaterService.isChecking) {
-                ArchUpdaterService.checkForUpdates()
+            if (SystemUpdateService.updateCount === 0 && !SystemUpdateService.isChecking) {
+                SystemUpdateService.checkForUpdates()
             }
         }
     }
@@ -103,14 +103,14 @@ DankPopout {
                         StyledText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: {
-                                if (ArchUpdaterService.isChecking) return "Checking...";
-                                if (ArchUpdaterService.hasError) return "Error";
-                                if (ArchUpdaterService.updateCount === 0) return "Up to date";
-                                return ArchUpdaterService.updateCount + " updates";
+                                if (SystemUpdateService.isChecking) return "Checking...";
+                                if (SystemUpdateService.hasError) return "Error";
+                                if (SystemUpdateService.updateCount === 0) return "Up to date";
+                                return SystemUpdateService.updateCount + " updates";
                             }
                             font.pixelSize: Theme.fontSizeMedium
                             color: {
-                                if (ArchUpdaterService.hasError) return Theme.error;
+                                if (SystemUpdateService.hasError) return Theme.error;
                                 return Theme.surfaceText;
                             }
                         }
@@ -122,10 +122,10 @@ DankPopout {
                             iconSize: 18
                             z: 15
                             iconColor: Theme.surfaceText
-                            enabled: !ArchUpdaterService.isChecking
+                            enabled: !SystemUpdateService.isChecking
                             opacity: enabled ? 1.0 : 0.5
                             onClicked: {
-                                ArchUpdaterService.checkForUpdates()
+                                SystemUpdateService.checkForUpdates()
                             }
 
                             RotationAnimation {
@@ -134,7 +134,7 @@ DankPopout {
                                 from: 0
                                 to: 360
                                 duration: 1000
-                                running: ArchUpdaterService.isChecking
+                                running: SystemUpdateService.isChecking
                                 loops: Animation.Infinite
 
                                 onRunningChanged: {
@@ -168,39 +168,39 @@ DankPopout {
                             id: statusText
                             width: parent.width
                             text: {
-                                if (ArchUpdaterService.hasError) {
-                                    return "Failed to check for updates:\n" + ArchUpdaterService.errorMessage;
+                                if (SystemUpdateService.hasError) {
+                                    return "Failed to check for updates:\n" + SystemUpdateService.errorMessage;
                                 }
-                                if (!ArchUpdaterService.helperAvailable) {
-                                    return "No AUR helper found. Please install 'paru' or 'yay' to check for updates.";
+                                if (!SystemUpdateService.helperAvailable) {
+                                    return "No package manager found. Please install 'paru' or 'yay' to check for updates.";
                                 }
-                                if (ArchUpdaterService.isChecking) {
+                                if (SystemUpdateService.isChecking) {
                                     return "Checking for updates...";
                                 }
-                                if (ArchUpdaterService.updateCount === 0) {
+                                if (SystemUpdateService.updateCount === 0) {
                                     return "Your system is up to date!";
                                 }
-                                return `Found ${ArchUpdaterService.updateCount} packages to update:`;
+                                return `Found ${SystemUpdateService.updateCount} packages to update:`;
                             }
                             font.pixelSize: Theme.fontSizeMedium
                             color: {
-                                if (ArchUpdaterService.hasError) return Theme.errorText;
+                                if (SystemUpdateService.hasError) return Theme.errorText;
                                 return Theme.surfaceText;
                             }
                             wrapMode: Text.WordWrap
-                            visible: ArchUpdaterService.updateCount === 0 || ArchUpdaterService.hasError || ArchUpdaterService.isChecking
+                            visible: SystemUpdateService.updateCount === 0 || SystemUpdateService.hasError || SystemUpdateService.isChecking
                         }
 
                         DankListView {
                             id: packagesList
 
                             width: parent.width
-                            height: parent.height - (ArchUpdaterService.updateCount === 0 || ArchUpdaterService.hasError || ArchUpdaterService.isChecking ? statusText.height + Theme.spacingM : 0)
-                            visible: ArchUpdaterService.updateCount > 0 && !ArchUpdaterService.isChecking && !ArchUpdaterService.hasError
+                            height: parent.height - (SystemUpdateService.updateCount === 0 || SystemUpdateService.hasError || SystemUpdateService.isChecking ? statusText.height + Theme.spacingM : 0)
+                            visible: SystemUpdateService.updateCount > 0 && !SystemUpdateService.isChecking && !SystemUpdateService.hasError
                             clip: true
                             spacing: Theme.spacingXS
 
-                            model: ArchUpdaterService.availableUpdates
+                            model: SystemUpdateService.availableUpdates
 
                             delegate: Rectangle {
                                 width: ListView.view.width - Theme.spacingM
@@ -265,7 +265,7 @@ DankPopout {
                         height: parent.height
                         radius: Theme.cornerRadius
                         color: updateMouseArea.containsMouse ? Theme.primaryHover : Theme.secondaryHover
-                        opacity: ArchUpdaterService.updateCount > 0 ? 1.0 : 0.5
+                        opacity: SystemUpdateService.updateCount > 0 ? 1.0 : 0.5
                         
                         Behavior on color {
                             ColorAnimation { duration: Theme.shortDuration }
@@ -296,10 +296,10 @@ DankPopout {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            enabled: ArchUpdaterService.updateCount > 0
+                            enabled: SystemUpdateService.updateCount > 0
                             onClicked: {
-                                ArchUpdaterService.runUpdates()
-                                archUpdaterPopout.close()
+                                SystemUpdateService.runUpdates()
+                                systemUpdatePopout.close()
                             }
                         }
                     }
@@ -341,7 +341,7 @@ DankPopout {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                archUpdaterPopout.close()
+                                systemUpdatePopout.close()
                             }
                         }
                     }

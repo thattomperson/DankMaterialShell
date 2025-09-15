@@ -13,8 +13,8 @@ Rectangle {
     property real widgetHeight: 30
     property real barHeight: 48
     readonly property real horizontalPadding: SettingsData.topBarNoBackground ? 0 : Math.max(Theme.spacingXS, Theme.spacingS * (widgetHeight / 30))
-    readonly property bool hasUpdates: ArchUpdaterService.updateCount > 0
-    readonly property bool isChecking: ArchUpdaterService.isChecking
+    readonly property bool hasUpdates: SystemUpdateService.updateCount > 0
+    readonly property bool isChecking: SystemUpdateService.isChecking
 
     signal clicked()
 
@@ -42,13 +42,13 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             name: {
                 if (isChecking) return "refresh";
-                if (ArchUpdaterService.hasError) return "error";
+                if (SystemUpdateService.hasError) return "error";
                 if (hasUpdates) return "system_update_alt";
                 return "check_circle";
             }
             size: Theme.iconSize - 6
             color: {
-                if (ArchUpdaterService.hasError) return Theme.error;
+                if (SystemUpdateService.hasError) return Theme.error;
                 if (hasUpdates) return Theme.primary;
                 return (updaterArea.containsMouse || root.isActive ? Theme.primary : Theme.surfaceText);
             }
@@ -75,7 +75,7 @@ Rectangle {
             id: countText
 
             anchors.verticalCenter: parent.verticalCenter
-            text: ArchUpdaterService.updateCount.toString()
+            text: SystemUpdateService.updateCount.toString()
             font.pixelSize: Theme.fontSizeSmall
             font.weight: Font.Medium
             color: Theme.surfaceText
