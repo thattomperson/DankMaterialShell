@@ -164,13 +164,39 @@ Item {
     ColorQuantizer {
         id: colorQuantizer
         source: _cqSource !== "" ? _cqSource : undefined
-        depth: 6
+        depth: 8
+        rescaleSize: 32
         onColorsChanged: {
             if (!colors || colors.length === 0) return
-            const d = colors[Math.min(1, colors.length-1)]
-            const a = colors[Math.min(3, colors.length-1)]
-            _pendingDom = d
-            _pendingAcc = a
+
+            function enhanceColor(color) {
+                const satBoost = 1.4
+                const valueBoost = 1.2
+                return Qt.hsva(color.hsvHue, Math.min(1, color.hsvSaturation * satBoost), Math.min(1, color.hsvValue * valueBoost), color.a)
+            }
+
+            function getExtremeColor(startIdx, direction = 1) {
+                let bestColor = colors[startIdx]
+                let bestScore = 0
+
+                for (let i = startIdx; i >= 0 && i < colors.length; i += direction) {
+                    const c = colors[i]
+                    const saturation = c.hsvSaturation
+                    const brightness = c.hsvValue
+                    const contrast = Math.abs(brightness - 0.5) * 2
+                    const score = saturation * 0.7 + contrast * 0.3
+
+                    if (score > bestScore) {
+                        bestScore = score
+                        bestColor = c
+                    }
+                }
+
+                return enhanceColor(bestColor)
+            }
+
+            _pendingDom = getExtremeColor(Math.floor(colors.length * 0.2), 1)
+            _pendingAcc = getExtremeColor(Math.floor(colors.length * 0.8), -1)
             paletteApplyDelay.restart()
         }
     }
