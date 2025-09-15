@@ -488,13 +488,15 @@ Nevigate to dms settings -> themes & colors -> and click "Apply QT Themes"
 
 #### Firefox
 
+Firefox does use the GTK3 theme, but it doesn't look that good on the stock theme IMO. A separate matugen css is generated for the [material fox](https://github.com/edelvarden/material-fox-updated) theme, you can configure that theme with dynamic colors by following the steps below.
+
 1. **In firefox, navigate to `about:config`**
 - set `toolkit.legacyuserprofilecustomizations.stylesheets` to `true`
 - set `svg.context-properties.content.enabled` to `true`
 - Create a new property called `userChrome.theme-material` and type `boolean`
   - set to `true`
 
-<details><summary><strong>Firefox configuration</strong></summary>
+<details><summary><strong>Expand for firefox screenshots</strong></summary>
 <img width="1262" height="104" alt="image" src="https://github.com/user-attachments/assets/4bca43d1-5735-4401-9b91-5ee4f0b1e357" />
 <img width="1262" height="104" alt="image" src="https://github.com/user-attachments/assets/348d37e0-5c6c-4db8-b7c9-89cabf282c25" />
 <img width="1244" height="106" alt="image" src="https://github.com/user-attachments/assets/75fd4972-bc4a-4657-b756-b31ef8061b3b" />
