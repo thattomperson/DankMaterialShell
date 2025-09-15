@@ -339,10 +339,10 @@ Item {
 
         Rectangle {
             id: audioDevicesDropdown
-            width: 280 
+            width: 280
             height: audioDevicesButton.devicesExpanded ? Math.max(200, Math.min(280, audioDevicesDropdown.availableDevices.length * 50 + 100)) : 0
-            x: parent.width + Theme.spacingS 
-            y: 180  
+            x: parent.width + Theme.spacingS
+            y: audioDevicesButton.y - 50  
             visible: audioDevicesButton.devicesExpanded
             clip: true
             z: 150  
@@ -490,7 +490,7 @@ Item {
             width: 240
             height: playerSelectorButton.playersExpanded ? Math.max(180, Math.min(240, (root.allPlayers?.length || 0) * 50 + 80)) : 0
             x: parent.width + Theme.spacingS
-            y: 180
+            y: playerSelectorButton.y - 50
             visible: playerSelectorButton.playersExpanded
             clip: true
             z: 150
@@ -961,8 +961,8 @@ Item {
             height: 40
             radius: 20
             x: parent.width - 40 - Theme.spacingM
-            y: 235
-            color: playerSelectorArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.8)
+            y: 185
+            color: playerSelectorArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : "transparent"
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
             border.width: 1
             z: 100
@@ -995,8 +995,8 @@ Item {
             height: 40
             radius: 20
             x: parent.width - 40 - Theme.spacingM
-            y: 180  
-            color: volumeButtonArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.8)
+            y: 130  
+            color: volumeButtonArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : "transparent"
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
             border.width: 1
             z: 100
@@ -1048,7 +1048,7 @@ Item {
             height: 180
             radius: Theme.cornerRadius * 2
             x: parent.width + Theme.spacingS
-            y: 130
+            y: volumeButton.y - 50
             color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.95)
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
             border.width: 1
@@ -1166,8 +1166,8 @@ Item {
             height: 40
             radius: 20
             x: parent.width - 40 - Theme.spacingM
-            y: 290  
-            color: audioDevicesArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.8)
+            y: 240  
+            color: audioDevicesArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : "transparent"
             border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
             border.width: 1
             z: 100
