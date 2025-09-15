@@ -97,7 +97,7 @@ popover.background .menuitem.button.flat:selected, .csd treeview.view:selected, 
  * Base States *
  ***************/
 .background {
-  background-color: {{colors.surface.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
   color: {{colors.on_surface.default.hex}};
 }
 
@@ -139,7 +139,7 @@ popover.background .menuitem.button.flat:selected, .csd treeview.view:selected, 
 }
 
 .view {
-  background-color: {{colors.surface.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
   color: {{colors.on_surface.default.hex}};
 }
 
@@ -160,7 +160,7 @@ window.background.csd > stack.view {
 }
 
 textview text {
-  background-color: {{colors.surface.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
 }
 
 textview border {
@@ -412,7 +412,7 @@ entry progress {
 }
 
 treeview entry.flat, treeview entry {
-  background-color: {{colors.surface.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
 }
 
 treeview entry.flat, treeview entry.flat:focus, treeview entry, treeview entry:focus {
@@ -1051,7 +1051,7 @@ button.combo:only-child:disabled {
 toolbar {
   -GtkWidget-window-dragging: true;
   padding: 2px 3px;
-  background-color: {{colors.surface.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
 }
 
 .osd toolbar {
@@ -1117,7 +1117,7 @@ toolbar:not(.inline-toolbar):not(.osd) switch {
 }
 
 .toolbar {
-  background-color: {{colors.surface_container_lowest.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
 }
 
 frame .toolbar {
@@ -1129,7 +1129,7 @@ frame .toolbar {
   border-style: solid;
   border-width: 0 1px 1px;
   border-color: alpha({{colors.on_surface.default.hex}}, 0.12);
-  background-color: {{colors.surface_container_lowest.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
 }
 
 .frame .inline-toolbar {
@@ -1143,7 +1143,7 @@ searchbar > revealer > box,
   border-style: solid;
   border-width: 0 0 1px;
   border-color: alpha({{colors.on_surface.default.hex}}, 0.12);
-  background-color: {{colors.surface.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
   background-clip: border-box;
 }
 
@@ -1219,7 +1219,7 @@ searchbar > revealer > box {
 
 .titlebar {
   transition: all 75ms cubic-bezier(0, 0, 0.2, 1);
-  background-color: {{colors.surface_container_low.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
   color: {{colors.on_surface.default.hex}};
   border-radius: 12px 12px 0 0;
   box-shadow: inset 0 -1px alpha({{colors.on_surface.default.hex}}, 0.12);
@@ -1238,7 +1238,7 @@ searchbar > revealer > box {
 }
 
 .csd .titlebar:backdrop {
-  background-color: {{colors.surface_container_lowest.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
 }
 
 .titlebar .title {
@@ -1275,7 +1275,7 @@ searchbar > revealer > box {
 }
 
 .titlebar + separator:backdrop, .titlebar + separator.sidebar:backdrop {
-  background-color: {{colors.surface.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
 }
 
 .titlebar.selection-mode + separator, .titlebar.selection-mode + separator.sidebar, .selection-mode .titlebar + separator, .selection-mode .titlebar + separator.sidebar {
@@ -1378,13 +1378,13 @@ searchbar > revealer > box {
   padding: 6px 12px;
   border-radius: 12px 12px 0 0;
   border: none;
-  background-color: {{colors.surface_container_lowest.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
   background-image: none;
   box-shadow: inset 0 1px alpha({{colors.on_surface.default.hex}}, 0.1);
 }
 
 .titlebar.default-decoration:backdrop {
-  background-color: {{colors.surface.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
 }
 
 .tiled .titlebar.default-decoration, .maximized .titlebar.default-decoration, .fullscreen .titlebar.default-decoration {
@@ -1419,7 +1419,7 @@ headerbar {
 }
 
 box.vertical headerbar {
-  background-color: {{colors.surface_container_low.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
 }
 
 headerbar entry,
@@ -1668,7 +1668,7 @@ treeview.view header button:not(:focus):not(:hover):not(:active) {
 }
 
 treeview.view header button, treeview.view header button:disabled {
-  background-color: {{colors.surface.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
 }
 
 treeview.view header button:last-child {
@@ -1683,7 +1683,7 @@ treeview.view header.button.dnd {
   border-color: alpha({{colors.on_surface.default.hex}}, 0.12);
   border-radius: 0;
   box-shadow: none;
-  background-color: {{colors.surface.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
   background-clip: border-box;
   color: {{colors.primary.default.hex}};
 }
@@ -1699,7 +1699,7 @@ menubar,
 .menubar {
   -GtkWidget-window-dragging: true;
   padding: 0;
-  background-color: {{colors.surface_container_lowest.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
   color: {{colors.on_surface.default.hex}};
   box-shadow: inset 0 -1px alpha({{colors.on_surface.default.hex}}, 0.12);
 }
@@ -1707,7 +1707,7 @@ menubar,
 menubar:backdrop,
 .menubar:backdrop {
   color: alpha({{colors.on_surface.default.hex}}, 0.7);
-  background-color: {{colors.surface.default.hex}};
+  background-color: {{colors.surface_container.default.hex}};
 }
 
 .csd menubar, .csd .menubar {

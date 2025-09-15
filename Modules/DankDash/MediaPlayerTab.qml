@@ -19,12 +19,53 @@ Item {
 
     property var defaultSink: AudioService.sink
 
-    property color extractedDominantColor: Theme.surface
-    property color extractedAccentColor: Theme.primary
-    property bool colorsExtracted: false
+    // Palette that stays stable across track switches until new colors are ready
+    property color dom: Qt.rgba(Theme.surface.r, Theme.surface.g, Theme.surface.b, 1.0)
+    property color acc: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.25)
+    property color _nextDom: dom
+    property color _nextAcc: acc
+
+    // Track-switch hold (prevents banner flicker only during switches)
+    property bool isSwitching: false
+    property bool paletteReady: false
+    property string _lastArtUrl: ""
+    property url _cqSource: ""
+
+    // Derived "no players" state: always correct, no timers.
+    readonly property int _playerCount: allPlayers ? allPlayers.length : 0
+    readonly property bool _noneAvailable: _playerCount === 0
+    readonly property bool _trulyIdle: activePlayer
+          && activePlayer.playbackState === MprisPlaybackState.Stopped
+          && !activePlayer.trackTitle && !activePlayer.trackArtist
+    readonly property bool showNoPlayerNow: (!_switchHold) && (_noneAvailable || _trulyIdle)
+
+    // Short hold only during track switches (not when players disappear)
+    property bool _switchHold: false
+    Timer {
+      id: _switchHoldTimer
+      interval: 650
+      repeat: false
+      onTriggered: _switchHold = false
+    }
+
+    onActivePlayerChanged: {
+        isSwitching = true
+        _switchHold = true
+        paletteReady = false
+        _switchHoldTimer.restart()
+        if (activePlayer && activePlayer.trackArtUrl)
+            _preloadImage.source = activePlayer.trackArtUrl
+    }
+
+    function maybeFinishSwitch() {
+        if (activePlayer && activePlayer.trackTitle !== "" && paletteReady) {
+            isSwitching = false
+            _switchHold = false
+        }
+    }
 
     readonly property real ratio: {
-        if (!activePlayer || activePlayer.length <= 0) {
+        if (!activePlayer || !activePlayer.length || activePlayer.length <= 0) {
             return 0
         }
         const calculatedRatio = (activePlayer.position || 0) / activePlayer.length
@@ -33,6 +74,34 @@ Item {
 
     implicitWidth: 700
     implicitHeight: 410
+
+    Connections {
+        target: activePlayer
+        function onTrackTitleChanged() {
+            _switchHoldTimer.restart()
+            maybeFinishSwitch()
+        }
+        function onTrackArtUrlChanged() {
+            if (activePlayer?.trackArtUrl) {
+                _lastArtUrl = activePlayer.trackArtUrl
+                _preloadImage.source = activePlayer.trackArtUrl
+            }
+        }
+    }
+
+    Connections {
+        target: MprisController
+        function onAvailablePlayersChanged() {
+            const count = (MprisController.availablePlayers?.length || 0)
+            if (count === 0) {
+                isSwitching = false
+                _switchHold = false
+            } else {
+                _switchHold = true
+                _switchHoldTimer.restart()
+            }
+        }
+    }
 
     function getAudioDeviceIcon(device) {
         if (!device || !device.name) return "speaker"
@@ -75,17 +144,56 @@ Item {
         }
     }
 
+    Image {
+        id: _preloadImage
+        source: ""
+        asynchronous: true
+        cache: true
+        visible: false
+        onStatusChanged: {
+            if (status === Image.Ready) {
+                _cqSource = source
+                colorQuantizer.source = _cqSource
+            }
+            else if (status === Image.Error) {
+                _cqSource = ""
+            }
+        }
+    }
+
     ColorQuantizer {
         id: colorQuantizer
-        source: activePlayer?.trackArtUrl || ""
+        source: _cqSource !== "" ? _cqSource : undefined
         depth: 6
-
         onColorsChanged: {
-            if (colors.length > 0) {
-                extractedDominantColor = colors[0]
-                extractedAccentColor = colors.length > 2 ? colors[2] : colors[0]
-                colorsExtracted = true
+            if (!colors || colors.length === 0) return
+            const d = colors[Math.min(1, colors.length-1)]
+            const a = colors[Math.min(3, colors.length-1)]
+            _pendingDom = d
+            _pendingAcc = a
+            paletteApplyDelay.restart()
+        }
+    }
+
+    property color _pendingDom: dom
+    property color _pendingAcc: acc
+    Timer {
+        id: paletteApplyDelay
+        interval: 90
+        repeat: false
+        onTriggered: {
+            const dist = (c1, c2) => {
+                const dr = c1.r - c2.r, dg = c1.g - c2.g, db = c1.b - c2.b
+                return Math.sqrt(dr*dr + dg*dg + db*db)
             }
+            const domChanged = dist(_pendingDom, dom) > 0.02
+            const accChanged = dist(_pendingAcc, acc) > 0.02
+            if (domChanged || accChanged) {
+                dom = _pendingDom
+                acc = _pendingAcc
+            }
+            paletteReady = true
+            maybeFinishSwitch()
         }
     }
     
@@ -97,31 +205,31 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Theme.cornerRadius
-        opacity: colorsExtracted ? 1.0 : 0.3
+        opacity: 1.0
         gradient: Gradient {
             GradientStop {
                 position: 0.0
-                color: colorsExtracted ?
-                    Qt.rgba(extractedDominantColor.r, extractedDominantColor.g, extractedDominantColor.b, 0.4) :
-                    Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
+                color: Qt.rgba(dom.r, dom.g, dom.b, paletteReady ? 0.38 : 0.06)
             }
             GradientStop {
                 position: 0.3
-                color: colorsExtracted ?
-                    Qt.rgba(extractedAccentColor.r, extractedAccentColor.g, extractedAccentColor.b, 0.3) :
-                    Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.15)
+                color: Qt.rgba(acc.r, acc.g, acc.b, paletteReady ? 0.28 : 0.05)
             }
             GradientStop {
                 position: 1.0
-                color: Qt.rgba(Theme.surface.r, Theme.surface.g, Theme.surface.b, 0.85)
+                color: Qt.rgba(Theme.surface.r, Theme.surface.g, Theme.surface.b, paletteReady ? 0.92 : 0.985)
             }
         }
+        Behavior on opacity { NumberAnimation { duration: 160 } }
     }
+
+    Behavior on dom { ColorAnimation { duration: 220; easing.type: Easing.InOutQuad } }
+    Behavior on acc { ColorAnimation { duration: 220; easing.type: Easing.InOutQuad } }
 
     Column {
         anchors.centerIn: parent
         spacing: Theme.spacingM
-        visible: !activePlayer || activePlayer.trackTitle === ""
+        visible: showNoPlayerNow
 
         DankIcon {
             name: "music_note"
@@ -141,7 +249,7 @@ Item {
     Item {
         anchors.fill: parent
         clip: false
-        visible: activePlayer && activePlayer.trackTitle !== ""
+        visible: !_noneAvailable && (!showNoPlayerNow)
 
         MouseArea {
             anchors.fill: parent
