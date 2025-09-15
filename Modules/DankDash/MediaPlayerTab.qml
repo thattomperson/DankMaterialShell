@@ -5,6 +5,7 @@ import QtQuick.Shapes
 import QtQuick.Layouts
 import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
+import Quickshell.Io
 import Quickshell
 import qs.Common
 import qs.Services
@@ -53,8 +54,29 @@ Item {
         _switchHold = true
         paletteReady = false
         _switchHoldTimer.restart()
-        if (activePlayer && activePlayer.trackArtUrl)
-            _preloadImage.source = activePlayer.trackArtUrl
+        if (activePlayer && activePlayer.trackArtUrl) {
+            loadArtwork(activePlayer.trackArtUrl)
+        }
+    }
+
+    property string activeTrackArtFile: ""
+
+    function loadArtwork(url) {
+        if (!url) return
+
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+            const filename = "/tmp/.dankshell/trackart_" + Date.now() + ".jpg"
+            activeTrackArtFile = filename
+
+            cleanupProcess.command = ["sh", "-c", "mkdir -p /tmp/.dankshell && find /tmp/.dankshell -name 'trackart_*' ! -name '" + filename.split('/').pop() + "' -delete"]
+            cleanupProcess.running = true
+
+            imageDownloader.command = ["curl", "-L", "-s", "--user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36", "-o", filename, url]
+            imageDownloader.targetFile = filename
+            imageDownloader.running = true
+        } else {
+            _preloadImage.source = url
+        }
     }
 
     function maybeFinishSwitch() {
@@ -84,7 +106,7 @@ Item {
         function onTrackArtUrlChanged() {
             if (activePlayer?.trackArtUrl) {
                 _lastArtUrl = activePlayer.trackArtUrl
-                _preloadImage.source = activePlayer.trackArtUrl
+                loadArtwork(activePlayer.trackArtUrl)
             }
         }
     }
@@ -142,6 +164,23 @@ Item {
         if (newVolume > 0 && defaultSink.audio.muted) {
             defaultSink.audio.muted = false
         }
+    }
+
+    Process {
+        id: imageDownloader
+        running: false
+        property string targetFile: ""
+
+        onExited: (exitCode) => {
+            if (exitCode === 0 && targetFile) {
+                _preloadImage.source = "file://" + targetFile
+            }
+        }
+    }
+
+    Process {
+        id: cleanupProcess
+        running: false
     }
 
     Image {
