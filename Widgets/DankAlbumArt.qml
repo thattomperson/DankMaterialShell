@@ -155,8 +155,8 @@ Item {
         height: width
         radius: width / 2
         color: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.3)
-        border.color: Theme.surfaceContainer
-        border.width: 1
+        border.color: Theme.primary
+        border.width: 2
         anchors.centerIn: parent
         z: 1
 
