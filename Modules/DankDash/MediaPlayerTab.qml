@@ -16,30 +16,12 @@ Item {
     property MprisPlayer activePlayer: MprisController.activePlayer
     property var allPlayers: MprisController.availablePlayers
 
-    onActivePlayerChanged: {
-        if (activePlayer) {
-            lastValidTitle = ""
-            lastValidArtist = ""
-            lastValidAlbum = ""
-            lastValidArtUrl = ""
-        }
-    }
-
-    property string lastValidTitle: ""
-    property string lastValidArtist: ""
-    property string lastValidAlbum: ""
-    property string lastValidArtUrl: ""
 
     property var defaultSink: AudioService.sink
 
     property color extractedDominantColor: Theme.surface
     property color extractedAccentColor: Theme.primary
     property bool colorsExtracted: false
-
-    readonly property color primaryTransparent12: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12)
-    readonly property color primaryTransparent20: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
-    readonly property color surfaceVariantTransparent80: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.8)
-    readonly property color outlineTransparent30: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
 
     readonly property real ratio: {
         if (!activePlayer || activePlayer.length <= 0) {
@@ -71,189 +53,67 @@ Item {
     
     function getVolumeIcon(sink) {
         if (!sink || !sink.audio) return "volume_off"
-        
+
         const volume = sink.audio.volume
         const muted = sink.audio.muted
-        
+
         if (muted || volume === 0.0) return "volume_off"
         if (volume <= 0.33) return "volume_down"
         if (volume <= 0.66) return "volume_up"
         return "volume_up"
     }
-    
-    
-    readonly property var dropdownStyle: ({
-        backgroundColor: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.98),
-        borderColor: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.6),
-        borderWidth: 2,
-        cornerRadius: Theme.cornerRadius * 2,
-        shadowOffset: 8,
-        shadowBlur: 1.0,
-        shadowColor: Qt.rgba(0, 0, 0, 0.4),
-        shadowOpacity: 0.7,
-        animationDuration: Anims.durShort
-    })
 
-    property bool isSeeking: false
+    function adjustVolume(step) {
+        if (!defaultSink?.audio) return
 
-    Timer {
-        id: cleanupTimer
-        interval: 2000
-        running: !activePlayer
-        onTriggered: {
-            lastValidTitle = ""
-            lastValidArtist = ""
-            lastValidAlbum = ""
-            lastValidArtUrl = ""
-            extractedDominantColor = Theme.surface
-            extractedAccentColor = Theme.primary
-            colorsExtracted = false
-            stop()
+        const currentVolume = Math.round(defaultSink.audio.volume * 100)
+        const newVolume = Math.min(100, Math.max(0, currentVolume + step))
+
+        defaultSink.audio.volume = newVolume / 100
+        if (newVolume > 0 && defaultSink.audio.muted) {
+            defaultSink.audio.muted = false
         }
     }
 
     ColorQuantizer {
         id: colorQuantizer
-        source: (root.activePlayer?.trackArtUrl) || root.lastValidArtUrl || ""
+        source: activePlayer?.trackArtUrl || ""
         depth: 6
-        
-        onSourceChanged: {
-            if (source) {
-                root.colorsExtracted = false
-                colorFallbackTimer.restart()
-            }
-        }
 
         onColorsChanged: {
             if (colors.length > 0) {
-                colorFallbackTimer.stop()
-                root.extractedDominantColor = enhanceColorForBackground(colors[0])
-                root.extractedAccentColor = enhanceColorForBackground(colors.length > 2 ? colors[2] : colors[0])
-                root.colorsExtracted = true
+                extractedDominantColor = colors[0]
+                extractedAccentColor = colors.length > 2 ? colors[2] : colors[0]
+                colorsExtracted = true
             }
         }
     }
     
     
-    function enhanceColorForBackground(color) {
-        const luminance = 0.299 * color.r + 0.587 * color.g + 0.114 * color.b
-        
-        if (luminance < 0.2) {
-            const boost = 0.4 / Math.max(luminance, 0.05)
-            return Qt.rgba(
-                Math.min(1.0, color.r * boost),
-                Math.min(1.0, color.g * boost), 
-                Math.min(1.0, color.b * boost),
-                color.a
-            )
-        }
-        
-        return color
-    }
 
-    Timer {
-        id: colorFallbackTimer
-        interval: 3000
-        onTriggered: {
-            if (!root.colorsExtracted) {
-                root.extractedDominantColor = Qt.rgba(
-                    Theme.primary.r * 0.7 + 0.3 * 0.5,
-                    Theme.primary.g * 0.7 + 0.3 * 0.5,
-                    Theme.primary.b * 0.7 + 0.3 * 0.5,
-                    Theme.primary.a
-                )
-                root.extractedAccentColor = Qt.rgba(
-                    Theme.secondary.r * 0.8 + 0.2 * 0.4,
-                    Theme.secondary.g * 0.8 + 0.2 * 0.4,
-                    Theme.secondary.b * 0.8 + 0.2 * 0.4,
-                    Theme.secondary.a
-                )
-                root.colorsExtracted = true
-            }
-        }
-    }
+    property bool isSeeking: false
+
 
     Rectangle {
-        id: dynamicBackground
         anchors.fill: parent
         radius: Theme.cornerRadius
-        visible: true 
         opacity: colorsExtracted ? 1.0 : 0.3
-        
         gradient: Gradient {
-            GradientStop { 
+            GradientStop {
                 position: 0.0
-                color: colorsExtracted ? 
+                color: colorsExtracted ?
                     Qt.rgba(extractedDominantColor.r, extractedDominantColor.g, extractedDominantColor.b, 0.4) :
                     Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
             }
-            GradientStop { 
+            GradientStop {
                 position: 0.3
                 color: colorsExtracted ?
                     Qt.rgba(extractedAccentColor.r, extractedAccentColor.g, extractedAccentColor.b, 0.3) :
                     Qt.rgba(Theme.secondary.r, Theme.secondary.g, Theme.secondary.b, 0.15)
             }
-            GradientStop { 
-                position: 0.7
-                color: colorsExtracted ?
-                    Qt.rgba(extractedDominantColor.r, extractedDominantColor.g, extractedDominantColor.b, 0.2) :
-                    Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1)
-            }
-            GradientStop { 
+            GradientStop {
                 position: 1.0
                 color: Qt.rgba(Theme.surface.r, Theme.surface.g, Theme.surface.b, 0.85)
-            }
-        }
-        
-        Behavior on visible {
-            NumberAnimation { 
-                duration: Anims.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Anims.standard
-            }
-        }
-    }
-
-    Rectangle {
-        id: dynamicOverlay
-        anchors.fill: parent
-        radius: Theme.cornerRadius
-        visible: colorsExtracted && ((activePlayer && activePlayer.trackTitle !== "") || lastValidTitle !== "")
-        color: "transparent"
-        
-        Rectangle {
-            width: parent.width * 0.8
-            height: parent.height * 0.4
-            x: parent.width * 0.1
-            y: parent.height * 0.1
-            radius: Theme.cornerRadius * 2
-            opacity: 0.15
-            
-            gradient: Gradient {
-                GradientStop { 
-                    position: 0.0
-                    color: Qt.rgba(extractedAccentColor.r, extractedAccentColor.g, extractedAccentColor.b, 0.6)
-                }
-                GradientStop { 
-                    position: 1.0
-                    color: "transparent"
-                }
-            }
-            
-            layer.enabled: true
-            layer.effect: MultiEffect {
-                blurEnabled: true
-                blur: 1.0
-                blurMax: 64
-                blurMultiplier: 1.0
-            }
-        }
-        
-        Behavior on visible {
-            NumberAnimation { 
-                duration: Anims.durShort
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: Anims.standard
             }
         }
     }
@@ -261,7 +121,7 @@ Item {
     Column {
         anchors.centerIn: parent
         spacing: Theme.spacingM
-        visible: (!activePlayer && !lastValidTitle) || (activePlayer && activePlayer.trackTitle === "" && lastValidTitle === "")
+        visible: !activePlayer || activePlayer.trackTitle === ""
 
         DankIcon {
             name: "music_note"
@@ -281,7 +141,7 @@ Item {
     Item {
         anchors.fill: parent
         clip: false
-        visible: (activePlayer && activePlayer.trackTitle !== "") || lastValidTitle !== ""
+        visible: activePlayer && activePlayer.trackTitle !== ""
 
         MouseArea {
             anchors.fill: parent
@@ -318,10 +178,10 @@ Item {
                 return node.audio && node.isSink && !node.isStream
             })
             
-            color: dropdownStyle.backgroundColor
-            border.color: dropdownStyle.borderColor
-            border.width: dropdownStyle.borderWidth
-            radius: dropdownStyle.cornerRadius
+            color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.98)
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.6)
+            border.width: 2
+            radius: Theme.cornerRadius * 2
             
             opacity: audioDevicesButton.devicesExpanded ? 1 : 0
             
@@ -330,23 +190,23 @@ Item {
             layer.effect: MultiEffect {
                 shadowEnabled: true
                 shadowHorizontalOffset: 0
-                shadowVerticalOffset: dropdownStyle.shadowOffset
-                shadowBlur: dropdownStyle.shadowBlur
-                shadowColor: dropdownStyle.shadowColor
-                shadowOpacity: dropdownStyle.shadowOpacity
+                shadowVerticalOffset: 8
+                shadowBlur: 1.0
+                shadowColor: Qt.rgba(0, 0, 0, 0.4)
+                shadowOpacity: 0.7
             }
             
             Behavior on height {
-                NumberAnimation { 
-                    duration: dropdownStyle.animationDuration
+                NumberAnimation {
+                    duration: Anims.durShort
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Anims.emphasizedDecel
                 }
             }
-            
+
             Behavior on opacity {
-                NumberAnimation { 
-                    duration: dropdownStyle.animationDuration
+                NumberAnimation {
+                    duration: Anims.durShort
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Anims.standard
                 }
@@ -386,7 +246,7 @@ Item {
                                 width: parent.width
                                 height: 48
                                 radius: Theme.cornerRadius
-                                color: deviceMouseAreaLeft.containsMouse ? primaryTransparent12 : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, index % 2 === 0 ? 0.3 : 0.2)
+                                color: deviceMouseAreaLeft.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.12) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, index % 2 === 0 ? 0.3 : 0.2)
                                 border.color: modelData === AudioService.sink ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                                 border.width: modelData === AudioService.sink ? 2 : 1
                                 
@@ -443,21 +303,8 @@ Item {
                                     }
                                 }
                                 
-                                Behavior on color {
-                                    ColorAnimation { 
-                                        duration: Anims.durShort
-                                        easing.type: Easing.BezierSpline
-                                        easing.bezierCurve: Anims.standard
-                                    }
-                                }
-                                
-                                Behavior on border.color {
-                                    ColorAnimation { 
-                                        duration: Anims.durShort
-                                        easing.type: Easing.BezierSpline
-                                        easing.bezierCurve: Anims.standard
-                                    }
-                                }
+                                Behavior on color { ColorAnimation { duration: Anims.durShort } }
+                                Behavior on border.color { ColorAnimation { duration: Anims.durShort } }
                             }
                         }
                     }
@@ -475,10 +322,10 @@ Item {
             clip: true
             z: 150
 
-            color: dropdownStyle.backgroundColor
-            border.color: dropdownStyle.borderColor
-            border.width: dropdownStyle.borderWidth
-            radius: dropdownStyle.cornerRadius
+            color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.98)
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.6)
+            border.width: 2
+            radius: Theme.cornerRadius * 2
 
             opacity: playerSelectorButton.playersExpanded ? 1 : 0
 
@@ -486,15 +333,15 @@ Item {
             layer.effect: MultiEffect {
                 shadowEnabled: true
                 shadowHorizontalOffset: 0
-                shadowVerticalOffset: dropdownStyle.shadowOffset
-                shadowBlur: dropdownStyle.shadowBlur
-                shadowColor: dropdownStyle.shadowColor
-                shadowOpacity: dropdownStyle.shadowOpacity
+                shadowVerticalOffset: 8
+                shadowBlur: 1.0
+                shadowColor: Qt.rgba(0, 0, 0, 0.4)
+                shadowOpacity: 0.7
             }
 
             Behavior on height {
                 NumberAnimation { 
-                    duration: dropdownStyle.animationDuration
+                    duration: Anims.durShort
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Anims.emphasizedDecel
                 }
@@ -502,7 +349,7 @@ Item {
 
             Behavior on opacity {
                 NumberAnimation { 
-                    duration: dropdownStyle.animationDuration
+                    duration: Anims.durShort
                     easing.type: Easing.BezierSpline
                     easing.bezierCurve: Anims.standard
                 }
@@ -640,8 +487,6 @@ Item {
                     height: width
                     anchors.centerIn: parent
                     activePlayer: root.activePlayer
-                    lastValidArtUrl: root.lastValidArtUrl
-                    onLastValidArtUrlChanged: root.lastValidArtUrl = lastValidArtUrl
                 }
             }
 
@@ -658,13 +503,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     StyledText {
-                        text: {
-                            if (activePlayer && activePlayer.trackTitle) {
-                                lastValidTitle = activePlayer.trackTitle
-                                return activePlayer.trackTitle
-                            }
-                            return lastValidTitle || "Unknown Track"
-                        }
+                        text: activePlayer?.trackTitle || "Unknown Track"
                         font.pixelSize: Theme.fontSizeLarge
                         font.weight: Font.Bold
                         color: Theme.surfaceText
@@ -676,13 +515,7 @@ Item {
                     }
 
                     StyledText {
-                        text: {
-                            if (activePlayer && activePlayer.trackArtist) {
-                                lastValidArtist = activePlayer.trackArtist
-                                return activePlayer.trackArtist
-                            }
-                            return lastValidArtist || "Unknown Artist"
-                        }
+                        text: activePlayer?.trackArtist || "Unknown Artist"
                         font.pixelSize: Theme.fontSizeMedium
                         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.8)
                         width: parent.width
@@ -693,13 +526,7 @@ Item {
                     }
 
                     StyledText {
-                        text: {
-                            if (activePlayer && activePlayer.trackAlbum) {
-                                lastValidAlbum = activePlayer.trackAlbum
-                                return activePlayer.trackAlbum
-                            }
-                            return lastValidAlbum || ""
-                        }
+                        text: activePlayer?.trackAlbum || ""
                         font.pixelSize: Theme.fontSizeSmall
                         color: Qt.rgba(Theme.surfaceText.r, Theme.surfaceText.g, Theme.surfaceText.b, 0.6)
                         width: parent.width
@@ -963,7 +790,7 @@ Item {
             x: parent.width - 40 - Theme.spacingM
             y: 235
             color: playerSelectorArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.8)
-            border.color: outlineTransparent30
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
             border.width: 1
             z: 100
             visible: (allPlayers?.length || 0) >= 1
@@ -996,8 +823,8 @@ Item {
             radius: 20
             x: parent.width - 40 - Theme.spacingM
             y: 180  
-            color: volumeButtonArea.containsMouse ? primaryTransparent20 : surfaceVariantTransparent80
-            border.color: outlineTransparent30
+            color: volumeButtonArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.8)
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
             border.width: 1
             z: 100
 
@@ -1034,21 +861,9 @@ Item {
                     }
                 }
                 onWheel: wheelEvent => {
-                    if (defaultSink?.audio) {
-                        const step = 3
-                        const currentVolume = Math.round(defaultSink.audio.volume * 100)
-                        const newVolume = wheelEvent.angleDelta.y > 0 ? 
-                            Math.min(100, currentVolume + step) : 
-                            Math.max(0, currentVolume - step)
-                        
-                        defaultSink.audio.volume = newVolume / 100
-                        if (newVolume > 0 && defaultSink.audio.muted) {
-                            defaultSink.audio.muted = false
-                        }
-                        
-                        volumeButton.volumeExpanded = true
-                        wheelEvent.accepted = true
-                    }
+                    adjustVolume(wheelEvent.angleDelta.y > 0 ? 3 : -3)
+                    volumeButton.volumeExpanded = true
+                    wheelEvent.accepted = true
                 }
             }
 
@@ -1062,7 +877,7 @@ Item {
             x: parent.width + Theme.spacingS
             y: 130
             color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, 0.95)
-            border.color: outlineTransparent30
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
             border.width: 1
             visible: volumeButton.volumeExpanded
             clip: true
@@ -1145,20 +960,7 @@ Item {
                             updateVolume(mouse)
                         }
                         
-                        onWheel: function(wheel) {
-                            if (defaultSink) {
-                                const step = 3
-                                const currentVolume = Math.round(defaultSink.audio.volume * 100)
-                                const newVolume = wheel.angleDelta.y > 0 ? 
-                                    Math.min(100, currentVolume + step) : 
-                                    Math.max(0, currentVolume - step)
-                                
-                                defaultSink.audio.volume = newVolume / 100
-                                if (newVolume > 0 && defaultSink.audio.muted) {
-                                    defaultSink.audio.muted = false
-                                }
-                            }
-                        }
+                        onWheel: wheel => adjustVolume(wheel.angleDelta.y > 0 ? 3 : -3)
                         
                         function updateVolume(mouse) {
                             if (defaultSink) {
@@ -1192,8 +994,8 @@ Item {
             radius: 20
             x: parent.width - 40 - Theme.spacingM
             y: 290  
-            color: audioDevicesArea.containsMouse ? primaryTransparent20 : surfaceVariantTransparent80
-            border.color: outlineTransparent30
+            color: audioDevicesArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2) : Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.8)
+            border.color: Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.3)
             border.width: 1
             z: 100
 

@@ -76,8 +76,8 @@
 @define-color scrollbar_hover_color {{colors.primary.default.hex}};
 
 /* Selection and highlight colors */
-@define-color selection_bg_color {{colors.primary_container.default.hex}};
-@define-color selection_fg_color {{colors.on_primary_container.default.hex}};
+@define-color selection_bg_color {{colors.primary.default.hex}};
+@define-color selection_fg_color {{colors.on_primary.default.hex}};
 
 /* Tooltip colors */
 @define-color tooltip_bg_color {{colors.inverse_surface.default.hex}};

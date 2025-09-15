@@ -81,11 +81,8 @@ build_once() {
     echo "" >> "$TMP_CFG"
   fi
   
-  if [ "$mode" = "light" ]; then
-    COLLOID_TEMPLATE="$SHELL_DIR/matugen/templates/gtk3-colloid-light.css"
-  else
-    COLLOID_TEMPLATE="$SHELL_DIR/matugen/templates/gtk3-colloid-dark.css"
-  fi
+  # GTK3 colors based on colloid
+  COLLOID_TEMPLATE="$SHELL_DIR/matugen/templates/gtk3-colors.css"
   
   sed -i "/\[templates\.gtk3\]/,/^$/ s|input_path = './matugen/templates/gtk-colors.css'|input_path = '$COLLOID_TEMPLATE'|" "$TMP_CFG"
   sed -i "s|input_path = './matugen/templates/|input_path = '$SHELL_DIR/matugen/templates/|g" "$TMP_CFG"
