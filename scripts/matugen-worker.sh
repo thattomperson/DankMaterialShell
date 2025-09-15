@@ -80,6 +80,11 @@ build_once() {
     cat "$SHELL_DIR/matugen/configs/qt6ct.toml" >> "$TMP_CFG"
     echo "" >> "$TMP_CFG"
   fi
+
+  if command -v firefox >/dev/null 2>&1; then
+    cat "$SHELL_DIR/matugen/configs/firefox.toml" >> "$TMP_CFG"
+    echo "" >> "$TMP_CFG"
+  fi
   
   # GTK3 colors based on colloid
   COLLOID_TEMPLATE="$SHELL_DIR/matugen/templates/gtk3-colors.css"

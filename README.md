@@ -486,6 +486,38 @@ You'll have to restart your session for themes to take effect.
 
 Nevigate to dms settings -> themes & colors -> and click "Apply QT Themes"
 
+#### Firefox
+
+1. **In firefox, navigate to `about:config`**
+- set `toolkit.legacyuserprofilecustomizations.stylesheets` to `true`
+- set `svg.context-properties.content.enabled` to `true`
+- Create a new property called `userChrome.theme-material` and type `boolean`
+  - set to `true`
+
+<details><summary><strong>Firefox configuration</strong></summary>
+<img width="1262" height="104" alt="image" src="https://github.com/user-attachments/assets/4bca43d1-5735-4401-9b91-5ee4f0b1e357" />
+<img width="1262" height="104" alt="image" src="https://github.com/user-attachments/assets/348d37e0-5c6c-4db8-b7c9-89cabf282c25" />
+<img width="1244" height="106" alt="image" src="https://github.com/user-attachments/assets/75fd4972-bc4a-4657-b756-b31ef8061b3b" />
+</details>
+
+2. **Install material fox theme**
+```bash
+# Find Firefox profile directory
+export PROFILE_DIR=$(find ~/.mozilla/firefox -maxdepth 1 -type d -name "*.default-release" | head -n 1)
+
+# Download, extract to profile dir, and cleanup
+curl -L -o "$PROFILE_DIR/chrome.zip" https://github.com/edelvarden/material-fox-updated/releases/download/v2.0.0/chrome.zip
+unzip -o "$PROFILE_DIR/chrome.zip" -d "$PROFILE_DIR"
+rm "$PROFILE_DIR/chrome.zip"
+```
+
+3. **Configure dynamic colors for material fox theme**
+```bash
+export PROFILE_DIR=$(find ~/.mozilla/firefox -maxdepth 1 -type d -name "*.default-release" | head -n 1)
+rm -f "$PROFILE_DIR/chrome/theme-material-blue.css"
+ln -sf ~/.config/DankMaterialShell/firefox.css "$PROFILE_DIR/chrome/theme-material-blue.css"
+```
+
 ### Terminal Integration
 
 The matugen integration will automatically generate new colors for certain apps only if they are installed.
