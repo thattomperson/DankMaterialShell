@@ -9,6 +9,8 @@ import qs.Widgets
 Card {
     id: root
 
+    signal clicked()
+
     property MprisPlayer activePlayer: MprisController.activePlayer
     property real currentPosition: activePlayer?.positionSupported ? activePlayer.position : 0
     property real displayPosition: currentPosition
@@ -191,5 +193,17 @@ Card {
             }
             }
         }
+    }
+
+    MouseArea {
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 123
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.clicked()
+        visible: activePlayer
     }
 }

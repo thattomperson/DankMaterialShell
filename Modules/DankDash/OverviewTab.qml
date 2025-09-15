@@ -13,6 +13,7 @@ Item {
     implicitHeight: 410
 
     signal switchToWeatherTab()
+    signal switchToMediaTab()
 
     Item {
         anchors.fill: parent
@@ -65,6 +66,8 @@ Item {
             y: 100 + Theme.spacingM
             width: parent.width * 0.2
             height: 300
+
+            onClicked: root.switchToMediaTab()
         }
     }
 }

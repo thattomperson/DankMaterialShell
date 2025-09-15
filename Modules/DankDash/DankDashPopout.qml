@@ -179,6 +179,11 @@ DankPopout {
                                 tabBar.tabClicked(2)
                             }
                         }
+
+                        onSwitchToMediaTab: {
+                            tabBar.currentIndex = 1
+                            tabBar.tabClicked(1)
+                        }
                     }
 
                     MediaPlayerTab {
