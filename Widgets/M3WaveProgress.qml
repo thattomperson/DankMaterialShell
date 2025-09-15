@@ -12,7 +12,7 @@ Item {
     property real phase: 0.0
     property bool isPlaying: false
     property real currentAmp: 1.6
-    property int samples: Math.max(48, Math.round(width / 3))
+    property int samples: Math.max(24, Math.round(width / 8))
     property color trackColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.40)
     property color fillColor: Theme.primary
     property color playheadColor: Theme.primary
@@ -45,10 +45,6 @@ Item {
         antialiasing: true
         asynchronous: false
         preferredRendererType: Shape.CurveRenderer
-        layer.enabled: true
-        layer.smooth: true
-        layer.samples: 8
-        layer.textureSize: Qt.size(Math.ceil(width * dpr * 2), Math.ceil(height * dpr * 2))
 
         ShapePath {
             id: flatPath
@@ -75,8 +71,6 @@ Item {
     Item {
         id: waveContainer
         anchors.fill: parent
-        clip: true
-        width: Math.max(0, Math.min(parent.width, root.playX))
 
         Shape {
             id: waveShape
@@ -84,10 +78,6 @@ Item {
             antialiasing: true
             asynchronous: false
             preferredRendererType: Shape.CurveRenderer
-            layer.enabled: true
-            layer.smooth: true
-            layer.samples: 8
-            layer.textureSize: Qt.size(Math.ceil(width * dpr * 2), Math.ceil(height * dpr * 2))
 
         ShapePath {
             id: wavePath
@@ -201,11 +191,6 @@ Item {
         y: root.midY - height / 2
         z: 3
 
-        Behavior on x {
-            NumberAnimation {
-                duration: 80
-            }
-        }
     }
 
     FrameAnimation {
