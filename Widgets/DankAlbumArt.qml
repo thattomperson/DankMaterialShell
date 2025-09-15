@@ -63,10 +63,8 @@ Item {
 
         onAudioLevelsChanged: updatePath()
         
-        Timer {
+        FrameAnimation {
             running: morphingBlob.visible
-            interval: 16
-            repeat: true
             onTriggered: morphingBlob.updatePath()
         }
         
