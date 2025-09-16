@@ -16,7 +16,7 @@ import qs.Widgets
 
 PanelWindow {
     id: root
-
+    
     WlrLayershell.namespace: "quickshell:bar"
 
     property var modelData
@@ -129,7 +129,7 @@ PanelWindow {
         right: true
     }
 
-    exclusiveZone: (!SettingsData.topBarVisible || topBarCore.autoHide) ? -1 : root.effectiveBarHeight + SettingsData.topBarSpacing - 2 + SettingsData.topBarBottomGap
+    exclusiveZone: (!SettingsData.topBarVisible || topBarCore.autoHide) ? -1 : root.effectiveBarHeight + SettingsData.topBarSpacing + SettingsData.topBarBottomGap
 
     mask: Region {
         item: topBarMouseArea
@@ -138,6 +138,7 @@ PanelWindow {
     Item {
         id: topBarCore
         anchors.fill: parent
+
 
         property real backgroundTransparency: SettingsData.topBarTransparency
         property bool autoHide: SettingsData.topBarAutoHide
@@ -252,14 +253,6 @@ PanelWindow {
                         radius: SettingsData.topBarSquareCorners ? 0 : Theme.cornerRadius
                         color: Qt.rgba(Theme.surfaceContainer.r, Theme.surfaceContainer.g, Theme.surfaceContainer.b, topBarCore.backgroundTransparency)
                         layer.enabled: true
-
-                        Rectangle {
-                            anchors.fill: parent
-                            color: "transparent"
-                            border.color: Theme.outlineMedium
-                            border.width: 1
-                            radius: parent.radius
-                        }
 
                         Rectangle {
                             anchors.fill: parent
