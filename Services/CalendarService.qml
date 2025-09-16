@@ -14,10 +14,67 @@ Singleton {
     property string lastError: ""
     property date lastStartDate
     property date lastEndDate
+    property string khalDateFormat: "MM/dd/yyyy"
+    property var khalDateParser: null
 
     function checkKhalAvailability() {
         if (!khalCheckProcess.running)
             khalCheckProcess.running = true
+    }
+
+    function detectKhalDateFormat() {
+        if (!khalFormatProcess.running)
+            khalFormatProcess.running = true
+    }
+
+    function parseKhalDateFormat(formatExample) {
+        if (formatExample.includes('-') && formatExample.indexOf('-') < 4) {
+            return {
+                format: "yyyy-MM-dd",
+                parser: parseyyyyMMdd
+            }
+        } else if (formatExample.includes('/')) {
+            let parts = formatExample.split('/')
+            if (parts.length === 3) {
+                let firstPart = parseInt(parts[0])
+                let secondPart = parseInt(parts[1])
+                if (firstPart > 12) {
+                    return {
+                        format: "dd/MM/yyyy",
+                        parser: parseddMMyyyy
+                    }
+                } else if (secondPart > 12) {
+                    return {
+                        format: "MM/dd/yyyy",
+                        parser: parseMMddyyyy
+                    }
+                }
+            }
+            return {
+                format: "MM/dd/yyyy",
+                parser: parseMMddyyyy
+            }
+        } else {
+            return {
+                format: "MM/dd/yyyy",
+                parser: parseMMddyyyy
+            }
+        }
+    }
+
+    function parseMMddyyyy(dateStr) {
+        let parts = dateStr.split('/')
+        return new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]))
+    }
+
+    function parseddMMyyyy(dateStr) {
+        let parts = dateStr.split('/')
+        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]))
+    }
+
+    function parseyyyyMMdd(dateStr) {
+        let parts = dateStr.split('-')
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
     }
 
     function loadCurrentMonth() {
@@ -46,9 +103,9 @@ Singleton {
         root.lastStartDate = startDate
         root.lastEndDate = endDate
         root.isLoading = true
-        // Format dates for khal (MM/dd/yyyy based on printformats)
-        let startDateStr = Qt.formatDate(startDate, "MM/dd/yyyy")
-        let endDateStr = Qt.formatDate(endDate, "MM/dd/yyyy")
+        // Format dates for khal using detected format
+        let startDateStr = Qt.formatDate(startDate, root.khalDateFormat)
+        let endDateStr = Qt.formatDate(endDate, root.khalDateFormat)
         eventsProcess.requestStartDate = startDate
         eventsProcess.requestEndDate = endDate
         eventsProcess.command = ["khal", "list", "--json", "title", "--json", "description", "--json", "start-date", "--json", "start-time", "--json", "end-date", "--json", "end-time", "--json", "all-day", "--json", "location", "--json", "url", startDateStr, endDateStr]
@@ -67,7 +124,36 @@ Singleton {
 
     // Initialize on component completion
     Component.onCompleted: {
-        checkKhalAvailability()
+        detectKhalDateFormat()
+    }
+
+    // Process for detecting khal date format
+    Process {
+        id: khalFormatProcess
+
+        command: ["khal", "printformats"]
+        running: false
+        onExited: exitCode => {
+            if (exitCode !== 0) {
+                checkKhalAvailability()
+            }
+        }
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let lines = text.split('\n')
+                for (let line of lines) {
+                    if (line.startsWith('dateformat:')) {
+                        let formatExample = line.substring(line.indexOf(':') + 1).trim()
+                        let formatInfo = parseKhalDateFormat(formatExample)
+                        root.khalDateFormat = formatInfo.format
+                        root.khalDateParser = formatInfo.parser
+                        break
+                    }
+                }
+                checkKhalAvailability()
+            }
+        }
     }
 
     // Process for checking khal configuration
@@ -114,21 +200,15 @@ Singleton {
                         if (!event.title)
                         continue
 
-                        // Parse start and end dates
+                        // Parse start and end dates using detected parser
                         let startDate, endDate
                         if (event['start-date']) {
-                            let startParts = event['start-date'].split('/')
-                            startDate = new Date(parseInt(startParts[2]),
-                                                 parseInt(startParts[0]) - 1,
-                                                 parseInt(startParts[1]))
+                            startDate = root.khalDateParser ? root.khalDateParser(event['start-date']) : parseMMddyyyy(event['start-date'])
                         } else {
                             startDate = new Date()
                         }
                         if (event['end-date']) {
-                            let endParts = event['end-date'].split('/')
-                            endDate = new Date(parseInt(endParts[2]),
-                                               parseInt(endParts[0]) - 1,
-                                               parseInt(endParts[1]))
+                            endDate = root.khalDateParser ? root.khalDateParser(event['end-date']) : parseMMddyyyy(event['end-date'])
                         } else {
                             endDate = new Date(startDate)
                         }
