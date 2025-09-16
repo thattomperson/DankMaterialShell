@@ -1,17 +1,3 @@
-/* :root {
- --md-font-family: 'Inter Variable'
-  --toolbar-bgcolor: var(--md-sys-color-surface);
-  --toolbar-color: var(--md-sys-color-on-surface);
-  --arrowpanel-background: var(--md-sys-color-surface-container);
-  --arrowpanel-color: var(--md-sys-color-on-surface);
-  --arrowpanel-border-color: var(--md-sys-color-surface-variant);
-  --toolbar-field-background-color: var(--md-sys-color-surface-container);
-  --toolbar-field-color: var(--md-sys-color-on-surface);
-  --toolbar-field-border-color: var(--md-sys-color-surface-variant);
-  --toolbar-field-focus-border-color: var(--md-sys-color-primary);
-  --focus-outline-color: var(--md-sys-color-primary);
-} */
-
 @media -moz-pref("userChrome.theme-material") {
   :root {
     --md-sys-color-primary: {{colors.primary.light.hex}};
@@ -140,8 +126,7 @@
   }
 }
 
-*,
-*::before,
-*::after {
-  font-family: "Inter Variable" !important;
+/* idk if this even works, but the suggestion in the material updated readme bricks symbols no matter how many fallbacks I add */
+:root {
+  font-family: system-ui, "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
 }
