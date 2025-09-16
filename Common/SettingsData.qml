@@ -83,6 +83,12 @@ Singleton {
     property string monoFontFamily: "Fira Code"
     property int fontWeight: Font.Normal
     property real fontScale: 1.0
+    property bool notepadUseMonospace: true
+    property string notepadFontFamily: ""
+    property real notepadFontSize: 14
+    onNotepadUseMonospaceChanged: saveSettings()
+    onNotepadFontFamilyChanged: saveSettings()
+    onNotepadFontSizeChanged: saveSettings()
     property bool gtkThemingEnabled: false
     property bool qtThemingEnabled: false
     property bool showDock: false
@@ -248,6 +254,9 @@ Singleton {
                 monoFontFamily = settings.monoFontFamily !== undefined ? settings.monoFontFamily : defaultMonoFontFamily
                 fontWeight = settings.fontWeight !== undefined ? settings.fontWeight : Font.Normal
                 fontScale = settings.fontScale !== undefined ? settings.fontScale : 1.0
+                notepadUseMonospace = settings.notepadUseMonospace !== undefined ? settings.notepadUseMonospace : true
+                notepadFontFamily = settings.notepadFontFamily !== undefined ? settings.notepadFontFamily : ""
+                notepadFontSize = settings.notepadFontSize !== undefined ? settings.notepadFontSize : 14
                 gtkThemingEnabled = settings.gtkThemingEnabled !== undefined ? settings.gtkThemingEnabled : false
                 qtThemingEnabled = settings.qtThemingEnabled !== undefined ? settings.qtThemingEnabled : false
                 showDock = settings.showDock !== undefined ? settings.showDock : false
@@ -346,6 +355,9 @@ Singleton {
                                                 "monoFontFamily": monoFontFamily,
                                                 "fontWeight": fontWeight,
                                                 "fontScale": fontScale,
+                                                "notepadUseMonospace": notepadUseMonospace,
+                                                "notepadFontFamily": notepadFontFamily,
+                                                "notepadFontSize": notepadFontSize,
                                                 "gtkThemingEnabled": gtkThemingEnabled,
                                                 "qtThemingEnabled": qtThemingEnabled,
                                                 "showDock": showDock,
