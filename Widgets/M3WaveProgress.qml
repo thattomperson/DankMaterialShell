@@ -12,7 +12,6 @@ Item {
     property real phase: 0.0
     property bool isPlaying: false
     property real currentAmp: 1.6
-    property int samples: Math.max(24, Math.round(width / 8))
     property color trackColor: Qt.rgba(Theme.surfaceVariant.r, Theme.surfaceVariant.g, Theme.surfaceVariant.b, 0.40)
     property color fillColor: Theme.primary
     property color playheadColor: Theme.primary
@@ -22,164 +21,92 @@ Item {
 
     readonly property real playX: snap(root.width * root.value)
     readonly property real midY: snap(height / 2)
-    readonly property real capPad: Math.ceil(lineWidth / 2)
 
-    function yWave(x) {
-        return midY + currentAmp * Math.sin((x / wavelength) * 2 * Math.PI + phase)
-    }
-
-    Behavior on currentAmp {
-        NumberAnimation {
-            duration: 300
-            easing.type: Easing.OutCubic
-        }
-    }
-
-    onIsPlayingChanged: {
-        currentAmp = isPlaying ? amp : 0
-    }
+    Behavior on currentAmp { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+    onIsPlayingChanged: currentAmp = isPlaying ? amp : 0
 
     Shape {
         id: flatTrack
         anchors.fill: parent
         antialiasing: true
-        asynchronous: false
         preferredRendererType: Shape.CurveRenderer
+        layer.enabled: true
+        layer.samples: 0
 
         ShapePath {
-            id: flatPath
             strokeColor: root.trackColor
             strokeWidth: snap(root.lineWidth)
             capStyle: ShapePath.RoundCap
             joinStyle: ShapePath.RoundJoin
             fillColor: "transparent"
-
-            PathMove {
-                id: flatStart
-                x: 0
-                y: root.midY
-            }
-
-            PathLine {
-                id: flatEnd
-                x: root.width
-                y: root.midY
-            }
+            PathMove { id: flatStart; x: 0; y: root.midY }
+            PathLine { id: flatEnd;   x: root.width; y: root.midY }
         }
     }
 
     Item {
-        id: waveContainer
+        id: waveClip
         anchors.fill: parent
+        clip: true
 
-        Shape {
-            id: waveShape
-            anchors.fill: parent
-            antialiasing: true
-            asynchronous: false
-            preferredRendererType: Shape.CurveRenderer
+        readonly property real startX: snap(root.lineWidth/2)
+        readonly property real aaBias: (0.25 / root.dpr)
+        readonly property real endX: Math.max(startX, Math.min(root.playX - startX - aaBias, width))
 
-        ShapePath {
-            id: wavePath
-            strokeColor: root.fillColor
-            strokeWidth: snap(root.lineWidth)
-            capStyle: ShapePath.RoundCap
-            joinStyle: ShapePath.RoundJoin
-            fillColor: "transparent"
-        }
-        }
-    }
+        Rectangle {
+            id: mask
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            x: 0
+            width: waveClip.endX
+            color: "transparent"
+            clip: true
 
-    property var cubics: []
-    property real startY: root.midY + root.currentAmp * Math.sin(root.phase)
-    property real endY: root.midY + root.currentAmp * Math.sin((root.playX / root.wavelength) * 2 * Math.PI + root.phase)
+            Shape {
+                id: waveShape
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: parent.width + 4 * root.wavelength
+                antialiasing: true
+                preferredRendererType: Shape.CurveRenderer
+                x: waveOffsetX
 
-    Component {
-        id: moveComp
-        PathMove {}
-    }
-
-    Component {
-        id: cubicComp
-        PathCubic {}
-    }
-
-    function buildWave() {
-        wavePath.pathElements = []
-        cubics = []
-        wavePath.pathElements.push(moveComp.createObject(wavePath))
-        for (let i = 0; i < samples - 1; ++i) {
-            const cubic = cubicComp.createObject(wavePath)
-            wavePath.pathElements.push(cubic)
-            cubics.push(cubic)
-        }
-        updateWave()
-    }
-
-    function updateWave() {
-        if (cubics.length === 0) return
-        const step = root.width / (samples - 1)
-        const startX = snap(root.lineWidth / 2)
-        const r = root.lineWidth / 2
-        const aaBias = 0.25 / dpr
-
-        function y(x) { return yWave(x) }
-        function dy(x) {
-            return currentAmp * (2 * Math.PI / wavelength) * Math.cos((x / wavelength) * 2 * Math.PI + phase)
-        }
-
-        const m = wavePath.pathElements[0]
-        m.x = startX
-        m.y = y(startX)
-
-        for (let i = 0; i < cubics.length; ++i) {
-            const x0 = startX + i * step
-            const x1 = startX + (i + 1) * step
-            
-            // Stop exactly at playX
-            if (x0 >= root.playX) {
-                // This segment is entirely past the playhead - collapse it
-                const seg = cubics[i]
-                seg.control1X = seg.control2X = seg.x = root.playX
-                const py = y(root.playX)
-                seg.control1Y = seg.control2Y = seg.y = py
-                continue
+                ShapePath {
+                    id: wavePath
+                    strokeColor: root.fillColor
+                    strokeWidth: snap(root.lineWidth)
+                    capStyle: ShapePath.RoundCap
+                    joinStyle: ShapePath.RoundJoin
+                    fillColor: "transparent"
+                    PathSvg { id: waveSvg; path: "" }
+                }
             }
-            
-            const xe = Math.min(x1, root.playX - r - aaBias)
-            const p0x = x0, p0y = y(x0)
-            const p1x = xe, p1y = y(xe)
-            const dx = xe - x0
-            
-            if (dx <= 0) {
-                // Zero-length segment
-                const seg = cubics[i]
-                seg.control1X = seg.control2X = seg.x = root.playX
-                const py = y(root.playX)
-                seg.control1Y = seg.control2Y = seg.y = py
-                continue
-            }
-
-            const c1x = p0x + dx / 4
-            const c1y = p0y + (dx * dy(x0)) / 4
-            const c2x = p1x - dx / 4
-            const c2y = p1y - (dx * dy(xe)) / 4
-
-            const seg = cubics[i]
-            seg.control1X = c1x
-            seg.control1Y = c1y
-            seg.control2X = c2x
-            seg.control2Y = c2y
-            seg.x = p1x
-            seg.y = p1y
         }
 
-        flatStart.x = 0
-        flatStart.y = midY
-        flatEnd.x = width
-        flatEnd.y = midY
-    }
+        Rectangle {
+            id: startCap
+            width: snap(root.lineWidth)
+            height: snap(root.lineWidth)
+            radius: width / 2
+            color: root.fillColor
+            x: waveClip.startX - width/2
+            y: root.midY - height/2 + root.currentAmp * Math.sin((waveClip.startX / root.wavelength) * 2 * Math.PI + root.phase)
+            visible: waveClip.endX > waveClip.startX
+            z: 2
+        }
 
+        Rectangle {
+            id: endCap
+            width: snap(root.lineWidth)
+            height: snap(root.lineWidth)
+            radius: width / 2
+            color: root.fillColor
+            x: waveClip.endX - width/2
+            y: root.midY - height/2 + root.currentAmp * Math.sin((waveClip.endX / root.wavelength) * 2 * Math.PI + root.phase)
+            visible: waveClip.endX > waveClip.startX
+            z: 2
+        }
+    }
 
     Rectangle {
         id: playhead
@@ -190,24 +117,51 @@ Item {
         x: root.playX - width / 2
         y: root.midY - height / 2
         z: 3
-
     }
+
+    property real k: (2 * Math.PI) / Math.max(1e-6, wavelength)
+    function wrapMod(a, m) { let r = a % m; return r < 0 ? r + m : r }
+    readonly property real waveOffsetX: -wrapMod(phase / k, wavelength)
 
     FrameAnimation {
         running: root.visible && (root.isPlaying || root.currentAmp > 0)
         onTriggered: {
-            if (root.isPlaying) {
-                root.phase += 0.03 * frameTime * 60
-            }
-            root.updateWave()
+            if (root.isPlaying) root.phase += 0.03 * frameTime * 60
+            startCap.y = root.midY - startCap.height/2 + root.currentAmp * Math.sin((waveClip.startX / root.wavelength) * 2 * Math.PI + root.phase)
+            endCap.y = root.midY - endCap.height/2 + root.currentAmp * Math.sin((waveClip.endX / root.wavelength) * 2 * Math.PI + root.phase)
         }
     }
 
-    Component.onCompleted: {
-        currentAmp = isPlaying ? amp : 0
-        buildWave()
+    function buildStaticWave() {
+        const start = waveClip.startX - 2 * root.wavelength
+        const end   = width + 2 * root.wavelength
+        if (end <= start) { waveSvg.path = ""; return }
+
+        const kLocal = k
+        const halfPeriod = root.wavelength / 2
+        function y0(x)  { return root.midY + root.currentAmp * Math.sin(kLocal * x) }
+        function dy0(x) { return root.currentAmp * Math.cos(kLocal * x) * kLocal }
+
+        let x0 = start
+        let d  = `M ${x0} ${y0(x0)}`
+        while (x0 < end) {
+            const x1 = Math.min(x0 + halfPeriod, end)
+            const dx = x1 - x0
+            const yA = y0(x0), yB = y0(x1)
+            const dyA = dy0(x0), dyB = dy0(x1)
+            const c1x = x0 + dx/3
+            const c1y = yA + (dyA * dx)/3
+            const c2x = x1 - dx/3
+            const c2y = yB - (dyB * dx)/3
+            d += ` C ${c1x} ${c1y} ${c2x} ${c2y} ${x1} ${yB}`
+            x0 = x1
+        }
+        waveSvg.path = d
     }
-    onWidthChanged: buildWave()
-    onSamplesChanged: buildWave()
-    onCurrentAmpChanged: updateWave()
+
+    Component.onCompleted: { currentAmp = isPlaying ? amp : 0; buildStaticWave() }
+    onWidthChanged: { flatStart.x = 0; flatEnd.x = width; buildStaticWave() }
+    onHeightChanged: buildStaticWave()
+    onCurrentAmpChanged: buildStaticWave()
+    onWavelengthChanged: { k = (2 * Math.PI) / Math.max(1e-6, wavelength); buildStaticWave() }
 }
