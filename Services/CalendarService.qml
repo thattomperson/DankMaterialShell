@@ -15,7 +15,6 @@ Singleton {
     property date lastStartDate
     property date lastEndDate
     property string khalDateFormat: "MM/dd/yyyy"
-    property var khalDateParser: null
 
     function checkKhalAvailability() {
         if (!khalCheckProcess.running)
@@ -28,54 +27,10 @@ Singleton {
     }
 
     function parseKhalDateFormat(formatExample) {
-        if (formatExample.includes('-') && formatExample.indexOf('-') < 4) {
-            return {
-                format: "yyyy-MM-dd",
-                parser: parseyyyyMMdd
-            }
-        } else if (formatExample.includes('/')) {
-            let parts = formatExample.split('/')
-            if (parts.length === 3) {
-                let firstPart = parseInt(parts[0])
-                let secondPart = parseInt(parts[1])
-                if (firstPart > 12) {
-                    return {
-                        format: "dd/MM/yyyy",
-                        parser: parseddMMyyyy
-                    }
-                } else if (secondPart > 12) {
-                    return {
-                        format: "MM/dd/yyyy",
-                        parser: parseMMddyyyy
-                    }
-                }
-            }
-            return {
-                format: "MM/dd/yyyy",
-                parser: parseMMddyyyy
-            }
-        } else {
-            return {
-                format: "MM/dd/yyyy",
-                parser: parseMMddyyyy
-            }
-        }
+        let qtFormat = formatExample.replace("12", "MM").replace("21", "dd").replace("2013", "yyyy")
+        return { format: qtFormat, parser: null }
     }
 
-    function parseMMddyyyy(dateStr) {
-        let parts = dateStr.split('/')
-        return new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]))
-    }
-
-    function parseddMMyyyy(dateStr) {
-        let parts = dateStr.split('/')
-        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]))
-    }
-
-    function parseyyyyMMdd(dateStr) {
-        let parts = dateStr.split('-')
-        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
-    }
 
     function loadCurrentMonth() {
         if (!root.khalAvailable)
@@ -147,7 +102,6 @@ Singleton {
                         let formatExample = line.substring(line.indexOf(':') + 1).trim()
                         let formatInfo = parseKhalDateFormat(formatExample)
                         root.khalDateFormat = formatInfo.format
-                        root.khalDateParser = formatInfo.parser
                         break
                     }
                 }
@@ -200,15 +154,15 @@ Singleton {
                         if (!event.title)
                         continue
 
-                        // Parse start and end dates using detected parser
+                        // Parse start and end dates using detected format
                         let startDate, endDate
                         if (event['start-date']) {
-                            startDate = root.khalDateParser ? root.khalDateParser(event['start-date']) : parseMMddyyyy(event['start-date'])
+                            startDate = Date.fromLocaleString(Qt.locale(), event['start-date'], root.khalDateFormat)
                         } else {
                             startDate = new Date()
                         }
                         if (event['end-date']) {
-                            endDate = root.khalDateParser ? root.khalDateParser(event['end-date']) : parseMMddyyyy(event['end-date'])
+                            endDate = Date.fromLocaleString(Qt.locale(), event['end-date'], root.khalDateFormat)
                         } else {
                             endDate = new Date(startDate)
                         }
