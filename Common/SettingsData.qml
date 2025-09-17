@@ -119,6 +119,8 @@ Singleton {
     signal widgetDataChanged
     signal workspaceIconsUpdated
 
+    property bool _loading: false
+
     function getEffectiveTimeFormat() {
         if (use24HourClock) {
             return Locale.ShortFormat
@@ -155,10 +157,13 @@ Singleton {
     }
 
     function loadSettings() {
+        _loading = true
         parseSettings(settingsFile.text())
+        _loading = false
     }
 
     function parseSettings(content) {
+        _loading = true
         try {
             if (content && content.trim()) {
                 var settings = JSON.parse(content)
@@ -287,10 +292,14 @@ Singleton {
             }
         } catch (e) {
             applyStoredTheme()
+        } finally {
+            _loading = false
         }
     }
 
     function saveSettings() {
+        if (_loading)
+            return
         settingsFile.setText(JSON.stringify({
                                                 "currentThemeName": currentThemeName,
                                                 "customThemeFile": customThemeFile,
@@ -1026,6 +1035,7 @@ Singleton {
         path: StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/DankMaterialShell/settings.json"
         blockLoading: true
         blockWrites: true
+        atomicWrites: true
         watchChanges: true
         onLoaded: {
             parseSettings(settingsFile.text())
